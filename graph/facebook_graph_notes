@@ -1,0 +1,36 @@
+//link to graph explorer:
+
+https://developers.facebook.com/tools/explorer/?method=GET&path=138325066204776%2Fevents%3Ffields%3Dname%2Cstart_time%26time_filter%3Dupcoming%26limit%3D1000&version=v2.12
+
+//help
+
+https://developers.facebook.com/docs/graph-api/using-graph-api/#paging
+
+//api reference for page's events
+
+https://developers.facebook.com/docs/graph-api/reference/page/events/
+
+// access the events list for a page
+
+    {page-id}/events
+
+//decide what fields to include
+
+    ?fields=name,start_time
+
+//no sorting available, but can ask for "only upcoming" and can limit #
+
+    &time_filter=upcoming&limit=1000
+
+
+//when you put the "text" version of the {page-id} into a query, it will convert it to the integer representation of the {page-id} automatically
+
+138325066204776/events?fields=name,start_time &time_filter=upcoming&limit=1000
+
+https://www.facebook.com/pg/skullysmusicdiner/events/?ref=page_internal
+
+https://www.facebook.com/pg/woodlandstavern/events/?ref=page_internal
+
+https://www.facebook.com/pg/BrothersDrakeMeadery/events/?ref=page_internal
+
+https://www.facebook.com/pg/RumbaCafeOH/events/?ref=page_internal

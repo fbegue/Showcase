@@ -1,0 +1,7 @@
+//currently launches spotify login auth w/:
+
+ node authorization_code\app.js
+
+//todo:
+
+trying to figure out why a simple contains doesn't work on fb page
