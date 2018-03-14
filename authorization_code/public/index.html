@@ -57,7 +57,8 @@
 
         <button onclick="refreshToken()">refreshToken</button>
         <button onclick="testAPI()">testAPI</button>
-        <button onclick="top_artists()">artists</button>
+        <button onclick="top_artists()">top artists</button>
+        <button onclick="user_tracks()">user tracks</button>
 
 
 
@@ -171,20 +172,20 @@
               $('#loggedin').hide();
           }
 
-          document.getElementById('obtain-new-token').addEventListener('click', function() {
-            $.ajax({
-              url: '/refresh_token',
-              data: {
-                'refresh_token': refresh_token
-              }
-            }).done(function(data) {
-              access_token = data.access_token;
-              oauthPlaceholder.innerHTML = oauthTemplate({
-                access_token: access_token,
-                refresh_token: refresh_token
-              });
-            });
-          }, false);
+//          document.getElementById('obtain-new-token').addEventListener('click', function() {
+//            $.ajax({
+//              url: '/refresh_token',
+//              data: {
+//                'refresh_token': refresh_token
+//              }
+//            }).done(function(data) {
+//              access_token = data.access_token;
+//              oauthPlaceholder.innerHTML = oauthTemplate({
+//                access_token: access_token,
+//                refresh_token: refresh_token
+//              });
+//            });
+//          }, false);
         }
       })();
     </script>

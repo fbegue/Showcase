@@ -20,5 +20,13 @@
 
  //dosearch
 
- x fixed an auth problem and just got a list of my artists for the first time
- o figure out how to use offset to page thru results? seems like thats what they would like me to do.
+ x used offset to get a complete list of user saved tracks
+
+ o get list of artists from saved tracks
+
+ o explore API for more ways to complete my goal
+
+ o look at parsing and processing playlists
+
+    * special priority to certain folders (can the API even see folders?)
+

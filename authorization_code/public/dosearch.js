@@ -46,13 +46,15 @@ if (typeof(window) !== 'undefined') {
 
     (function(exports) {
 
-        exports.pageJson = function(pageJson){
-            return pageJson;
-        }
 
         /**
          * Fetch a user's top artists.
          * @function top_artists
+         * For each time range, the top 50 tracks and artists are available for each user.
+         * In the future, it is likely that this restriction will be relaxed.
+         * This data is typically updated once each day for each user.
+         *
+         * todo: this seems fucked b/c I can definitely get up to offset 49 but no more (so 99)
          **/
 
         exports.top_artists = function(user){
@@ -67,54 +69,179 @@ if (typeof(window) !== 'undefined') {
             //max(limit) = 50,
             //time_range = [long_term (several years?), medium_term (~ 6 months), short_term (~ 4 weeks). Default: medium_term.]
             // The index of the first entity to return. Default: 0 (i.e., the first track). Use with limit to get the next set of entities.
-            var url = 'https://api.spotify.com/v1/me/top/artists?time_range=medium_term&limit=50'
-            $.ajax({
-                dataType: 'json',
-                beforeSend: function(request) {
-                    request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
-                    //var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
-                    //request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
-                },
-                url:url,
-                success: function(payload) {
-                    console.log('payload: ');
-                    // console.log(JSON.stringify());
-                    console.log(payload);
 
-                    callback(function(){
-                            console.log("finished");
-                        }
-                    )
-                    // callback({
-                    //     word: word,
-                    //     tracks: r.tracks.items
-                    //         .map(function(item) {
-                    //             var ret = {
-                    //                 name: item.name,
-                    //                 artist: 'Unknown',
-                    //                 artist_uri: '',
-                    //                 album: item.album.name,
-                    //                 album_uri: item.album.uri,
-                    //                 cover_url: '',
-                    //                 uri: item.uri
-                    //             }
-                    //             if (item.artists.length > 0) {
-                    //                 ret.artist = item.artists[0].name;
-                    //                 ret.artist_uri = item.artists[0].uri;
-                    //             }
-                    //             if (item.album.images.length > 0) {
-                    //                 ret.cover_url = item.album.images[item.album.images.length - 1].url;
-                    //             }
-                    //             return ret;
-                    //         })
-                    // });
-                },
-                error: function(err) {
-                    console.log("there was a problem: ");
-                    console.log(err);
+            var records = [];
+            var offset_count = 0;
+            var offset = 0;
+
+            var make_request =  function(user,offset,callback){
+
+                var url = 'https://api.spotify.com/v1/me/top/artists?time_range=medium_term&limit=50&offset=' + offset
+                $.ajax({
+                    dataType: 'json',
+                    beforeSend: function(request) {
+                        request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
+                        //var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
+                        //request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
+                    },
+                    url:url,
+                    success: function(payload) {
+                        console.log('payload: ');
+                        // console.log(JSON.stringify());
+                        console.log(payload);
+
+                        callback(payload)
+
+                        // callback({
+                        //     word: word,
+                        //     tracks: r.tracks.items
+                        //         .map(function(item) {
+                        //             var ret = {
+                        //                 name: item.name,
+                        //                 artist: 'Unknown',
+                        //                 artist_uri: '',
+                        //                 album: item.album.name,
+                        //                 album_uri: item.album.uri,
+                        //                 cover_url: '',
+                        //                 uri: item.uri
+                        //             }
+                        //             if (item.artists.length > 0) {
+                        //                 ret.artist = item.artists[0].name;
+                        //                 ret.artist_uri = item.artists[0].uri;
+                        //             }
+                        //             if (item.album.images.length > 0) {
+                        //                 ret.cover_url = item.album.images[item.album.images.length - 1].url;
+                        //             }
+                        //             return ret;
+                        //         })
+                        // });
+                    },
+                    error: function(err) {
+                        console.log("there was a problem: ");
+                        console.log(err);
+                    }
+                });
+            }
+
+            var check_len = function(payload){
+
+
+                var results = payload["items"]
+
+                results.forEach(function(result){   records.push(result)})
+
+                if(results.length == 50){
+
+                    offset_count++
+                    console.log("offset_count: "  + offset_count);
+
+                    offset = offset_count * 50 - 1 //50 records is max
+
+                    console.log("offset: "  + offset);
+
+                    console.log("... " + records.length);
+                    make_request(user,offset,check_len)
                 }
-            });
-        }
+                else{
+                    console.log("finished, # of records: " + records.length);
+                    console.log(records);
+                }
+
+            }
+
+            var starting_offset = 0;
+            var results = make_request(user,starting_offset,check_len)
+
+
+
+
+        }//top_artists
+
+
+        /**
+         * Fetch a user's saved tracks
+         * @URL  https://beta.developer.spotify.com/console/get-current-user-saved-tracks/
+         * @function user_tracks
+         *
+         **/
+        exports.user_tracks = function(user){
+
+            var params = getHashParams();
+            global_access_token = params.access_token
+
+            console.log('fetching tracks for user: ' + user);
+            //var url = 'https://api.spotify.com/v1/me/top/artists
+            // https://beta.developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
+
+            //max(limit) = 50,
+            //time_range = [long_term (several years?), medium_term (~ 6 months), short_term (~ 4 weeks). Default: medium_term.]
+            // The index of the first entity to return. Default: 0 (i.e., the first track). Use with limit to get the next set of entities.
+
+            var records = [];
+            var offset_count = 0;
+            var offset = 0;
+
+            var make_request =  function(user,offset,callback){
+
+                console.log("make_request!!!!!!!");
+
+                console.log("params: " + user + " " + offset);
+
+                var url = 'https://api.spotify.com/v1/me/tracks?offset=' + offset + '&limit=50'
+                $.ajax({
+                    dataType: 'json',
+                    beforeSend: function(request) {
+                        request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
+                        //var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
+                        //request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
+                    },
+                    url:url,
+                    success: function(payload) {
+                        console.log('payload: ');
+                        console.log(payload);
+                        callback(payload)
+
+                    },
+                    error: function(err) {
+                        console.log("there was a problem: ");
+                        console.log(err);
+                    }
+                });
+            }
+
+            var check_len = function(payload){
+
+
+                var results = payload["items"]
+
+                results.forEach(function(result){   records.push(result)})
+
+                if(results.length == 50){
+
+                    offset_count++
+                    console.log("offset_count: "  + offset_count);
+
+                    offset = offset_count * 50 - 1 //50 records is max
+
+                    console.log("offset: "  + offset);
+
+                    console.log("... " + records.length);
+                    make_request(user,offset,check_len)
+                }
+                else{
+                    console.log("finished, # of records: " + records.length);
+                    console.log(records);
+                }
+
+            }
+
+            var starting_offset = 0;
+            var results = make_request(user,starting_offset,check_len)
+
+
+
+
+        }//user_tracks
 
         /**
          * hmmmmmmmm....

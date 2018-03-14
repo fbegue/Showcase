@@ -36,7 +36,7 @@ var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
 // the scope determines what parts of the API the returned token grants access to
 
-var scope = 'user-top-read';
+var scope = 'user-top-read user-library-read';
 
 //listing of all scopes:
 //  https://developer.spotify.com/web-api/using-scopes/
