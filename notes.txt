@@ -1,17 +1,45 @@
-//currently launches spotify login auth w/:
+//===================================//===================================
+//notes
 
- node authorization_code\app.js
+//launches spotify login auth w/:
+    node authorization_code\app.js on http://localhost:8888/
 
+//running songkick.js calls get_all_metros_events().
+    - exaustively contacts songkick for location [metro area] specific concert data
 
+//===================================//===================================
+//spotify
+//===================================
 
 //todo:
 
-//spotify
-
-how to get all artists from my library
+o how to get all artists from my library
 
 
+//===================================
+//log:
+
+Node:   ...
+
+UI:  ...
+
+
+
+//===================================//===================================
 //songkick
+//===================================
+//todo:
+
+o compare with Spotify data meaningfully
+
+//===================================
+//log:
+
++  get_events now continuously hits 'getLocationUpcomingEvents' until less than page_size=50 result returned
++  get_all_metros_events promise changed to handle above changes
+
++  produces 'songkick_artists.json' with {date,artist} pairs
+
 
 waiting on songkick api key, then test out node module to see if its what we want
 
