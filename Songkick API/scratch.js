@@ -162,8 +162,8 @@ var get_all_metros_events = function(){
 						result.displayName = metro.displayName;
 						result.events = future;
 
-						// console.log("+++++++++++++++++++");
-						// console.log("past: " + past.length + "| future: " + future.length);
+
+
 						all_results.push(result)
 
 						// future.forEach(function(e){
@@ -181,7 +181,7 @@ var get_all_metros_events = function(){
 
 
 						//todo:
-						if(events.length < 50){
+						if(events.length < 50 || page_count === 5){
 							// if(events.length < 50){
 							console.log("page with len < 50 was reached. stopping.");
 							done(all_results)
@@ -271,7 +271,7 @@ var get_all_metros_events = function(){
 						performances[newDate].push(performance);
 					}
 					else{
-						performances[newDate].push(performance);
+						// performances[newDate].push(performance);
 
 						//todo: tried to eliminate duplicate performances
 						// if(performances[newDate].indexOf(performance) == -1){
