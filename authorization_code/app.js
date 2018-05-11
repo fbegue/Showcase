@@ -61,13 +61,22 @@ app.use(express.static(__dirname + '/public'))
 
 app.get('/login', function(req, res) {
 
-  var state = generateRandomString(16);
-  res.cookie(stateKey, state);
+	var state = generateRandomString(16);
+	res.cookie(stateKey, state);
 
 
-  // your application requests authorization
-  var scope = 'user-read-private user-read-email';
-  res.redirect('https://accounts.spotify.com/authorize?' +
+	//todo: scope requested gives certain permissions for your application's requests
+	//the permissions required change depending on the endpoint you're hitting
+
+	//hit 'get token' on any dev console test page, and the page will tell you
+	//what permissions are required for that endpoint.
+
+	// https://beta.developer.spotify.com/console/get-current-user-top-artists-and-tracks/?type=artists&time_range=&limit=&offset=
+
+
+	// your application requests authorization
+	var scope = 'user-read-private user-read-email user-top-read';
+	res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
       client_id: client_id,

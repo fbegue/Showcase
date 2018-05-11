@@ -59,9 +59,11 @@ if (typeof(window) !== 'undefined') {
 
         exports.top_artists = function(user){
 
-            var params = getHashParams();
-            global_access_token = params.access_token
+            //todo: disabled hash fetching
 
+            // var params = getHashParams();
+            // global_access_token = params.access_token
+			console.log(global_access_token);
             console.log('fetching artists for user: ' + user );
             //var url = 'https://api.spotify.com/v1/me/top/artists
             // https://beta.developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
@@ -75,6 +77,16 @@ if (typeof(window) !== 'undefined') {
             var offset = 0;
 
             var make_request =  function(user,offset,callback){
+
+               // var url = "https://api.spotify.com/v1/me/top/artists";
+
+                //trying to figure this out, think there are max  100 top artists?
+                //"For each time range, the top 50 tracks and artists are available for each user"
+                //but i feel like using offset = 0, then offset = 49 on the second call gets me 100 unique?
+
+                //todo: check uniqueness
+				//https://beta.developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
+
 
                 var url = 'https://api.spotify.com/v1/me/top/artists?time_range=medium_term&limit=50&offset=' + offset
                 $.ajax({
@@ -364,7 +376,16 @@ if (typeof(window) !== 'undefined') {
             newToken();
 
 
-        }
+        };
+
+
+
+        var token = "BQD6YcL86F6a68CZDLmVHW3sLewW8ZflJNvA2xDGWogFwrYqWU9YZMcHnf61ooRKZvmaWj9fDR1uN2bpVM9COl16csZYYkrF5cSzHj8vYfM8PNnXIyKr5dR8iNDUqe9HSJG5W7OyrFSLMRw6OE8tA8N7Ag"
+
+		exports.forceToken = function() {
+			console.log("forceToken");
+			global_access_token = token;
+		};
 
         exports.callback = function(idk) {
 
