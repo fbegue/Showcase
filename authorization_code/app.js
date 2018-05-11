@@ -13,7 +13,6 @@
  * https://developer.spotify.com/my-applications
  *
  *
- *
  */
 
 var express = require('express'); // Express web server framework
@@ -34,56 +33,48 @@ var client_id = '178a441343904c588cef9acf8165a5d4'; // Your client id
 var client_secret = '1c09323e0aad42cfaef5f23bb08b6428'; // Your secret
 var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
-// the scope determines what parts of the API the returned token grants access to
-
-var scope = 'user-top-read user-library-read';
-
-//listing of all scopes:
-//  https://developer.spotify.com/web-api/using-scopes/
-//generally, you can also determine what scope is needed for what endpoint by hitting 'get token' while testing a specific endpoint on the Web API:
-//  https://beta.developer.spotify.com/console/get-current-user-top-artists-and-tracks/?type=artists&time_range=&limit=10&offset=
-
-
 
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
  * @return {string} The generated string
  */
-var generateRandomString = function(length) {
-    var text = '';
-    var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-    for (var i = 0; i < length; i++) {
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
+
+
+  var generateRandomString = function(length) {
+  var text = '';
+  var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+  for (var i = 0; i < length; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
 };
 
-
+var stateKey = 'spotify_auth_state';
 
 
 
 app.use(express.static(__dirname + '/public'))
-    .use(cookieParser());
-var stateKey = 'spotify_auth_state';
+   .use(cookieParser());
 
 app.get('/login', function(req, res) {
 
-    var state = generateRandomString(16);
-    res.cookie(stateKey, state);
+  var state = generateRandomString(16);
+  res.cookie(stateKey, state);
 
 
-    //requesting initial authorization
-
-    res.redirect('https://accounts.spotify.com/authorize?' +
-        querystring.stringify({
-            response_type: 'code',
-            client_id: client_id,
-            scope: scope,
-            redirect_uri: redirect_uri,
-            state: state
-        }));
+  // your application requests authorization
+  var scope = 'user-read-private user-read-email';
+  res.redirect('https://accounts.spotify.com/authorize?' +
+    querystring.stringify({
+      response_type: 'code',
+      client_id: client_id,
+      scope: scope,
+      redirect_uri: redirect_uri,
+      state: state
+    }));
 });
 
 
@@ -92,118 +83,114 @@ var access_token_global = {};
 
 
 
-//called a a result of successful authentication OR failure to authenticate.
-//the name 'callback' is set in the developer app settings:
-// https://developer.spotify.com/my-applications
+//todo:
+//trying to export from here and grab in broswer, but can't load
+//var exports = {refresh_token_global:refresh_token_global,access_token_global:access_token_global}
 
 app.get('/callback', function(req, res) {
 
+  console.log("callback!");
 
-    // your application requests refresh and access tokens
-    // after checking the state parameter
+  // your application requests refresh and access tokens
+  // after checking the state parameter
 
-    var code = req.query.code || null;
-    var state = req.query.state || null;
-    var storedState = req.cookies ? req.cookies[stateKey] : null;
+  var code = req.query.code || null;
+  var state = req.query.state || null;
+  var storedState = req.cookies ? req.cookies[stateKey] : null;
 
-    if (state === null || state !== storedState) {
-        res.redirect('/#' +
-            querystring.stringify({
-                error: 'state_mismatch'
-            }));
-    } else {
-        res.clearCookie(stateKey);
-        var authOptions = {
-            url: 'https://accounts.spotify.com/api/token',
-            form: {
-                code: code,
-                redirect_uri: redirect_uri,
-                grant_type: 'authorization_code'
-            },
-            headers: {
-                'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
-            },
-            json: true
+  if (state === null || state !== storedState) {
+    res.redirect('/#' +
+      querystring.stringify({
+        error: 'state_mismatch'
+      }));
+  } else {
+    res.clearCookie(stateKey);
+    var authOptions = {
+      url: 'https://accounts.spotify.com/api/token',
+      form: {
+        code: code,
+        redirect_uri: redirect_uri,
+        grant_type: 'authorization_code'
+      },
+      headers: {
+        'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
+      },
+      json: true
+    };
+
+    request.post(authOptions, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+
+        var access_token = body.access_token,
+            refresh_token = body.refresh_token;
+
+        access_token_global = access_token;
+        refresh_token_global = refresh_token;
+
+        //console.log("dosearch.doSearch");
+        //dosearch(access_token,function(){console.log("test callback");})
+
+        var options = {
+          url: 'https://api.spotify.com/v1/me',
+          headers: { 'Authorization': 'Bearer ' + access_token },
+          json: true
         };
 
-        request.post(authOptions, function(error, response, body) {
-            if (!error && response.statusCode === 200) {
-
-                var access_token = body.access_token,
-                    refresh_token = body.refresh_token;
-
-                access_token_global = access_token;
-                refresh_token_global = refresh_token;
-
-                //console.log("dosearch.doSearch");
-                //dosearch(access_token,function(){console.log("test callback");})
-
-                var options = {
-                    url: 'https://api.spotify.com/v1/me',
-                    headers: { 'Authorization': 'Bearer ' + access_token },
-                    json: true
-                };
-
-                // use the access token to access the Spotify Web API
-                request.get(options, function(error, response, body) {
-                    console.log(body);
-                });
-
-
-
-                // we can also pass the token to the browser to make requests from there
-                // this is important b/c the only way dosearch (angular controller) knows
-                //about the global_access_token is by parsing it out of the url...
-
-                //todo: find another way access this from other js files without parsing
-
-                res.redirect('/#' +
-                    querystring.stringify({
-                        access_token: access_token,
-                        refresh_token: refresh_token
-                    }));
-            } else {
-                res.redirect('/#' +
-                    querystring.stringify({
-                        error: 'invalid_token'
-                    }));
-            }
+        // use the access token to access the Spotify Web API
+        request.get(options, function(error, response, body) {
+          console.log(body);
         });
-    }
+
+
+
+        // we can also pass the token to the browser to make requests from there
+        res.redirect('/#' +
+          querystring.stringify({
+            access_token: access_token,
+            refresh_token: refresh_token
+          }));
+      } else {
+        res.redirect('/#' +
+          querystring.stringify({
+            error: 'invalid_token'
+          }));
+      }
+    });
+  }
 });
 
 
 app.get('/getToken', function(req, res) {
-    res.send({
-        'access_token': access_token_global
-    });
+  res.send({
+    'access_token': access_token_global
+  });
 });
 
 app.get('/refresh_token', function(req, res) {
 
-    console.log("/refresh_token");
+  console.log("/refresh_token");
 
-    // requesting access token from refresh token
-    var refresh_token = req.query.refresh_token;
-    var authOptions = {
-        url: 'https://accounts.spotify.com/api/token',
-        headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
-        form: {
-            grant_type: 'refresh_token',
-            refresh_token: refresh_token
-        },
-        json: true
-    };
+  // requesting access token from refresh token
+  var refresh_token = req.query.refresh_token;
+  var authOptions = {
+    url: 'https://accounts.spotify.com/api/token',
+    headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
+    form: {
+      grant_type: 'refresh_token',
+      refresh_token: refresh_token
+    },
+    json: true
+  };
 
-    request.post(authOptions, function(error, response, body) {
-        if (!error && response.statusCode === 200) {
-            var access_token = body.access_token;
-            access_token_global = access_token;
-            res.send({
-                'access_token': access_token
-            });
-        }
-    });
+  request.post(authOptions, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      var access_token = body.access_token;
+      access_token_global = access_token;
+      res.send({
+        'access_token': access_token
+      });
+    }
+  });
 });
 
 //==========================================================================================
@@ -235,13 +222,13 @@ app.get('/scrape', function(req, res) {
     request(url, function(error, response, html){
         if(!error){
 
-            // var $ = cheerio.load(html);
+           // var $ = cheerio.load(html);
 
 
 
             var file = {}
-            // var path = "C:\\Users\\begue.16\\WebstormProjects\\playlistGen\\authorization_code\\facebook_events_skully.html"
-            //  var path = "C:\\Users\\begue.16\\WebstormProjects\\playlistGen\\authorization_code\\facebook_events_skully_eventsOnly.html"
+           // var path = "C:\\Users\\begue.16\\WebstormProjects\\playlistGen\\authorization_code\\facebook_events_skully.html"
+           //  var path = "C:\\Users\\begue.16\\WebstormProjects\\playlistGen\\authorization_code\\facebook_events_skully_eventsOnly.html"
             var path = "C:\\Users\\begue.16\\WebstormProjects\\playlistGen\\authorization_code\\facebook_events_skully_divOnly.html"
 
 

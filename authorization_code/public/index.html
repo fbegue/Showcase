@@ -48,7 +48,7 @@
 
         </div>
 
-        <!--<button class="btn btn-default" id="obtain-new-token">Factory Token Refresh</button>-->
+        <button class="btn btn-default" id="obtain-new-token">Factory Token Refresh</button>
         <!--Obtain new token using the refresh token-->
 
         <!--franky-->
@@ -57,8 +57,7 @@
 
         <button onclick="refreshToken()">refreshToken</button>
         <button onclick="testAPI()">testAPI</button>
-        <button onclick="top_artists()">top artists</button>
-        <button onclick="user_tracks()">user tracks</button>
+        <button onclick="artists()">artists</button>
 
 
 
@@ -172,20 +171,20 @@
               $('#loggedin').hide();
           }
 
-//          document.getElementById('obtain-new-token').addEventListener('click', function() {
-//            $.ajax({
-//              url: '/refresh_token',
-//              data: {
-//                'refresh_token': refresh_token
-//              }
-//            }).done(function(data) {
-//              access_token = data.access_token;
-//              oauthPlaceholder.innerHTML = oauthTemplate({
-//                access_token: access_token,
-//                refresh_token: refresh_token
-//              });
-//            });
-//          }, false);
+          document.getElementById('obtain-new-token').addEventListener('click', function() {
+            $.ajax({
+              url: '/refresh_token',
+              data: {
+                'refresh_token': refresh_token
+              }
+            }).done(function(data) {
+              access_token = data.access_token;
+              oauthPlaceholder.innerHTML = oauthTemplate({
+                access_token: access_token,
+                refresh_token: refresh_token
+              });
+            });
+          }, false);
         }
       })();
     </script>

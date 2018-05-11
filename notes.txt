@@ -1,32 +1,47 @@
-//how to use:
+//===================================//===================================
+//notes
 
- node authorization_code\app.js
+//launches spotify login auth w/:
+    node authorization_code\app.js on http://localhost:8888/
 
- After hitting the login button, we are redirected to  authorization_code/index.html
+//running songkick.js calls get_all_metros_events().
+    - exaustively contacts songkick for location [metro area] specific concert data
+
+//===================================//===================================
+//spotify
+//===================================
+
+//todo:
+
+o how to get all artists from my library
+
+
+//===================================
+//log:
+
+Node:   ...
+
+UI:  ...
 
 
 
-//layout:
+//===================================//===================================
+//songkick
+//===================================
+//todo:
 
- app.js launches the node application listening on: localhost:8888
+o compare with Spotify data meaningfully
 
- dosearch is binded to the index.html page thru angular, but barely,
- and it contains exports of useful functions
+//===================================
+//log:
 
- index.html is a shabby UI to activate these functions.
++  get_events now continuously hits 'getLocationUpcomingEvents' until less than page_size=50 result returned
++  get_all_metros_events promise changed to handle above changes
+
++  produces 'songkick_artists.json' with {date,artist} pairs
 
 
- todo:
+waiting on songkick api key, then test out node module to see if its what we want
 
- //dosearch
 
- x used offset to get a complete list of user saved tracks
-
- o get list of artists from saved tracks
-
- o explore API for more ways to complete my goal
-
- o look at parsing and processing playlists
-
-    * special priority to certain folders (can the API even see folders?)
 
