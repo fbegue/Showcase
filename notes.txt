@@ -2,7 +2,8 @@
 //notes
 
 //launches spotify login auth w/:
-    node authorization_code\app.js on http://localhost:8888/
+    node authorization_code\app.js
+    @ http://localhost:8888/
 
 //running songkick.js calls get_all_metros_events().
     - exaustively contacts songkick for location [metro area] specific concert data
@@ -13,13 +14,23 @@
 
 //todo:
 
+
+o my init token request, although it has the correct 'user-top-read', i get 403'd
+  right now getting a token from dev test console and forcing the top_artists() to use
+  that token works, but not sure what's wrong with init
+
+
+o how to limit artist gathering to those currently touring? or just not like old people lol.
+
 o how to get all artists from my library
 
 
 //===================================
 //log:
 
-Node:   ...
+Node:
+
++ I can get 100 unique? top artists, in either short-medium-long term periods.
 
 UI:  ...
 
