@@ -73,9 +73,11 @@ app.get('/login', function(req, res) {
 
 	// https://beta.developer.spotify.com/console/get-current-user-top-artists-and-tracks/?type=artists&time_range=&limit=&offset=
 
+    // /v1/me/playlists : playlist-read-private, playlist-read-collaborative
+    // /v1/me/top/{type} : user-top-read
 
 	// your application requests authorization
-	var scope = 'user-read-private user-read-email user-top-read';
+	var scope = 'user-read-private user-read-email user-top-read playlist-read-private';
 	res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',

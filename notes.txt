@@ -1,4 +1,10 @@
 //===================================//===================================
+//resources
+
+//full object model list
+https://beta.developer.spotify.com/documentation/web-api/reference/object-model/
+
+//===================================//===================================
 //notes
 
 //launches spotify login auth w/:
@@ -14,10 +20,19 @@
 
 //todo:
 
+o playlist_tracks gets a playlist's tracks, we should extract artists
+o call playlist_tracks for every playlist and compile artist list
 
-o my init token request, although it has the correct 'user-top-read', i get 403'd
-  right now getting a token from dev test console and forcing the top_artists() to use
+
+o fix token issue (disabled hash parse for live token)
+  my init token request, although it has the correct 'user-top-read', i get 403'd
+  right now getting a token from dev test console and forcing everything to use
   that token works, but not sure what's wrong with init
+
+
+o   /v1/users/dacandyman01/playlists/5qdfEl1ylx7MLZTmJXydSJ/tracks
+    doesn't seem to be able to access non-user created playlists?
+
 
 
 o how to limit artist gathering to those currently touring? or just not like old people lol.
@@ -32,7 +47,10 @@ Node:
 
 + I can get 100 unique? top artists, in either short-medium-long term periods.
 
-UI:  ...
+UI:
+
+o need to hookup angular mainly
+  - bind user to page so that I can 'pass' user
 
 
 
@@ -41,7 +59,11 @@ UI:  ...
 //===================================
 //todo:
 
+
 o compare with Spotify data meaningfully
+
+o will we need fuzzy matching for songkick versus spotify artist names?
+
 
 //===================================
 //log:

@@ -12,6 +12,11 @@
 //https://github.com/possan/playlistcreator-example/blob/master/app.js
 //https://github.com/possan/playlistcreator-example/blob/master/index.html
 
+
+
+
+
+
 var module = angular.module('playlistGen', [])
 var controller = module.controller("myCtrl", function($scope) {
     console.log("myCtrl");
@@ -46,17 +51,203 @@ if (typeof(window) !== 'undefined') {
 
     (function(exports) {
 
+    	var cache = {};
+    	cache.dummy = [];
+    	cache.artists = {};
+    	cache.playlists = {};
+    	
+		cache.artists.simple = [];
+		cache.artists.full = [];
+		cache.playlists.simple  = [];
+		cache.playlists.full = [];
+		
+        var url_users = "https://api.spotify.com/v1/users";
+		var off = "offset=";
+		var lim = "&limit="
+		var offset_base = 50;
+		
+		var page_num = 0;
+		var records = [];
 
-        /**
-         * Fetch a user's top artists.
-         * @function top_artists
-         * For each time range, the top 50 tracks and artists are available for each user.
-         * In the future, it is likely that this restriction will be relaxed.
-         * This data is typically updated once each day for each user.
-         *
-         * todo: this seems fucked b/c I can definitely get up to offset 49 but no more (so 99)
-         **/
 
+		/**
+		 * trying to reuse my request maker
+		 * url_object:
+		 * 
+		 *  Even if not in use, explicitly set fields to "" b/c its used in url formation
+		 * 	url_object.fields = ""
+		 * 
+		 * @function make_request
+		 **/
+		var make_request =  function(url_object,cache,callback){
+
+			var url = url_object.url + "?" + url_object.fields + off + url_object.offset + lim + url_object.limit;
+			console.log("sending request",url);
+
+			$.ajax({
+				dataType: 'json',
+				beforeSend: function(request) {
+					request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
+					//var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
+					//request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
+				},
+				url:url,
+				success: function(payload) {
+					console.log("payload page " + page_num,payload);
+					// console.log(JSON.stringify(payload,null,4));
+
+
+					var results = payload["items"]
+					results.forEach(function(result){cache.push(result)})
+
+					if(results.length === 50){
+						page_num++;
+						url_object.offset = url_object.offset + offset_base ;
+
+						console.log("new offset: ", url_object.offset);
+						console.log("records length: ", cache.length);
+
+						make_request(url_object,cache,callback)
+					}
+					else{
+						console.log("finished, # of records: " + cache.length);
+						console.log(cache);
+						callback(cache)
+					}
+
+				},
+				error: function(err) {
+					console.log("there was a problem: ");
+					console.log(err);
+				}
+			});
+		};
+
+
+
+
+
+		/**
+		 *
+		 * @function playlist_tracks
+		 **/
+		exports.playlist_tracks = function(user,playlist_id){
+
+			//todo: haven't tested this with large playlists (over limit 50, requiring multiple trips)
+
+
+			//todo: disabled hash fetching
+			// var params = getHashParams();
+			// global_access_token = params.access_token
+			console.log(global_access_token);
+
+			//todo: forcing me as user
+			user = "/dacandyman01"
+			//todo: forcing static id for testing
+			playlist_id = "/5qdfEl1ylx7MLZTmJXydSJ"
+
+
+			//var url_example = "https://api.spotify.com/v1/users/dacandyman01/playlists/5qdfEl1ylx7MLZTmJXydSJ/tracks?fields=items.track.artists&limit=50&offset=0"
+			
+			var url1 = "/playlists";
+			var url2 = "/tracks";
+			
+			var url_object = {};
+			url_object.url =  url_users + user + url1 + playlist_id + url2
+			url_object.offset = 0;
+			url_object.limit = 50;
+			url_object.fields = "";
+
+			console.log('fetching playlist_tracks for : ' + playlist_id );
+
+			//todo: cache'ing a single playlist's tracks isn't particularly useful right now...
+			// and we're only using this to get artists out anyways, so cache is dummy
+
+			var results = make_request(url_object,cache.dummy,function(payload){
+
+				//shifted this to extract artists
+				
+				console.log("playlist_tracks finished with length: ",cache.artists.full.length);
+
+				cache.artists.simple = cache.artists.full.map(function(item,index) {
+						var rObj = {}; rObj.id = item.id; rObj.name = item.name;
+						return rObj;
+					}
+				)
+
+				console.log("artists.simple cache updated:",cache.artists.simple);
+			})
+
+		};//playlist_tracks
+
+		
+		/**
+		 * load a static json version of my playlists into user_playlists_simple_cache
+		 * @function load_playlists
+		 **/
+		exports.load_playlists = function(){
+			$.getJSON("my_playlists.json", function( data ) {
+				var items = [];
+				user_playlists_simple_cache = data.playlists;
+				console.log("user_playlists_simple_cache loaded:",user_playlists_simple_cache);
+			});
+		};
+
+
+		/**
+		 * load my playlists into user_playlists_simple_cache
+		 * @function user_playlists
+		 **/
+		exports.user_playlists = function(user){
+
+			//todo: disabled hash fetching
+			// var params = getHashParams();
+			// global_access_token = params.access_token
+			console.log(global_access_token);
+
+			//todo: forcing me as user
+			user = "/dacandyman01"
+			var url1 = "/playlists";
+
+			//var url_example = "https://api.spotify.com/v1/users/dacandyman01/playlists?offset=0&limit=50"
+
+			var url_object = {};
+			url_object.url =  url_users + user + url1
+			url_object.offset = 0;
+			url_object.limit = 50;
+			url_object.fields = "";
+
+
+			var results = make_request(url_object,cache.playlists.full,function(payload){
+
+				console.log("user_playlists finished with records length: ",cache.playlists.full.length);
+
+				// records.forEach(function(play){
+				// 	var rec = {};
+				// 	rec.name = play.name; rec.id = play.id;
+				// 	.push(play)
+				// })
+				//
+				cache.playlists.simple = cache.playlists.full.map(function(item,index) {
+						var rObj = {}; rObj.id = item.id; rObj.name = item.name;
+						return rObj;
+					}
+				)
+
+				console.log("playlists.simple cache updated:",cache.playlists.simple);
+			})
+
+		};//user_playlists
+
+		
+		
+		/**
+		 * Fetch a user's top artists.
+		 * @function top_artists
+		 * For each time range, the top 100 tracks and artists are available for each user.
+		 * In the future, it is likely that this restriction will be relaxed.
+		 * This data is typically updated once each day for each user.
+		 **/
         exports.top_artists = function(user){
 
             //todo: disabled hash fetching
@@ -103,30 +294,6 @@ if (typeof(window) !== 'undefined') {
                         console.log(payload);
 
                         callback(payload)
-
-                        // callback({
-                        //     word: word,
-                        //     tracks: r.tracks.items
-                        //         .map(function(item) {
-                        //             var ret = {
-                        //                 name: item.name,
-                        //                 artist: 'Unknown',
-                        //                 artist_uri: '',
-                        //                 album: item.album.name,
-                        //                 album_uri: item.album.uri,
-                        //                 cover_url: '',
-                        //                 uri: item.uri
-                        //             }
-                        //             if (item.artists.length > 0) {
-                        //                 ret.artist = item.artists[0].name;
-                        //                 ret.artist_uri = item.artists[0].uri;
-                        //             }
-                        //             if (item.album.images.length > 0) {
-                        //                 ret.cover_url = item.album.images[item.album.images.length - 1].url;
-                        //             }
-                        //             return ret;
-                        //         })
-                        // });
                     },
                     error: function(err) {
                         console.log("there was a problem: ");
@@ -167,7 +334,7 @@ if (typeof(window) !== 'undefined') {
 
 
 
-        }//top_artists
+        };//top_artists
 
         //apples, grapes, honey, carrots/broc, potatoes
 
@@ -328,7 +495,7 @@ if (typeof(window) !== 'undefined') {
                 url:"https://api.spotify.com/v1/me",
                 success: function(body) {
                     console.log("body: ",body);
-                    exports.pageJson(body);
+					console.log("testAPI success!");
                 }
             });
         }
@@ -380,7 +547,7 @@ if (typeof(window) !== 'undefined') {
 
 
 
-        var token = "BQD6YcL86F6a68CZDLmVHW3sLewW8ZflJNvA2xDGWogFwrYqWU9YZMcHnf61ooRKZvmaWj9fDR1uN2bpVM9COl16csZYYkrF5cSzHj8vYfM8PNnXIyKr5dR8iNDUqe9HSJG5W7OyrFSLMRw6OE8tA8N7Ag"
+        var token = "BQDJnpGvpFAnrdEH_6NK5MUCAjqRuk8qmgJa7lOYhPfUG0IW4nZY42xYm0JqOKUxr5ndcVXcoKSHoi7gRgWR2S2QDEeTenKQSHKcLzRXQc_6Kr8H_h7FTMa59CKmOF9ffg0z6To2AlIfSUVT_fJD90K9WqF4LpayiYNZbWEnbLRE4BfS4A"
 
 		exports.forceToken = function() {
 			console.log("forceToken");
