@@ -11,6 +11,8 @@ const apikey = "pdBY8kzaJtEjFrcw"
 
 const Songkick = require('songkick-api-node');
 const fs = require('fs')
+var FuzzyMatching = require('fuzzy-matching');
+
 const songkickApi = new Songkick(apikey);
 
 
@@ -116,7 +118,12 @@ var get_all_metros_events = function(){
 	//todo:
 	var event_count = 0;
 
-	//todo: figure out how to handle paging here.
+
+	var dateFilter = {};
+	//dateFilter.start = new Date();
+	dateFilter.start = '2018-06-01'
+	dateFilter.end = '2018-09-31';
+
 
 	var get_events = function(metro,page){
 		return new Promise(function(done, fail) {
@@ -135,55 +142,82 @@ var get_all_metros_events = function(){
 				songkickApi.getLocationUpcomingEvents(metro.id,params)
 					.then(function(events){
 
-						console.log(events.length);
+						// console.log(events.length);
 
+						var filterInRange = function(event){
 
-						var past = [];
-						var future = [];
+							var res = true;
+							var eDate = event.start.date;
+							// console.log( dateFilter.start + " > "  + eDate +  " < "+ dateFilter.end);
+							// console.log( eDate < dateFilter.start)
+							// console.log( eDate > dateFilter.end);
 
-						for(var x = 0; x < events.length; x++){
-							if(events[x].start.date){
-								var date = new Date(events[x].start.date)
-								var today = new Date();
+							//if start invalid, set false and ignore end value
+							//if end invalid, set false and ignore start value unless start is false, then take start
 
-								//var m = date.getMonth() + 1
-								//var d = date.getDate()
-								//var y  = date.getFullYear()
-								//console.log(m + " " + d + " " + y );
+							if(dateFilter.start && dateFilter.end){
 
-								if(date > today){  future.push(events[x])  }
-								else{ past.push(events[x])  }
+								if(eDate < dateFilter.start){
+									res = false;
+								}
 
+								if(eDate > dateFilter.end || !res){
+									res = false;
+								}
 							}
-						}//events length
+							else if(dateFilter.start && !dateFilter.end) {
+								if(eDate < dateFilter.start){
+									res = false;
+								}
+							}else if(!dateFilter.start && dateFilter.end) {
+								if(eDate > dateFilter.end){
+									res = false;
+								}
+							}
+
+							//console.log(":: " + res);
+							return res;
+						};
+						
+
+						var inRange = [];
+						var outRange = [];
+
+						for(var x = 0; x < events.length; x++) {
+
+							if (filterInRange(events[x])) {inRange.push(events[x])}
+							else {outRange.push(events[x])}
+						}
 
 						var result = {}
 						result.id = metro.id;
 						result.displayName = metro.displayName;
-						result.events = future;
+						result.events = inRange;
 
-						// console.log("+++++++++++++++++++");
-						// console.log("past: " + past.length + "| future: " + future.length);
-						all_results.push(result)
-
-						// future.forEach(function(e){
-						//     all_results.push(e);
-						// });
+						//only push non-zero events.length results
+						if(result.events.length > 0){
+							all_results.push(result)
+						}
 
 
-
+						//all_results is in array of per-page result.events
 						all_results.forEach(function(result){
 							event_count = event_count + result.events.length;
 						});
 
+						console.log("--------------------------------");
+						console.log("new events:",result.events.length);
 						console.log("total events:",event_count);
-						console.log("invariant:",events.length);
+						console.log("paging invariant:",events.length);
 
+						//if page length is < 50
+						//OR if we're starting to get zero-inrange results back, but we have SOME (for dateFilter.start)
 
-						//todo:
-						if(events.length < 50){
-							// if(events.length < 50){
-							console.log("page with len < 50 was reached. stopping.");
+						if(events.length < 50 || (result.events.length === 0 && all_results.length != 0)){
+
+							console.log("invariant tripped. stopping.");
+							console.log(result.events.length === 0);
+							console.log();
 							done(all_results)
 						}
 						else{
@@ -218,11 +252,16 @@ var get_all_metros_events = function(){
 
 		//get list of artists:
 
-		var performances = {};
+		var performance_dates = {};
 		var dates = [];
 
 		results = results[0];
 
+
+		/**
+		 * populate performance_dates array for writing later to songkick_performances
+		 * @function write_schedule
+		 **/
 		var write_schedule = function(){
 			results.forEach(function(result){
 
@@ -234,11 +273,7 @@ var get_all_metros_events = function(){
 
 				result.events.forEach(function(event){
 
-
 					//performance is an array of artists (headliner, support, etc)
-
-					//todo: collapse under same date
-
 					var performance = {};
 
 					var date = new Date(event.start.date)
@@ -267,15 +302,15 @@ var get_all_metros_events = function(){
 						dates.push(newDate);
 
 
-						performances[newDate] = [];
-						performances[newDate].push(performance);
+						performance_dates[newDate] = [];
+						performance_dates[newDate].push(performance);
 					}
 					else{
-						performances[newDate].push(performance);
+						performance_dates[newDate].push(performance);
 
-						//todo: tried to eliminate duplicate performances
-						// if(performances[newDate].indexOf(performance) == -1){
-						// 	performances[newDate].push(performance);
+						//todo: tried to eliminate duplicate performance_dates
+						// if(performance_dates[newDate].indexOf(performance) == -1){
+						// 	performance_dates[newDate].push(performance);
 						// }
 						// else{
 						// 	console.log(performance);
@@ -300,22 +335,33 @@ var get_all_metros_events = function(){
 		fs.writeFile("songkick.json", json, function(err) {
 
 			if(err) {   return console.log(err); }
-			else{ console.log("The file was saved!");}
+			else{ console.log("songkick.json saved!");}
 
 		});
 
 		var output = {};
-		output.area = metro_select.displayName;
-		output.events = event_count;
-		output.performances = performances;
+		output.result = {};
+
+		output.result.area = metro_select.displayName;
+		output.result.events = event_count;
+		output.result.dates = performance_dates;
 
 
 		json = JSON.stringify(output,null,4)
 
-		fs.writeFile("songkick_artists.json", json, function(err) {
+		fs.writeFile("songkick_performances.json", json, function(err) {
 
 			if(err) {   return console.log(err); }
-			else{ console.log("The file was saved!");}
+			else{
+				console.log("songkick_performances.json saved!");
+
+
+			//todo: compare with fuzzy
+
+
+
+
+			}
 
 		});
 
@@ -323,5 +369,66 @@ var get_all_metros_events = function(){
 
 }//get_all_metros_events
 
-get_all_metros_events()
 
+//todo:
+//get_all_metros_events()
+
+var count_properties = function(object){
+	var count = 0;
+	for (var prop in object) {
+		if (object.hasOwnProperty(prop)) {count++}
+	}
+	return count;
+};
+
+
+
+var test_fuzzy = function(){
+
+	var my_artists = require("./../authorization_code/public/my_artists.json").artists;
+	var my_performances = require("./songkick_performances.json").result;
+
+	console.log(my_artists.length + " spotify artists.");
+	console.log(count_properties(my_performances.dates) + " unique dates.");
+	console.log(my_performances.events + " events.");
+
+	// var fm = new FuzzyMatching(['tough', 'thought', 'through', 'CafÃ©']);
+	var fm = new FuzzyMatching(my_artists);
+
+	//console.log(fm.get('tough'));
+
+	var matches = [];
+
+	for (var date in my_performances.dates) {
+		if (my_performances.dates.hasOwnProperty(date)) {
+			my_performances.dates[date].forEach(function(perf){
+				perf.artists.forEach(function(art){
+
+					var try_match = fm.get(art);
+
+					if(try_match.distance > .8){
+						var match = {};
+						match.art = art;
+						match.match = try_match.value
+						match.date = date;
+						match.perf = perf;
+						matches.push(match)
+					}
+				})
+			})
+		}
+	}
+
+	console.log("matches.length",matches.length);
+	matches = JSON.stringify(matches,null,4);
+
+	fs.writeFile("matches.json", matches, function(err) {
+
+		if(err) {   return console.log(err); }
+		else{
+			console.log("matches.json saved!");
+		}
+	});
+};
+
+test_fuzzy();

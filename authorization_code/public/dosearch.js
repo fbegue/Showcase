@@ -42,8 +42,16 @@ var getHashParams = function() {
         hashParams[e[1]] = decodeURIComponent(e[2]);
     }
     return hashParams;
-}
+};
 
+var findWithAttr = function(array, attr, value) {
+	for(var i = 0; i < array.length; i += 1) {
+		if(array[i][attr] === value) {
+			return i;
+		}
+	}
+	return -1;
+};
 
 //todo: how does this work? all exports formatted like this are available to the page by default? idk
 
@@ -58,11 +66,23 @@ if (typeof(window) !== 'undefined') {
     	
 		cache.artists.simple = [];
 		cache.artists.full = [];
+
 		cache.playlists.simple  = [];
 		cache.playlists.full = [];
-		
+
+		cache.tracks = [];
+
+		cache.playlist_tracks_map = {};
+		cache.user_playlist_map_full = {}
+		cache.user_playlist_map_simple = {}
+
+		//spotify api doesn't seem to care if I fuck up these url formations:
+		//https://api.spotify.com/v1/users/dacandyman01/playlists?&offset=150&limit=50
+		//gets parsed as
+		//https://api.spotify.com/v1/users/dacandyman01/playlists?offset=150&limit=50
+
         var url_users = "https://api.spotify.com/v1/users";
-		var off = "offset=";
+		var off = "&offset=";
 		var lim = "&limit="
 		var offset_base = 50;
 		
@@ -70,32 +90,35 @@ if (typeof(window) !== 'undefined') {
 		var records = [];
 
 
+
 		/**
 		 * trying to reuse my request maker
 		 * url_object:
 		 * 
-		 *  Even if not in use, explicitly set fields to "" b/c its used in url formation
+		 *  Always explicitly set to "" if not in use
 		 * 	url_object.fields = ""
 		 * 
 		 * @function make_request
 		 **/
-		var make_request =  function(url_object,cache,callback){
+		var make_request =  function(url_object,cache){
 
-			var url = url_object.url + "?" + url_object.fields + off + url_object.offset + lim + url_object.limit;
-			console.log("sending request",url);
+			return new Promise(function(done, fail) {
 
-			$.ajax({
-				dataType: 'json',
-				beforeSend: function(request) {
-					request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
-					//var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
-					//request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
-				},
-				url:url,
-				success: function(payload) {
+				var url = url_object.url + "?" + url_object.fields + off + url_object.offset + lim + url_object.limit;
+				console.log("sending request",url);
+
+				$.ajax({
+					dataType: 'json',
+					beforeSend: function (request) {
+						request.setRequestHeader("Authorization", 'Bearer ' + global_access_token);
+						//var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
+						//request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
+					},
+					url: url,
+				}).done(function(payload){
+
 					console.log("payload page " + page_num,payload);
 					// console.log(JSON.stringify(payload,null,4));
-
 
 					var results = payload["items"]
 					results.forEach(function(result){cache.push(result)})
@@ -107,78 +130,170 @@ if (typeof(window) !== 'undefined') {
 						console.log("new offset: ", url_object.offset);
 						console.log("records length: ", cache.length);
 
-						make_request(url_object,cache,callback)
+						//todo: not really sure what I was thinking here...
+
+						make_request(url_object,cache).then(function(){
+
+							// console.log("finished multipart fetch I guess?",cache.length);
+							done(cache)
+						})
 					}
 					else{
 						console.log("finished, # of records: " + cache.length);
 						console.log(cache);
-						callback(cache)
+						done(cache)
 					}
 
-				},
-				error: function(err) {
+				}).fail(function(err){
+
 					console.log("there was a problem: ");
 					console.log(err);
-				}
-			});
-		};
+				})
 
-
-
+			})//promise
+		}; //make_request
 
 
 		/**
 		 *
 		 * @function playlist_tracks
 		 **/
-		exports.playlist_tracks = function(user,playlist_id){
+		exports.playlist_tracks = function(user,playlist){
 
-			//todo: haven't tested this with large playlists (over limit 50, requiring multiple trips)
+			return new Promise(function(done, fail) {
 
-
-			//todo: disabled hash fetching
-			// var params = getHashParams();
-			// global_access_token = params.access_token
-			console.log(global_access_token);
-
-			//todo: forcing me as user
-			user = "/dacandyman01"
-			//todo: forcing static id for testing
-			playlist_id = "/5qdfEl1ylx7MLZTmJXydSJ"
+				//todo: haven't tested this with large playlists (over limit 50, requiring multiple trips)
 
 
-			//var url_example = "https://api.spotify.com/v1/users/dacandyman01/playlists/5qdfEl1ylx7MLZTmJXydSJ/tracks?fields=items.track.artists&limit=50&offset=0"
-			
-			var url1 = "/playlists";
-			var url2 = "/tracks";
-			
-			var url_object = {};
-			url_object.url =  url_users + user + url1 + playlist_id + url2
-			url_object.offset = 0;
-			url_object.limit = 50;
-			url_object.fields = "";
+				//todo: disabled hash fetching
+				// var params = getHashParams();
+				// global_access_token = params.access_token
+				console.log(global_access_token);
 
-			console.log('fetching playlist_tracks for : ' + playlist_id );
+				//todo: forcing me as user
+				//user = "/dacandyman01"
 
-			//todo: cache'ing a single playlist's tracks isn't particularly useful right now...
-			// and we're only using this to get artists out anyways, so cache is dummy
+				//todo: forcing static id for testing
+				//playlist.id = "/5qdfEl1ylx7MLZTmJXydSJ"
 
-			var results = make_request(url_object,cache.dummy,function(payload){
 
-				//shifted this to extract artists
-				
-				console.log("playlist_tracks finished with length: ",cache.artists.full.length);
+				//var url_example = "https://api.spotify.com/v1/users/dacandyman01/playlists/5qdfEl1ylx7MLZTmJXydSJ/tracks?fields=items.track.artists&limit=50&offset=0"
 
-				cache.artists.simple = cache.artists.full.map(function(item,index) {
-						var rObj = {}; rObj.id = item.id; rObj.name = item.name;
-						return rObj;
-					}
-				)
+				user = "/" + user
+				var url1 = "/playlists";
+				var url2 = "/tracks";
 
-				console.log("artists.simple cache updated:",cache.artists.simple);
-			})
+				var url_object = {};
+				url_object.url =  url_users + user + url1 + "/" + playlist.id + url2
+				url_object.offset = 0;
+				url_object.limit = 50;
+				url_object.fields = "fields=items.track.artists";
+
+				console.log('fetching playlist_tracks for : ' + playlist.id );
+
+				//todo: cache'ing a single playlist's tracks isn't particularly useful right now...
+				// and we're only using this to get artists out anyways, so cache is dummy
+
+				//todo: should I be clearing cache here?
+
+				cache.dummy = [];
+				make_request(url_object,cache.dummy)
+					.then(function(data){
+
+						cache.playlist_tracks_map[playlist.id] = data;
+
+						console.log("playlist_tracks finished with length: ",data.length);
+						// console.log("artists.simple cache updated:",cache.artists.simple);
+
+						done(data);
+					})
+			})//promise
 
 		};//playlist_tracks
+
+
+		/**
+		 * has been modified to extract unique artists
+		 * @function get_all_tracks
+		 **/
+		exports.get_all_tracks = function(){
+
+			console.log("get_all_tracks::");
+
+			var promises = [];
+
+			//todo: forcing user
+			// var user = "dacandyman01";
+			// var user  = "spotify"
+
+			 var user = exports.load_playlists_select();
+			 //var user = "spotify"
+
+			//todo: forcing local list
+			// var private_playlists = [
+			//
+			// 	{
+			// 		"id": "5qdfEl1ylx7MLZTmJXydSJ",
+			// 		"name": "Electronic You"
+			// 	},
+			// 	{
+			// 		"id": "2WFJbnFtt6Kd0ULu7xLD8I",
+			// 		"name": "Dopeness (Mass Appeal)"
+			// 	},
+			// 	{
+			// 		"id": "2CpL2V6u1PQHK7tBhvU1Oo",
+			// 		"name": "campfire radio 1"
+			// 	}];
+			// cache.playlists.simple = private_playlists;
+
+			console.log("getting tracks for " + cache.playlists.simple.length + " playlists..." );
+			cache.playlists.simple.forEach(function(playlist_simple){
+				setTimeout(function(){ promises.push(exports.playlist_tracks(user,playlist_simple))}, 3000);
+
+			})
+
+			Promise.all(promises).then(function(results){
+
+				//get all tracks
+				results.forEach(function(set){
+					set.forEach(function(track){
+						cache.tracks.push(track)
+					})
+				})
+
+				console.log("load_all_tracks finished with: ",cache.tracks.length);
+				console.log(cache.tracks);
+
+				//push all artists
+
+				var artist_test = [];
+
+				//cache.artists.full.push(cache.tracks[0].artists[0]);
+
+				cache.tracks.forEach(function(track){
+					track.track.artists.forEach(function(artist){
+						var art = {}; art.id = artist.id; art.name = artist.name;
+
+						//todo:test
+						artist_test.push(art.name);
+
+						// cache.artists.full.push(art);
+						// cache.artists.simple.push(art.name);
+
+						if(findWithAttr(cache.artists.full,"id",art.id) === -1){
+							cache.artists.full.push(art);
+							cache.artists.simple.push(art.name);
+						}
+					})
+				})
+
+
+				console.log("!!!!!!!!!");
+				console.log("non-unique: ",artist_test);
+				console.log("unique: ",cache.artists.simple);
+
+			})
+		};
 
 		
 		/**
@@ -188,17 +303,50 @@ if (typeof(window) !== 'undefined') {
 		exports.load_playlists = function(){
 			$.getJSON("my_playlists.json", function( data ) {
 				var items = [];
-				user_playlists_simple_cache = data.playlists;
-				console.log("user_playlists_simple_cache loaded:",user_playlists_simple_cache);
+				cache.playlists.simple = data.playlists;
+				console.log("user_playlists_simple_cache loaded:",cache.playlists.simple);
 			});
+		};
+
+		/**
+		 * load a specified subset of playlists
+		 * @function load_playlists
+		 **/
+		var switchIt = 2;
+
+		exports.load_playlists_select = function(){
+
+			console.log("load_playlists_select...");
+			cache.playlists.simple = [];
+			var user = "";
+
+			switch(switchIt) {
+				case 1:
+					user = "spotify"
+					cache.playlists.simple.push(cache.user_playlist_map_simple[user][1]);//2016
+					cache.playlists.simple.push(cache.user_playlist_map_simple[user][3]) //2017
+
+					break;
+				case 2:
+					user = "dacandyman01"
+					cache.playlists.simple = cache.user_playlist_map_simple[user]
+					break;
+				default:
+
+			}
+
+			console.log("user_playlists_simple_cache loaded:",cache.playlists.simple);
+			return user;
+
 		};
 
 
 		/**
-		 * load my playlists into user_playlists_simple_cache
+		 * load my playlists into cache.playlists.simple, cache.playlists.full, and
+		 * mapped by user into cache.playlists.userMap
 		 * @function user_playlists
 		 **/
-		exports.user_playlists = function(user){
+		exports.get_user_playlists = function(user){
 
 			//todo: disabled hash fetching
 			// var params = getHashParams();
@@ -218,24 +366,49 @@ if (typeof(window) !== 'undefined') {
 			url_object.fields = "";
 
 
-			var results = make_request(url_object,cache.playlists.full,function(payload){
+			make_request(url_object,cache.playlists.full)
+				.then(function(data){
+				//data = cache.playlists.full
 
-				console.log("user_playlists finished with records length: ",cache.playlists.full.length);
+					console.log("user_playlists finished with records length: ",cache.playlists.full.length);
+					console.log("data: ",cache.playlists.full);
 
-				// records.forEach(function(play){
-				// 	var rec = {};
-				// 	rec.name = play.name; rec.id = play.id;
-				// 	.push(play)
-				// })
-				//
-				cache.playlists.simple = cache.playlists.full.map(function(item,index) {
-						var rObj = {}; rObj.id = item.id; rObj.name = item.name;
-						return rObj;
+					cache.playlists.simple = data.map(function(item,index) {
+							var rObj = {}; rObj.id = item.id; rObj.name = item.name;
+							return rObj;
+						}
+					);
+
+					//todo: sometimes owner.id is NOT string, but instead the ### representation
+
+					//populating map with keys = many spotify user ids
+					cache.playlists.full.forEach(function(list){
+						if(cache.user_playlist_map_full[list.owner.id] === undefined){
+							cache.user_playlist_map_full[list.owner.id] = [];
+						}
+						cache.user_playlist_map_full[list.owner.id].push(list)
+					});
+
+					//mapping over to simple requires iterating thru props of mapping
+					for (var id in cache.user_playlist_map_full) {
+						if (cache.user_playlist_map_full.hasOwnProperty(id)) {
+							cache.user_playlist_map_simple[id] = cache.user_playlist_map_full[id].map(function(item,index) {
+									var rObj = {}; rObj.id = item.id; rObj.name = item.name;
+									return rObj;
+								}
+							)
+						}
 					}
-				)
 
-				console.log("playlists.simple cache updated:",cache.playlists.simple);
-			})
+					//todo:
+					//console.log("playlists.simple cache updated:",cache.playlists.simple);
+					console.log("get_user_playlists finished.");
+					console.log("cache.playlists.full",cache.playlists.full);
+					console.log("cache.playlists.simple",cache.playlists.simple);
+					console.log("---------------------------------------------------");
+					console.log("cache.user_playlist_map_full",cache.user_playlist_map_full);
+					console.log("cache.user_playlist_map_simple",cache.user_playlist_map_simple);
+				})
 
 		};//user_playlists
 
@@ -547,7 +720,7 @@ if (typeof(window) !== 'undefined') {
 
 
 
-        var token = "BQDJnpGvpFAnrdEH_6NK5MUCAjqRuk8qmgJa7lOYhPfUG0IW4nZY42xYm0JqOKUxr5ndcVXcoKSHoi7gRgWR2S2QDEeTenKQSHKcLzRXQc_6Kr8H_h7FTMa59CKmOF9ffg0z6To2AlIfSUVT_fJD90K9WqF4LpayiYNZbWEnbLRE4BfS4A"
+        var token = "BQA24KGEpaHq-kQjUUdXNwPn5JDQZRh0aMT4ZuMfl11Df50-b-t3GCt1ILfWZkMPGYhNC9y2HRlVjMKiYdtvKkRRUMxa_FqKvMk9svSh2OkArJ37NAqC-CJMORu7bV5hEMOp5APvLiMCWjWVAyv-d2OjyibqsP6UOB4lf_lRmqdIicfGdohwLQeQsLq4"
 
 		exports.forceToken = function() {
 			console.log("forceToken");

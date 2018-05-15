@@ -1,10 +1,7 @@
 //===================================//===================================
-//resources
+//general
 
-//full object model list
-https://beta.developer.spotify.com/documentation/web-api/reference/object-model/
-
-//===================================//===================================
+//===================================
 //notes
 
 //launches spotify login auth w/:
@@ -14,11 +11,23 @@ https://beta.developer.spotify.com/documentation/web-api/reference/object-model/
 //running songkick.js calls get_all_metros_events().
     - exaustively contacts songkick for location [metro area] specific concert data
 
+//===================================
+//todo:
+
+o make songkick.js a dependency of app.js
+o make dosearch.js functions node friendly and a dependency of app.js
+
+
 //===================================//===================================
 //spotify
-//===================================
 
+//===================================
 //todo:
+
+o get_all_tracks with a lot of playlists causes serious api limit issues
+  how to fix this
+
+o user_tracks and top_artists are out of date (need updated to use make_request)
 
 o playlist_tracks gets a playlist's tracks, we should extract artists
 o call playlist_tracks for every playlist and compile artist list
@@ -28,10 +37,6 @@ o fix token issue (disabled hash parse for live token)
   my init token request, although it has the correct 'user-top-read', i get 403'd
   right now getting a token from dev test console and forcing everything to use
   that token works, but not sure what's wrong with init
-
-
-o   /v1/users/dacandyman01/playlists/5qdfEl1ylx7MLZTmJXydSJ/tracks
-    doesn't seem to be able to access non-user created playlists?
 
 
 
@@ -56,6 +61,7 @@ o need to hookup angular mainly
 
 //===================================//===================================
 //songkick
+
 //===================================
 //todo:
 
