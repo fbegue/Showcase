@@ -24,8 +24,9 @@ o make dosearch.js functions node friendly and a dependency of app.js
 //===================================
 //todo:
 
-o get_all_tracks with a lot of playlists causes serious api limit issues
-  how to fix this
+
+
+o test get_all_tracks with new promise structure
 
 o user_tracks and top_artists are out of date (need updated to use make_request)
 

@@ -218,41 +218,28 @@ if (typeof(window) !== 'undefined') {
 		 **/
 		exports.get_all_tracks = function(){
 
-			console.log("get_all_tracks::");
+			var promiseTrack = new Promise(function(resolved) {
+				console.log("get_all_tracks::");
+				resolved();
+			});
 
-			var promises = [];
+			//sets cache.playlists.simple as well as returns user
+			var user = exports.load_playlists_select();
 
-			//todo: forcing user
 			// var user = "dacandyman01";
 			// var user  = "spotify"
 
-			 var user = exports.load_playlists_select();
-			 //var user = "spotify"
-
-			//todo: forcing local list
-			// var private_playlists = [
-			//
-			// 	{
-			// 		"id": "5qdfEl1ylx7MLZTmJXydSJ",
-			// 		"name": "Electronic You"
-			// 	},
-			// 	{
-			// 		"id": "2WFJbnFtt6Kd0ULu7xLD8I",
-			// 		"name": "Dopeness (Mass Appeal)"
-			// 	},
-			// 	{
-			// 		"id": "2CpL2V6u1PQHK7tBhvU1Oo",
-			// 		"name": "campfire radio 1"
-			// 	}];
-			// cache.playlists.simple = private_playlists;
-
 			console.log("getting tracks for " + cache.playlists.simple.length + " playlists..." );
-			cache.playlists.simple.forEach(function(playlist_simple){
-				setTimeout(function(){ promises.push(exports.playlist_tracks(user,playlist_simple))}, 3000);
 
-			})
+			cache.playlists.simple.forEach(function(playlist_simple) {
 
-			Promise.all(promises).then(function(results){
+				promiseTrack = promiseTrack.then(function() {
+					return (exports.playlist_tracks(user,playlist_simple))
+					// .then(func_2(value))
+				});
+			});
+
+			promiseTrack.then(function(results) {
 
 				//get all tracks
 				results.forEach(function(set){
@@ -260,15 +247,12 @@ if (typeof(window) !== 'undefined') {
 						cache.tracks.push(track)
 					})
 				})
-
 				console.log("load_all_tracks finished with: ",cache.tracks.length);
 				console.log(cache.tracks);
 
 				//push all artists
 
 				var artist_test = [];
-
-				//cache.artists.full.push(cache.tracks[0].artists[0]);
 
 				cache.tracks.forEach(function(track){
 					track.track.artists.forEach(function(artist){
@@ -287,12 +271,65 @@ if (typeof(window) !== 'undefined') {
 					})
 				})
 
-
 				console.log("!!!!!!!!!");
 				console.log("non-unique: ",artist_test);
 				console.log("unique: ",cache.artists.simple);
 
+
 			})
+				.catch(function(err){
+					console.log("err: ",err);
+				});
+
+
+
+			// cache.playlists.simple.forEach(function(playlist_simple){
+			//  promises.push(exports.playlist_tracks(user,playlist_simple))
+			//
+			// })
+
+			//var promises = [];
+			// Promise.all(promises).then(function(results){
+			//
+			// 	//get all tracks
+			// 	results.forEach(function(set){
+			// 		set.forEach(function(track){
+			// 			cache.tracks.push(track)
+			// 		})
+			// 	})
+			//
+			// 	console.log("load_all_tracks finished with: ",cache.tracks.length);
+			// 	console.log(cache.tracks);
+			//
+			// 	//push all artists
+			//
+			// 	var artist_test = [];
+			//
+			// 	//cache.artists.full.push(cache.tracks[0].artists[0]);
+			//
+			// 	cache.tracks.forEach(function(track){
+			// 		track.track.artists.forEach(function(artist){
+			// 			var art = {}; art.id = artist.id; art.name = artist.name;
+			//
+			// 			//todo:test
+			// 			artist_test.push(art.name);
+			//
+			// 			// cache.artists.full.push(art);
+			// 			// cache.artists.simple.push(art.name);
+			//
+			// 			if(findWithAttr(cache.artists.full,"id",art.id) === -1){
+			// 				cache.artists.full.push(art);
+			// 				cache.artists.simple.push(art.name);
+			// 			}
+			// 		})
+			// 	})
+			//
+			//
+			// 	console.log("!!!!!!!!!");
+			// 	console.log("non-unique: ",artist_test);
+			// 	console.log("unique: ",cache.artists.simple);
+			//
+			// })
 		};
 
 		
@@ -312,7 +349,7 @@ if (typeof(window) !== 'undefined') {
 		 * load a specified subset of playlists
 		 * @function load_playlists
 		 **/
-		var switchIt = 2;
+		var switchIt = 1;
 
 		exports.load_playlists_select = function(){
 
@@ -331,6 +368,25 @@ if (typeof(window) !== 'undefined') {
 					user = "dacandyman01"
 					cache.playlists.simple = cache.user_playlist_map_simple[user]
 					break;
+				case 3:
+					user = "dacandyman01"
+					var private_playlists = [
+
+						{
+							"id": "5qdfEl1ylx7MLZTmJXydSJ",
+							"name": "Electronic You"
+						},
+						{
+							"id": "2WFJbnFtt6Kd0ULu7xLD8I",
+							"name": "Dopeness (Mass Appeal)"
+						},
+						{
+							"id": "2CpL2V6u1PQHK7tBhvU1Oo",
+							"name": "campfire radio 1"
+						}];
+					cache.playlists.simple = private_playlists;
+					break;
+
 				default:
 
 			}

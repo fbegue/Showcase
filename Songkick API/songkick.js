@@ -382,7 +382,6 @@ var count_properties = function(object){
 };
 
 
-
 var test_fuzzy = function(){
 
 	var my_artists = require("./../authorization_code/public/my_artists.json").artists;
@@ -431,4 +430,69 @@ var test_fuzzy = function(){
 	});
 };
 
-test_fuzzy();
+//test_fuzzy();
+
+var test_promise = function(){
+
+	var func_1 = function(func1_in){
+	    return new Promise(function(done, fail) {
+
+			console.log("func1_in",func1_in);
+
+			setTimeout(function(){
+
+				func1_in.ind1++;
+
+				console.log("func1_in result",func1_in);
+				done(func1_in)
+
+				}, 1000);
+
+	    })
+	};
+
+	var func_2 = function(func2_in){
+		return new Promise(function(done, fail) {
+
+			console.log("func2_in",func2_in);
+
+			setTimeout(function(){
+
+				func2_in.ind1++;
+
+				console.log("func2_in result",func2_in);
+				done(func2_in)
+
+			}, 3000);
+
+		})
+	};
+
+	var requests = [
+		{"id":1,"ind1":10,"ind2":100},
+		{"id":2,"ind1":20,"ind2":200},
+		{"id":3,"ind1":30,"ind2":300},
+	];
+
+	var promiseTrack = new Promise(function(resolved) {
+		console.log("Start...");
+		resolved();
+	});
+
+	requests.forEach(function(value, i) {
+
+		promiseTrack = promiseTrack.then(function() {
+			return (func_1(value))
+				 // .then(func_2(value))
+		});
+	});
+	promiseTrack.then(function(finish) {
+		console.log("...finish",finish);
+
+	})
+		.catch(function(err){
+			console.log("err: ",err);
+		});
+}
+
+test_promise()
