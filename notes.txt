@@ -15,7 +15,9 @@
 //todo:
 
 o make songkick.js a dependency of app.js
+
 o make dosearch.js functions node friendly and a dependency of app.js
+o dosearch has no output ability right now b/c its on front end; needs to mostly be backend
 
 
 //===================================//===================================

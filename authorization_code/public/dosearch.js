@@ -400,6 +400,7 @@ if (typeof(window) !== 'undefined') {
 		/**
 		 * load my playlists into cache.playlists.simple, cache.playlists.full, and
 		 * mapped by user into cache.playlists.userMap
+		 * @scope playlist-read-private, playlist-read-collaborative
 		 * @function user_playlists
 		 **/
 		exports.get_user_playlists = function(user){
@@ -410,7 +411,8 @@ if (typeof(window) !== 'undefined') {
 			console.log(global_access_token);
 
 			//todo: forcing me as user
-			user = "/dacandyman01"
+			//user = "/dacandyman01"
+			user = "/123073652"
 			var url1 = "/playlists";
 
 			//var url_example = "https://api.spotify.com/v1/users/dacandyman01/playlists?offset=0&limit=50"
@@ -776,8 +778,7 @@ if (typeof(window) !== 'undefined') {
 
 
 
-        var token = "BQA24KGEpaHq-kQjUUdXNwPn5JDQZRh0aMT4ZuMfl11Df50-b-t3GCt1ILfWZkMPGYhNC9y2HRlVjMKiYdtvKkRRUMxa_FqKvMk9svSh2OkArJ37NAqC-CJMORu7bV5hEMOp5APvLiMCWjWVAyv-d2OjyibqsP6UOB4lf_lRmqdIicfGdohwLQeQsLq4"
-
+        var token = "BQDE8KE562MZ066keQNee28SXabvwA6M6-qtUrOtPf5jnjJOvQASAhbaT4ddY8fI-cStrpOQ0TRPCUTrXFwvFSEFtQSkez5w23YAa07jOyFGSshYVMH2pit8kKMZ5L5zxgS1q8SadJIwfOjvJ_7z8SWAMVWHJcf8idXnlp9F0S8p5Y7GJdI4RWQbPHP5";
 		exports.forceToken = function() {
 			console.log("forceToken");
 			global_access_token = token;

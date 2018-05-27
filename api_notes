@@ -1,8 +1,12 @@
 //===================================//===================================
 //spotify
-
+https://open.spotify.com/user/?si=iIAWZqkiTAqCkyY_z3UoIg
 //===================================
 //resources
+
+//full dev console and token generation
+https://beta.developer.spotify.com/console/
+
 
 //full object model list
 https://beta.developer.spotify.com/documentation/web-api/reference/object-model/
@@ -13,11 +17,14 @@ https://beta.developer.spotify.com/documentation/web-api/reference/object-model/
 //endpoints notes
 
 /users/{user_id}/playlists
+@scope: playlist-read-private, playlist-read-collaborative
 
 - returns both user_id created AND followed playlists (w/ owner id != current user)
   //todo: for Spotify created playlists, how to tell WHO target user was (since user_id = 'Spotify')
 
 
+/users/{user_id}/playlists/{playlist_id}/tracks
+@scope: none
 
 
 
