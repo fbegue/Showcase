@@ -19,8 +19,8 @@
 
 var module = angular.module('playlistGen', [])
 var controller = module.controller("myCtrl", function($scope) {
-    console.log("myCtrl");
-    $scope.test = "test"
+	console.log("myCtrl");
+	$scope.test = "test"
 
 
 })
@@ -34,14 +34,14 @@ var global_access_token = {};
  */
 
 var getHashParams = function() {
-    console.log("getHashParams");
-    var hashParams = {};
-    var e, r = /([^&;=]+)=?([^&;]*)/g,
-        q = window.location.hash.substring(1);
-    while ( e = r.exec(q)) {
-        hashParams[e[1]] = decodeURIComponent(e[2]);
-    }
-    return hashParams;
+	console.log("getHashParams");
+	var hashParams = {};
+	var e, r = /([^&;=]+)=?([^&;]*)/g,
+		q = window.location.hash.substring(1);
+	while ( e = r.exec(q)) {
+		hashParams[e[1]] = decodeURIComponent(e[2]);
+	}
+	return hashParams;
 };
 
 var findWithAttr = function(array, attr, value) {
@@ -57,13 +57,13 @@ var findWithAttr = function(array, attr, value) {
 
 if (typeof(window) !== 'undefined') {
 
-    (function(exports) {
+	(function(exports) {
 
-    	var cache = {};
-    	cache.dummy = [];
-    	cache.artists = {};
-    	cache.playlists = {};
-    	
+		var cache = {};
+		cache.dummy = [];
+		cache.artists = {};
+		cache.playlists = {};
+
 		cache.artists.simple = [];
 		cache.artists.full = [];
 
@@ -81,11 +81,11 @@ if (typeof(window) !== 'undefined') {
 		//gets parsed as
 		//https://api.spotify.com/v1/users/dacandyman01/playlists?offset=150&limit=50
 
-        var url_users = "https://api.spotify.com/v1/users";
+		var url_users = "https://api.spotify.com/v1/users";
 		var off = "&offset=";
 		var lim = "&limit="
 		var offset_base = 50;
-		
+
 		var page_num = 0;
 		var records = [];
 
@@ -94,10 +94,10 @@ if (typeof(window) !== 'undefined') {
 		/**
 		 * trying to reuse my request maker
 		 * url_object:
-		 * 
+		 *
 		 *  Always explicitly set to "" if not in use
 		 * 	url_object.fields = ""
-		 * 
+		 *
 		 * @function make_request
 		 **/
 		var make_request =  function(url_object,cache){
@@ -168,7 +168,7 @@ if (typeof(window) !== 'undefined') {
 				//todo: disabled hash fetching
 				// var params = getHashParams();
 				// global_access_token = params.access_token
-				console.log(global_access_token);
+				//console.log(global_access_token);
 
 				//todo: forcing me as user
 				//user = "/dacandyman01"
@@ -241,98 +241,47 @@ if (typeof(window) !== 'undefined') {
 
 			promiseTrack.then(function(results) {
 
-				//get all tracks
-				results.forEach(function(set){
-					set.forEach(function(track){
-						cache.tracks.push(track)
-					})
-				})
-				console.log("load_all_tracks finished with: ",cache.tracks.length);
-				console.log(cache.tracks);
+				//results will be the last result of the exports.playlist_tracks() promise chain
+				//i.e. its not super useful. instead we've been maintaining a map of every playlist's track
+				//which is updated every time a playlist request is exhausted
 
-				//push all artists
+				console.log("get_all_tracks promise chain finished:",cache.playlist_tracks_map);
 
-				var artist_test = [];
+				//extract all tracks from playlist
+
+				for (var playlistID in cache.playlist_tracks_map) {
+					if (cache.playlist_tracks_map.hasOwnProperty(playlistID)) {
+						cache.playlist_tracks_map[playlistID].forEach(function(track){
+							cache.tracks.push(track)
+						});
+					}
+				}
+
+				console.log("cache.tracks:",cache.tracks);
+
+				//push all unique artists
+
 
 				cache.tracks.forEach(function(track){
 					track.track.artists.forEach(function(artist){
 						var art = {}; art.id = artist.id; art.name = artist.name;
-
-						//todo:test
-						artist_test.push(art.name);
-
-						// cache.artists.full.push(art);
-						// cache.artists.simple.push(art.name);
 
 						if(findWithAttr(cache.artists.full,"id",art.id) === -1){
 							cache.artists.full.push(art);
 							cache.artists.simple.push(art.name);
 						}
 					})
-				})
+				});
 
-				console.log("!!!!!!!!!");
-				console.log("non-unique: ",artist_test);
-				console.log("unique: ",cache.artists.simple);
-
+				console.log("unique artists in cache.artists.simple:",cache.artists.simple);
 
 			})
 				.catch(function(err){
-					console.log("err: ",err);
+					console.log("promiseTrack err: ",err);
 				});
-
-
-
-			// cache.playlists.simple.forEach(function(playlist_simple){
-			//  promises.push(exports.playlist_tracks(user,playlist_simple))
-			//
-			// })
-
-			//var promises = [];
-			// Promise.all(promises).then(function(results){
-			//
-			// 	//get all tracks
-			// 	results.forEach(function(set){
-			// 		set.forEach(function(track){
-			// 			cache.tracks.push(track)
-			// 		})
-			// 	})
-			//
-			// 	console.log("load_all_tracks finished with: ",cache.tracks.length);
-			// 	console.log(cache.tracks);
-			//
-			// 	//push all artists
-			//
-			// 	var artist_test = [];
-			//
-			// 	//cache.artists.full.push(cache.tracks[0].artists[0]);
-			//
-			// 	cache.tracks.forEach(function(track){
-			// 		track.track.artists.forEach(function(artist){
-			// 			var art = {}; art.id = artist.id; art.name = artist.name;
-			//
-			// 			//todo:test
-			// 			artist_test.push(art.name);
-			//
-			// 			// cache.artists.full.push(art);
-			// 			// cache.artists.simple.push(art.name);
-			//
-			// 			if(findWithAttr(cache.artists.full,"id",art.id) === -1){
-			// 				cache.artists.full.push(art);
-			// 				cache.artists.simple.push(art.name);
-			// 			}
-			// 		})
-			// 	})
-			//
-			//
-			// 	console.log("!!!!!!!!!");
-			// 	console.log("non-unique: ",artist_test);
-			// 	console.log("unique: ",cache.artists.simple);
-			//
-			// })
 		};
 
-		
+
 		/**
 		 * load a static json version of my playlists into user_playlists_simple_cache
 		 * @function load_playlists
@@ -349,7 +298,7 @@ if (typeof(window) !== 'undefined') {
 		 * load a specified subset of playlists
 		 * @function load_playlists
 		 **/
-		var switchIt = 1;
+		var switchIt = 2;
 
 		exports.load_playlists_select = function(){
 
@@ -360,8 +309,9 @@ if (typeof(window) !== 'undefined') {
 			switch(switchIt) {
 				case 1:
 					user = "spotify"
-					cache.playlists.simple.push(cache.user_playlist_map_simple[user][1]);//2016
-					cache.playlists.simple.push(cache.user_playlist_map_simple[user][3]) //2017
+					cache.playlists.simple.push(cache.user_playlist_map_simple[user][0]);//discover
+					cache.playlists.simple.push(cache.user_playlist_map_simple[user][8]);//2016
+					cache.playlists.simple.push(cache.user_playlist_map_simple[user][9]) //2017
 
 					break;
 				case 2:
@@ -414,6 +364,7 @@ if (typeof(window) !== 'undefined') {
 			var url1 = "/playlists";
 
 			//var url_example = "https://api.spotify.com/v1/users/dacandyman01/playlists?offset=0&limit=50"
+			//var test_console = "https://beta.developer.spotify.com/console/get-playlists/?user_id=wizzler&limit=&offset=";
 
 			var url_object = {};
 			url_object.url =  url_users + user + url1
@@ -424,7 +375,7 @@ if (typeof(window) !== 'undefined') {
 
 			make_request(url_object,cache.playlists.full)
 				.then(function(data){
-				//data = cache.playlists.full
+					//data = cache.playlists.full
 
 					console.log("user_playlists finished with records length: ",cache.playlists.full.length);
 					console.log("data: ",cache.playlists.full);
@@ -468,8 +419,8 @@ if (typeof(window) !== 'undefined') {
 
 		};//user_playlists
 
-		
-		
+
+
 		/**
 		 * Fetch a user's top artists.
 		 * @function top_artists
@@ -477,319 +428,319 @@ if (typeof(window) !== 'undefined') {
 		 * In the future, it is likely that this restriction will be relaxed.
 		 * This data is typically updated once each day for each user.
 		 **/
-        exports.top_artists = function(user){
+		exports.top_artists = function(user){
 
-            //todo: disabled hash fetching
+			//todo: disabled hash fetching
 
-            // var params = getHashParams();
-            // global_access_token = params.access_token
+			// var params = getHashParams();
+			// global_access_token = params.access_token
 			console.log(global_access_token);
-            console.log('fetching artists for user: ' + user );
-            //var url = 'https://api.spotify.com/v1/me/top/artists
-            // https://beta.developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
+			console.log('fetching artists for user: ' + user );
+			//var url = 'https://api.spotify.com/v1/me/top/artists
+			// https://beta.developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
 
-            //max(limit) = 50,
-            //time_range = [long_term (several years?), medium_term (~ 6 months), short_term (~ 4 weeks). Default: medium_term.]
-            // The index of the first entity to return. Default: 0 (i.e., the first track). Use with limit to get the next set of entities.
+			//max(limit) = 50,
+			//time_range = [long_term (several years?), medium_term (~ 6 months), short_term (~ 4 weeks). Default: medium_term.]
+			// The index of the first entity to return. Default: 0 (i.e., the first track). Use with limit to get the next set of entities.
 
-            var records = [];
-            var offset_count = 0;
-            var offset = 0;
+			var records = [];
+			var offset_count = 0;
+			var offset = 0;
 
-            var make_request =  function(user,offset,callback){
+			var make_request =  function(user,offset,callback){
 
-               // var url = "https://api.spotify.com/v1/me/top/artists";
+				// var url = "https://api.spotify.com/v1/me/top/artists";
 
-                //trying to figure this out, think there are max  100 top artists?
-                //"For each time range, the top 50 tracks and artists are available for each user"
-                //but i feel like using offset = 0, then offset = 49 on the second call gets me 100 unique?
+				//trying to figure this out, think there are max  100 top artists?
+				//"For each time range, the top 50 tracks and artists are available for each user"
+				//but i feel like using offset = 0, then offset = 49 on the second call gets me 100 unique?
 
-                //todo: check uniqueness
+				//todo: check uniqueness
 				//https://beta.developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
 
 
-                var url = 'https://api.spotify.com/v1/me/top/artists?time_range=medium_term&limit=50&offset=' + offset
-                $.ajax({
-                    dataType: 'json',
-                    beforeSend: function(request) {
-                        request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
-                        //var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
-                        //request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
-                    },
-                    url:url,
-                    success: function(payload) {
-                        console.log('payload: ');
-                        // console.log(JSON.stringify());
-                        console.log(payload);
+				var url = 'https://api.spotify.com/v1/me/top/artists?time_range=medium_term&limit=50&offset=' + offset
+				$.ajax({
+					dataType: 'json',
+					beforeSend: function(request) {
+						request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
+						//var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
+						//request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
+					},
+					url:url,
+					success: function(payload) {
+						console.log('payload: ');
+						// console.log(JSON.stringify());
+						console.log(payload);
 
-                        callback(payload)
-                    },
-                    error: function(err) {
-                        console.log("there was a problem: ");
-                        console.log(err);
-                    }
-                });
-            }
+						callback(payload)
+					},
+					error: function(err) {
+						console.log("there was a problem: ");
+						console.log(err);
+					}
+				});
+			}
 
-            var check_len = function(payload){
-
-
-                var results = payload["items"]
-
-                results.forEach(function(result){   records.push(result)})
-
-                if(results.length == 50){
-
-                    offset_count++
-                    console.log("offset_count: "  + offset_count);
-
-                    offset = offset_count * 50 - 1 //50 records is max
-
-                    console.log("offset: "  + offset);
-
-                    console.log("... " + records.length);
-                    make_request(user,offset,check_len)
-                }
-                else{
-                    console.log("finished, # of records: " + records.length);
-                    console.log(records);
-                }
-
-            }
-
-            var starting_offset = 0;
-            var results = make_request(user,starting_offset,check_len)
+			var check_len = function(payload){
 
 
+				var results = payload["items"]
 
+				results.forEach(function(result){   records.push(result)})
 
-        };//top_artists
+				if(results.length == 50){
 
-        //apples, grapes, honey, carrots/broc, potatoes
+					offset_count++
+					console.log("offset_count: "  + offset_count);
 
+					offset = offset_count * 50 - 1 //50 records is max
 
-        /**
-         * Fetch a user's saved tracks
-         * @URL  https://beta.developer.spotify.com/console/get-current-user-saved-tracks/
-         * @function user_tracks
-         *
-         **/
-        exports.user_tracks = function(user){
+					console.log("offset: "  + offset);
 
-            var params = getHashParams();
-            global_access_token = params.access_token
+					console.log("... " + records.length);
+					make_request(user,offset,check_len)
+				}
+				else{
+					console.log("finished, # of records: " + records.length);
+					console.log(records);
+				}
 
-            console.log('fetching tracks for user: ' + user);
-            //var url = 'https://api.spotify.com/v1/me/top/artists
-            // https://beta.developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
+			}
 
-            //max(limit) = 50,
-            //time_range = [long_term (several years?), medium_term (~ 6 months), short_term (~ 4 weeks). Default: medium_term.]
-            // The index of the first entity to return. Default: 0 (i.e., the first track). Use with limit to get the next set of entities.
-
-            var records = [];
-            var offset_count = 0;
-            var offset = 0;
-
-            var make_request =  function(user,offset,callback){
-
-                console.log("make_request!!!!!!!");
-
-                console.log("params: " + user + " " + offset);
-
-                var url = 'https://api.spotify.com/v1/me/tracks?offset=' + offset + '&limit=50'
-                $.ajax({
-                    dataType: 'json',
-                    beforeSend: function(request) {
-                        request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
-                        //var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
-                        //request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
-                    },
-                    url:url,
-                    success: function(payload) {
-                        console.log('payload: ');
-                        console.log(payload);
-                        callback(payload)
-
-                    },
-                    error: function(err) {
-                        console.log("there was a problem: ");
-                        console.log(err);
-                    }
-                });
-            }
-
-            var check_len = function(payload){
-
-
-                var results = payload["items"]
-
-                results.forEach(function(result){   records.push(result)})
-
-                if(results.length == 50){
-
-                    offset_count++
-                    console.log("offset_count: "  + offset_count);
-
-                    offset = offset_count * 50 - 1 //50 records is max
-
-                    console.log("offset: "  + offset);
-
-                    console.log("... " + records.length);
-                    make_request(user,offset,check_len)
-                }
-                else{
-                    console.log("finished, # of records: " + records.length);
-                    console.log(records);
-                }
-
-            }
-
-            var starting_offset = 0;
-            var results = make_request(user,starting_offset,check_len)
+			var starting_offset = 0;
+			var results = make_request(user,starting_offset,check_len)
 
 
 
 
-        }//user_tracks
+		};//top_artists
 
-        /**
-         * hmmmmmmmm....
-         * @function doSearch
-         **/
-
-        //todo: not sure what the status is here...
-        exports.doSearch = function(word, callback) {
-
-            console.log("DOSEARCH");
-            console.log(word);
-            console.log(callback);
+		//apples, grapes, honey, carrots/broc, potatoes
 
 
+		/**
+		 * Fetch a user's saved tracks
+		 * @URL  https://beta.developer.spotify.com/console/get-current-user-saved-tracks/
+		 * @function user_tracks
+		 *
+		 **/
+		exports.user_tracks = function(user){
 
-            console.log('search for ' + word);
-            var url = 'https://api.spotify.com/v1/search?type=track&limit=50&q=' + encodeURIComponent('track:"'+word+'"');
-            $.ajax(url, {
-                dataType: 'json',
-                success: function(r) {
-                    console.log('got track', r);
-                    callback({
-                        word: word,
-                        tracks: r.tracks.items
-                            .map(function(item) {
-                                var ret = {
-                                    name: item.name,
-                                    artist: 'Unknown',
-                                    artist_uri: '',
-                                    album: item.album.name,
-                                    album_uri: item.album.uri,
-                                    cover_url: '',
-                                    uri: item.uri
-                                }
-                                if (item.artists.length > 0) {
-                                    ret.artist = item.artists[0].name;
-                                    ret.artist_uri = item.artists[0].uri;
-                                }
-                                if (item.album.images.length > 0) {
-                                    ret.cover_url = item.album.images[item.album.images.length - 1].url;
-                                }
-                                return ret;
-                            })
-                    });
-                },
-                error: function(r) {
-                    callback({
-                        word: word,
-                        tracks: []
-                    });
-                }
-            });
-        }
+			var params = getHashParams();
+			global_access_token = params.access_token
 
-        /**
-         * Do a quick profile fetching test
-         * @function testAPI
-         **/
-        exports.testAPI = function(){
-            console.log("testAPI");
+			console.log('fetching tracks for user: ' + user);
+			//var url = 'https://api.spotify.com/v1/me/top/artists
+			// https://beta.developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
 
-            var params = getHashParams();
-            global_access_token =    params.access_token
+			//max(limit) = 50,
+			//time_range = [long_term (several years?), medium_term (~ 6 months), short_term (~ 4 weeks). Default: medium_term.]
+			// The index of the first entity to return. Default: 0 (i.e., the first track). Use with limit to get the next set of entities.
 
-            $.ajax({
-                dataType: 'json',
-                beforeSend: function(request) {
-                    request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
-                },
-                url:"https://api.spotify.com/v1/me",
-                success: function(body) {
-                    console.log("body: ",body);
+			var records = [];
+			var offset_count = 0;
+			var offset = 0;
+
+			var make_request =  function(user,offset,callback){
+
+				console.log("make_request!!!!!!!");
+
+				console.log("params: " + user + " " + offset);
+
+				var url = 'https://api.spotify.com/v1/me/tracks?offset=' + offset + '&limit=50'
+				$.ajax({
+					dataType: 'json',
+					beforeSend: function(request) {
+						request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
+						//var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
+						//request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
+					},
+					url:url,
+					success: function(payload) {
+						console.log('payload: ');
+						console.log(payload);
+						callback(payload)
+
+					},
+					error: function(err) {
+						console.log("there was a problem: ");
+						console.log(err);
+					}
+				});
+			}
+
+			var check_len = function(payload){
+
+
+				var results = payload["items"]
+
+				results.forEach(function(result){   records.push(result)})
+
+				if(results.length == 50){
+
+					offset_count++
+					console.log("offset_count: "  + offset_count);
+
+					offset = offset_count * 50 - 1 //50 records is max
+
+					console.log("offset: "  + offset);
+
+					console.log("... " + records.length);
+					make_request(user,offset,check_len)
+				}
+				else{
+					console.log("finished, # of records: " + records.length);
+					console.log(records);
+				}
+
+			}
+
+			var starting_offset = 0;
+			var results = make_request(user,starting_offset,check_len)
+
+
+
+
+		}//user_tracks
+
+		/**
+		 * hmmmmmmmm....
+		 * @function doSearch
+		 **/
+
+		//todo: not sure what the status is here...
+		exports.doSearch = function(word, callback) {
+
+			console.log("DOSEARCH");
+			console.log(word);
+			console.log(callback);
+
+
+
+			console.log('search for ' + word);
+			var url = 'https://api.spotify.com/v1/search?type=track&limit=50&q=' + encodeURIComponent('track:"'+word+'"');
+			$.ajax(url, {
+				dataType: 'json',
+				success: function(r) {
+					console.log('got track', r);
+					callback({
+						word: word,
+						tracks: r.tracks.items
+							.map(function(item) {
+								var ret = {
+									name: item.name,
+									artist: 'Unknown',
+									artist_uri: '',
+									album: item.album.name,
+									album_uri: item.album.uri,
+									cover_url: '',
+									uri: item.uri
+								}
+								if (item.artists.length > 0) {
+									ret.artist = item.artists[0].name;
+									ret.artist_uri = item.artists[0].uri;
+								}
+								if (item.album.images.length > 0) {
+									ret.cover_url = item.album.images[item.album.images.length - 1].url;
+								}
+								return ret;
+							})
+					});
+				},
+				error: function(r) {
+					callback({
+						word: word,
+						tracks: []
+					});
+				}
+			});
+		}
+
+		/**
+		 * Do a quick profile fetching test
+		 * @function testAPI
+		 **/
+		exports.testAPI = function(){
+			console.log("testAPI");
+
+			var params = getHashParams();
+			global_access_token =    params.access_token
+
+			$.ajax({
+				dataType: 'json',
+				beforeSend: function(request) {
+					request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
+				},
+				url:"https://api.spotify.com/v1/me",
+				success: function(body) {
+					console.log("body: ",body);
 					console.log("testAPI success!");
-                }
-            });
-        }
+				}
+			});
+		}
 
 
-        /**
-         * Refresh the token using the current access_token and refresh_token in the URL
-         * @function refreshToken
-         **/
-        exports.refreshToken = function() {
-            console.log("getNewToken");
+		/**
+		 * Refresh the token using the current access_token and refresh_token in the URL
+		 * @function refreshToken
+		 **/
+		exports.refreshToken = function() {
+			console.log("getNewToken");
 
-            //var userProfileSource = document.getElementById('user-profile-template').innerHTML,
-            //    userProfileTemplate = Handlebars.compile(userProfileSource),
-            //    userProfilePlaceholder = document.getElementById('user-profile');
-            //
-            //var oauthSource = document.getElementById('oauth-template').innerHTML,
-            //    oauthTemplate = Handlebars.compile(oauthSource),
-            //    oauthPlaceholder = document.getElementById('oauth');
+			//var userProfileSource = document.getElementById('user-profile-template').innerHTML,
+			//    userProfileTemplate = Handlebars.compile(userProfileSource),
+			//    userProfilePlaceholder = document.getElementById('user-profile');
+			//
+			//var oauthSource = document.getElementById('oauth-template').innerHTML,
+			//    oauthTemplate = Handlebars.compile(oauthSource),
+			//    oauthPlaceholder = document.getElementById('oauth');
 
-            var params = getHashParams();
+			var params = getHashParams();
 
-            var access_token = params.access_token,
-                refresh_token = params.refresh_token,
-                error = params.error;
+			var access_token = params.access_token,
+				refresh_token = params.refresh_token,
+				error = params.error;
 
-            var newToken = function(){
-                console.log("newToken");
-                $.ajax({
-                    url: '/refresh_token',
-                    data: {
-                        'refresh_token': refresh_token
-                    }
-                }).done(function(data) {
-                    console.log("newToken return: ",data.access_token);
-                    access_token = data.access_token;
-                    global_access_token = data.access_token;
-                    //oauthPlaceholder.innerHTML = oauthTemplate({
-                    //    access_token: access_token,
-                    //    refresh_token: refresh_token
-                    //});
-                });
-            }
+			var newToken = function(){
+				console.log("newToken");
+				$.ajax({
+					url: '/refresh_token',
+					data: {
+						'refresh_token': refresh_token
+					}
+				}).done(function(data) {
+					console.log("newToken return: ",data.access_token);
+					access_token = data.access_token;
+					global_access_token = data.access_token;
+					//oauthPlaceholder.innerHTML = oauthTemplate({
+					//    access_token: access_token,
+					//    refresh_token: refresh_token
+					//});
+				});
+			}
 
-            newToken();
-
-
-        };
+			newToken();
 
 
+		};
 
-        var token = "BQA24KGEpaHq-kQjUUdXNwPn5JDQZRh0aMT4ZuMfl11Df50-b-t3GCt1ILfWZkMPGYhNC9y2HRlVjMKiYdtvKkRRUMxa_FqKvMk9svSh2OkArJ37NAqC-CJMORu7bV5hEMOp5APvLiMCWjWVAyv-d2OjyibqsP6UOB4lf_lRmqdIicfGdohwLQeQsLq4"
+
+
+		var token = "BQAjGHvapyP2zb9xtgulyOzTyYmpXCbvvKp4qMfFoudC6fFVf29EDorrqMGYFUhorfzBs1tHpXh65GYf62IE0vypubio6X9ZFYDmEDvUkqPL8fTbOCjD_ZxDqme3IkXfVv7DIJNMZi-FeSTtPFYhXixW-kqAFuTeQWrrk8ARS4wY8f7QBffFndRv-JtP"
 
 		exports.forceToken = function() {
 			console.log("forceToken");
 			global_access_token = token;
 		};
 
-        exports.callback = function(idk) {
+		exports.callback = function(idk) {
 
-            console.log("callback executed");
-            console.log(idk);
-        }
+			console.log("callback executed");
+			console.log(idk);
+		}
 
-    })(window);
+	})(window);
 
 } //!== undefined window
 
