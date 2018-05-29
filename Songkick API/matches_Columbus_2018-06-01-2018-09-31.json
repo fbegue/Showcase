@@ -1,0 +1,873 @@
+[
+    {
+        "artists": [
+            "Incubus",
+            "Incubus"
+        ],
+        "matches": [
+            "Incubus",
+            "Incubus"
+        ],
+        "date": "Fri, 6-1-2018",
+        "event": {
+            "venue": "EXPRESS LIVE!",
+            "artists": [
+                "Incubus",
+                "Spirit Animal"
+            ],
+            "id": 32996484
+        },
+        "eventId": 32996484
+    },
+    {
+        "artists": [
+            "Jack White",
+            "Jack White"
+        ],
+        "matches": [
+            "Jack White",
+            "Jack White"
+        ],
+        "date": "Mon, 6-4-2018",
+        "event": {
+            "venue": "EXPRESS LIVE!",
+            "artists": [
+                "Jack White",
+                "Lillie Mae"
+            ],
+            "id": 32496059
+        },
+        "eventId": 32496059
+    },
+    {
+        "artists": [
+            "Primus",
+            "Primus"
+        ],
+        "matches": [
+            "Primus",
+            "Primus"
+        ],
+        "date": "Tues, 6-5-2018",
+        "event": {
+            "venue": "EXPRESS LIVE!",
+            "artists": [
+                "Mastodon",
+                "Primus",
+                "Jjuujjuu"
+            ],
+            "id": 32625984
+        },
+        "eventId": 32625984
+    },
+    {
+        "artists": [
+            "Stephen Malkmus & The Jicks",
+            "Stephen Malkmus & The Jicks"
+        ],
+        "matches": [
+            "Stephen Malkmus & The Jicks",
+            "Stephen Malkmus & The Jicks"
+        ],
+        "date": "Tues, 6-5-2018",
+        "event": {
+            "venue": "Ace of Cups",
+            "artists": [
+                "Stephen Malkmus & The Jicks",
+                "Lithics"
+            ],
+            "id": 32771559
+        },
+        "eventId": 32771559
+    },
+    {
+        "artists": [
+            "Paris Monster"
+        ],
+        "matches": [
+            "Paris Monster"
+        ],
+        "date": "Sat, 6-9-2018",
+        "event": {
+            "venue": "The Woodlands Tavern",
+            "artists": [
+                "Paris Monster",
+                "Shaun Martin"
+            ],
+            "id": 33715544
+        },
+        "eventId": 33715544
+    },
+    {
+        "artists": [
+            "Jungle"
+        ],
+        "matches": [
+            "Jungle"
+        ],
+        "date": "Tues, 6-12-2018",
+        "event": {
+            "venue": "Newport Music Hall",
+            "artists": [
+                "Jungle"
+            ],
+            "id": 33221054
+        },
+        "eventId": 33221054
+    },
+    {
+        "artists": [
+            "Stephen Marley"
+        ],
+        "matches": [
+            "Stephen Marley"
+        ],
+        "date": "Tues, 6-12-2018",
+        "event": {
+            "venue": "EXPRESS LIVE!",
+            "artists": [
+                "Matisyahu",
+                "Stephen Marley"
+            ],
+            "id": 33463394
+        },
+        "eventId": 33463394
+    },
+    {
+        "artists": [
+            "Cold War Kids"
+        ],
+        "matches": [
+            "Cold War Kids"
+        ],
+        "date": "Wed, 6-13-2018",
+        "event": {
+            "venue": "Newport Music Hall",
+            "artists": [
+                "Cold War Kids",
+                "The Regrettes",
+                "Radattack"
+            ],
+            "id": 33076089
+        },
+        "eventId": 33076089
+    },
+    {
+        "artists": [
+            "The Hip Abduction"
+        ],
+        "matches": [
+            "The Hip Abduction"
+        ],
+        "date": "Fri, 6-15-2018",
+        "event": {
+            "venue": "Duck Creek Log Jam",
+            "artists": [
+                "Caamp",
+                "The Hip Abduction",
+                "The Giving Tree Band",
+                "The Lowest Pair",
+                "The Last Revel",
+                "Doc Robinson",
+                "Whetherman",
+                "The Jon Stickley Trio",
+                "The Wooks",
+                "The Wonderfool",
+                "Hocking River String Band",
+                "Man About a Horse",
+                "Slippery Creek",
+                "Tripped Up String Band",
+                "The Coal Cave Hollow Boys"
+            ],
+            "id": 33181124
+        },
+        "eventId": 33181124
+    },
+    {
+        "artists": [
+            "Bone Thugs-n-Harmony"
+        ],
+        "matches": [
+            "Bone Thugs-N-Harmony"
+        ],
+        "date": "Fri, 6-15-2018",
+        "event": {
+            "venue": "Newport Music Hall",
+            "artists": [
+                "Bone Thugs-n-Harmony"
+            ],
+            "id": 33206819
+        },
+        "eventId": 33206819
+    },
+    {
+        "artists": [
+            "Ekoostik Hookah"
+        ],
+        "matches": [
+            "Ekoostik Hookah"
+        ],
+        "date": "Fri, 6-15-2018",
+        "event": {
+            "venue": "Unknown venue",
+            "artists": [
+                "Ekoostik Hookah"
+            ],
+            "id": 33530419
+        },
+        "eventId": 33530419
+    },
+    {
+        "artists": [
+            "Bass Physics",
+            "Eliot Lipp"
+        ],
+        "matches": [
+            "Bass Physics",
+            "Eliot Lipp"
+        ],
+        "date": "Fri, 6-15-2018",
+        "event": {
+            "venue": "TRISM",
+            "artists": [
+                "Bass Physics",
+                "Eliot Lipp"
+            ],
+            "id": 33840904
+        },
+        "eventId": 33840904
+    },
+    {
+        "artists": [
+            "Black Moth Super Rainbow"
+        ],
+        "matches": [
+            "Black Moth Super Rainbow"
+        ],
+        "date": "Sun, 6-17-2018",
+        "event": {
+            "venue": "Skully's Music Diner",
+            "artists": [
+                "Black Moth Super Rainbow"
+            ],
+            "id": 32919864
+        },
+        "eventId": 32919864
+    },
+    {
+        "artists": [
+            "Magic Bronson"
+        ],
+        "matches": [
+            "Magic Bronson"
+        ],
+        "date": "Sun, 6-17-2018",
+        "event": {
+            "venue": "The Basement",
+            "artists": [
+                "Transviolet",
+                "Magic Bronson"
+            ],
+            "id": 33484574
+        },
+        "eventId": 33484574
+    },
+    {
+        "artists": [
+            "The Glitch Mob"
+        ],
+        "matches": [
+            "The Glitch Mob"
+        ],
+        "date": "Wed, 6-20-2018",
+        "event": {
+            "venue": "EXPRESS LIVE!",
+            "artists": [
+                "The Glitch Mob",
+                "Elohim"
+            ],
+            "id": 32910619
+        },
+        "eventId": 32910619
+    },
+    {
+        "artists": [
+            "Chromeo"
+        ],
+        "matches": [
+            "Chromeo"
+        ],
+        "date": "Thurs, 6-21-2018",
+        "event": {
+            "venue": "Newport Music Hall",
+            "artists": [
+                "Chromeo",
+                "Pomo"
+            ],
+            "id": 32647849
+        },
+        "eventId": 32647849
+    },
+    {
+        "artists": [
+            "Too Many Zooz"
+        ],
+        "matches": [
+            "Too Many Zooz"
+        ],
+        "date": "Fri, 6-22-2018",
+        "event": {
+            "venue": "The Athenaeum Theatre",
+            "artists": [
+                "Too Many Zooz",
+                "Joe Hertler & the Rainbow Seekers"
+            ],
+            "id": 33256429
+        },
+        "eventId": 33256429
+    },
+    {
+        "artists": [
+            "Magic City Hippies"
+        ],
+        "matches": [
+            "Magic City Hippies"
+        ],
+        "date": "Fri, 6-22-2018",
+        "event": {
+            "venue": "A and R Music Bar",
+            "artists": [
+                "Magic City Hippies"
+            ],
+            "id": 34031394
+        },
+        "eventId": 34031394
+    },
+    {
+        "artists": [
+            "Maps & Atlases"
+        ],
+        "matches": [
+            "Maps & Atlases"
+        ],
+        "date": "Tues, 6-26-2018",
+        "event": {
+            "venue": "Rumba Café",
+            "artists": [
+                "Maps & Atlases",
+                "Prism Tats"
+            ],
+            "id": 33456639
+        },
+        "eventId": 33456639
+    },
+    {
+        "artists": [
+            "Cut Copy"
+        ],
+        "matches": [
+            "Cut Copy"
+        ],
+        "date": "Wed, 6-27-2018",
+        "event": {
+            "venue": "Newport Music Hall",
+            "artists": [
+                "Sinkane",
+                "Cut Copy"
+            ],
+            "id": 33288964
+        },
+        "eventId": 33288964
+    },
+    {
+        "artists": [
+            "James Taylor"
+        ],
+        "matches": [
+            "James Taylor"
+        ],
+        "date": "Sat, 6-30-2018",
+        "event": {
+            "venue": "Value City Arena, Schottenstein Center",
+            "artists": [
+                "James Taylor",
+                "Bonnie Raitt"
+            ],
+            "id": 32413019
+        },
+        "eventId": 32413019
+    },
+    {
+        "artists": [
+            "Tv Girl"
+        ],
+        "matches": [
+            "TV Girl"
+        ],
+        "date": "Sat, 7-7-2018",
+        "event": {
+            "venue": "The Spacebar",
+            "artists": [
+                "Tv Girl",
+                "Infinity Crush",
+                "Rafting"
+            ],
+            "id": 33835674
+        },
+        "eventId": 33835674
+    },
+    {
+        "artists": [
+            "Barenaked Ladies"
+        ],
+        "matches": [
+            "Barenaked Ladies"
+        ],
+        "date": "Wed, 7-11-2018",
+        "event": {
+            "venue": "EXPRESS LIVE!",
+            "artists": [
+                "Better Than Ezra",
+                "KT Tunstall",
+                "Barenaked Ladies"
+            ],
+            "id": 31896809
+        },
+        "eventId": 31896809
+    },
+    {
+        "artists": [
+            "Houndmouth",
+            "Liz Cooper & The Stampede"
+        ],
+        "matches": [
+            "Houndmouth",
+            "Liz Cooper & the Stampede"
+        ],
+        "date": "Wed, 7-11-2018",
+        "event": {
+            "venue": "Newport Music Hall",
+            "artists": [
+                "Houndmouth",
+                "Liz Cooper & The Stampede"
+            ],
+            "id": 33564129
+        },
+        "eventId": 33564129
+    },
+    {
+        "artists": [
+            "Strawberry Girls"
+        ],
+        "matches": [
+            "Strawberry Girls"
+        ],
+        "date": "Wed, 7-11-2018",
+        "event": {
+            "venue": "Big Room Bar",
+            "artists": [
+                "Strawberry Girls",
+                "Andres",
+                "Night Verses"
+            ],
+            "id": 33805209
+        },
+        "eventId": 33805209
+    },
+    {
+        "artists": [
+            "Oh Wonder"
+        ],
+        "matches": [
+            "Oh Wonder"
+        ],
+        "date": "Fri, 7-13-2018",
+        "event": {
+            "venue": "Newport Music Hall",
+            "artists": [
+                "Oh Wonder",
+                "Sasha Sloan"
+            ],
+            "id": 32582224
+        },
+        "eventId": 32582224
+    },
+    {
+        "artists": [
+            "Courtney Barnett"
+        ],
+        "matches": [
+            "Courtney Barnett"
+        ],
+        "date": "Sat, 7-14-2018",
+        "event": {
+            "venue": "Newport Music Hall",
+            "artists": [
+                "Courtney Barnett",
+                "Vagabon"
+            ],
+            "id": 32900779
+        },
+        "eventId": 32900779
+    },
+    {
+        "artists": [
+            "A R I Z O N A"
+        ],
+        "matches": [
+            "A R I Z O N A"
+        ],
+        "date": "Sun, 7-15-2018",
+        "event": {
+            "venue": "Nationwide Arena",
+            "artists": [
+                "Panic! At the Disco",
+                "Hayley Kiyoko",
+                "A R I Z O N A"
+            ],
+            "id": 33291679
+        },
+        "eventId": 33291679
+    },
+    {
+        "artists": [
+            "Radiohead"
+        ],
+        "matches": [
+            "Radiohead"
+        ],
+        "date": "Mon, 7-23-2018",
+        "event": {
+            "venue": "Value City Arena, Schottenstein Center",
+            "artists": [
+                "Radiohead"
+            ],
+            "id": 32920099
+        },
+        "eventId": 32920099
+    },
+    {
+        "artists": [
+            "Ween"
+        ],
+        "matches": [
+            "Ween"
+        ],
+        "date": "Wed, 7-25-2018",
+        "event": {
+            "venue": "EXPRESS LIVE!",
+            "artists": [
+                "Ween"
+            ],
+            "id": 33436744
+        },
+        "eventId": 33436744
+    },
+    {
+        "artists": [
+            "TLC"
+        ],
+        "matches": [
+            "TLC"
+        ],
+        "date": "Fri, 7-27-2018",
+        "event": {
+            "venue": "Celeste Center - Ohio State Fairgrounds",
+            "artists": [
+                "TLC",
+                "En Vogue"
+            ],
+            "id": 33942514
+        },
+        "eventId": 33942514
+    },
+    {
+        "artists": [
+            "Blueprint",
+            "Prof"
+        ],
+        "matches": [
+            "Blueprint",
+            "Prof"
+        ],
+        "date": "Sat, 7-28-2018",
+        "event": {
+            "venue": "Unknown venue",
+            "artists": [
+                "Blueprint",
+                "Prof"
+            ],
+            "id": 33878904
+        },
+        "eventId": 33878904
+    },
+    {
+        "artists": [
+            "Elzhi",
+            "Skyzoo"
+        ],
+        "matches": [
+            "Elzhi",
+            "Skyzoo"
+        ],
+        "date": "Sat, 7-28-2018",
+        "event": {
+            "venue": "Unknown venue",
+            "artists": [
+                "Elzhi",
+                "Skyzoo"
+            ],
+            "id": 33932674
+        },
+        "eventId": 33932674
+    },
+    {
+        "artists": [
+            "Elzhi",
+            "Skyzoo"
+        ],
+        "matches": [
+            "Elzhi",
+            "Skyzoo"
+        ],
+        "date": "Sat, 7-28-2018",
+        "event": {
+            "venue": "Unknown venue",
+            "artists": [
+                "Elzhi",
+                "Skyzoo",
+                "Alfred Banks"
+            ],
+            "id": 33984304
+        },
+        "eventId": 33984304
+    },
+    {
+        "artists": [
+            "Highly Suspect"
+        ],
+        "matches": [
+            "Highly Suspect"
+        ],
+        "date": "Fri, 8-3-2018",
+        "event": {
+            "venue": "EXPRESS LIVE!",
+            "artists": [
+                "Highly Suspect"
+            ],
+            "id": 33576944
+        },
+        "eventId": 33576944
+    },
+    {
+        "artists": [
+            "Styx",
+            "Cheap Trick"
+        ],
+        "matches": [
+            "Styx",
+            "Cheap Trick"
+        ],
+        "date": "Sat, 8-4-2018",
+        "event": {
+            "venue": "Celeste Center - Ohio State Fairgrounds",
+            "artists": [
+                "Styx",
+                "Cheap Trick"
+            ],
+            "id": 33272829
+        },
+        "eventId": 33272829
+    },
+    {
+        "artists": [
+            "Lindsey Stirling"
+        ],
+        "matches": [
+            "Lindsey Stirling"
+        ],
+        "date": "Wed, 8-8-2018",
+        "event": {
+            "venue": "EXPRESS LIVE!",
+            "artists": [
+                "Lindsey Stirling"
+            ],
+            "id": 33099864
+        },
+        "eventId": 33099864
+    },
+    {
+        "artists": [
+            "Smashing Pumpkins"
+        ],
+        "matches": [
+            "The Smashing Pumpkins"
+        ],
+        "date": "Sat, 8-11-2018",
+        "event": {
+            "venue": "Value City Arena, Schottenstein Center",
+            "artists": [
+                "Smashing Pumpkins",
+                "Metric"
+            ],
+            "id": 32872674
+        },
+        "eventId": 32872674
+    },
+    {
+        "artists": [
+            "Flosstradamus",
+            "ODESZA",
+            "Jai Wolf",
+            "Quinn XCII",
+            "Chris Lake"
+        ],
+        "matches": [
+            "Flosstradamus",
+            "ODESZA",
+            "Jai Wolf",
+            "Quinn XCII",
+            "Chris Lake"
+        ],
+        "date": "Fri, 8-24-2018",
+        "event": {
+            "venue": "Mapfre Stadium / Crew Stadium",
+            "artists": [
+                "Breakaway",
+                "Livvia",
+                "KAYZO",
+                "Gryffin",
+                "Flosstradamus",
+                "Smokepurpp",
+                "Halsey",
+                "ODESZA",
+                "Grey",
+                "Jai Wolf",
+                "Drezo",
+                "Blaise Moore",
+                "Flatbush Zombies",
+                "Rich the Kid",
+                "Jack Harlow",
+                "GASHI",
+                "Ekali",
+                "GG Magree",
+                "Elohim",
+                "Dombresky",
+                "Quinn XCII",
+                "Charlotte Lawrence",
+                "Chris Lake",
+                "Migos",
+                "Jaden Smith"
+            ],
+            "id": 33401214
+        },
+        "eventId": 33401214
+    },
+    {
+        "artists": [
+            "ODESZA"
+        ],
+        "matches": [
+            "ODESZA"
+        ],
+        "date": "Fri, 8-24-2018",
+        "event": {
+            "venue": "Unknown venue",
+            "artists": [
+                "ODESZA",
+                "Grey (US)"
+            ],
+            "id": 33881539
+        },
+        "eventId": 33881539
+    },
+    {
+        "artists": [
+            "Car Seat Headrest"
+        ],
+        "matches": [
+            "Car Seat Headrest"
+        ],
+        "date": "Sun, 9-9-2018",
+        "event": {
+            "venue": "Newport Music Hall",
+            "artists": [
+                "Car Seat Headrest",
+                "Naked Giants"
+            ],
+            "id": 33697634
+        },
+        "eventId": 33697634
+    },
+    {
+        "artists": [
+            "White Denim"
+        ],
+        "matches": [
+            "White Denim"
+        ],
+        "date": "Thurs, 9-20-2018",
+        "event": {
+            "venue": "Skully's Music Diner",
+            "artists": [
+                "White Denim"
+            ],
+            "id": 33882044
+        },
+        "eventId": 33882044
+    },
+    {
+        "artists": [
+            "J. Cole"
+        ],
+        "matches": [
+            "J. Cole"
+        ],
+        "date": "Sun, 9-23-2018",
+        "event": {
+            "venue": "Value City Arena, Schottenstein Center",
+            "artists": [
+                "Young Thug",
+                "J. Cole"
+            ],
+            "id": 33863679
+        },
+        "eventId": 33863679
+    },
+    {
+        "artists": [
+            "Shakey Graves"
+        ],
+        "matches": [
+            "Shakey Graves"
+        ],
+        "date": "Tues, 9-25-2018",
+        "event": {
+            "venue": "Newport Music Hall",
+            "artists": [
+                "The Wild Reeds",
+                "Shakey Graves"
+            ],
+            "id": 33846044
+        },
+        "eventId": 33846044
+    },
+    {
+        "artists": [
+            "John Prine"
+        ],
+        "matches": [
+            "John Prine"
+        ],
+        "date": "Fri, 9-28-2018",
+        "event": {
+            "venue": "Ohio Theatre",
+            "artists": [
+                "John Prine",
+                "Lilly Hiatt"
+            ],
+            "id": 32397439
+        },
+        "eventId": 32397439
+    }
+]

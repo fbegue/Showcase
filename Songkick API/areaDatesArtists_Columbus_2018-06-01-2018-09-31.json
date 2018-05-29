@@ -1,0 +1,3981 @@
+{
+    "result": {
+        "area": "Columbus",
+        "events": 2967,
+        "dates": {
+            "Fri, 6-1-2018": [
+                {
+                    "venue": "Ohio Theatre",
+                    "artists": [
+                        "Diana Krall"
+                    ],
+                    "id": 32579279
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Incubus",
+                        "Spirit Animal"
+                    ],
+                    "id": 32996484
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Colouring"
+                    ],
+                    "id": 33272414
+                },
+                {
+                    "venue": "Mudflats",
+                    "artists": [
+                        "India Ramey"
+                    ],
+                    "id": 33365714
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "An Horse",
+                        "American Spirits"
+                    ],
+                    "id": 33435829
+                },
+                {
+                    "venue": "Brothers Drake Meadery",
+                    "artists": [
+                        "Nicola Són"
+                    ],
+                    "id": 33501194
+                },
+                {
+                    "venue": "Donato's Basement",
+                    "artists": [
+                        "Tranquility",
+                        "Rich People",
+                        "Saltlick (OH)"
+                    ],
+                    "id": 33555589
+                },
+                {
+                    "venue": "Ruby Tuesday",
+                    "artists": [
+                        "Misery Loves Company",
+                        "Morning in May"
+                    ],
+                    "id": 33746179
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "The Litz"
+                    ],
+                    "id": 33812399
+                },
+                {
+                    "venue": "Fuse Factory",
+                    "artists": [
+                        "Ka Baird"
+                    ],
+                    "id": 33821159
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Tessa Violet"
+                    ],
+                    "id": 34026224
+                },
+                {
+                    "venue": "The Vanderelli Room",
+                    "artists": [
+                        "Young Luns",
+                        "TrigNo",
+                        "Zac Fresh"
+                    ],
+                    "id": 34062359
+                },
+                {
+                    "venue": "The Gateway",
+                    "artists": [
+                        "Joey the Songwriter"
+                    ],
+                    "id": 34073389
+                },
+                {
+                    "venue": "Ohio Theatre",
+                    "artists": [
+                        "Diana Krall"
+                    ],
+                    "id": 32579279
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Incubus",
+                        "Spirit Animal"
+                    ],
+                    "id": 32996484
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Colouring"
+                    ],
+                    "id": 33272414
+                },
+                {
+                    "venue": "Mudflats",
+                    "artists": [
+                        "India Ramey"
+                    ],
+                    "id": 33365714
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "An Horse",
+                        "American Spirits"
+                    ],
+                    "id": 33435829
+                },
+                {
+                    "venue": "Brothers Drake Meadery",
+                    "artists": [
+                        "Nicola Són"
+                    ],
+                    "id": 33501194
+                },
+                {
+                    "venue": "Donato's Basement",
+                    "artists": [
+                        "Tranquility",
+                        "Rich People",
+                        "Saltlick (OH)"
+                    ],
+                    "id": 33555589
+                },
+                {
+                    "venue": "Ruby Tuesday",
+                    "artists": [
+                        "Misery Loves Company",
+                        "Morning in May"
+                    ],
+                    "id": 33746179
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "The Litz"
+                    ],
+                    "id": 33812399
+                },
+                {
+                    "venue": "Fuse Factory",
+                    "artists": [
+                        "Ka Baird"
+                    ],
+                    "id": 33821159
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Tessa Violet"
+                    ],
+                    "id": 34026224
+                },
+                {
+                    "venue": "The Vanderelli Room",
+                    "artists": [
+                        "Young Luns",
+                        "TrigNo",
+                        "Zac Fresh"
+                    ],
+                    "id": 34062359
+                },
+                {
+                    "venue": "The Gateway",
+                    "artists": [
+                        "Joey the Songwriter"
+                    ],
+                    "id": 34073389
+                }
+            ],
+            "Sat, 6-2-2018": [
+                {
+                    "venue": "Park Street Tavern",
+                    "artists": [
+                        "Yours For The Taking"
+                    ],
+                    "id": 32396914
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Homeless Gospel Choir",
+                        "Lucero",
+                        "The Sleeping Souls",
+                        "Frank Turner"
+                    ],
+                    "id": 32647739
+                },
+                {
+                    "venue": "The Bootlegger",
+                    "artists": [
+                        "Brooke Annibale"
+                    ],
+                    "id": 33090089
+                },
+                {
+                    "venue": "Brewery 33",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33380644
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Sarob",
+                        "Booty&theKidd"
+                    ],
+                    "id": 33527454
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Brujas Del Sol"
+                    ],
+                    "id": 33795944
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "BUNDYS",
+                        "Luke Mossburg",
+                        "CASTROS",
+                        "Hunter Lepi",
+                        "The Bundys (Nashville)"
+                    ],
+                    "id": 33812419
+                },
+                {
+                    "venue": "Park Street Tavern",
+                    "artists": [
+                        "Yours For The Taking"
+                    ],
+                    "id": 32396914
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Homeless Gospel Choir",
+                        "Lucero",
+                        "The Sleeping Souls",
+                        "Frank Turner"
+                    ],
+                    "id": 32647739
+                },
+                {
+                    "venue": "The Bootlegger",
+                    "artists": [
+                        "Brooke Annibale"
+                    ],
+                    "id": 33090089
+                },
+                {
+                    "venue": "Brewery 33",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33380644
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Sarob",
+                        "Booty&theKidd"
+                    ],
+                    "id": 33527454
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Brujas Del Sol"
+                    ],
+                    "id": 33795944
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "BUNDYS",
+                        "Luke Mossburg",
+                        "CASTROS",
+                        "Hunter Lepi",
+                        "The Bundys (Nashville)"
+                    ],
+                    "id": 33812419
+                }
+            ],
+            "Sun, 6-3-2018": [
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Saywecanfly",
+                        "Fairview",
+                        "Minshara",
+                        "Woven In Hiatus"
+                    ],
+                    "id": 33305134
+                },
+                {
+                    "venue": "DogTap Columbus",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33589829
+                },
+                {
+                    "venue": "Misfit Manor",
+                    "artists": [
+                        "Anemone"
+                    ],
+                    "id": 33801069
+                },
+                {
+                    "venue": "The Fire House",
+                    "artists": [
+                        "Fat Randy"
+                    ],
+                    "id": 34019719
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Saywecanfly",
+                        "Fairview",
+                        "Minshara",
+                        "Woven In Hiatus"
+                    ],
+                    "id": 33305134
+                },
+                {
+                    "venue": "DogTap Columbus",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33589829
+                },
+                {
+                    "venue": "Misfit Manor",
+                    "artists": [
+                        "Anemone"
+                    ],
+                    "id": 33801069
+                },
+                {
+                    "venue": "The Fire House",
+                    "artists": [
+                        "Fat Randy"
+                    ],
+                    "id": 34019719
+                }
+            ],
+            "Mon, 6-4-2018": [
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Jack White",
+                        "Lillie Mae"
+                    ],
+                    "id": 32496059
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "George Barrie Band"
+                    ],
+                    "id": 33323964
+                },
+                {
+                    "venue": "The Tree Bar",
+                    "artists": [
+                        "Albert Bagman"
+                    ],
+                    "id": 33977044
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Jack White",
+                        "Lillie Mae"
+                    ],
+                    "id": 32496059
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "George Barrie Band"
+                    ],
+                    "id": 33323964
+                },
+                {
+                    "venue": "The Tree Bar",
+                    "artists": [
+                        "Albert Bagman"
+                    ],
+                    "id": 33977044
+                }
+            ],
+            "Tues, 6-5-2018": [
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Mastodon",
+                        "Primus",
+                        "Jjuujjuu"
+                    ],
+                    "id": 32625984
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Stephen Malkmus & The Jicks",
+                        "Lithics"
+                    ],
+                    "id": 32771559
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Mastodon",
+                        "Primus",
+                        "Jjuujjuu"
+                    ],
+                    "id": 32625984
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Stephen Malkmus & The Jicks",
+                        "Lithics"
+                    ],
+                    "id": 32771559
+                }
+            ],
+            "Wed, 6-6-2018": [
+                {
+                    "venue": "Steiner's Speakeasy",
+                    "artists": [
+                        "Brian Ernst"
+                    ],
+                    "id": 32544404
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Citizen",
+                        "Pronoun",
+                        "Oso Oso",
+                        "Angel Du$t (US)"
+                    ],
+                    "id": 32925584
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "American Aquarium",
+                        "Cory Branan"
+                    ],
+                    "id": 33122379
+                },
+                {
+                    "venue": "Ruby Tuesday",
+                    "artists": [
+                        "Inter Arma",
+                        "Earthling",
+                        "Bruce Lamont"
+                    ],
+                    "id": 33269059
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Everything Everything",
+                        "Sego"
+                    ],
+                    "id": 33361889
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Tonic"
+                    ],
+                    "id": 33436569
+                },
+                {
+                    "venue": "Ohio Theatre",
+                    "artists": [
+                        "Lea Michele",
+                        "Darren Criss"
+                    ],
+                    "id": 33509654
+                },
+                {
+                    "venue": "Steiner's Speakeasy",
+                    "artists": [
+                        "Brian Ernst"
+                    ],
+                    "id": 32544404
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Citizen",
+                        "Pronoun",
+                        "Oso Oso",
+                        "Angel Du$t (US)"
+                    ],
+                    "id": 32925584
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "American Aquarium",
+                        "Cory Branan"
+                    ],
+                    "id": 33122379
+                },
+                {
+                    "venue": "Ruby Tuesday",
+                    "artists": [
+                        "Inter Arma",
+                        "Earthling",
+                        "Bruce Lamont"
+                    ],
+                    "id": 33269059
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Everything Everything",
+                        "Sego"
+                    ],
+                    "id": 33361889
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Tonic"
+                    ],
+                    "id": 33436569
+                },
+                {
+                    "venue": "Ohio Theatre",
+                    "artists": [
+                        "Lea Michele",
+                        "Darren Criss"
+                    ],
+                    "id": 33509654
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Gin Blossoms"
+                    ],
+                    "id": 33514004
+                },
+                {
+                    "venue": "Natalie's",
+                    "artists": [
+                        "Huntertones"
+                    ],
+                    "id": 34016119
+                }
+            ],
+            "Thurs, 6-7-2018": [
+                {
+                    "venue": "Rusted Nail",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33139129
+                },
+                {
+                    "venue": "Brothers Drake Meadery",
+                    "artists": [
+                        "The Traveling Ones",
+                        "October Ember",
+                        "Admiral Contempt"
+                    ],
+                    "id": 33394579
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "io & Titan",
+                        "The Emperor Chaz"
+                    ],
+                    "id": 33728069
+                },
+                {
+                    "venue": "Granero Lounge",
+                    "artists": [
+                        "Dr. Fresch"
+                    ],
+                    "id": 33867489
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Billy Strings"
+                    ],
+                    "id": 33978404
+                }
+            ],
+            "Fri, 6-8-2018": [
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Red Wanting Blue",
+                        "Liz Brasher",
+                        "The Receiver"
+                    ],
+                    "id": 32801354
+                },
+                {
+                    "venue": "The Shrunken Head",
+                    "artists": [
+                        "Courtney From Work"
+                    ],
+                    "id": 33294274
+                },
+                {
+                    "venue": "The Spacebar",
+                    "artists": [
+                        "Immortal Bird",
+                        "Glacial Tomb"
+                    ],
+                    "id": 33350194
+                },
+                {
+                    "venue": "Brothers Drake Meadery",
+                    "artists": [
+                        "Del & The Wave",
+                        "Kerchief",
+                        "Discount Nostalgia"
+                    ],
+                    "id": 33489284
+                },
+                {
+                    "venue": "Notes",
+                    "artists": [
+                        "Charles Walker Band"
+                    ],
+                    "id": 33675384
+                },
+                {
+                    "venue": "Columbus Arts Fest",
+                    "artists": [
+                        "Dr E"
+                    ],
+                    "id": 33704504
+                },
+                {
+                    "venue": "A and R Music Bar",
+                    "artists": [
+                        "Jtb"
+                    ],
+                    "id": 33823724
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Toobe Fresco"
+                    ],
+                    "id": 33871199
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Radattack",
+                        "Garbage Greek",
+                        "Heaven's Gateway Drugs",
+                        "Micah Schnabel"
+                    ],
+                    "id": 33905604
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "The Coal Cave Hollow Boys"
+                    ],
+                    "id": 33945474
+                },
+                {
+                    "venue": "Genoa Park Amphitheatre",
+                    "artists": [
+                        "Theo's Loose Hinges"
+                    ],
+                    "id": 33977504
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Billy Strings"
+                    ],
+                    "id": 33978429
+                },
+                {
+                    "venue": "Wild Goose Creative",
+                    "artists": [
+                        "Natalie Claro",
+                        "Circle It (US)"
+                    ],
+                    "id": 34071554
+                },
+                {
+                    "venue": "Club Voodoos",
+                    "artists": [
+                        "The Widdler"
+                    ],
+                    "id": 34075694
+                },
+                {
+                    "venue": "Wild Goose Creative",
+                    "artists": [
+                        "Natalie Claro",
+                        "The Circle (IT)"
+                    ],
+                    "id": 34077264
+                }
+            ],
+            "Sat, 6-9-2018": [
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Hayley Kiyoko"
+                    ],
+                    "id": 32823204
+                },
+                {
+                    "venue": "Bar 145",
+                    "artists": [
+                        "Thomas Nicholas Band"
+                    ],
+                    "id": 33430209
+                },
+                {
+                    "venue": "2011 Columbus Arts Festival",
+                    "artists": [
+                        "Badluxe"
+                    ],
+                    "id": 33597334
+                },
+                {
+                    "venue": "Union Bar & Grill",
+                    "artists": [
+                        "Shilpa Ray"
+                    ],
+                    "id": 33608264
+                },
+                {
+                    "venue": "Downtown Riverfront Arts Festival",
+                    "artists": [
+                        "Tigue"
+                    ],
+                    "id": 33681699
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Paris Monster",
+                        "Shaun Martin"
+                    ],
+                    "id": 33715544
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Joey the Songwriter"
+                    ],
+                    "id": 33720304
+                },
+                {
+                    "venue": "The Spacebar",
+                    "artists": [
+                        "DAYMARE 614",
+                        "Pale Grey Lore"
+                    ],
+                    "id": 33809479
+                }
+            ],
+            "Sun, 6-10-2018": [
+                {
+                    "venue": "The Athenaeum Theatre",
+                    "artists": [
+                        "John Waite"
+                    ],
+                    "id": 33288854
+                },
+                {
+                    "venue": "A and R Music Bar",
+                    "artists": [
+                        "The Record Company",
+                        "Edward David Anderson"
+                    ],
+                    "id": 33436409
+                },
+                {
+                    "venue": "Donato's Basement",
+                    "artists": [
+                        "Blis",
+                        "Puddle Splasher",
+                        "Weathervein",
+                        "The Grievance Club"
+                    ],
+                    "id": 33598989
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Steve Earle and the Dukes",
+                        "The Mastersons"
+                    ],
+                    "id": 33740584
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Groovement"
+                    ],
+                    "id": 33818009
+                },
+                {
+                    "venue": "Greater Columbus Convention Center",
+                    "artists": [
+                        "Broken Transmitter"
+                    ],
+                    "id": 33869909
+                }
+            ],
+            "Mon, 6-11-2018": [
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Summer Jam"
+                    ],
+                    "id": 33520899
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Diamante",
+                        "Bad Wolves",
+                        "From Ashes to New"
+                    ],
+                    "id": 33616979
+                }
+            ],
+            "Tues, 6-12-2018": [
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Jungle"
+                    ],
+                    "id": 33221054
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "The Lagoons",
+                        "Future Generations"
+                    ],
+                    "id": 33042484
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Matisyahu",
+                        "Stephen Marley"
+                    ],
+                    "id": 33463394
+                },
+                {
+                    "venue": "A and R Music Bar",
+                    "artists": [
+                        "Bad Bad Hats",
+                        "Shortly"
+                    ],
+                    "id": 33547299
+                },
+                {
+                    "venue": "Brothers Drake Meadery",
+                    "artists": [
+                        "Hello Emerson",
+                        "Her Crooked Heart",
+                        "Humbird"
+                    ],
+                    "id": 34061579
+                }
+            ],
+            "Wed, 6-13-2018": [
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Cold War Kids",
+                        "The Regrettes",
+                        "Radattack"
+                    ],
+                    "id": 33076089
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Flogging Molly",
+                        "Dropkick Murphys",
+                        "Jake Burns"
+                    ],
+                    "id": 33244379
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Jeff Austin"
+                    ],
+                    "id": 33748259
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Brick + Mortar",
+                        "The Unlikely Candidates"
+                    ],
+                    "id": 33765759
+                },
+                {
+                    "venue": "Natalie's Coal Fired Pizza",
+                    "artists": [
+                        "Whetherman"
+                    ],
+                    "id": 33931154
+                },
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "AnastasiaMax"
+                    ],
+                    "id": 34030459
+                },
+                {
+                    "venue": "Misfit Manor",
+                    "artists": [
+                        "Tomato Dodgers",
+                        "The Roof Dogs"
+                    ],
+                    "id": 34086364
+                }
+            ],
+            "Thurs, 6-14-2018": [
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Andy McKee"
+                    ],
+                    "id": 33256309
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Legendary Shack Shakers"
+                    ],
+                    "id": 33346194
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Jo Passed",
+                        "Dick Stusso",
+                        "Salt Orchard"
+                    ],
+                    "id": 33379949
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Leon of Athens"
+                    ],
+                    "id": 33449864
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Alex Angelo",
+                        "Addison Agen"
+                    ],
+                    "id": 33587554
+                },
+                {
+                    "venue": "Bluestone",
+                    "artists": [
+                        "A Thousand Horses"
+                    ],
+                    "id": 33772034
+                },
+                {
+                    "venue": "Union Bar & Grill",
+                    "artists": [
+                        "Adam Remnant",
+                        "The Coal Cave Hollow Boys",
+                        "Aubree Riley"
+                    ],
+                    "id": 33990939
+                }
+            ],
+            "Fri, 6-15-2018": [
+                {
+                    "venue": "Bar 145",
+                    "artists": [
+                        "Yours For The Taking"
+                    ],
+                    "id": 32396854
+                },
+                {
+                    "venue": "Gahanna Creekside Blues and Jazz Festival",
+                    "artists": [
+                        "Josh Hoyer and Soul Colossal"
+                    ],
+                    "id": 32885589
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Dubvision"
+                    ],
+                    "id": 33071839
+                },
+                {
+                    "venue": "Duck Creek Log Jam",
+                    "artists": [
+                        "Caamp",
+                        "The Hip Abduction",
+                        "The Giving Tree Band",
+                        "The Lowest Pair",
+                        "The Last Revel",
+                        "Doc Robinson",
+                        "Whetherman",
+                        "The Jon Stickley Trio",
+                        "The Wooks",
+                        "The Wonderfool",
+                        "Hocking River String Band",
+                        "Man About a Horse",
+                        "Slippery Creek",
+                        "Tripped Up String Band",
+                        "The Coal Cave Hollow Boys"
+                    ],
+                    "id": 33181124
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Bone Thugs-n-Harmony"
+                    ],
+                    "id": 33206819
+                },
+                {
+                    "venue": "Watt Street Tavern",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33245524
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Walk the Moon"
+                    ],
+                    "id": 33272499
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "HONEYHONEY"
+                    ],
+                    "id": 33375349
+                },
+                {
+                    "venue": "Midland Theatre",
+                    "artists": [
+                        "Al Stewart",
+                        "Firefall"
+                    ],
+                    "id": 33398369
+                },
+                {
+                    "venue": "The Athenaeum Theatre",
+                    "artists": [
+                        "Paul Young",
+                        "Midge Ure"
+                    ],
+                    "id": 33463429
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "Texas King",
+                        "Pray for Sleep"
+                    ],
+                    "id": 33488229
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Ekoostik Hookah"
+                    ],
+                    "id": 33530419
+                },
+                {
+                    "venue": "The Gateway",
+                    "artists": [
+                        "Troy Petty"
+                    ],
+                    "id": 33547424
+                },
+                {
+                    "venue": "Cafe Bourbon Street",
+                    "artists": [
+                        "Komrads",
+                        "Child of Night",
+                        "master servos",
+                        "The New Void"
+                    ],
+                    "id": 33674694
+                },
+                {
+                    "venue": "Creekside Park",
+                    "artists": [
+                        "David Sanborn"
+                    ],
+                    "id": 33784904
+                },
+                {
+                    "venue": "Brothers Drake Meadery",
+                    "artists": [
+                        "The Rare Occasions"
+                    ],
+                    "id": 33814754
+                },
+                {
+                    "venue": "The Summit",
+                    "artists": [
+                        "Dwarves"
+                    ],
+                    "id": 33829274
+                },
+                {
+                    "venue": "TRISM",
+                    "artists": [
+                        "Bass Physics",
+                        "Eliot Lipp"
+                    ],
+                    "id": 33840904
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Suzanne Santo"
+                    ],
+                    "id": 33851524
+                },
+                {
+                    "venue": "Notes",
+                    "artists": [
+                        "Dr E",
+                        "Adria Shahid"
+                    ],
+                    "id": 33869344
+                },
+                {
+                    "venue": "Donato's Basement",
+                    "artists": [
+                        "Old You",
+                        "Suntitle.",
+                        "Losers' Club"
+                    ],
+                    "id": 33946324
+                },
+                {
+                    "venue": "Used Kids Records",
+                    "artists": [
+                        "FLOVVERS",
+                        "The District Lightbulbs",
+                        "The Roof Dogs"
+                    ],
+                    "id": 33967524
+                },
+                {
+                    "venue": "Gabby's Tavern",
+                    "artists": [
+                        "Theo's Loose Hinges"
+                    ],
+                    "id": 33977934
+                },
+                {
+                    "venue": "Choffey's Coffee & Confections",
+                    "artists": [
+                        "Gabe and the Holy Sweats"
+                    ],
+                    "id": 34017904
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Parker Louis"
+                    ],
+                    "id": 34088634
+                }
+            ],
+            "Sat, 6-16-2018": [
+                {
+                    "venue": "Mapfre Stadium / Crew Stadium",
+                    "artists": [
+                        "Thomas Rhett",
+                        "Kenny Chesney",
+                        "Brandon Lay"
+                    ],
+                    "id": 31654379
+                },
+                {
+                    "venue": "Columbus Zoo",
+                    "artists": [
+                        "Shane Weisman"
+                    ],
+                    "id": 32842434
+                },
+                {
+                    "venue": "The Gateway",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33565939
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "GAHWNS"
+                    ],
+                    "id": 33688194
+                },
+                {
+                    "venue": "Columbus Commons, Denison University",
+                    "artists": [
+                        "Little River Band",
+                        "Columbus Symphony Orchestra"
+                    ],
+                    "id": 33762874
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "Sama Dams"
+                    ],
+                    "id": 33869804
+                },
+                {
+                    "venue": "The Old N Tangy",
+                    "artists": [
+                        "Empath"
+                    ],
+                    "id": 33890879
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "The Blu Janes"
+                    ],
+                    "id": 33960984
+                },
+                {
+                    "venue": "Rehab Tavern",
+                    "artists": [
+                        "Courtney From Work"
+                    ],
+                    "id": 33966524
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Marvin The Robot",
+                        "more details tba..."
+                    ],
+                    "id": 33999159
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "inbokeh"
+                    ],
+                    "id": 34020064
+                }
+            ],
+            "Sun, 6-17-2018": [
+                {
+                    "venue": "Gahanna Creekside Blues and Jazz Festival",
+                    "artists": [
+                        "Erica Blinn"
+                    ],
+                    "id": 32908364
+                },
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "Black Moth Super Rainbow"
+                    ],
+                    "id": 32919864
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Peach Kelli Pop"
+                    ],
+                    "id": 33273649
+                },
+                {
+                    "venue": "Donato's Basement",
+                    "artists": [
+                        "Sundressed",
+                        "Of Two Minds"
+                    ],
+                    "id": 33277004
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Transviolet",
+                        "Magic Bronson"
+                    ],
+                    "id": 33484574
+                },
+                {
+                    "venue": "Thirty One West Ballroom",
+                    "artists": [
+                        "David Ramirez",
+                        "Matthew Wright"
+                    ],
+                    "id": 33717044
+                },
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "The Stargazer Lilies"
+                    ],
+                    "id": 33880664
+                },
+                {
+                    "venue": "Steiner's Speakeasy",
+                    "artists": [
+                        "Whetherman"
+                    ],
+                    "id": 33931169
+                },
+                {
+                    "venue": "Rockmill Brewery",
+                    "artists": [
+                        "Angela Perley & the Howlin' Moons"
+                    ],
+                    "id": 34023494
+                }
+            ],
+            "Mon, 6-18-2018": [
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Night Riots",
+                        "Silent Rival",
+                        "Courtship"
+                    ],
+                    "id": 32996709
+                },
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "Tito Tahan"
+                    ],
+                    "id": 33098174
+                }
+            ],
+            "Tues, 6-19-2018": [
+                {
+                    "venue": "Pearl Market",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33250739
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Kevin Krauter"
+                    ],
+                    "id": 33444079
+                },
+                {
+                    "venue": "The Refectory Restaurant & Bistro",
+                    "artists": [
+                        "Twisted Pine"
+                    ],
+                    "id": 33637779
+                },
+                {
+                    "venue": "The Spacebar",
+                    "artists": [
+                        "Lazyeyes"
+                    ],
+                    "id": 33886094
+                }
+            ],
+            "Wed, 6-20-2018": [
+                {
+                    "venue": "Pickaway County Fairgrounds",
+                    "artists": [
+                        "2Steel Girls"
+                    ],
+                    "id": 32680469
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "We Are Scientists"
+                    ],
+                    "id": 32727004
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "The Glitch Mob",
+                        "Elohim"
+                    ],
+                    "id": 32910619
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "Have Mercy",
+                        "Super American",
+                        "Kississippi",
+                        "Gleemer"
+                    ],
+                    "id": 33472699
+                },
+                {
+                    "venue": "Scully's",
+                    "artists": [
+                        "You Rest, You Joy Life"
+                    ],
+                    "id": 33704539
+                }
+            ],
+            "Thurs, 6-21-2018": [
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Chromeo",
+                        "Pomo"
+                    ],
+                    "id": 32647849
+                },
+                {
+                    "venue": "A and R Music Bar",
+                    "artists": [
+                        "Sloan"
+                    ],
+                    "id": 32919909
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Wanyama",
+                        "Jauntee"
+                    ],
+                    "id": 33392434
+                },
+                {
+                    "venue": "Natalie's Coal Fired Pizza",
+                    "artists": [
+                        "Seth Glier"
+                    ],
+                    "id": 33616664
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "ASG",
+                        "Beitthemeans",
+                        "Lo-Pan"
+                    ],
+                    "id": 33632349
+                },
+                {
+                    "venue": "Bluestone",
+                    "artists": [
+                        "Chris Janson"
+                    ],
+                    "id": 33732424
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "Victory Lapse"
+                    ],
+                    "id": 33815629
+                },
+                {
+                    "venue": "Harvest Moon Craft Kitchen",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33847969
+                },
+                {
+                    "venue": "The Dollhouse",
+                    "artists": [
+                        "GoodLand"
+                    ],
+                    "id": 34055394
+                },
+                {
+                    "venue": "Natalie's Coal Fired Pizza",
+                    "artists": [
+                        "Mel Parsons"
+                    ],
+                    "id": 34074309
+                }
+            ],
+            "Fri, 6-22-2018": [
+                {
+                    "venue": "House Show",
+                    "artists": [
+                        "The Rough & Tumble"
+                    ],
+                    "id": 32598369
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Thomas and the Work-Men",
+                        "GAHWNS"
+                    ],
+                    "id": 33228514
+                },
+                {
+                    "venue": "Cimi's Bistro at Pinnacle",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33250744
+                },
+                {
+                    "venue": "The Athenaeum Theatre",
+                    "artists": [
+                        "Too Many Zooz",
+                        "Joe Hertler & the Rainbow Seekers"
+                    ],
+                    "id": 33256429
+                },
+                {
+                    "venue": "Watt Street Tavern",
+                    "artists": [
+                        "Hollyview"
+                    ],
+                    "id": 33388074
+                },
+                {
+                    "venue": "TRISM",
+                    "artists": [
+                        "Cosmic Gate"
+                    ],
+                    "id": 33531254
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Motherfolk",
+                        "Michigander"
+                    ],
+                    "id": 33477194
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Marie Miller"
+                    ],
+                    "id": 33574474
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "Courtney From Work"
+                    ],
+                    "id": 33719994
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Bow Echo (Columbus, Oh)"
+                    ],
+                    "id": 33913834
+                },
+                {
+                    "venue": "Goodale Park",
+                    "artists": [
+                        "Theo's Loose Hinges"
+                    ],
+                    "id": 33977574
+                },
+                {
+                    "venue": "A and R Music Bar",
+                    "artists": [
+                        "Magic City Hippies"
+                    ],
+                    "id": 34031394
+                },
+                {
+                    "venue": "Goodale Park",
+                    "artists": [
+                        "Parker Louis"
+                    ],
+                    "id": 34088679
+                }
+            ],
+            "Sat, 6-23-2018": [
+                {
+                    "venue": "Nationwide Arena",
+                    "artists": [
+                        "Sam Smith"
+                    ],
+                    "id": 31548719
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Clownvis Presley",
+                        "The Blasters"
+                    ],
+                    "id": 32194424
+                },
+                {
+                    "venue": "Ruby Tuesday",
+                    "artists": [
+                        "Death on Fire"
+                    ],
+                    "id": 32776199
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "Action Camp"
+                    ],
+                    "id": 33383469
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Parker Millsap",
+                        "Jillette Johnson"
+                    ],
+                    "id": 33456609
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Spikedrivers"
+                    ],
+                    "id": 33463524
+                },
+                {
+                    "venue": "Woodlands Backyard (formerly Loose Goose)",
+                    "artists": [
+                        "Thomas and the Work-Men"
+                    ],
+                    "id": 33587124
+                },
+                {
+                    "venue": "India Oak Bar and Grill",
+                    "artists": [
+                        "Joey the Songwriter"
+                    ],
+                    "id": 33720309
+                },
+                {
+                    "venue": "Columbus Commons, Denison University",
+                    "artists": [
+                        "Rick Springfield",
+                        "Columbus Symphony Orchestra"
+                    ],
+                    "id": 33762959
+                },
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "Black Asteroid"
+                    ],
+                    "id": 33865054
+                },
+                {
+                    "venue": "Donato's Basement",
+                    "artists": [
+                        "MUTILATRED",
+                        "Dominator"
+                    ],
+                    "id": 33874069
+                },
+                {
+                    "venue": "The Spacebar",
+                    "artists": [
+                        "Digisaurus",
+                        "Raquels",
+                        "Captain Kidd"
+                    ],
+                    "id": 33924194
+                },
+                {
+                    "venue": "Steiner's Speakeasy",
+                    "artists": [
+                        "Hollyview"
+                    ],
+                    "id": 34057339
+                }
+            ],
+            "Sun, 6-24-2018": [
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "David Ryan Harris"
+                    ],
+                    "id": 33362139
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Forever In Your Mind"
+                    ],
+                    "id": 33487234
+                },
+                {
+                    "venue": "Middle Earth",
+                    "artists": [
+                        "Awakebutstillinbed"
+                    ],
+                    "id": 33587439
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "Alvarez Kings",
+                        "Good Enough",
+                        "You vs Yesterday"
+                    ],
+                    "id": 33618604
+                },
+                {
+                    "venue": "A and R Music Bar",
+                    "artists": [
+                        "Sir Sly"
+                    ],
+                    "id": 33634274
+                },
+                {
+                    "venue": "Comfest",
+                    "artists": [
+                        "George Barrie Band"
+                    ],
+                    "id": 33906404
+                }
+            ],
+            "Mon, 6-25-2018": [
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Tony Monaco Trio"
+                    ],
+                    "id": 32148644
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "The Neighbourhood",
+                        "HEALTH",
+                        "Field Medic"
+                    ],
+                    "id": 32479444
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Rooks"
+                    ],
+                    "id": 33554859
+                }
+            ],
+            "Tues, 6-26-2018": [
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Maps & Atlases",
+                        "Prism Tats"
+                    ],
+                    "id": 33456639
+                },
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "Plain White T's",
+                        "Ocean Park Standoff",
+                        "Fairview"
+                    ],
+                    "id": 33532069
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Bishop Briggs",
+                        "L.I.F.T"
+                    ],
+                    "id": 33634294
+                }
+            ],
+            "Wed, 6-27-2018": [
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Sinkane",
+                        "Cut Copy"
+                    ],
+                    "id": 33288964
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Social Distortion"
+                    ],
+                    "id": 33337069
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Welles"
+                    ],
+                    "id": 33416524
+                },
+                {
+                    "venue": "Used Kids Records",
+                    "artists": [
+                        "Bodega"
+                    ],
+                    "id": 33667469
+                },
+                {
+                    "venue": "Outdoor Amphiteater, EXPRESS LIVE!",
+                    "artists": [
+                        "Aaron Lee Tasjan"
+                    ],
+                    "id": 33725359
+                },
+                {
+                    "venue": "Upper Arlington Farmers' Market",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33907029
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Natalie Cressman"
+                    ],
+                    "id": 33945654
+                },
+                {
+                    "venue": "Wesley Ridge Retirement Center",
+                    "artists": [
+                        "Rick Lee James"
+                    ],
+                    "id": 33961369
+                },
+                {
+                    "venue": "The Treebar",
+                    "artists": [
+                        "Keys & Corridors"
+                    ],
+                    "id": 33994194
+                }
+            ],
+            "Thurs, 6-28-2018": [
+                {
+                    "venue": "Brothers Drake Meadery",
+                    "artists": [
+                        "Mutts"
+                    ],
+                    "id": 33325329
+                },
+                {
+                    "venue": "Cafe Bourbon Street",
+                    "artists": [
+                        "Coal Fired Bicycle",
+                        "Linden Hollow",
+                        "Rust Pelts"
+                    ],
+                    "id": 33535944
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Paramore",
+                        "Foster the People",
+                        "Soccer Mommy"
+                    ],
+                    "id": 33551039
+                },
+                {
+                    "venue": "Kafe Kerouac",
+                    "artists": [
+                        "The Caribbean",
+                        "Mike Shiflet",
+                        "Field Sleeper"
+                    ],
+                    "id": 33636639
+                },
+                {
+                    "venue": "Union Bar & Grill",
+                    "artists": [
+                        "Bodega"
+                    ],
+                    "id": 33667474
+                },
+                {
+                    "venue": "Middle Earth",
+                    "artists": [
+                        "gobbinjr"
+                    ],
+                    "id": 33983254
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Yellowman"
+                    ],
+                    "id": 33996899
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Treehouse",
+                        "Yellowman",
+                        "Roots of a Rebellion",
+                        "the elovaters",
+                        "EL DUB",
+                        "bubba love"
+                    ],
+                    "id": 34007199
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Marisa Anderson",
+                        "Sarah Louise"
+                    ],
+                    "id": 34008024
+                },
+                {
+                    "venue": "Club Voodoos",
+                    "artists": [
+                        "Eddie Bars",
+                        "Kaptino",
+                        "Zhonny",
+                        "The Rgrls",
+                        "Ced Spitta",
+                        "Jefe' Bluntana",
+                        "Famous Rude"
+                    ],
+                    "id": 34083269
+                }
+            ],
+            "Fri, 6-29-2018": [
+                {
+                    "venue": "Bluestone",
+                    "artists": [
+                        "Joe Diffie"
+                    ],
+                    "id": 33245764
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Chris Trapper",
+                        "Diana Chittester"
+                    ],
+                    "id": 33256524
+                },
+                {
+                    "venue": "Steiner's Speakeasy",
+                    "artists": [
+                        "Coal Fired Bicycle"
+                    ],
+                    "id": 33535954
+                },
+                {
+                    "venue": "Red Door Tavern",
+                    "artists": [
+                        "Phil Lee"
+                    ],
+                    "id": 33586494
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Broccoli Samurai",
+                        "Vibe & Direct"
+                    ],
+                    "id": 33732159
+                },
+                {
+                    "venue": "Columbus Zoo",
+                    "artists": [
+                        "Jimmie Allen"
+                    ],
+                    "id": 33828549
+                },
+                {
+                    "venue": "Bluestone",
+                    "artists": [
+                        "Dillon Carmichael"
+                    ],
+                    "id": 33906944
+                },
+                {
+                    "venue": "Bluestone",
+                    "artists": [
+                        "David Adam Byrnes"
+                    ],
+                    "id": 33941034
+                },
+                {
+                    "venue": "Lincoln Theatre",
+                    "artists": [
+                        "Terence Blanchard"
+                    ],
+                    "id": 33945709
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Josh Krajcik Band",
+                        "The Wet Darlings",
+                        "Fool's Fire"
+                    ],
+                    "id": 34008034
+                }
+            ],
+            "Sat, 6-30-2018": [
+                {
+                    "venue": "Value City Arena, Schottenstein Center",
+                    "artists": [
+                        "James Taylor",
+                        "Bonnie Raitt"
+                    ],
+                    "id": 32413019
+                },
+                {
+                    "venue": "The Spacebar",
+                    "artists": [
+                        "Fortune Orange",
+                        "Moment 44"
+                    ],
+                    "id": 33099344
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Coal Fired Bicycle"
+                    ],
+                    "id": 33289649
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Andy Frasco & The U.N.",
+                        "After Funk"
+                    ],
+                    "id": 33700539
+                },
+                {
+                    "venue": "Olentangy High School",
+                    "artists": [
+                        "Pray for Sleep",
+                        "Cure Culture"
+                    ],
+                    "id": 33771154
+                },
+                {
+                    "venue": "No Culture",
+                    "artists": [
+                        "Pale Grey Lore",
+                        "Suffering, Praying Hands",
+                        "Blind Haven"
+                    ],
+                    "id": 33809719
+                },
+                {
+                    "venue": "Alrosa Villa",
+                    "artists": [
+                        "Doobie"
+                    ],
+                    "id": 33841969
+                }
+            ],
+            "Sun, 7-1-2018": [
+                {
+                    "venue": "A and R Music Bar",
+                    "artists": [
+                        "Dessa",
+                        "MONAKR"
+                    ],
+                    "id": 33374814
+                },
+                {
+                    "venue": "Donato's Basement",
+                    "artists": [
+                        "Graduating Life",
+                        "Mover // Shaker",
+                        "Overgrow",
+                        "minor 'love"
+                    ],
+                    "id": 33399054
+                },
+                {
+                    "venue": "DogTap Columbus",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33839239
+                }
+            ],
+            "Tues, 7-3-2018": [
+                {
+                    "venue": "Dirty Dungarees",
+                    "artists": [
+                        "Marvin The Robot",
+                        "The Just Luckies"
+                    ],
+                    "id": 33577734
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "The Fifth House"
+                    ],
+                    "id": 33995474
+                }
+            ],
+            "Wed, 7-4-2018": [
+                {
+                    "venue": "Flannagan's",
+                    "artists": [
+                        "Dustin Lynch",
+                        "Dylan Scott",
+                        "Jordan Davis",
+                        "Abby Anderson",
+                        "Lee Gantt"
+                    ],
+                    "id": 33573864
+                }
+            ],
+            "Thurs, 7-5-2018": [
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Kinky Friedman"
+                    ],
+                    "id": 33812629
+                },
+                {
+                    "venue": "The Spacebar",
+                    "artists": [
+                        "Brujas Del Sol",
+                        "Ancient River"
+                    ],
+                    "id": 33826764
+                }
+            ],
+            "Fri, 7-6-2018": [
+                {
+                    "venue": "Notes",
+                    "artists": [
+                        "Kristina Koller"
+                    ],
+                    "id": 33468314
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "Silent Planet"
+                    ],
+                    "id": 33662019
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "H.C. McEntire"
+                    ],
+                    "id": 33709884
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "G Herbo"
+                    ],
+                    "id": 33730589
+                },
+                {
+                    "venue": "Donato's Basement",
+                    "artists": [
+                        "Unturned",
+                        "City Mouth"
+                    ],
+                    "id": 33767249
+                },
+                {
+                    "venue": "Natalie's Coal Fired Pizza",
+                    "artists": [
+                        "The James Hunter Six"
+                    ],
+                    "id": 33926639
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Nikki Lane",
+                        "Blank Range"
+                    ],
+                    "id": 34072699
+                }
+            ],
+            "Sat, 7-7-2018": [
+                {
+                    "venue": "Ohio Stadium",
+                    "artists": [
+                        "Taylor Swift"
+                    ],
+                    "id": 31894734
+                },
+                {
+                    "venue": "Ross County Fairgrounds",
+                    "artists": [
+                        "Colt Ford"
+                    ],
+                    "id": 32756684
+                },
+                {
+                    "venue": "Donatos Short North",
+                    "artists": [
+                        "Troy Petty"
+                    ],
+                    "id": 32946354
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Safekept",
+                        "Samuel Day",
+                        "Jacob Shane & Company"
+                    ],
+                    "id": 33128644
+                },
+                {
+                    "venue": "The Spacebar",
+                    "artists": [
+                        "Tv Girl",
+                        "Infinity Crush",
+                        "Rafting"
+                    ],
+                    "id": 33835674
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Jesse McCartney"
+                    ],
+                    "id": 33868794
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Ashley Wineland"
+                    ],
+                    "id": 34048019
+                }
+            ],
+            "Sun, 7-8-2018": [
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Del McCoury Band",
+                        "Nathan Stanley"
+                    ],
+                    "id": 32906794
+                },
+                {
+                    "venue": "The Crest Parsons",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33549259
+                },
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "The Fifth House"
+                    ],
+                    "id": 33995484
+                }
+            ],
+            "Tues, 7-10-2018": [
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Reddy Freddy",
+                        "The Pinkerton Raid",
+                        "Mystic Mamba"
+                    ],
+                    "id": 33666004
+                }
+            ],
+            "Wed, 7-11-2018": [
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Better Than Ezra",
+                        "KT Tunstall",
+                        "Barenaked Ladies"
+                    ],
+                    "id": 31896809
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "My Son The Hurricane"
+                    ],
+                    "id": 33573309
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Houndmouth",
+                        "Liz Cooper & The Stampede"
+                    ],
+                    "id": 33564129
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "Strawberry Girls",
+                        "Andres",
+                        "Night Verses"
+                    ],
+                    "id": 33805209
+                }
+            ],
+            "Thurs, 7-12-2018": [
+                {
+                    "venue": "Value City Arena, Schottenstein Center",
+                    "artists": [
+                        "Sugarland",
+                        "Jennifer Nettles",
+                        "Kristian Bush",
+                        "Brandy Clark",
+                        "Clare Bowen"
+                    ],
+                    "id": 32412349
+                },
+                {
+                    "venue": "Casa Nueva Restaurant & Cantina",
+                    "artists": [
+                        "Josiah Whitley"
+                    ],
+                    "id": 33663274
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Adam Remnant"
+                    ],
+                    "id": 33808819
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Badflower"
+                    ],
+                    "id": 34043684
+                },
+                {
+                    "venue": "Steiner's Speakeasy",
+                    "artists": [
+                        "Justin Wells"
+                    ],
+                    "id": 34044714
+                }
+            ],
+            "Fri, 7-13-2018": [
+                {
+                    "venue": "Mudflats",
+                    "artists": [
+                        "Rob Williams"
+                    ],
+                    "id": 32441079
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Oh Wonder",
+                        "Sasha Sloan"
+                    ],
+                    "id": 32582224
+                },
+                {
+                    "venue": "Tony's bar & grill",
+                    "artists": [
+                        "Toon Khaos"
+                    ],
+                    "id": 32964429
+                },
+                {
+                    "venue": "Little Fish Brewing Co",
+                    "artists": [
+                        "Coal Fired Bicycle"
+                    ],
+                    "id": 33292864
+                },
+                {
+                    "venue": "The Shrunken Head",
+                    "artists": [
+                        "500 Miles To Memphis"
+                    ],
+                    "id": 33473839
+                },
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "The Red Jumpsuit Apparatus",
+                        "Rivals",
+                        "Pray for Sleep"
+                    ],
+                    "id": 33599384
+                },
+                {
+                    "venue": "Natalie's",
+                    "artists": [
+                        "Kevin Gordon"
+                    ],
+                    "id": 33647549
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "Onward etc",
+                        "Something on the Side",
+                        "Wilderness"
+                    ],
+                    "id": 33874344
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Adam Ezra Group"
+                    ],
+                    "id": 33895044
+                },
+                {
+                    "venue": "Rambling House Music Bar",
+                    "artists": [
+                        "Folquinox",
+                        "Bow Echo (Columbus, Oh)"
+                    ],
+                    "id": 33913879
+                },
+                {
+                    "venue": "Hasseman Brewing Company",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33947379
+                },
+                {
+                    "venue": "Gabby's Tavern",
+                    "artists": [
+                        "Theo's Loose Hinges"
+                    ],
+                    "id": 33977964
+                },
+                {
+                    "venue": "The Spacebar",
+                    "artists": [
+                        "Littleboybigheadonbike",
+                        "Shape of the Sun",
+                        "Nicholas Rowe"
+                    ],
+                    "id": 33967149
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Captain Kidd",
+                        "Marcus Alan Ward"
+                    ],
+                    "id": 34056144
+                }
+            ],
+            "Sat, 7-14-2018": [
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Courtney Barnett",
+                        "Vagabon"
+                    ],
+                    "id": 32900779
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Kate Tucker"
+                    ],
+                    "id": 33010589
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "Rozwell Kid",
+                        "Other People",
+                        "Future Bummer",
+                        "Miranova"
+                    ],
+                    "id": 33347849
+                },
+                {
+                    "venue": "The Spacebar",
+                    "artists": [
+                        "Pale Grey Lore",
+                        "Akula",
+                        "Horseburner",
+                        "Something Is Waiting"
+                    ],
+                    "id": 33440774
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Earth Groans",
+                        "Wait for the Day"
+                    ],
+                    "id": 33549024
+                },
+                {
+                    "venue": "Columbus Commons, Denison University",
+                    "artists": [
+                        "Columbus Symphony Orchestra",
+                        "Hanson"
+                    ],
+                    "id": 33780954
+                },
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "Blunts & Blondes"
+                    ],
+                    "id": 33841119
+                }
+            ],
+            "Sun, 7-15-2018": [
+                {
+                    "venue": "Trabue Tavern",
+                    "artists": [
+                        "Immortal Sÿnn"
+                    ],
+                    "id": 33131524
+                },
+                {
+                    "venue": "Nationwide Arena",
+                    "artists": [
+                        "Panic! At the Disco",
+                        "Hayley Kiyoko",
+                        "A R I Z O N A"
+                    ],
+                    "id": 33291679
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Howlin Rain",
+                        "The Mountain Movers"
+                    ],
+                    "id": 33713989
+                },
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "Dom 2 Timez"
+                    ],
+                    "id": 33992264
+                },
+                {
+                    "venue": "Rockmill Brewery",
+                    "artists": [
+                        "Parker Louis"
+                    ],
+                    "id": 34088734
+                }
+            ],
+            "Mon, 7-16-2018": [
+                {
+                    "venue": "Davidson Theatre",
+                    "artists": [
+                        "Mary Chapin Carpenter"
+                    ],
+                    "id": 33013614
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "The Felice Brothers"
+                    ],
+                    "id": 33275789
+                }
+            ],
+            "Tues, 7-17-2018": [
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "Bowling for Soup"
+                    ],
+                    "id": 33424674
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Ar'mon And Trey",
+                        "Lucki Starr",
+                        "The Bomb Digz"
+                    ],
+                    "id": 33831949
+                }
+            ],
+            "Wed, 7-18-2018": [
+                {
+                    "venue": "Alrosa Villa",
+                    "artists": [
+                        "Amerakin Overdose",
+                        "Sykosis",
+                        "The World I Knew",
+                        "Bury My Name",
+                        "Obliterate The Day"
+                    ],
+                    "id": 33081179
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Late Bloomer"
+                    ],
+                    "id": 33827289
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Vacationer",
+                        "Sego"
+                    ],
+                    "id": 33849069
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Dan Baird & Homemade Sin",
+                        "Drivin' n' Cryin'"
+                    ],
+                    "id": 33945919
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Mae Krell",
+                        "The Rose Monarch"
+                    ],
+                    "id": 33985759
+                }
+            ],
+            "Thurs, 7-19-2018": [
+                {
+                    "venue": "Rusted Nail",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33471529
+                },
+                {
+                    "venue": "Union Bar & Grill",
+                    "artists": [
+                        "The Messthetics"
+                    ],
+                    "id": 33920259
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "The Stolen",
+                        "Milkk"
+                    ],
+                    "id": 33991699
+                }
+            ],
+            "Fri, 7-20-2018": [
+                {
+                    "venue": "Middle Earth",
+                    "artists": [
+                        "Space Cadets"
+                    ],
+                    "id": 33041799
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Bongripper",
+                        "Weed Demon"
+                    ],
+                    "id": 33363904
+                },
+                {
+                    "venue": "Downtown Riverfront",
+                    "artists": [
+                        "Dave Koz",
+                        "Aubrey Logan"
+                    ],
+                    "id": 33840654
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Social Animals"
+                    ],
+                    "id": 33884904
+                },
+                {
+                    "venue": "Bicentennial Park",
+                    "artists": [
+                        "Dave Koz",
+                        "Gerald Albright",
+                        "Richard Elliot",
+                        "Rick Braun",
+                        "Aubrey Logan"
+                    ],
+                    "id": 33897479
+                },
+                {
+                    "venue": "Victory's Live",
+                    "artists": [
+                        "The Hawkeyes - Pgh PA"
+                    ],
+                    "id": 33942094
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Freekbass"
+                    ],
+                    "id": 34028659
+                }
+            ],
+            "Sat, 7-21-2018": [
+                {
+                    "venue": "Alrosa Villa",
+                    "artists": [
+                        "Upchurch the redneck",
+                        "JLUKE"
+                    ],
+                    "id": 31457519
+                },
+                {
+                    "venue": "Natalie's Coal Fired Pizza",
+                    "artists": [
+                        "Anne E Dechant"
+                    ],
+                    "id": 32467579
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Neil Hamburger",
+                        "JP Inc."
+                    ],
+                    "id": 32964779
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Dennis DeYoung"
+                    ],
+                    "id": 33908054
+                },
+                {
+                    "venue": "Woodlands Backyard (formerly Loose Goose)",
+                    "artists": [
+                        "Sun-Dried Vibes",
+                        "Badfish",
+                        "Pink Talking Fish",
+                        "Doc Robinson",
+                        "The Quasi Kings",
+                        "Cosmosis"
+                    ],
+                    "id": 33932199
+                }
+            ],
+            "Sun, 7-22-2018": [
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Mobley"
+                    ],
+                    "id": 33793909
+                },
+                {
+                    "venue": "Scioto Park",
+                    "artists": [
+                        "The Gothard Sisters"
+                    ],
+                    "id": 33798024
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "A Story Told",
+                        "Southpaw"
+                    ],
+                    "id": 34071994
+                }
+            ],
+            "Mon, 7-23-2018": [
+                {
+                    "venue": "Value City Arena, Schottenstein Center",
+                    "artists": [
+                        "Radiohead"
+                    ],
+                    "id": 32920099
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "The Story So Far",
+                        "Taking Back Sunday",
+                        "Coheed and Cambria"
+                    ],
+                    "id": 32924169
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Jet Black Alley Cat"
+                    ],
+                    "id": 33722764
+                }
+            ],
+            "Tues, 7-24-2018": [
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Snail Mail",
+                        "Long Beard"
+                    ],
+                    "id": 33290739
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "He Is We"
+                    ],
+                    "id": 33728464
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "The Magpie Salute",
+                        "Blackberry Smoke"
+                    ],
+                    "id": 34058639
+                }
+            ],
+            "Wed, 7-25-2018": [
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Ween"
+                    ],
+                    "id": 33436744
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Mike Dillon"
+                    ],
+                    "id": 33736389
+                },
+                {
+                    "venue": "Upper Arlington Farmers' Market",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33907049
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Knox Hamilton",
+                        "Brother Sundance"
+                    ],
+                    "id": 33917804
+                }
+            ],
+            "Thurs, 7-26-2018": [
+                {
+                    "venue": "Celeste Center - Ohio State Fairgrounds",
+                    "artists": [
+                        "Reba McEntire"
+                    ],
+                    "id": 33272699
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Jordan Depaul"
+                    ],
+                    "id": 33422829
+                }
+            ],
+            "Fri, 7-27-2018": [
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Sean Chambers"
+                    ],
+                    "id": 32832189
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Spirit Adrift",
+                        "Druid",
+                        "Akula"
+                    ],
+                    "id": 33437894
+                },
+                {
+                    "venue": "Watt Street Tavern",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33471599
+                },
+                {
+                    "venue": "Dahlia",
+                    "artists": [
+                        "Ray Volpe"
+                    ],
+                    "id": 33625184
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "JD Eicher",
+                        "Sawyer Fredericks"
+                    ],
+                    "id": 33866004
+                },
+                {
+                    "venue": "Celeste Center - Ohio State Fairgrounds",
+                    "artists": [
+                        "TLC",
+                        "En Vogue"
+                    ],
+                    "id": 33942514
+                },
+                {
+                    "venue": "Tequila Cowboy",
+                    "artists": [
+                        "Thompson Square"
+                    ],
+                    "id": 34060169
+                }
+            ],
+            "Sat, 7-28-2018": [
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Joanna Connor"
+                    ],
+                    "id": 32954729
+                },
+                {
+                    "venue": "The Vineyard at Porter Central",
+                    "artists": [
+                        "Chloé Caroline"
+                    ],
+                    "id": 33182164
+                },
+                {
+                    "venue": "Ohio Expo Center & State Fair",
+                    "artists": [
+                        "The Commodores"
+                    ],
+                    "id": 33056309
+                },
+                {
+                    "venue": "Hogan House Productions- Columbus Oh",
+                    "artists": [
+                        "The Handsome Family",
+                        "Columbus Oh"
+                    ],
+                    "id": 33721209
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Blueprint",
+                        "Prof"
+                    ],
+                    "id": 33878904
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Elzhi",
+                        "Skyzoo"
+                    ],
+                    "id": 33932674
+                },
+                {
+                    "venue": "A and R Music Bar",
+                    "artists": [
+                        "Courtney From Work"
+                    ],
+                    "id": 33966529
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Elzhi",
+                        "Skyzoo",
+                        "Alfred Banks"
+                    ],
+                    "id": 33984304
+                },
+                {
+                    "venue": "TRISM",
+                    "artists": [
+                        "Rec Riddles"
+                    ],
+                    "id": 34018439
+                }
+            ],
+            "Sun, 7-29-2018": [
+                {
+                    "venue": "Natalie's Coal Fired Pizza",
+                    "artists": [
+                        "Wild Ponies"
+                    ],
+                    "id": 32458234
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Ratboys",
+                        "Farseek",
+                        "urban tropic",
+                        "Another Michael"
+                    ],
+                    "id": 33782069
+                }
+            ],
+            "Mon, 7-30-2018": [
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Black Masala"
+                    ],
+                    "id": 33215269
+                },
+                {
+                    "venue": "Celeste Center - Ohio State Fairgrounds",
+                    "artists": [
+                        "Casting Crowns"
+                    ],
+                    "id": 33272754
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Soreption",
+                        "Terror Universal",
+                        "Born of Osiris",
+                        "Entheos",
+                        "Between The Buried And Me",
+                        "ERRA",
+                        "Veil of Maya",
+                        "Allegaeon"
+                    ],
+                    "id": 34051214
+                }
+            ],
+            "Tues, 7-31-2018": [
+                {
+                    "venue": "Celeste Center - Ohio State Fairgrounds",
+                    "artists": [
+                        "Kidz Bop Kids"
+                    ],
+                    "id": 33308164
+                }
+            ],
+            "Wed, 8-1-2018": [
+                {
+                    "venue": "Ohio Expo Center & State Fair",
+                    "artists": [
+                        "Jake Mcvey"
+                    ],
+                    "id": 33032624
+                },
+                {
+                    "venue": "Celeste Center - Ohio State Fairgrounds",
+                    "artists": [
+                        "Brothers Osborne"
+                    ],
+                    "id": 33272784
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Flynt Flossy"
+                    ],
+                    "id": 33692924
+                },
+                {
+                    "venue": "A and R Music Bar",
+                    "artists": [
+                        "Against Me!",
+                        "Speedy Ortiz"
+                    ],
+                    "id": 33796104
+                }
+            ],
+            "Thurs, 8-2-2018": [
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Ryan Oakes",
+                        "Dylan Reese",
+                        "Abstract (US)"
+                    ],
+                    "id": 33397949
+                },
+                {
+                    "venue": "Bluestone",
+                    "artists": [
+                        "Drake White"
+                    ],
+                    "id": 33904254
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "save face",
+                        "Prince Daddy & The Hyena",
+                        "Overgrow"
+                    ],
+                    "id": 33947729
+                }
+            ],
+            "Fri, 8-3-2018": [
+                {
+                    "venue": "Coffman Park",
+                    "artists": [
+                        "We Banjo 3"
+                    ],
+                    "id": 32719549
+                },
+                {
+                    "venue": "Club Voodoos",
+                    "artists": [
+                        "Mike Bama",
+                        "Rich Regal"
+                    ],
+                    "id": 33024649
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Highly Suspect"
+                    ],
+                    "id": 33576944
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Kim Walker-Smith",
+                        "Urban Rescue"
+                    ],
+                    "id": 33614214
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "The Go Set"
+                    ],
+                    "id": 34062419
+                }
+            ],
+            "Sat, 8-4-2018": [
+                {
+                    "venue": "Coffman Park",
+                    "artists": [
+                        "We Banjo 3"
+                    ],
+                    "id": 32719554
+                },
+                {
+                    "venue": "A and R Music Bar",
+                    "artists": [
+                        "Melvins"
+                    ],
+                    "id": 32827644
+                },
+                {
+                    "venue": "Celeste Center - Ohio State Fairgrounds",
+                    "artists": [
+                        "Styx",
+                        "Cheap Trick"
+                    ],
+                    "id": 33272829
+                },
+                {
+                    "venue": "Westerville Amphitheater Alum Creek Park",
+                    "artists": [
+                        "Copacetic"
+                    ],
+                    "id": 33429194
+                },
+                {
+                    "venue": "The Shrunken Head",
+                    "artists": [
+                        "North By North"
+                    ],
+                    "id": 33675409
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Melvins",
+                        "Marilyn Manson",
+                        "Jonathan Davis"
+                    ],
+                    "id": 33763304
+                }
+            ],
+            "Sun, 8-5-2018": [
+                {
+                    "venue": "Coffman Park",
+                    "artists": [
+                        "We Banjo 3",
+                        "Scythian",
+                        "Gaelic Storm",
+                        "Eileen Ivers",
+                        "The Willis Clan"
+                    ],
+                    "id": 32719559
+                },
+                {
+                    "venue": "A and R Music Bar",
+                    "artists": [
+                        "Yungblud"
+                    ],
+                    "id": 33010694
+                }
+            ],
+            "Tues, 8-7-2018": [
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Halestorm",
+                        "In This Moment",
+                        "New Years Day"
+                    ],
+                    "id": 33576799
+                }
+            ],
+            "Wed, 8-8-2018": [
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Lindsey Stirling"
+                    ],
+                    "id": 33099864
+                },
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "The Spill Canvas",
+                        "Punchline",
+                        "Selfish Things",
+                        "We Are The Movies"
+                    ],
+                    "id": 34029754
+                }
+            ],
+            "Thurs, 8-9-2018": [
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Curtis Grimes"
+                    ],
+                    "id": 33168884
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Wayne Hancock",
+                        "Reverend Horton Heat"
+                    ],
+                    "id": 33272879
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Theory of a Deadman"
+                    ],
+                    "id": 33683069
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "All Time Low",
+                        "Dashboard Confessional",
+                        "gnash"
+                    ],
+                    "id": 33919094
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Jay Vee",
+                        "The Bogues",
+                        "Wicca Phase Springs Eternal",
+                        "Lil West"
+                    ],
+                    "id": 33979284
+                }
+            ],
+            "Fri, 8-10-2018": [
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Nick Corsale",
+                        "Columbus Underground"
+                    ],
+                    "id": 33317349
+                },
+                {
+                    "venue": "Bluestone",
+                    "artists": [
+                        "Dillon Carmichael"
+                    ],
+                    "id": 33907084
+                },
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "BlackGummy"
+                    ],
+                    "id": 34019414
+                }
+            ],
+            "Sat, 8-11-2018": [
+                {
+                    "venue": "The Grass Skirt",
+                    "artists": [
+                        "NP Presley & The Ghost Of Jesse Garon"
+                    ],
+                    "id": 32502304
+                },
+                {
+                    "venue": "Value City Arena, Schottenstein Center",
+                    "artists": [
+                        "Smashing Pumpkins",
+                        "Metric"
+                    ],
+                    "id": 32872674
+                }
+            ],
+            "Sun, 8-12-2018": [
+                {
+                    "venue": "The Crest Parsons",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 34063379
+                }
+            ],
+            "Tues, 8-14-2018": [
+                {
+                    "venue": "Southern Theatre",
+                    "artists": [
+                        "Glenn Miller Orchestra"
+                    ],
+                    "id": 32993404
+                }
+            ],
+            "Thurs, 8-16-2018": [
+                {
+                    "venue": "Ohio Stadium",
+                    "artists": [
+                        "Beyoncé",
+                        "Jay-Z"
+                    ],
+                    "id": 33418499
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Nicole Atkins",
+                        "Ruby Boots"
+                    ],
+                    "id": 33529029
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "The Jon Stickley Trio",
+                        "The Trainjumpers"
+                    ],
+                    "id": 33684719
+                }
+            ],
+            "Fri, 8-17-2018": [
+                {
+                    "venue": "Bluestone",
+                    "artists": [
+                        "William Michael Morgan"
+                    ],
+                    "id": 33194449
+                }
+            ],
+            "Sat, 8-18-2018": [
+                {
+                    "venue": "Watt Street Tavern",
+                    "artists": [
+                        "Hollyview"
+                    ],
+                    "id": 33388079
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Sleigh Bells"
+                    ],
+                    "id": 33778279
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Tacocat"
+                    ],
+                    "id": 33719094
+                }
+            ],
+            "Sun, 8-19-2018": [
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Richard Lloyd"
+                    ],
+                    "id": 33764249
+                }
+            ],
+            "Wed, 8-22-2018": [
+                {
+                    "venue": "Value City Arena, Schottenstein Center",
+                    "artists": [
+                        "Def Leppard"
+                    ],
+                    "id": 32540744
+                }
+            ],
+            "Thurs, 8-23-2018": [
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "Walkney",
+                        "Pollyanna"
+                    ],
+                    "id": 33955134
+                }
+            ],
+            "Fri, 8-24-2018": [
+                {
+                    "venue": "Mapfre Stadium / Crew Stadium",
+                    "artists": [
+                        "Breakaway",
+                        "Livvia",
+                        "KAYZO",
+                        "Gryffin",
+                        "Flosstradamus",
+                        "Smokepurpp",
+                        "Halsey",
+                        "ODESZA",
+                        "Grey",
+                        "Jai Wolf",
+                        "Drezo",
+                        "Blaise Moore",
+                        "Flatbush Zombies",
+                        "Rich the Kid",
+                        "Jack Harlow",
+                        "GASHI",
+                        "Ekali",
+                        "GG Magree",
+                        "Elohim",
+                        "Dombresky",
+                        "Quinn XCII",
+                        "Charlotte Lawrence",
+                        "Chris Lake",
+                        "Migos",
+                        "Jaden Smith"
+                    ],
+                    "id": 33401214
+                },
+                {
+                    "venue": "Bluestone",
+                    "artists": [
+                        "Friday"
+                    ],
+                    "id": 33823299
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Elohim",
+                        "Ekali",
+                        "Effee"
+                    ],
+                    "id": 33881379
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "ODESZA",
+                        "Grey (US)"
+                    ],
+                    "id": 33881539
+                },
+                {
+                    "venue": "The Shrunken Head",
+                    "artists": [
+                        "Flying Buffaloes",
+                        "Ross Livermore"
+                    ],
+                    "id": 33921049
+                },
+                {
+                    "venue": "Steiner's Speakeasy",
+                    "artists": [
+                        "Theo's Loose Hinges"
+                    ],
+                    "id": 33978004
+                }
+            ],
+            "Sat, 8-25-2018": [
+                {
+                    "venue": "The Potter's House",
+                    "artists": [
+                        "B-SHOC"
+                    ],
+                    "id": 32015314
+                },
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "Delta Sleep",
+                        "Of Two Minds"
+                    ],
+                    "id": 33896099
+                },
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Corrupt"
+                    ],
+                    "id": 34019024
+                }
+            ],
+            "Sun, 8-26-2018": [
+                {
+                    "venue": "Flat 51",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 34032234
+                }
+            ],
+            "Tues, 8-28-2018": [
+                {
+                    "venue": "Big Room Bar",
+                    "artists": [
+                        "The Moms"
+                    ],
+                    "id": 33880469
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Future Islands"
+                    ],
+                    "id": 33972129
+                }
+            ],
+            "Wed, 8-29-2018": [
+                {
+                    "venue": "Pike County Fairgrounds",
+                    "artists": [
+                        "Seldom Scene",
+                        "Doyle Lawson And Quicksilver",
+                        "The Grascals",
+                        "Lonesome River Band",
+                        "Dailey & Vincent",
+                        "Rhonda Vincent And The Rage",
+                        "Flatt Lonesome",
+                        "The Cleverlys",
+                        "Volume Five",
+                        "Newtown",
+                        "Sideline",
+                        "Darrell Webb Band",
+                        "Blue Mafia",
+                        "Band of Ruhks",
+                        "The Po' Ramblin' Boys",
+                        "Hammertowne",
+                        "New Again",
+                        "Turning Ground",
+                        "Claybank",
+                        "Dave Adkins Band",
+                        "Tim Strong & Kentucky Ridge",
+                        "Sammy Adkins & the Sandy Hook Mountain Boys",
+                        "Adam Wakefield & the Copperheads",
+                        "Creek Don't Rise"
+                    ],
+                    "id": 33840819
+                },
+                {
+                    "venue": "Upper Arlington Farmers' Market",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33907074
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Jacob Sartorius"
+                    ],
+                    "id": 33928209
+                }
+            ],
+            "Fri, 8-31-2018": [
+                {
+                    "venue": "Pearl Market",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33884114
+                }
+            ],
+            "Sun, 9-2-2018": [
+                {
+                    "venue": "Unknown venue",
+                    "artists": [
+                        "Kaitlyn Baker"
+                    ],
+                    "id": 33794614
+                }
+            ],
+            "Mon, 9-3-2018": [
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Town Mountain"
+                    ],
+                    "id": 33430184
+                }
+            ],
+            "Thurs, 9-6-2018": [
+                {
+                    "venue": "A and R Music Bar",
+                    "artists": [
+                        "Superorganism",
+                        "YUNO"
+                    ],
+                    "id": 33529129
+                }
+            ],
+            "Fri, 9-7-2018": [
+                {
+                    "venue": "Soul at The Joseph",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 32681089
+                }
+            ],
+            "Sun, 9-9-2018": [
+                {
+                    "venue": "Nationwide Arena",
+                    "artists": [
+                        "Fall Out Boy",
+                        "Machine Gun Kelly"
+                    ],
+                    "id": 32540719
+                },
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "Killing Joke"
+                    ],
+                    "id": 33510414
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Car Seat Headrest",
+                        "Naked Giants"
+                    ],
+                    "id": 33697634
+                }
+            ],
+            "Wed, 9-12-2018": [
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "Japanese Breakfast",
+                        "Ought"
+                    ],
+                    "id": 33086759
+                },
+                {
+                    "venue": "A and R Music Bar",
+                    "artists": [
+                        "Red Fang",
+                        "Big Business"
+                    ],
+                    "id": 33960149
+                }
+            ],
+            "Thurs, 9-13-2018": [
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "SALES"
+                    ],
+                    "id": 33420879
+                },
+                {
+                    "venue": "Rusted Nail",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33933274
+                }
+            ],
+            "Fri, 9-14-2018": [
+                {
+                    "venue": "Victory's Live",
+                    "artists": [
+                        "Wasted Theory",
+                        "Wolftooth",
+                        "Pale Grey Lore",
+                        "Horseburner"
+                    ],
+                    "id": 32527979
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "Unknown Hinson"
+                    ],
+                    "id": 33946629
+                }
+            ],
+            "Sat, 9-15-2018": [
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Fozzy",
+                        "Adelitas Way",
+                        "Stir",
+                        "Stone Broken"
+                    ],
+                    "id": 33863604
+                }
+            ],
+            "Sun, 9-16-2018": [
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "Gary Numan",
+                        "Nightmare Air"
+                    ],
+                    "id": 33684874
+                }
+            ],
+            "Tues, 9-18-2018": [
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Natalie Prass",
+                        "Stella Donnelly"
+                    ],
+                    "id": 33697849
+                }
+            ],
+            "Thurs, 9-20-2018": [
+                {
+                    "venue": "Skully's Music Diner",
+                    "artists": [
+                        "White Denim"
+                    ],
+                    "id": 33882044
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Carlie Hanson",
+                        "Jeremy Zucker"
+                    ],
+                    "id": 33946709
+                }
+            ],
+            "Fri, 9-21-2018": [
+                {
+                    "venue": "Thirty One West Ballroom",
+                    "artists": [
+                        "Matthew Perryman Jones",
+                        "Molly Parden"
+                    ],
+                    "id": 33982119
+                },
+                {
+                    "venue": "Pearl Market",
+                    "artists": [
+                        "Joe Holt"
+                    ],
+                    "id": 34017224
+                }
+            ],
+            "Sun, 9-23-2018": [
+                {
+                    "venue": "Value City Arena, Schottenstein Center",
+                    "artists": [
+                        "Young Thug",
+                        "J. Cole"
+                    ],
+                    "id": 33863679
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "SYML"
+                    ],
+                    "id": 33942999
+                }
+            ],
+            "Tues, 9-25-2018": [
+                {
+                    "venue": "Nationwide Arena",
+                    "artists": [
+                        "Julia Michaels"
+                    ],
+                    "id": 31736154
+                },
+                {
+                    "venue": "Newport Music Hall",
+                    "artists": [
+                        "The Wild Reeds",
+                        "Shakey Graves"
+                    ],
+                    "id": 33846044
+                }
+            ],
+            "Wed, 9-26-2018": [
+                {
+                    "venue": "Upper Arlington Farmers' Market",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33933334
+                }
+            ],
+            "Thurs, 9-27-2018": [
+                {
+                    "venue": "Grove City Church of the Nazarene",
+                    "artists": [
+                        "Danny Gokey",
+                        "Tauren Wells",
+                        "Riley Clemmons"
+                    ],
+                    "id": 34016494
+                },
+                {
+                    "venue": "Springfork Farms",
+                    "artists": [
+                        "Luke Bryan"
+                    ],
+                    "id": 34071139
+                }
+            ],
+            "Fri, 9-28-2018": [
+                {
+                    "venue": "Ohio Theatre",
+                    "artists": [
+                        "John Prine",
+                        "Lilly Hiatt"
+                    ],
+                    "id": 32397439
+                },
+                {
+                    "venue": "Bluestone",
+                    "artists": [
+                        "Muscadine Bloodline"
+                    ],
+                    "id": 33406244
+                },
+                {
+                    "venue": "Indian Bear Winery",
+                    "artists": [
+                        "Ryan Smith"
+                    ],
+                    "id": 33933229
+                }
+            ],
+            "Sat, 9-29-2018": [
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Screaming Females",
+                        "Kitten Forever"
+                    ],
+                    "id": 33660334
+                }
+            ]
+        }
+    }
+}

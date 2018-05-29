@@ -238,9 +238,9 @@ var get_all_metros_events = function(){
 	//})
 
 	// //todo: one metro only
-	var metro_select = metros[2];
+	var metro_select = metros[0];
 
-	promises.push(get_events(metros[2]))
+	promises.push(get_events(metros[0]))
 	//promises.push(get_events( metro_select))
 
 
@@ -384,6 +384,8 @@ var count_properties = function(object){
 
 var test_fuzzy = function(){
 
+
+
 	var my_artists = require("./../authorization_code/public/my_artists.json").artists;
 	var my_performances = require("./songkick_performances.json").result;
 
@@ -430,8 +432,12 @@ var test_fuzzy = function(){
 	});
 };
 
-//test_fuzzy();
+test_fuzzy();
 
+/**
+ * testing the usability of a promise structure that guarantees synchronicity
+ * @function test_promise
+ **/
 var test_promise = function(){
 
 	var func_1 = function(func1_in){
@@ -495,4 +501,4 @@ var test_promise = function(){
 		});
 }
 
-test_promise()
+//test_promise()
