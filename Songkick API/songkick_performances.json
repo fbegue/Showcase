@@ -1,7 +1,7 @@
 {
     "result": {
         "area": "Columbus",
-        "events": 2932,
+        "events": 2964,
         "dates": {
             "Thurs, 5-31-2018": [
                 {
@@ -81,6 +81,12 @@
                         "Young Luns",
                         "TrigNo",
                         "Zac Fresh"
+                    ]
+                },
+                {
+                    "venue": "The Gateway",
+                    "artists": [
+                        "Joey the Songwriter"
                     ]
                 },
                 {
@@ -219,9 +225,86 @@
                         "Hunter Lepi",
                         "The Bundys (Nashville)"
                     ]
+                },
+                {
+                    "venue": "Park Street Tavern",
+                    "artists": [
+                        "Yours For The Taking"
+                    ]
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Homeless Gospel Choir",
+                        "Lucero",
+                        "The Sleeping Souls",
+                        "Frank Turner"
+                    ]
+                },
+                {
+                    "venue": "The Bootlegger",
+                    "artists": [
+                        "Brooke Annibale"
+                    ]
+                },
+                {
+                    "venue": "Brewery 33",
+                    "artists": [
+                        "Ryan Smith"
+                    ]
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Sarob",
+                        "Booty&theKidd"
+                    ]
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Brujas Del Sol"
+                    ]
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "BUNDYS",
+                        "Luke Mossburg",
+                        "CASTROS",
+                        "Hunter Lepi",
+                        "The Bundys (Nashville)"
+                    ]
                 }
             ],
             "Sat, 6-2-2018": [
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "Saywecanfly",
+                        "Fairview",
+                        "Minshara",
+                        "Woven In Hiatus"
+                    ]
+                },
+                {
+                    "venue": "DogTap Columbus",
+                    "artists": [
+                        "Ryan Smith"
+                    ]
+                },
+                {
+                    "venue": "Misfit Manor",
+                    "artists": [
+                        "Anemone"
+                    ]
+                },
+                {
+                    "venue": "The Fire House",
+                    "artists": [
+                        "Fat Randy"
+                    ]
+                },
                 {
                     "venue": "Rumba Café",
                     "artists": [
@@ -269,6 +352,25 @@
                     "artists": [
                         "Albert Bagman"
                     ]
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Jack White",
+                        "Lillie Mae"
+                    ]
+                },
+                {
+                    "venue": "The Woodlands Tavern",
+                    "artists": [
+                        "George Barrie Band"
+                    ]
+                },
+                {
+                    "venue": "The Tree Bar",
+                    "artists": [
+                        "Albert Bagman"
+                    ]
                 }
             ],
             "Mon, 6-4-2018": [
@@ -286,9 +388,74 @@
                         "Stephen Malkmus & The Jicks",
                         "Lithics"
                     ]
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Mastodon",
+                        "Primus",
+                        "Jjuujjuu"
+                    ]
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Stephen Malkmus & The Jicks",
+                        "Lithics"
+                    ]
                 }
             ],
             "Tues, 6-5-2018": [
+                {
+                    "venue": "Steiner's Speakeasy",
+                    "artists": [
+                        "Brian Ernst"
+                    ]
+                },
+                {
+                    "venue": "Ace of Cups",
+                    "artists": [
+                        "Citizen",
+                        "Pronoun",
+                        "Oso Oso",
+                        "Angel Du$t (US)"
+                    ]
+                },
+                {
+                    "venue": "Rumba Café",
+                    "artists": [
+                        "American Aquarium",
+                        "Cory Branan"
+                    ]
+                },
+                {
+                    "venue": "Ruby Tuesday",
+                    "artists": [
+                        "Inter Arma",
+                        "Earthling",
+                        "Bruce Lamont"
+                    ]
+                },
+                {
+                    "venue": "The Basement",
+                    "artists": [
+                        "Everything Everything",
+                        "Sego"
+                    ]
+                },
+                {
+                    "venue": "EXPRESS LIVE!",
+                    "artists": [
+                        "Tonic"
+                    ]
+                },
+                {
+                    "venue": "Ohio Theatre",
+                    "artists": [
+                        "Lea Michele",
+                        "Darren Criss"
+                    ]
+                },
                 {
                     "venue": "Steiner's Speakeasy",
                     "artists": [
@@ -473,6 +640,19 @@
                     "artists": [
                         "Natalie Claro",
                         "Circle It (US)"
+                    ]
+                },
+                {
+                    "venue": "Club Voodoos",
+                    "artists": [
+                        "The Widdler"
+                    ]
+                },
+                {
+                    "venue": "Wild Goose Creative",
+                    "artists": [
+                        "Natalie Claro",
+                        "The Circle (IT)"
                     ]
                 }
             ],
@@ -664,6 +844,13 @@
                     "venue": "Skully's Music Diner",
                     "artists": [
                         "AnastasiaMax"
+                    ]
+                },
+                {
+                    "venue": "Misfit Manor",
+                    "artists": [
+                        "Tomato Dodgers",
+                        "The Roof Dogs"
                     ]
                 }
             ],
@@ -1535,6 +1722,18 @@
                         "Marisa Anderson",
                         "Sarah Louise"
                     ]
+                },
+                {
+                    "venue": "Club Voodoos",
+                    "artists": [
+                        "Eddie Bars",
+                        "Kaptino",
+                        "Zhonny",
+                        "The Rgrls",
+                        "Ced Spitta",
+                        "Jefe' Bluntana",
+                        "Famous Rude"
+                    ]
                 }
             ],
             "Thurs, 6-28-2018": [
@@ -1665,7 +1864,9 @@
                     "venue": "Donato's Basement",
                     "artists": [
                         "Graduating Life",
-                        "Mover // Shaker"
+                        "Mover // Shaker",
+                        "Overgrow",
+                        "minor 'love"
                     ]
                 },
                 {
@@ -2698,7 +2899,8 @@
                     "artists": [
                         "The Spill Canvas",
                         "Punchline",
-                        "Selfish Things"
+                        "Selfish Things",
+                        "We Are The Movies"
                     ]
                 }
             ],

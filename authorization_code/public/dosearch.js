@@ -22,6 +22,43 @@ var controller = module.controller("myCtrl", function($scope) {
 	console.log("myCtrl");
 	$scope.test = "test"
 
+	var make_request_local =  function(url_object,cache){
+
+		return new Promise(function(done, fail) {
+
+			var url_local = "http://localhost:8888/";
+			console.log("sending request : " + url_object.type + " :: " + url_object.url);
+			$.ajax({
+				url: url_local + url_object.url,
+				type:url_object.type
+			}).done(function(payload){
+
+				console.log("retrieved: ",payload);
+				done(payload);
+
+			})
+				.fail(function(err){
+
+					console.log("there was a problem: ");
+					console.log(err);
+				})
+		})
+
+	}; //make_request
+
+	$scope.testEndpoint = function(){
+
+		var req = {};
+		req.type = "GET";
+		req.url = "test";
+
+		make_request_local(req).then(function(result){
+
+			console.log("result",result);
+
+			console.log("testEndpoint finished!");
+		})
+	};
 
 })
 
@@ -53,6 +90,20 @@ var findWithAttr = function(array, attr, value) {
 	return -1;
 };
 
+var sleeper = function(ms) {
+	return function(x) {
+		return new Promise(resolve => setTimeout(() => resolve(x), ms));
+	};
+}
+
+var count_properties = function(object){
+	var count = 0;
+	for (var prop in object) {
+		if (object.hasOwnProperty(prop)) {count++}
+	}
+	return count;
+};
+
 //todo: how does this work? all exports formatted like this are available to the page by default? idk
 
 if (typeof(window) !== 'undefined') {
@@ -66,6 +117,9 @@ if (typeof(window) !== 'undefined') {
 
 		cache.artists.simple = [];
 		cache.artists.full = [];
+
+		cache.artistsInfoMap = {};
+
 
 		cache.playlists.simple  = [];
 		cache.playlists.full = [];
@@ -91,7 +145,9 @@ if (typeof(window) !== 'undefined') {
 
 
 
+
 		/**
+		 * Designed for paging requests
 		 * trying to reuse my request maker
 		 * url_object:
 		 *
@@ -105,6 +161,7 @@ if (typeof(window) !== 'undefined') {
 			return new Promise(function(done, fail) {
 
 				var url = url_object.url + "?" + url_object.fields + off + url_object.offset + lim + url_object.limit;
+
 				console.log("sending request",url);
 
 				$.ajax({
@@ -153,12 +210,15 @@ if (typeof(window) !== 'undefined') {
 			})//promise
 		}; //make_request
 
-
 		/**
 		 *
 		 * @function playlist_tracks
 		 **/
+
+		var playlist_finished_count = 0;
 		exports.playlist_tracks = function(user,playlist){
+
+
 
 			return new Promise(function(done, fail) {
 
@@ -200,12 +260,78 @@ if (typeof(window) !== 'undefined') {
 				make_request(url_object,cache.dummy)
 					.then(function(data){
 
-						cache.playlist_tracks_map[playlist.id] = data;
+						//todo: trying to also go get artist genre info before committing
 
-						console.log("playlist_tracks finished with length: ",data.length);
-						// console.log("artists.simple cache updated:",cache.artists.simple);
+						var promiseTrack = new Promise(function(resolved) {
 
-						done(data);
+							resolved();
+						});
+
+						// var promises = [];
+
+						var do_track = false;
+
+						data.forEach(function(ob){
+							ob.track.artists.forEach(function(artist){
+								if(cache.artistsInfoMap[artist.id]){
+									//console.log("$match",artist.id);
+								}
+								else {
+									do_track = true;
+
+									var url3 = "https://api.spotify.com/v1/artists";
+
+									var url_object2 = {};
+									url_object2.url = url3 + "/" + artist.id
+									// url_object.offset = 0;
+									// url_object.limit = 50;
+									url_object2.fields = "";
+
+									promiseTrack = promiseTrack.then(function () {
+										return (
+											make_request_simple(url_object2, cache.artistsInfoMap)
+												.then(sleeper(50))
+										)
+									});
+
+									// promises.push(make_request_simple(url_object2,cache.artists.reallyFull))
+									// // console.log('fetching full artist object for : ' + artist.name );
+									//
+									// 	Promise.all(promises).then(function(results){
+									//
+									// 		// console.log("fetching full artist object response for: " + artist.name);
+									// 		console.log("$results");
+									// 		console.log(results);
+									//
+									// 		cache.playlist_tracks_map[playlist.id] = data;
+									//
+									// 		console.log("playlist_tracks finished with length: ",data.length);
+									// 		// console.log("artists.simple cache updated:",cache.artists.simple);
+									//
+									// 		done(data);
+									//
+									// 	})
+								}
+							});
+						});
+
+
+						if(do_track){
+							promiseTrack.then(function(results) {
+								cache.playlist_tracks_map[playlist.id] = data;
+
+								playlist_finished_count++;
+								console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
+
+								console.log("current cache.artistsInfoMap size: ");
+								console.log(count_properties(cache.artistsInfoMap));
+								done(data);
+							})
+						}else{
+							playlist_finished_count++;
+							console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
+							done(data)
+						}
 					})
 			})//promise
 
@@ -231,11 +357,19 @@ if (typeof(window) !== 'undefined') {
 
 			console.log("getting tracks for " + cache.playlists.simple.length + " playlists..." );
 
+
+
 			cache.playlists.simple.forEach(function(playlist_simple) {
 
 				promiseTrack = promiseTrack.then(function() {
-					return (exports.playlist_tracks(user,playlist_simple))
-					// .then(func_2(value))
+					return (
+						exports.playlist_tracks(user,playlist_simple)
+							.then(sleeper(200))
+						//setTimeout(function(){exports.playlist_tracks(user,playlist_simple) }, 3000)
+					)
+					// .then(function(){
+					// 	setTimeout(function(){ console.log("pause..."); }, 3000);
+					// })
 				});
 			});
 
@@ -262,18 +396,34 @@ if (typeof(window) !== 'undefined') {
 				//push all unique artists
 
 
+
 				cache.tracks.forEach(function(track){
 					track.track.artists.forEach(function(artist){
 						var art = {}; art.id = artist.id; art.name = artist.name;
 
+						if(cache.artistsInfoMap[art.id]){
+							if(cache.artistsInfoMap[art.id].genres){
+								art.genres = cache.artistsInfoMap[art.id].genres;
+							}
+						}
+
 						if(findWithAttr(cache.artists.full,"id",art.id) === -1){
 							cache.artists.full.push(art);
-							cache.artists.simple.push(art.name);
+
+							var tuple = {};
+							tuple.name = art.name;
+							tuple.genres = art.genres;
+							cache.artists.simple.push(tuple);
 						}
 					})
 				});
 
+				// console.log("adding artist info to cache.artists.full ...");
+
 				console.log("unique artists in cache.artists.simple:",cache.artists.simple);
+
+				console.log("artist info",cache.artistsInfoMap);
+
 
 			})
 				.catch(function(err){
@@ -315,7 +465,8 @@ if (typeof(window) !== 'undefined') {
 
 					break;
 				case 2:
-					user = "dacandyman01"
+					//user = "dacandyman01"
+					user = "123073652"
 					cache.playlists.simple = cache.user_playlist_map_simple[user]
 					break;
 				case 3:
@@ -346,7 +497,6 @@ if (typeof(window) !== 'undefined') {
 
 		};
 
-
 		/**
 		 * load my playlists into cache.playlists.simple, cache.playlists.full, and
 		 * mapped by user into cache.playlists.userMap
@@ -360,7 +510,9 @@ if (typeof(window) !== 'undefined') {
 			console.log(global_access_token);
 
 			//todo: forcing me as user
-			user = "/dacandyman01"
+			//user = "/dacandyman01"
+			user = "/123073652"
+			//user = "/123028477"
 			var url1 = "/playlists";
 
 			//var url_example = "https://api.spotify.com/v1/users/dacandyman01/playlists?offset=0&limit=50"
@@ -420,6 +572,13 @@ if (typeof(window) !== 'undefined') {
 		};//user_playlists
 
 
+
+
+
+
+		/////////////////////////////////////
+		//OUTDATED
+		/////////////////////////////////////
 
 		/**
 		 * Fetch a user's top artists.
@@ -727,7 +886,7 @@ if (typeof(window) !== 'undefined') {
 
 
 
-		var token = "BQAjGHvapyP2zb9xtgulyOzTyYmpXCbvvKp4qMfFoudC6fFVf29EDorrqMGYFUhorfzBs1tHpXh65GYf62IE0vypubio6X9ZFYDmEDvUkqPL8fTbOCjD_ZxDqme3IkXfVv7DIJNMZi-FeSTtPFYhXixW-kqAFuTeQWrrk8ARS4wY8f7QBffFndRv-JtP"
+		var token = "";
 
 		exports.forceToken = function() {
 			console.log("forceToken");

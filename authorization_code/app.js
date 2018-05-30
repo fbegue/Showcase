@@ -21,7 +21,7 @@ var app = express();
 var request = require('request'); // "Request" library
 var fs      = require('fs');
 
-
+var service = require('./service.js');
 
 //==========================================================================================
 //BEGIN SPOTIFY AUTH SECTION
@@ -41,6 +41,8 @@ var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
  */
 
 
+service.search_artists();
+
 
   var generateRandomString = function(length) {
   var text = '';
@@ -58,6 +60,7 @@ var stateKey = 'spotify_auth_state';
 
 app.use(express.static(__dirname + '/public'))
    .use(cookieParser());
+
 
 app.get('/login', function(req, res) {
 
@@ -77,7 +80,7 @@ app.get('/login', function(req, res) {
     // /v1/me/top/{type} : user-top-read
 
 	// your application requests authorization
-	var scope = 'user-read-private user-read-email user-top-read playlist-read-private';
+
 	res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
@@ -97,6 +100,8 @@ var access_token_global = {};
 //todo:
 //trying to export from here and grab in broswer, but can't load
 //var exports = {refresh_token_global:refresh_token_global,access_token_global:access_token_global}
+
+var scope = 'user-read-private user-read-email user-top-read playlist-read-private';
 
 app.get('/callback', function(req, res) {
 
@@ -121,7 +126,8 @@ app.get('/callback', function(req, res) {
       form: {
         code: code,
         redirect_uri: redirect_uri,
-        grant_type: 'authorization_code'
+        grant_type: 'authorization_code',
+		  scope:scope
       },
       headers: {
         'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
@@ -171,6 +177,24 @@ app.get('/callback', function(req, res) {
 });
 
 
+app.get('/test', function(req, res) {
+
+	console.log("testing endpoint");
+	res.send({"testprop":"testvalue"})
+});
+
+app.get('/search_artists', function(req, res) {
+
+	console.log("search_artists");
+	service.search_artists().then(function(){
+
+
+		 res.send({"search_artists":"testvalue"})
+	})
+
+});
+
+
 app.get('/getToken', function(req, res) {
   res.send({
     'access_token': access_token_global
@@ -179,30 +203,35 @@ app.get('/getToken', function(req, res) {
 
 app.get('/refresh_token', function(req, res) {
 
-  console.log("/refresh_token");
+	console.log("/refresh_token");
 
-  // requesting access token from refresh token
-  var refresh_token = req.query.refresh_token;
-  var authOptions = {
-    url: 'https://accounts.spotify.com/api/token',
-    headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
-    form: {
-      grant_type: 'refresh_token',
-      refresh_token: refresh_token
-    },
-    json: true
-  };
+	// requesting access token from refresh token
+	var refresh_token = req.query.refresh_token;
+	var authOptions = {
+		url: 'https://accounts.spotify.com/api/token',
+		headers: {'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))},
+		form: {
+			grant_type: 'refresh_token',
+			refresh_token: refresh_token
+		},
+		json: true
+	};
 
-  request.post(authOptions, function(error, response, body) {
-    if (!error && response.statusCode === 200) {
-      var access_token = body.access_token;
-      access_token_global = access_token;
-      res.send({
-        'access_token': access_token
-      });
-    }
-  });
+	request.post(authOptions, function (error, response, body) {
+		if (!error && response.statusCode === 200) {
+			var access_token = body.access_token;
+			access_token_global = access_token;
+			res.send({
+				'access_token': access_token
+			});
+		}
+	});
+
 });
+
+console.log('Listening on 8888');
+app.listen(8888);
+
 
 //==========================================================================================
 //BEGIN SCRAPING SECTION
@@ -310,8 +339,7 @@ app.get('/scrape', function(req, res) {
     })
 })
 
-console.log('Listening on 8888');
-app.listen(8888);
+
 
 
 

@@ -768,785 +768,7 @@
                     "uri": "http://www.songkick.com/venues/3529294-vanderelli-room?utm_source=47817&utm_medium=partner",
                     "id": 3529294
                 }
-            }
-        ]
-    },
-    {
-        "id": 9480,
-        "displayName": "Columbus",
-        "events": [
-            {
-                "type": "Concert",
-                "venue": {
-                    "displayName": "Ohio Theatre",
-                    "lat": 39.959863,
-                    "lng": -82.998928,
-                    "uri": "http://www.songkick.com/venues/4732-ohio-theatre?utm_source=47817&utm_medium=partner",
-                    "metroArea": {
-                        "displayName": "Columbus",
-                        "country": {
-                            "displayName": "US"
-                        },
-                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
-                        "id": 9480,
-                        "state": {
-                            "displayName": "OH"
-                        }
-                    },
-                    "id": 4732
-                },
-                "status": "ok",
-                "performance": [
-                    {
-                        "billing": "headline",
-                        "displayName": "Diana Krall",
-                        "artist": {
-                            "identifier": [
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:67d2cb7a-9ddb-4a7f-82bf-5a2d1a038e98.json",
-                                    "mbid": "67d2cb7a-9ddb-4a7f-82bf-5a2d1a038e98"
-                                }
-                            ],
-                            "displayName": "Diana Krall",
-                            "uri": "http://www.songkick.com/artists/321711-diana-krall?utm_source=47817&utm_medium=partner",
-                            "id": 321711
-                        },
-                        "billingIndex": 1,
-                        "id": 62713669
-                    }
-                ],
-                "popularity": 0.05805,
-                "displayName": "Diana Krall at Ohio Theatre (June 1, 2018)",
-                "start": {
-                    "datetime": "2018-06-01T20:00:00-0400",
-                    "time": "20:00:00",
-                    "date": "2018-06-01"
-                },
-                "ageRestriction": null,
-                "location": {
-                    "city": "Columbus, OH, US",
-                    "lat": 39.959863,
-                    "lng": -82.998928
-                },
-                "uri": "http://www.songkick.com/concerts/32579279-diana-krall-at-ohio-theatre?utm_source=47817&utm_medium=partner",
-                "id": 32579279
             },
-            {
-                "type": "Concert",
-                "popularity": 0.223222,
-                "displayName": "Incubus with Spirit Animal at EXPRESS LIVE! (June 1, 2018)",
-                "status": "ok",
-                "performance": [
-                    {
-                        "displayName": "Incubus",
-                        "billingIndex": 1,
-                        "billing": "headline",
-                        "artist": {
-                            "displayName": "Incubus",
-                            "identifier": [
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:308aea66-5205-4344-b700-319a8dccaa43.json",
-                                    "mbid": "308aea66-5205-4344-b700-319a8dccaa43"
-                                },
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:e3e0abcd-7671-4482-a9d8-462f5acc9be5.json",
-                                    "mbid": "e3e0abcd-7671-4482-a9d8-462f5acc9be5"
-                                },
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:d660f9ed-f11b-4698-8058-36a578bf54e0.json",
-                                    "mbid": "d660f9ed-f11b-4698-8058-36a578bf54e0"
-                                },
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:d2a39dc9-91d8-49f1-afa2-693a0e7b7e32.json",
-                                    "mbid": "d2a39dc9-91d8-49f1-afa2-693a0e7b7e32"
-                                },
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:9e58d1b4-317f-4ddb-a699-b92c4ee32d97.json",
-                                    "mbid": "9e58d1b4-317f-4ddb-a699-b92c4ee32d97"
-                                },
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:55a327f7-811a-440e-a509-7350742b3dd6.json",
-                                    "mbid": "55a327f7-811a-440e-a509-7350742b3dd6"
-                                }
-                            ],
-                            "uri": "http://www.songkick.com/artists/141629-incubus?utm_source=47817&utm_medium=partner",
-                            "id": 141629
-                        },
-                        "id": 63476909
-                    },
-                    {
-                        "displayName": "Spirit Animal",
-                        "billingIndex": 2,
-                        "billing": "support",
-                        "artist": {
-                            "displayName": "Spirit Animal",
-                            "identifier": [
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:e75307f6-3df7-405a-988a-89566793e23a.json",
-                                    "mbid": "e75307f6-3df7-405a-988a-89566793e23a"
-                                }
-                            ],
-                            "uri": "http://www.songkick.com/artists/1356330-spirit-animal?utm_source=47817&utm_medium=partner",
-                            "id": 1356330
-                        },
-                        "id": 63716479
-                    }
-                ],
-                "ageRestriction": null,
-                "start": {
-                    "datetime": "2018-06-01T19:00:00-0400",
-                    "time": "19:00:00",
-                    "date": "2018-06-01"
-                },
-                "location": {
-                    "city": "Columbus, OH, US",
-                    "lat": 39.9696888,
-                    "lng": -83.009785
-                },
-                "uri": "http://www.songkick.com/concerts/32996484-incubus-at-express-live?utm_source=47817&utm_medium=partner",
-                "id": 32996484,
-                "venue": {
-                    "displayName": "EXPRESS LIVE!",
-                    "lat": 39.9696888,
-                    "lng": -83.009785,
-                    "metroArea": {
-                        "displayName": "Columbus",
-                        "country": {
-                            "displayName": "US"
-                        },
-                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
-                        "id": 9480,
-                        "state": {
-                            "displayName": "OH"
-                        }
-                    },
-                    "uri": "http://www.songkick.com/venues/777-express-live?utm_source=47817&utm_medium=partner",
-                    "id": 777
-                }
-            },
-            {
-                "type": "Concert",
-                "popularity": 0.001612,
-                "displayName": "Colouring at Rumba Café (June 1, 2018)",
-                "status": "ok",
-                "performance": [
-                    {
-                        "displayName": "Colouring",
-                        "billingIndex": 1,
-                        "billing": "headline",
-                        "artist": {
-                            "displayName": "Colouring",
-                            "identifier": [
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:f415fa7f-7867-46c6-b0ad-4137f74c7abc.json",
-                                    "mbid": "f415fa7f-7867-46c6-b0ad-4137f74c7abc"
-                                }
-                            ],
-                            "uri": "http://www.songkick.com/artists/8910329-colouring?utm_source=47817&utm_medium=partner",
-                            "id": 8910329
-                        },
-                        "id": 63991134
-                    }
-                ],
-                "ageRestriction": null,
-                "start": {
-                    "datetime": "2018-06-01T20:00:00-0400",
-                    "time": "20:00:00",
-                    "date": "2018-06-01"
-                },
-                "location": {
-                    "city": "Columbus, OH, US",
-                    "lat": 40.0147527,
-                    "lng": -83.0002705
-                },
-                "uri": "http://www.songkick.com/concerts/33272414-colouring-at-rumba-cafe?utm_source=47817&utm_medium=partner",
-                "id": 33272414,
-                "venue": {
-                    "displayName": "Rumba Café",
-                    "lat": 40.0147527,
-                    "lng": -83.0002705,
-                    "metroArea": {
-                        "displayName": "Columbus",
-                        "country": {
-                            "displayName": "US"
-                        },
-                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
-                        "id": 9480,
-                        "state": {
-                            "displayName": "OH"
-                        }
-                    },
-                    "uri": "http://www.songkick.com/venues/14551-rumba-cafe?utm_source=47817&utm_medium=partner",
-                    "id": 14551
-                }
-            },
-            {
-                "type": "Concert",
-                "popularity": 0.000023,
-                "displayName": "India Ramey at Mudflats (June 1, 2018)",
-                "status": "ok",
-                "performance": [
-                    {
-                        "displayName": "India Ramey",
-                        "billingIndex": 1,
-                        "billing": "headline",
-                        "artist": {
-                            "displayName": "India Ramey",
-                            "identifier": [],
-                            "uri": "http://www.songkick.com/artists/4232111-india-ramey?utm_source=47817&utm_medium=partner",
-                            "id": 4232111
-                        },
-                        "id": 64158514
-                    }
-                ],
-                "ageRestriction": null,
-                "start": {
-                    "datetime": null,
-                    "time": null,
-                    "date": "2018-06-01"
-                },
-                "location": {
-                    "city": "Columbus, OH, US",
-                    "lat": 40.2148437,
-                    "lng": -82.8798322
-                },
-                "uri": "http://www.songkick.com/concerts/33365714-india-ramey-at-mudflats?utm_source=47817&utm_medium=partner",
-                "id": 33365714,
-                "venue": {
-                    "displayName": "Mudflats",
-                    "lat": 40.2148437,
-                    "lng": -82.8798322,
-                    "metroArea": {
-                        "displayName": "Columbus",
-                        "country": {
-                            "displayName": "US"
-                        },
-                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
-                        "id": 9480,
-                        "state": {
-                            "displayName": "OH"
-                        }
-                    },
-                    "uri": "http://www.songkick.com/venues/2860303-mudflats?utm_source=47817&utm_medium=partner",
-                    "id": 2860303
-                }
-            },
-            {
-                "type": "Concert",
-                "popularity": 0.008572,
-                "displayName": "An Horse and American Spirits at Big Room Bar (June 1, 2018)",
-                "status": "ok",
-                "performance": [
-                    {
-                        "displayName": "An Horse",
-                        "billingIndex": 1,
-                        "billing": "headline",
-                        "artist": {
-                            "displayName": "An Horse",
-                            "identifier": [
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:462e8abc-a26b-4e6d-b909-75b8453fd03a.json",
-                                    "mbid": "462e8abc-a26b-4e6d-b909-75b8453fd03a"
-                                }
-                            ],
-                            "uri": "http://www.songkick.com/artists/1057101-an-horse?utm_source=47817&utm_medium=partner",
-                            "id": 1057101
-                        },
-                        "id": 64285824
-                    },
-                    {
-                        "displayName": "American Spirits",
-                        "billingIndex": 2,
-                        "billing": "headline",
-                        "artist": {
-                            "displayName": "American Spirits",
-                            "identifier": [],
-                            "uri": "http://www.songkick.com/artists/9467469-american-spirits?utm_source=47817&utm_medium=partner",
-                            "id": 9467469
-                        },
-                        "id": 64969869
-                    }
-                ],
-                "ageRestriction": null,
-                "start": {
-                    "datetime": "2018-06-01T20:00:00-0400",
-                    "time": "20:00:00",
-                    "date": "2018-06-01"
-                },
-                "location": {
-                    "city": "Columbus, OH, US",
-                    "lat": 39.9406904,
-                    "lng": -82.9975355
-                },
-                "uri": "http://www.songkick.com/concerts/33435829-an-horse-at-big-room-bar?utm_source=47817&utm_medium=partner",
-                "id": 33435829,
-                "venue": {
-                    "displayName": "Big Room Bar",
-                    "lat": 39.9406904,
-                    "lng": -82.9975355,
-                    "metroArea": {
-                        "displayName": "Columbus",
-                        "country": {
-                            "displayName": "US"
-                        },
-                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
-                        "id": 9480,
-                        "state": {
-                            "displayName": "OH"
-                        }
-                    },
-                    "uri": "http://www.songkick.com/venues/3108324-big-room-bar?utm_source=47817&utm_medium=partner",
-                    "id": 3108324
-                }
-            },
-            {
-                "type": "Concert",
-                "popularity": 0.00004,
-                "displayName": "Nicola Són at Brothers Drake Meadery (June 1, 2018)",
-                "status": "ok",
-                "performance": [
-                    {
-                        "displayName": "Nicola Són",
-                        "billingIndex": 1,
-                        "billing": "headline",
-                        "artist": {
-                            "displayName": "Nicola Són",
-                            "identifier": [
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:e4e33b55-b4e6-4df9-8f7e-9dbbc54f68bf.json",
-                                    "mbid": "e4e33b55-b4e6-4df9-8f7e-9dbbc54f68bf"
-                                }
-                            ],
-                            "uri": "http://www.songkick.com/artists/826213-nicola-son?utm_source=47817&utm_medium=partner",
-                            "id": 826213
-                        },
-                        "id": 64403169
-                    }
-                ],
-                "ageRestriction": null,
-                "start": {
-                    "datetime": "2018-06-01T21:00:00-0400",
-                    "time": "21:00:00",
-                    "date": "2018-06-01"
-                },
-                "location": {
-                    "city": "Columbus, OH, US",
-                    "lat": 39.9872342,
-                    "lng": -83.0046234
-                },
-                "uri": "http://www.songkick.com/concerts/33501194-nicola-son-at-brothers-drake-meadery?utm_source=47817&utm_medium=partner",
-                "id": 33501194,
-                "venue": {
-                    "displayName": "Brothers Drake Meadery",
-                    "lat": 39.9872342,
-                    "lng": -83.0046234,
-                    "metroArea": {
-                        "displayName": "Columbus",
-                        "country": {
-                            "displayName": "US"
-                        },
-                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
-                        "id": 9480,
-                        "state": {
-                            "displayName": "OH"
-                        }
-                    },
-                    "uri": "http://www.songkick.com/venues/1303706-brothers-drake-meadery?utm_source=47817&utm_medium=partner",
-                    "id": 1303706
-                }
-            },
-            {
-                "type": "Concert",
-                "popularity": 0.000124,
-                "displayName": "Tranquility with Rich People and Saltlick (OH) at Donato's Basement (June 1, 2018)",
-                "status": "ok",
-                "performance": [
-                    {
-                        "displayName": "Tranquility",
-                        "billingIndex": 1,
-                        "billing": "headline",
-                        "artist": {
-                            "displayName": "Tranquility",
-                            "identifier": [
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:4d9bfc54-d5bd-4e93-918c-73536aab46b9.json",
-                                    "mbid": "4d9bfc54-d5bd-4e93-918c-73536aab46b9"
-                                }
-                            ],
-                            "uri": "http://www.songkick.com/artists/398920-tranquility?utm_source=47817&utm_medium=partner",
-                            "id": 398920
-                        },
-                        "id": 64495989
-                    },
-                    {
-                        "displayName": "Rich People",
-                        "billingIndex": 2,
-                        "billing": "support",
-                        "artist": {
-                            "displayName": "Rich People",
-                            "identifier": [
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:e00e1673-2e60-4e5d-81af-231c2a860d52.json",
-                                    "mbid": "e00e1673-2e60-4e5d-81af-231c2a860d52"
-                                }
-                            ],
-                            "uri": "http://www.songkick.com/artists/4255411-rich-people?utm_source=47817&utm_medium=partner",
-                            "id": 4255411
-                        },
-                        "id": 64495994
-                    },
-                    {
-                        "displayName": "Saltlick (OH)",
-                        "billingIndex": 3,
-                        "billing": "support",
-                        "artist": {
-                            "displayName": "Saltlick (OH)",
-                            "identifier": [],
-                            "uri": "http://www.songkick.com/artists/9393114-saltlick-oh?utm_source=47817&utm_medium=partner",
-                            "id": 9393114
-                        },
-                        "id": 65258154
-                    }
-                ],
-                "ageRestriction": null,
-                "start": {
-                    "datetime": "2018-06-01T18:00:00-0400",
-                    "time": "18:00:00",
-                    "date": "2018-06-01"
-                },
-                "location": {
-                    "city": "Columbus, OH, US",
-                    "lat": 40.0048438,
-                    "lng": -83.008673
-                },
-                "uri": "http://www.songkick.com/concerts/33555589-tranquility-at-donatos-basement?utm_source=47817&utm_medium=partner",
-                "id": 33555589,
-                "venue": {
-                    "displayName": "Donato's Basement",
-                    "lat": 40.0048438,
-                    "lng": -83.008673,
-                    "metroArea": {
-                        "displayName": "Columbus",
-                        "country": {
-                            "displayName": "US"
-                        },
-                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
-                        "id": 9480,
-                        "state": {
-                            "displayName": "OH"
-                        }
-                    },
-                    "uri": "http://www.songkick.com/venues/2651308-donatos-basement?utm_source=47817&utm_medium=partner",
-                    "id": 2651308
-                }
-            },
-            {
-                "type": "Concert",
-                "popularity": 0.000096,
-                "displayName": "Misery Loves Company and Morning in May at Ruby Tuesday (June 1, 2018)",
-                "status": "ok",
-                "performance": [
-                    {
-                        "displayName": "Misery Loves Company",
-                        "billingIndex": 1,
-                        "billing": "headline",
-                        "artist": {
-                            "displayName": "Misery Loves Company",
-                            "identifier": [
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:cea95006-3468-4b21-ae2f-6f3213417fc3.json",
-                                    "mbid": "cea95006-3468-4b21-ae2f-6f3213417fc3"
-                                }
-                            ],
-                            "uri": "http://www.songkick.com/artists/58186-misery-loves-company?utm_source=47817&utm_medium=partner",
-                            "id": 58186
-                        },
-                        "id": 64861439
-                    },
-                    {
-                        "displayName": "Morning in May",
-                        "billingIndex": 2,
-                        "billing": "headline",
-                        "artist": {
-                            "displayName": "Morning in May",
-                            "identifier": [],
-                            "uri": "http://www.songkick.com/artists/3115186-morning-in-may?utm_source=47817&utm_medium=partner",
-                            "id": 3115186
-                        },
-                        "id": 64861444
-                    }
-                ],
-                "ageRestriction": null,
-                "start": {
-                    "datetime": "2018-06-01T19:00:00-0400",
-                    "time": "19:00:00",
-                    "date": "2018-06-01"
-                },
-                "location": {
-                    "city": "Columbus, OH, US",
-                    "lat": 40.0035083,
-                    "lng": -83.0005752
-                },
-                "uri": "http://www.songkick.com/concerts/33746179-misery-loves-company-at-ruby-tuesday?utm_source=47817&utm_medium=partner",
-                "id": 33746179,
-                "venue": {
-                    "displayName": "Ruby Tuesday",
-                    "lat": 40.0035083,
-                    "lng": -83.0005752,
-                    "metroArea": {
-                        "displayName": "Columbus",
-                        "country": {
-                            "displayName": "US"
-                        },
-                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
-                        "id": 9480,
-                        "state": {
-                            "displayName": "OH"
-                        }
-                    },
-                    "uri": "http://www.songkick.com/venues/63587-ruby-tuesday?utm_source=47817&utm_medium=partner",
-                    "id": 63587
-                }
-            },
-            {
-                "type": "Concert",
-                "popularity": 0.000059,
-                "displayName": "The Litz at The Woodlands Tavern (June 1, 2018)",
-                "status": "ok",
-                "performance": [
-                    {
-                        "displayName": "The Litz",
-                        "billingIndex": 1,
-                        "billing": "headline",
-                        "artist": {
-                            "displayName": "The Litz",
-                            "identifier": [
-                                {
-                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:fc77efcb-a6fe-456c-9e98-0c80ca68eb03.json",
-                                    "mbid": "fc77efcb-a6fe-456c-9e98-0c80ca68eb03"
-                                }
-                            ],
-                            "uri": "http://www.songkick.com/artists/275161-litz?utm_source=47817&utm_medium=partner",
-                            "id": 275161
-                        },
-                        "id": 64973944
-                    }
-                ],
-                "ageRestriction": null,
-                "start": {
-                    "datetime": "2018-06-01T19:00:00-0400",
-                    "time": "19:00:00",
-                    "date": "2018-06-01"
-                },
-                "location": {
-                    "city": "Columbus, OH, US",
-                    "lat": 39.985079,
-                    "lng": -83.0375959
-                },
-                "uri": "http://www.songkick.com/concerts/33812399-litz-at-woodlands-tavern?utm_source=47817&utm_medium=partner",
-                "id": 33812399,
-                "venue": {
-                    "displayName": "The Woodlands Tavern",
-                    "lat": 39.985079,
-                    "lng": -83.0375959,
-                    "metroArea": {
-                        "displayName": "Columbus",
-                        "country": {
-                            "displayName": "US"
-                        },
-                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
-                        "id": 9480,
-                        "state": {
-                            "displayName": "OH"
-                        }
-                    },
-                    "uri": "http://www.songkick.com/venues/5477-woodlands-tavern?utm_source=47817&utm_medium=partner",
-                    "id": 5477
-                }
-            },
-            {
-                "type": "Concert",
-                "popularity": 0.000007,
-                "displayName": "Ka Baird at Fuse Factory (June 1, 2018)",
-                "status": "ok",
-                "performance": [
-                    {
-                        "displayName": "Ka Baird",
-                        "billingIndex": 1,
-                        "billing": "headline",
-                        "artist": {
-                            "displayName": "Ka Baird",
-                            "identifier": [],
-                            "uri": "http://www.songkick.com/artists/9242894-ka-baird?utm_source=47817&utm_medium=partner",
-                            "id": 9242894
-                        },
-                        "id": 64990299
-                    }
-                ],
-                "ageRestriction": null,
-                "start": {
-                    "datetime": null,
-                    "time": null,
-                    "date": "2018-06-01"
-                },
-                "location": {
-                    "city": "Columbus, OH, US",
-                    "lat": 40.014421,
-                    "lng": -83.000556
-                },
-                "uri": "http://www.songkick.com/concerts/33821159-ka-baird-at-fuse-factory?utm_source=47817&utm_medium=partner",
-                "id": 33821159,
-                "venue": {
-                    "displayName": "Fuse Factory",
-                    "lat": 40.014421,
-                    "lng": -83.000556,
-                    "metroArea": {
-                        "displayName": "Columbus",
-                        "country": {
-                            "displayName": "US"
-                        },
-                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
-                        "id": 9480,
-                        "state": {
-                            "displayName": "OH"
-                        }
-                    },
-                    "uri": "http://www.songkick.com/venues/1528113-fuse-factory?utm_source=47817&utm_medium=partner",
-                    "id": 1528113
-                }
-            },
-            {
-                "type": "Concert",
-                "popularity": 0.001211,
-                "displayName": "Tessa Violet at Unknown venue (June 1, 2018)",
-                "status": "ok",
-                "performance": [
-                    {
-                        "displayName": "Tessa Violet",
-                        "billingIndex": 1,
-                        "billing": "headline",
-                        "artist": {
-                            "displayName": "Tessa Violet",
-                            "identifier": [],
-                            "uri": "http://www.songkick.com/artists/7416159-tessa-violet?utm_source=47817&utm_medium=partner",
-                            "id": 7416159
-                        },
-                        "id": 65364014
-                    }
-                ],
-                "ageRestriction": null,
-                "start": {
-                    "datetime": "2018-06-01T19:00:00-0400",
-                    "time": "19:00:00",
-                    "date": "2018-06-01"
-                },
-                "location": {
-                    "city": "Columbus, OH, US",
-                    "lat": 40.137544,
-                    "lng": -82.932991
-                },
-                "uri": "http://www.songkick.com/concerts/34026224-tessa-violet-at-unknown-venue?utm_source=47817&utm_medium=partner",
-                "id": 34026224,
-                "venue": {
-                    "displayName": "Unknown venue",
-                    "lat": 40.137544,
-                    "lng": -82.932991,
-                    "metroArea": {
-                        "displayName": "Columbus",
-                        "country": {
-                            "displayName": "US"
-                        },
-                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
-                        "id": 9480,
-                        "state": {
-                            "displayName": "OH"
-                        }
-                    },
-                    "uri": null,
-                    "id": null
-                }
-            },
-            {
-                "type": "Concert",
-                "popularity": 0.00001,
-                "displayName": "Young Luns with TrigNo and Zac Fresh at The Vanderelli Room (June 1, 2018)",
-                "status": "ok",
-                "performance": [
-                    {
-                        "displayName": "Young Luns",
-                        "billingIndex": 1,
-                        "billing": "headline",
-                        "artist": {
-                            "displayName": "Young Luns",
-                            "identifier": [],
-                            "uri": "http://www.songkick.com/artists/9330429-young-luns?utm_source=47817&utm_medium=partner",
-                            "id": 9330429
-                        },
-                        "id": 65426834
-                    },
-                    {
-                        "displayName": "TrigNo",
-                        "billingIndex": 2,
-                        "billing": "support",
-                        "artist": {
-                            "displayName": "TrigNo",
-                            "identifier": [],
-                            "uri": "http://www.songkick.com/artists/9330419-trigno?utm_source=47817&utm_medium=partner",
-                            "id": 9330419
-                        },
-                        "id": 65426839
-                    },
-                    {
-                        "displayName": "Zac Fresh",
-                        "billingIndex": 3,
-                        "billing": "support",
-                        "artist": {
-                            "displayName": "Zac Fresh",
-                            "identifier": [],
-                            "uri": "http://www.songkick.com/artists/6580049-zac-fresh?utm_source=47817&utm_medium=partner",
-                            "id": 6580049
-                        },
-                        "id": 65426844
-                    }
-                ],
-                "ageRestriction": null,
-                "start": {
-                    "datetime": "2018-06-01T20:00:00-0400",
-                    "time": "20:00:00",
-                    "date": "2018-06-01"
-                },
-                "location": {
-                    "city": "Columbus, OH, US",
-                    "lat": 39.9562105,
-                    "lng": -83.0121498
-                },
-                "uri": "http://www.songkick.com/concerts/34062359-young-luns-at-vanderelli-room?utm_source=47817&utm_medium=partner",
-                "id": 34062359,
-                "venue": {
-                    "displayName": "The Vanderelli Room",
-                    "lat": 39.9562105,
-                    "lng": -83.0121498,
-                    "metroArea": {
-                        "displayName": "Columbus",
-                        "country": {
-                            "displayName": "US"
-                        },
-                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
-                        "id": 9480,
-                        "state": {
-                            "displayName": "OH"
-                        }
-                    },
-                    "uri": "http://www.songkick.com/venues/3529294-vanderelli-room?utm_source=47817&utm_medium=partner",
-                    "id": 3529294
-                }
-            }
-        ]
-    },
-    {
-        "id": 9480,
-        "displayName": "Columbus",
-        "events": [
             {
                 "type": "Concert",
                 "popularity": 0,
@@ -3298,7 +2520,2537 @@
                     "uri": "http://www.songkick.com/venues/4732-ohio-theatre?utm_source=47817&utm_medium=partner",
                     "id": 4732
                 }
+            }
+        ]
+    },
+    {
+        "id": 9480,
+        "displayName": "Columbus",
+        "events": [
+            {
+                "type": "Concert",
+                "venue": {
+                    "displayName": "Ohio Theatre",
+                    "lat": 39.959863,
+                    "lng": -82.998928,
+                    "uri": "http://www.songkick.com/venues/4732-ohio-theatre?utm_source=47817&utm_medium=partner",
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "id": 4732
+                },
+                "status": "ok",
+                "performance": [
+                    {
+                        "billing": "headline",
+                        "displayName": "Diana Krall",
+                        "artist": {
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:67d2cb7a-9ddb-4a7f-82bf-5a2d1a038e98.json",
+                                    "mbid": "67d2cb7a-9ddb-4a7f-82bf-5a2d1a038e98"
+                                }
+                            ],
+                            "displayName": "Diana Krall",
+                            "uri": "http://www.songkick.com/artists/321711-diana-krall?utm_source=47817&utm_medium=partner",
+                            "id": 321711
+                        },
+                        "billingIndex": 1,
+                        "id": 62713669
+                    }
+                ],
+                "popularity": 0.05805,
+                "displayName": "Diana Krall at Ohio Theatre (June 1, 2018)",
+                "start": {
+                    "datetime": "2018-06-01T20:00:00-0400",
+                    "time": "20:00:00",
+                    "date": "2018-06-01"
+                },
+                "ageRestriction": null,
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.959863,
+                    "lng": -82.998928
+                },
+                "uri": "http://www.songkick.com/concerts/32579279-diana-krall-at-ohio-theatre?utm_source=47817&utm_medium=partner",
+                "id": 32579279
             },
+            {
+                "type": "Concert",
+                "popularity": 0.223222,
+                "displayName": "Incubus with Spirit Animal at EXPRESS LIVE! (June 1, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Incubus",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Incubus",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:308aea66-5205-4344-b700-319a8dccaa43.json",
+                                    "mbid": "308aea66-5205-4344-b700-319a8dccaa43"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:e3e0abcd-7671-4482-a9d8-462f5acc9be5.json",
+                                    "mbid": "e3e0abcd-7671-4482-a9d8-462f5acc9be5"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:d660f9ed-f11b-4698-8058-36a578bf54e0.json",
+                                    "mbid": "d660f9ed-f11b-4698-8058-36a578bf54e0"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:d2a39dc9-91d8-49f1-afa2-693a0e7b7e32.json",
+                                    "mbid": "d2a39dc9-91d8-49f1-afa2-693a0e7b7e32"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:9e58d1b4-317f-4ddb-a699-b92c4ee32d97.json",
+                                    "mbid": "9e58d1b4-317f-4ddb-a699-b92c4ee32d97"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:55a327f7-811a-440e-a509-7350742b3dd6.json",
+                                    "mbid": "55a327f7-811a-440e-a509-7350742b3dd6"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/141629-incubus?utm_source=47817&utm_medium=partner",
+                            "id": 141629
+                        },
+                        "id": 63476909
+                    },
+                    {
+                        "displayName": "Spirit Animal",
+                        "billingIndex": 2,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Spirit Animal",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:e75307f6-3df7-405a-988a-89566793e23a.json",
+                                    "mbid": "e75307f6-3df7-405a-988a-89566793e23a"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/1356330-spirit-animal?utm_source=47817&utm_medium=partner",
+                            "id": 1356330
+                        },
+                        "id": 63716479
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-01T19:00:00-0400",
+                    "time": "19:00:00",
+                    "date": "2018-06-01"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.9696888,
+                    "lng": -83.009785
+                },
+                "uri": "http://www.songkick.com/concerts/32996484-incubus-at-express-live?utm_source=47817&utm_medium=partner",
+                "id": 32996484,
+                "venue": {
+                    "displayName": "EXPRESS LIVE!",
+                    "lat": 39.9696888,
+                    "lng": -83.009785,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/777-express-live?utm_source=47817&utm_medium=partner",
+                    "id": 777
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.001612,
+                "displayName": "Colouring at Rumba Café (June 1, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Colouring",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Colouring",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:f415fa7f-7867-46c6-b0ad-4137f74c7abc.json",
+                                    "mbid": "f415fa7f-7867-46c6-b0ad-4137f74c7abc"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/8910329-colouring?utm_source=47817&utm_medium=partner",
+                            "id": 8910329
+                        },
+                        "id": 63991134
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-01T20:00:00-0400",
+                    "time": "20:00:00",
+                    "date": "2018-06-01"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.0147527,
+                    "lng": -83.0002705
+                },
+                "uri": "http://www.songkick.com/concerts/33272414-colouring-at-rumba-cafe?utm_source=47817&utm_medium=partner",
+                "id": 33272414,
+                "venue": {
+                    "displayName": "Rumba Café",
+                    "lat": 40.0147527,
+                    "lng": -83.0002705,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/14551-rumba-cafe?utm_source=47817&utm_medium=partner",
+                    "id": 14551
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000023,
+                "displayName": "India Ramey at Mudflats (June 1, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "India Ramey",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "India Ramey",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/4232111-india-ramey?utm_source=47817&utm_medium=partner",
+                            "id": 4232111
+                        },
+                        "id": 64158514
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": null,
+                    "time": null,
+                    "date": "2018-06-01"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.2148437,
+                    "lng": -82.8798322
+                },
+                "uri": "http://www.songkick.com/concerts/33365714-india-ramey-at-mudflats?utm_source=47817&utm_medium=partner",
+                "id": 33365714,
+                "venue": {
+                    "displayName": "Mudflats",
+                    "lat": 40.2148437,
+                    "lng": -82.8798322,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/2860303-mudflats?utm_source=47817&utm_medium=partner",
+                    "id": 2860303
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.008572,
+                "displayName": "An Horse and American Spirits at Big Room Bar (June 1, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "An Horse",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "An Horse",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:462e8abc-a26b-4e6d-b909-75b8453fd03a.json",
+                                    "mbid": "462e8abc-a26b-4e6d-b909-75b8453fd03a"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/1057101-an-horse?utm_source=47817&utm_medium=partner",
+                            "id": 1057101
+                        },
+                        "id": 64285824
+                    },
+                    {
+                        "displayName": "American Spirits",
+                        "billingIndex": 2,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "American Spirits",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9467469-american-spirits?utm_source=47817&utm_medium=partner",
+                            "id": 9467469
+                        },
+                        "id": 64969869
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-01T20:00:00-0400",
+                    "time": "20:00:00",
+                    "date": "2018-06-01"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.9406904,
+                    "lng": -82.9975355
+                },
+                "uri": "http://www.songkick.com/concerts/33435829-an-horse-at-big-room-bar?utm_source=47817&utm_medium=partner",
+                "id": 33435829,
+                "venue": {
+                    "displayName": "Big Room Bar",
+                    "lat": 39.9406904,
+                    "lng": -82.9975355,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/3108324-big-room-bar?utm_source=47817&utm_medium=partner",
+                    "id": 3108324
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.00004,
+                "displayName": "Nicola Són at Brothers Drake Meadery (June 1, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Nicola Són",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Nicola Són",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:e4e33b55-b4e6-4df9-8f7e-9dbbc54f68bf.json",
+                                    "mbid": "e4e33b55-b4e6-4df9-8f7e-9dbbc54f68bf"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/826213-nicola-son?utm_source=47817&utm_medium=partner",
+                            "id": 826213
+                        },
+                        "id": 64403169
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-01T21:00:00-0400",
+                    "time": "21:00:00",
+                    "date": "2018-06-01"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.9872342,
+                    "lng": -83.0046234
+                },
+                "uri": "http://www.songkick.com/concerts/33501194-nicola-son-at-brothers-drake-meadery?utm_source=47817&utm_medium=partner",
+                "id": 33501194,
+                "venue": {
+                    "displayName": "Brothers Drake Meadery",
+                    "lat": 39.9872342,
+                    "lng": -83.0046234,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/1303706-brothers-drake-meadery?utm_source=47817&utm_medium=partner",
+                    "id": 1303706
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000124,
+                "displayName": "Tranquility with Rich People and Saltlick (OH) at Donato's Basement (June 1, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Tranquility",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Tranquility",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:4d9bfc54-d5bd-4e93-918c-73536aab46b9.json",
+                                    "mbid": "4d9bfc54-d5bd-4e93-918c-73536aab46b9"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/398920-tranquility?utm_source=47817&utm_medium=partner",
+                            "id": 398920
+                        },
+                        "id": 64495989
+                    },
+                    {
+                        "displayName": "Rich People",
+                        "billingIndex": 2,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Rich People",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:e00e1673-2e60-4e5d-81af-231c2a860d52.json",
+                                    "mbid": "e00e1673-2e60-4e5d-81af-231c2a860d52"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/4255411-rich-people?utm_source=47817&utm_medium=partner",
+                            "id": 4255411
+                        },
+                        "id": 64495994
+                    },
+                    {
+                        "displayName": "Saltlick (OH)",
+                        "billingIndex": 3,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Saltlick (OH)",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9393114-saltlick-oh?utm_source=47817&utm_medium=partner",
+                            "id": 9393114
+                        },
+                        "id": 65258154
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-01T18:00:00-0400",
+                    "time": "18:00:00",
+                    "date": "2018-06-01"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.0048438,
+                    "lng": -83.008673
+                },
+                "uri": "http://www.songkick.com/concerts/33555589-tranquility-at-donatos-basement?utm_source=47817&utm_medium=partner",
+                "id": 33555589,
+                "venue": {
+                    "displayName": "Donato's Basement",
+                    "lat": 40.0048438,
+                    "lng": -83.008673,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/2651308-donatos-basement?utm_source=47817&utm_medium=partner",
+                    "id": 2651308
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000096,
+                "displayName": "Misery Loves Company and Morning in May at Ruby Tuesday (June 1, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Misery Loves Company",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Misery Loves Company",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:cea95006-3468-4b21-ae2f-6f3213417fc3.json",
+                                    "mbid": "cea95006-3468-4b21-ae2f-6f3213417fc3"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/58186-misery-loves-company?utm_source=47817&utm_medium=partner",
+                            "id": 58186
+                        },
+                        "id": 64861439
+                    },
+                    {
+                        "displayName": "Morning in May",
+                        "billingIndex": 2,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Morning in May",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/3115186-morning-in-may?utm_source=47817&utm_medium=partner",
+                            "id": 3115186
+                        },
+                        "id": 64861444
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-01T19:00:00-0400",
+                    "time": "19:00:00",
+                    "date": "2018-06-01"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.0035083,
+                    "lng": -83.0005752
+                },
+                "uri": "http://www.songkick.com/concerts/33746179-misery-loves-company-at-ruby-tuesday?utm_source=47817&utm_medium=partner",
+                "id": 33746179,
+                "venue": {
+                    "displayName": "Ruby Tuesday",
+                    "lat": 40.0035083,
+                    "lng": -83.0005752,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/63587-ruby-tuesday?utm_source=47817&utm_medium=partner",
+                    "id": 63587
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000059,
+                "displayName": "The Litz at The Woodlands Tavern (June 1, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "The Litz",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "The Litz",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:fc77efcb-a6fe-456c-9e98-0c80ca68eb03.json",
+                                    "mbid": "fc77efcb-a6fe-456c-9e98-0c80ca68eb03"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/275161-litz?utm_source=47817&utm_medium=partner",
+                            "id": 275161
+                        },
+                        "id": 64973944
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-01T19:00:00-0400",
+                    "time": "19:00:00",
+                    "date": "2018-06-01"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.985079,
+                    "lng": -83.0375959
+                },
+                "uri": "http://www.songkick.com/concerts/33812399-litz-at-woodlands-tavern?utm_source=47817&utm_medium=partner",
+                "id": 33812399,
+                "venue": {
+                    "displayName": "The Woodlands Tavern",
+                    "lat": 39.985079,
+                    "lng": -83.0375959,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/5477-woodlands-tavern?utm_source=47817&utm_medium=partner",
+                    "id": 5477
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000007,
+                "displayName": "Ka Baird at Fuse Factory (June 1, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Ka Baird",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Ka Baird",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9242894-ka-baird?utm_source=47817&utm_medium=partner",
+                            "id": 9242894
+                        },
+                        "id": 64990299
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": null,
+                    "time": null,
+                    "date": "2018-06-01"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.014421,
+                    "lng": -83.000556
+                },
+                "uri": "http://www.songkick.com/concerts/33821159-ka-baird-at-fuse-factory?utm_source=47817&utm_medium=partner",
+                "id": 33821159,
+                "venue": {
+                    "displayName": "Fuse Factory",
+                    "lat": 40.014421,
+                    "lng": -83.000556,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/1528113-fuse-factory?utm_source=47817&utm_medium=partner",
+                    "id": 1528113
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.001211,
+                "displayName": "Tessa Violet at Unknown venue (June 1, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Tessa Violet",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Tessa Violet",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/7416159-tessa-violet?utm_source=47817&utm_medium=partner",
+                            "id": 7416159
+                        },
+                        "id": 65364014
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-01T19:00:00-0400",
+                    "time": "19:00:00",
+                    "date": "2018-06-01"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.137544,
+                    "lng": -82.932991
+                },
+                "uri": "http://www.songkick.com/concerts/34026224-tessa-violet-at-unknown-venue?utm_source=47817&utm_medium=partner",
+                "id": 34026224,
+                "venue": {
+                    "displayName": "Unknown venue",
+                    "lat": 40.137544,
+                    "lng": -82.932991,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": null,
+                    "id": null
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.00001,
+                "displayName": "Young Luns with TrigNo and Zac Fresh at The Vanderelli Room (June 1, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Young Luns",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Young Luns",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9330429-young-luns?utm_source=47817&utm_medium=partner",
+                            "id": 9330429
+                        },
+                        "id": 65426834
+                    },
+                    {
+                        "displayName": "TrigNo",
+                        "billingIndex": 2,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "TrigNo",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9330419-trigno?utm_source=47817&utm_medium=partner",
+                            "id": 9330419
+                        },
+                        "id": 65426839
+                    },
+                    {
+                        "displayName": "Zac Fresh",
+                        "billingIndex": 3,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Zac Fresh",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/6580049-zac-fresh?utm_source=47817&utm_medium=partner",
+                            "id": 6580049
+                        },
+                        "id": 65426844
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-01T20:00:00-0400",
+                    "time": "20:00:00",
+                    "date": "2018-06-01"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.9562105,
+                    "lng": -83.0121498
+                },
+                "uri": "http://www.songkick.com/concerts/34062359-young-luns-at-vanderelli-room?utm_source=47817&utm_medium=partner",
+                "id": 34062359,
+                "venue": {
+                    "displayName": "The Vanderelli Room",
+                    "lat": 39.9562105,
+                    "lng": -83.0121498,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/3529294-vanderelli-room?utm_source=47817&utm_medium=partner",
+                    "id": 3529294
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0,
+                "displayName": "Joey the Songwriter at The Gateway (June 1, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Joey the Songwriter",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Joey the Songwriter",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9377719-joey-the-songwriter?utm_source=47817&utm_medium=partner",
+                            "id": 9377719
+                        },
+                        "id": 65446174
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-01T19:00:00-0400",
+                    "time": "19:00:00",
+                    "date": "2018-06-01"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.9939849,
+                    "lng": -83.0068434
+                },
+                "uri": "http://www.songkick.com/concerts/34073389-joey-the-songwriter-at-gateway?utm_source=47817&utm_medium=partner",
+                "id": 34073389,
+                "venue": {
+                    "displayName": "The Gateway",
+                    "lat": 39.9939849,
+                    "lng": -83.0068434,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/3244974-gateway?utm_source=47817&utm_medium=partner",
+                    "id": 3244974
+                }
+            },
+            {
+                "type": "Concert",
+                "venue": {
+                    "displayName": "Park Street Tavern",
+                    "lat": 39.9723676,
+                    "lng": -83.0047454,
+                    "uri": "http://www.songkick.com/venues/778786-park-street-tavern?utm_source=47817&utm_medium=partner",
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "id": 778786
+                },
+                "status": "ok",
+                "performance": [
+                    {
+                        "billing": "headline",
+                        "displayName": "Yours For The Taking",
+                        "artist": {
+                            "identifier": [],
+                            "displayName": "Yours For The Taking",
+                            "uri": "http://www.songkick.com/artists/7899504-yours-for-the-taking?utm_source=47817&utm_medium=partner",
+                            "id": 7899504
+                        },
+                        "billingIndex": 1,
+                        "id": 62386229
+                    }
+                ],
+                "popularity": 0.000008,
+                "displayName": "Yours For The Taking at Park Street Tavern (June 2, 2018)",
+                "start": {
+                    "datetime": null,
+                    "time": null,
+                    "date": "2018-06-02"
+                },
+                "ageRestriction": null,
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.9723676,
+                    "lng": -83.0047454
+                },
+                "uri": "http://www.songkick.com/concerts/32396914-yours-for-the-taking-at-park-street-tavern?utm_source=47817&utm_medium=partner",
+                "id": 32396914
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.049869,
+                "displayName": "Homeless Gospel Choir, Lucero, and The Sleeping Souls with Frank Turner at EXPRESS LIVE! (June 2, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Homeless Gospel Choir",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Homeless Gospel Choir",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:f9acc9e4-adf8-42ca-b495-8dd051e24b6e.json",
+                                    "mbid": "f9acc9e4-adf8-42ca-b495-8dd051e24b6e"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/3083621-homeless-gospel-choir?utm_source=47817&utm_medium=partner",
+                            "id": 3083621
+                        },
+                        "id": 62842144
+                    },
+                    {
+                        "displayName": "Lucero",
+                        "billingIndex": 2,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Lucero",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:4befe93e-7cb6-4adb-b822-8b19ceb59768.json",
+                                    "mbid": "4befe93e-7cb6-4adb-b822-8b19ceb59768"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:1a681dad-cb15-43be-9d0f-4a807badff9f.json",
+                                    "mbid": "1a681dad-cb15-43be-9d0f-4a807badff9f"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/562918-lucero?utm_source=47817&utm_medium=partner",
+                            "id": 562918
+                        },
+                        "id": 62842154
+                    },
+                    {
+                        "displayName": "The Sleeping Souls",
+                        "billingIndex": 3,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "The Sleeping Souls",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:771a76c8-ca35-46bb-a80b-0ab71a29596e.json",
+                                    "mbid": "771a76c8-ca35-46bb-a80b-0ab71a29596e"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/4393953-sleeping-souls?utm_source=47817&utm_medium=partner",
+                            "id": 4393953
+                        },
+                        "id": 62842159
+                    },
+                    {
+                        "displayName": "Frank Turner",
+                        "billingIndex": 4,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Frank Turner",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:aca5718f-4f49-4439-b8f6-209db3f11757.json",
+                                    "mbid": "aca5718f-4f49-4439-b8f6-209db3f11757"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/529844-frank-turner?utm_source=47817&utm_medium=partner",
+                            "id": 529844
+                        },
+                        "id": 62842149
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-02T18:00:00-0400",
+                    "time": "18:00:00",
+                    "date": "2018-06-02"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.9696888,
+                    "lng": -83.009785
+                },
+                "uri": "http://www.songkick.com/concerts/32647739-homeless-gospel-choir-at-express-live?utm_source=47817&utm_medium=partner",
+                "id": 32647739,
+                "venue": {
+                    "displayName": "EXPRESS LIVE!",
+                    "lat": 39.9696888,
+                    "lng": -83.009785,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/777-express-live?utm_source=47817&utm_medium=partner",
+                    "id": 777
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000853,
+                "displayName": "Brooke Annibale at The Bootlegger (June 2, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Brooke Annibale",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Brooke Annibale",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:66c1c997-2a21-41c1-b173-99b4c4d32690.json",
+                                    "mbid": "66c1c997-2a21-41c1-b173-99b4c4d32690"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/360815-brooke-annibale?utm_source=47817&utm_medium=partner",
+                            "id": 360815
+                        },
+                        "id": 63649469
+                    }
+                ],
+                "ageRestriction": "All Ages",
+                "start": {
+                    "datetime": null,
+                    "time": null,
+                    "date": "2018-06-02"
+                },
+                "location": {
+                    "city": "Newark, OH, US",
+                    "lat": 40.0586019,
+                    "lng": -82.4043764
+                },
+                "uri": "http://www.songkick.com/concerts/33090089-brooke-annibale-at-bootlegger?utm_source=47817&utm_medium=partner",
+                "id": 33090089,
+                "venue": {
+                    "displayName": "The Bootlegger",
+                    "lat": 40.0586019,
+                    "lng": -82.4043764,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/3824374-bootlegger?utm_source=47817&utm_medium=partner",
+                    "id": 3824374
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000072,
+                "displayName": "Ryan Smith at Brewery 33 (June 2, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Ryan Smith",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Ryan Smith",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:62c647d4-a6e0-4e52-a0ee-de0be655ff01.json",
+                                    "mbid": "62c647d4-a6e0-4e52-a0ee-de0be655ff01"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:a07b3a17-597f-41b6-a01f-aba5198c5eea.json",
+                                    "mbid": "a07b3a17-597f-41b6-a01f-aba5198c5eea"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:98ab9cbe-8988-4ffb-a403-3ee2ce403fef.json",
+                                    "mbid": "98ab9cbe-8988-4ffb-a403-3ee2ce403fef"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/1002739-ryan-smith?utm_source=47817&utm_medium=partner",
+                            "id": 1002739
+                        },
+                        "id": 64185839
+                    }
+                ],
+                "ageRestriction": "All Ages",
+                "start": {
+                    "datetime": "2018-06-02T18:30:00-0400",
+                    "time": "18:30:00",
+                    "date": "2018-06-02"
+                },
+                "location": {
+                    "city": "Logan, OH, US",
+                    "lat": 39.544297,
+                    "lng": -82.449957
+                },
+                "uri": "http://www.songkick.com/concerts/33380644-ryan-smith-at-brewery-33?utm_source=47817&utm_medium=partner",
+                "id": 33380644,
+                "venue": {
+                    "displayName": "Brewery 33",
+                    "lat": 39.544297,
+                    "lng": -82.449957,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/3690109-brewery-33?utm_source=47817&utm_medium=partner",
+                    "id": 3690109
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000032,
+                "displayName": "Sarob with Booty&theKidd at The Basement (June 2, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Sarob",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Sarob",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9108474-sarob?utm_source=47817&utm_medium=partner",
+                            "id": 9108474
+                        },
+                        "id": 64448229
+                    },
+                    {
+                        "displayName": "Booty&theKidd",
+                        "billingIndex": 2,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Booty&theKidd",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9412524-booty-and-thekidd?utm_source=47817&utm_medium=partner",
+                            "id": 9412524
+                        },
+                        "id": 64576574
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-02T19:00:00-0400",
+                    "time": "19:00:00",
+                    "date": "2018-06-02"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.969488,
+                    "lng": -83.010005
+                },
+                "uri": "http://www.songkick.com/concerts/33527454-sarob-at-basement?utm_source=47817&utm_medium=partner",
+                "id": 33527454,
+                "venue": {
+                    "displayName": "The Basement",
+                    "lat": 39.969488,
+                    "lng": -83.010005,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/2466-basement?utm_source=47817&utm_medium=partner",
+                    "id": 2466
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000085,
+                "displayName": "Brujas Del Sol at Rumba Café (June 2, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Brujas Del Sol",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Brujas Del Sol",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:9b1ca249-d2f9-40d7-a6e5-b1a1a1c99796.json",
+                                    "mbid": "9b1ca249-d2f9-40d7-a6e5-b1a1a1c99796"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/5323538-brujas-del-sol?utm_source=47817&utm_medium=partner",
+                            "id": 5323538
+                        },
+                        "id": 64946769
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-02T22:00:00-0400",
+                    "time": "22:00:00",
+                    "date": "2018-06-02"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.0147527,
+                    "lng": -83.0002705
+                },
+                "uri": "http://www.songkick.com/concerts/33795944-brujas-del-sol-at-rumba-cafe?utm_source=47817&utm_medium=partner",
+                "id": 33795944,
+                "venue": {
+                    "displayName": "Rumba Café",
+                    "lat": 40.0147527,
+                    "lng": -83.0002705,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/14551-rumba-cafe?utm_source=47817&utm_medium=partner",
+                    "id": 14551
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000102,
+                "displayName": "BUNDYS, Luke Mossburg, CASTROS, Hunter Lepi, and 1 more… at The Woodlands Tavern (June 2, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "BUNDYS",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "BUNDYS",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/6181834-bundys?utm_source=47817&utm_medium=partner",
+                            "id": 6181834
+                        },
+                        "id": 64973969
+                    },
+                    {
+                        "displayName": "Luke Mossburg",
+                        "billingIndex": 2,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Luke Mossburg",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/8103998-luke-mossburg?utm_source=47817&utm_medium=partner",
+                            "id": 8103998
+                        },
+                        "id": 65333639
+                    },
+                    {
+                        "displayName": "CASTROS",
+                        "billingIndex": 3,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "CASTROS",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/1099173-castros?utm_source=47817&utm_medium=partner",
+                            "id": 1099173
+                        },
+                        "id": 65333644
+                    },
+                    {
+                        "displayName": "Hunter Lepi",
+                        "billingIndex": 4,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Hunter Lepi",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9538439-hunter-lepi?utm_source=47817&utm_medium=partner",
+                            "id": 9538439
+                        },
+                        "id": 65333649
+                    },
+                    {
+                        "displayName": "The Bundys (Nashville)",
+                        "billingIndex": 5,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "The Bundys (Nashville)",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/8812964-bundys-nashville?utm_source=47817&utm_medium=partner",
+                            "id": 8812964
+                        },
+                        "id": 65333654
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-02T19:00:00-0400",
+                    "time": "19:00:00",
+                    "date": "2018-06-02"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.985079,
+                    "lng": -83.0375959
+                },
+                "uri": "http://www.songkick.com/concerts/33812419-bundys-at-woodlands-tavern?utm_source=47817&utm_medium=partner",
+                "id": 33812419,
+                "venue": {
+                    "displayName": "The Woodlands Tavern",
+                    "lat": 39.985079,
+                    "lng": -83.0375959,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/5477-woodlands-tavern?utm_source=47817&utm_medium=partner",
+                    "id": 5477
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.005034,
+                "displayName": "Saywecanfly, Fairview, Minshara, and Woven In Hiatus at Rumba Café (June 3, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Saywecanfly",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Saywecanfly",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:b4e501fe-3b2b-4939-80d3-8f071efa6519.json",
+                                    "mbid": "b4e501fe-3b2b-4939-80d3-8f071efa6519"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/4909633-saywecanfly?utm_source=47817&utm_medium=partner",
+                            "id": 4909633
+                        },
+                        "id": 64048594
+                    },
+                    {
+                        "displayName": "Fairview",
+                        "billingIndex": 2,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Fairview",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:6583cbf4-808e-4c93-a4ce-beb006379a8d.json",
+                                    "mbid": "6583cbf4-808e-4c93-a4ce-beb006379a8d"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/305243-fairview?utm_source=47817&utm_medium=partner",
+                            "id": 305243
+                        },
+                        "id": 64620799
+                    },
+                    {
+                        "displayName": "Minshara",
+                        "billingIndex": 3,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Minshara",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/4267861-minshara?utm_source=47817&utm_medium=partner",
+                            "id": 4267861
+                        },
+                        "id": 65017959
+                    },
+                    {
+                        "displayName": "Woven In Hiatus",
+                        "billingIndex": 4,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Woven In Hiatus",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:6b6b0b6b-8e44-44d4-8162-2644ddd9231a.json",
+                                    "mbid": "6b6b0b6b-8e44-44d4-8162-2644ddd9231a"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/8905079-woven-in-hiatus?utm_source=47817&utm_medium=partner",
+                            "id": 8905079
+                        },
+                        "id": 65017964
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-03T18:30:00-0400",
+                    "time": "18:30:00",
+                    "date": "2018-06-03"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.0147527,
+                    "lng": -83.0002705
+                },
+                "uri": "http://www.songkick.com/concerts/33305134-saywecanfly-at-rumba-cafe?utm_source=47817&utm_medium=partner",
+                "id": 33305134,
+                "venue": {
+                    "displayName": "Rumba Café",
+                    "lat": 40.0147527,
+                    "lng": -83.0002705,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/14551-rumba-cafe?utm_source=47817&utm_medium=partner",
+                    "id": 14551
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000072,
+                "displayName": "Ryan Smith at DogTap Columbus (June 3, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Ryan Smith",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Ryan Smith",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:62c647d4-a6e0-4e52-a0ee-de0be655ff01.json",
+                                    "mbid": "62c647d4-a6e0-4e52-a0ee-de0be655ff01"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:a07b3a17-597f-41b6-a01f-aba5198c5eea.json",
+                                    "mbid": "a07b3a17-597f-41b6-a01f-aba5198c5eea"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:98ab9cbe-8988-4ffb-a403-3ee2ce403fef.json",
+                                    "mbid": "98ab9cbe-8988-4ffb-a403-3ee2ce403fef"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/1002739-ryan-smith?utm_source=47817&utm_medium=partner",
+                            "id": 1002739
+                        },
+                        "id": 64560799
+                    }
+                ],
+                "ageRestriction": "All Ages",
+                "start": {
+                    "datetime": "2018-06-03T16:00:00-0400",
+                    "time": "16:00:00",
+                    "date": "2018-06-03"
+                },
+                "location": {
+                    "city": "Canal Winchester, OH, US",
+                    "lat": 39.847145,
+                    "lng": -82.8239959
+                },
+                "uri": "http://www.songkick.com/concerts/33589829-ryan-smith-at-dogtap-columbus?utm_source=47817&utm_medium=partner",
+                "id": 33589829,
+                "venue": {
+                    "displayName": "DogTap Columbus",
+                    "lat": 39.847145,
+                    "lng": -82.8239959,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/3712674-dogtap-columbus?utm_source=47817&utm_medium=partner",
+                    "id": 3712674
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000123,
+                "displayName": "Anemone at Misfit Manor (June 3, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Anemone",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Anemone",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:5c187458-245c-4929-99d1-8569138e966b.json",
+                                    "mbid": "5c187458-245c-4929-99d1-8569138e966b"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:af4697d5-ee33-44ad-9f01-8d2a33419019.json",
+                                    "mbid": "af4697d5-ee33-44ad-9f01-8d2a33419019"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/332912-anemone?utm_source=47817&utm_medium=partner",
+                            "id": 332912
+                        },
+                        "id": 64955269
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": null,
+                    "time": null,
+                    "date": "2018-06-03"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.0098779,
+                    "lng": -83.0063966
+                },
+                "uri": "http://www.songkick.com/concerts/33801069-anemone-at-misfit-manor?utm_source=47817&utm_medium=partner",
+                "id": 33801069,
+                "venue": {
+                    "displayName": "Misfit Manor",
+                    "lat": 40.0098779,
+                    "lng": -83.0063966,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/3231559-misfit-manor?utm_source=47817&utm_medium=partner",
+                    "id": 3231559
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000002,
+                "displayName": "Fat Randy at The Fire House (June 3, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Fat Randy",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Fat Randy",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9299984-fat-randy?utm_source=47817&utm_medium=partner",
+                            "id": 9299984
+                        },
+                        "id": 65352434
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": null,
+                    "time": null,
+                    "date": "2018-06-03"
+                },
+                "location": {
+                    "city": "Lancaster, OH, US",
+                    "lat": 39.7136754,
+                    "lng": -82.5993294
+                },
+                "uri": "http://www.songkick.com/concerts/34019719-fat-randy-at-fire-house?utm_source=47817&utm_medium=partner",
+                "id": 34019719,
+                "venue": {
+                    "displayName": "The Fire House",
+                    "lat": 39.7136754,
+                    "lng": -82.5993294,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/3768849-fire-house?utm_source=47817&utm_medium=partner",
+                    "id": 3768849
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.134466,
+                "displayName": "Jack White with Lillie Mae at EXPRESS LIVE! (June 4, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Jack White",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Jack White",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:0d59d6a4-994a-4436-a7e6-1684057d9bb1.json",
+                                    "mbid": "0d59d6a4-994a-4436-a7e6-1684057d9bb1"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:3ae2fb37-8a23-429d-9920-bac811c4fc22.json",
+                                    "mbid": "3ae2fb37-8a23-429d-9920-bac811c4fc22"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/757422-jack-white?utm_source=47817&utm_medium=partner",
+                            "id": 757422
+                        },
+                        "id": 62563939
+                    },
+                    {
+                        "displayName": "Lillie Mae",
+                        "billingIndex": 2,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Lillie Mae",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:15d34dc5-12d2-475e-8244-cb3eb19fa805.json",
+                                    "mbid": "15d34dc5-12d2-475e-8244-cb3eb19fa805"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/8985779-lillie-mae?utm_source=47817&utm_medium=partner",
+                            "id": 8985779
+                        },
+                        "id": 64330834
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-04T18:00:00-0400",
+                    "time": "18:00:00",
+                    "date": "2018-06-04"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.9696888,
+                    "lng": -83.009785
+                },
+                "uri": "http://www.songkick.com/concerts/32496059-jack-white-at-express-live?utm_source=47817&utm_medium=partner",
+                "id": 32496059,
+                "venue": {
+                    "displayName": "EXPRESS LIVE!",
+                    "lat": 39.9696888,
+                    "lng": -83.009785,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/777-express-live?utm_source=47817&utm_medium=partner",
+                    "id": 777
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000018,
+                "displayName": "George Barrie Band at The Woodlands Tavern (June 4, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "George Barrie Band",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "George Barrie Band",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/6014429-george-barrie-band?utm_source=47817&utm_medium=partner",
+                            "id": 6014429
+                        },
+                        "id": 64083839
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": null,
+                    "time": null,
+                    "date": "2018-06-04"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.985079,
+                    "lng": -83.0375959
+                },
+                "uri": "http://www.songkick.com/concerts/33323964-george-barrie-band-at-woodlands-tavern?utm_source=47817&utm_medium=partner",
+                "id": 33323964,
+                "venue": {
+                    "displayName": "The Woodlands Tavern",
+                    "lat": 39.985079,
+                    "lng": -83.0375959,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/5477-woodlands-tavern?utm_source=47817&utm_medium=partner",
+                    "id": 5477
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000001,
+                "displayName": "Albert Bagman at The Tree Bar (June 4, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Albert Bagman",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Albert Bagman",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9328354-albert-bagman?utm_source=47817&utm_medium=partner",
+                            "id": 9328354
+                        },
+                        "id": 65274639
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": null,
+                    "time": null,
+                    "date": "2018-06-04"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.9920346,
+                    "lng": -83.030484
+                },
+                "uri": "http://www.songkick.com/concerts/33977044-albert-bagman-at-tree-bar?utm_source=47817&utm_medium=partner",
+                "id": 33977044,
+                "venue": {
+                    "displayName": "The Tree Bar",
+                    "lat": 39.9920346,
+                    "lng": -83.030484,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/1616818-tree-bar?utm_source=47817&utm_medium=partner",
+                    "id": 1616818
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.059353,
+                "displayName": "Mastodon and Primus with Jjuujjuu at EXPRESS LIVE! (June 5, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Mastodon",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Mastodon",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:bc5e2ad6-0a4a-4d90-b911-e9a7e6861727.json",
+                                    "mbid": "bc5e2ad6-0a4a-4d90-b911-e9a7e6861727"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:cd53d1d5-eadb-4094-a889-6bce5747744f.json",
+                                    "mbid": "cd53d1d5-eadb-4094-a889-6bce5747744f"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:9dffeb1b-d19a-40f2-b159-064168e1f639.json",
+                                    "mbid": "9dffeb1b-d19a-40f2-b159-064168e1f639"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:ec77c73b-9377-41d5-8898-0bc236c66ff2.json",
+                                    "mbid": "ec77c73b-9377-41d5-8898-0bc236c66ff2"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/91029-mastodon?utm_source=47817&utm_medium=partner",
+                            "id": 91029
+                        },
+                        "id": 62799739
+                    },
+                    {
+                        "displayName": "Primus",
+                        "billingIndex": 2,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Primus",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:84dc4f23-c0b8-4fe1-bbca-a3993ddc8fc2.json",
+                                    "mbid": "84dc4f23-c0b8-4fe1-bbca-a3993ddc8fc2"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/385368-primus?utm_source=47817&utm_medium=partner",
+                            "id": 385368
+                        },
+                        "id": 62799744
+                    },
+                    {
+                        "displayName": "Jjuujjuu",
+                        "billingIndex": 3,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Jjuujjuu",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:95a895f4-760c-40f9-a66d-94f9c3eb22b6.json",
+                                    "mbid": "95a895f4-760c-40f9-a66d-94f9c3eb22b6"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/6535169-jjuujjuu?utm_source=47817&utm_medium=partner",
+                            "id": 6535169
+                        },
+                        "id": 65309434
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-05T18:00:00-0400",
+                    "time": "18:00:00",
+                    "date": "2018-06-05"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.9696888,
+                    "lng": -83.009785
+                },
+                "uri": "http://www.songkick.com/concerts/32625984-mastodon-at-express-live?utm_source=47817&utm_medium=partner",
+                "id": 32625984,
+                "venue": {
+                    "displayName": "EXPRESS LIVE!",
+                    "lat": 39.9696888,
+                    "lng": -83.009785,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/777-express-live?utm_source=47817&utm_medium=partner",
+                    "id": 777
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.013241,
+                "displayName": "Stephen Malkmus & The Jicks with Lithics at Ace of Cups (June 5, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Stephen Malkmus & The Jicks",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Stephen Malkmus & The Jicks",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:98e4bf9e-9e33-4f07-9962-f7c1c2d773ba.json",
+                                    "mbid": "98e4bf9e-9e33-4f07-9962-f7c1c2d773ba"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/81272-stephen-malkmus-and-the-jicks?utm_source=47817&utm_medium=partner",
+                            "id": 81272
+                        },
+                        "id": 63071049
+                    },
+                    {
+                        "displayName": "Lithics",
+                        "billingIndex": 2,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Lithics",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:c98690bd-7a66-4104-89e6-46a6237ee1fc.json",
+                                    "mbid": "c98690bd-7a66-4104-89e6-46a6237ee1fc"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/9337174-lithics?utm_source=47817&utm_medium=partner",
+                            "id": 9337174
+                        },
+                        "id": 63656809
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-05T19:00:00-0400",
+                    "time": "19:00:00",
+                    "date": "2018-06-05"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.0156974,
+                    "lng": -83.0117989
+                },
+                "uri": "http://www.songkick.com/concerts/32771559-stephen-malkmus-and-the-jicks-at-ace-of-cups?utm_source=47817&utm_medium=partner",
+                "id": 32771559,
+                "venue": {
+                    "displayName": "Ace of Cups",
+                    "lat": 40.0156974,
+                    "lng": -83.0117989,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/1474663-ace-of-cups?utm_source=47817&utm_medium=partner",
+                    "id": 1474663
+                }
+            },
+            {
+                "type": "Concert",
+                "venue": {
+                    "displayName": "Steiner's Speakeasy",
+                    "lat": 39.3326581,
+                    "lng": -82.9819691,
+                    "uri": "http://www.songkick.com/venues/2762233-steiners-speakeasy?utm_source=47817&utm_medium=partner",
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "id": 2762233
+                },
+                "status": "ok",
+                "performance": [
+                    {
+                        "billing": "headline",
+                        "displayName": "Brian Ernst",
+                        "artist": {
+                            "identifier": [],
+                            "displayName": "Brian Ernst",
+                            "uri": "http://www.songkick.com/artists/4531503-brian-ernst?utm_source=47817&utm_medium=partner",
+                            "id": 4531503
+                        },
+                        "billingIndex": 1,
+                        "id": 62649879
+                    }
+                ],
+                "popularity": 0.000025,
+                "displayName": "Brian Ernst at Steiner's Speakeasy (June 6, 2018)",
+                "start": {
+                    "datetime": "2018-06-06T20:00:00-0400",
+                    "time": "20:00:00",
+                    "date": "2018-06-06"
+                },
+                "ageRestriction": null,
+                "location": {
+                    "city": "Chillicothe, OH, US",
+                    "lat": 39.3326581,
+                    "lng": -82.9819691
+                },
+                "uri": "http://www.songkick.com/concerts/32544404-brian-ernst-at-steiners-speakeasy?utm_source=47817&utm_medium=partner",
+                "id": 32544404
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.012833,
+                "displayName": "Citizen with Pronoun, Oso Oso, and Angel Du$t (US) at Ace of Cups (June 6, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Citizen",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Citizen",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:7ef9f451-fe57-40c3-b82d-af9a42a81ff4.json",
+                                    "mbid": "7ef9f451-fe57-40c3-b82d-af9a42a81ff4"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:9a5b3d06-9d9f-4ec9-bbb9-5b5e47c7cbd8.json",
+                                    "mbid": "9a5b3d06-9d9f-4ec9-bbb9-5b5e47c7cbd8"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:6d38cb28-8a84-465f-895f-7265d01bdeee.json",
+                                    "mbid": "6d38cb28-8a84-465f-895f-7265d01bdeee"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:4c239bf4-964c-4a0b-a220-81c989ca84e2.json",
+                                    "mbid": "4c239bf4-964c-4a0b-a220-81c989ca84e2"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:7574269b-2a39-4274-97a0-e9e78d8e8373.json",
+                                    "mbid": "7574269b-2a39-4274-97a0-e9e78d8e8373"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:bd743cdc-74a1-4669-bcf9-3942594dc09a.json",
+                                    "mbid": "bd743cdc-74a1-4669-bcf9-3942594dc09a"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/324205-citizen?utm_source=47817&utm_medium=partner",
+                            "id": 324205
+                        },
+                        "id": 63347039
+                    },
+                    {
+                        "displayName": "Pronoun",
+                        "billingIndex": 2,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Pronoun",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:e8f1e8f0-b751-4024-a0c5-27f27c97bf2c.json",
+                                    "mbid": "e8f1e8f0-b751-4024-a0c5-27f27c97bf2c"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/7487224-pronoun?utm_source=47817&utm_medium=partner",
+                            "id": 7487224
+                        },
+                        "id": 63347024
+                    },
+                    {
+                        "displayName": "Oso Oso",
+                        "billingIndex": 3,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Oso Oso",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:a8c4f4c9-b18a-4edf-a7d1-f5b657a9503b.json",
+                                    "mbid": "a8c4f4c9-b18a-4edf-a7d1-f5b657a9503b"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/8530684-oso-oso?utm_source=47817&utm_medium=partner",
+                            "id": 8530684
+                        },
+                        "id": 63347029
+                    },
+                    {
+                        "displayName": "Angel Du$t (US)",
+                        "billingIndex": 4,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Angel Du$t (US)",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/8894909-angel-dust-us?utm_source=47817&utm_medium=partner",
+                            "id": 8894909
+                        },
+                        "id": 65286079
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-06T19:00:00-0400",
+                    "time": "19:00:00",
+                    "date": "2018-06-06"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.0156974,
+                    "lng": -83.0117989
+                },
+                "uri": "http://www.songkick.com/concerts/32925584-citizen-at-ace-of-cups?utm_source=47817&utm_medium=partner",
+                "id": 32925584,
+                "venue": {
+                    "displayName": "Ace of Cups",
+                    "lat": 40.0156974,
+                    "lng": -83.0117989,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/1474663-ace-of-cups?utm_source=47817&utm_medium=partner",
+                    "id": 1474663
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.002758,
+                "displayName": "American Aquarium and Cory Branan at Rumba Café (June 6, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "American Aquarium",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "American Aquarium",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:369d3523-46b1-4127-8664-128f214d0a65.json",
+                                    "mbid": "369d3523-46b1-4127-8664-128f214d0a65"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/34601-american-aquarium?utm_source=47817&utm_medium=partner",
+                            "id": 34601
+                        },
+                        "id": 63708494
+                    },
+                    {
+                        "displayName": "Cory Branan",
+                        "billingIndex": 2,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Cory Branan",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:6e5e3adb-7be9-4bb2-86c1-781aa213e827.json",
+                                    "mbid": "6e5e3adb-7be9-4bb2-86c1-781aa213e827"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/499110-cory-branan?utm_source=47817&utm_medium=partner",
+                            "id": 499110
+                        },
+                        "id": 63813624
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-06T20:30:00-0400",
+                    "time": "20:30:00",
+                    "date": "2018-06-06"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.0147527,
+                    "lng": -83.0002705
+                },
+                "uri": "http://www.songkick.com/concerts/33122379-american-aquarium-at-rumba-cafe?utm_source=47817&utm_medium=partner",
+                "id": 33122379,
+                "venue": {
+                    "displayName": "Rumba Café",
+                    "lat": 40.0147527,
+                    "lng": -83.0002705,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/14551-rumba-cafe?utm_source=47817&utm_medium=partner",
+                    "id": 14551
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.001342,
+                "displayName": "Inter Arma and Earthling with Bruce Lamont at Ruby Tuesday (June 6, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Inter Arma",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Inter Arma",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:25b42db3-2be3-47c3-93f5-eeac9695e010.json",
+                                    "mbid": "25b42db3-2be3-47c3-93f5-eeac9695e010"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/3346611-inter-arma?utm_source=47817&utm_medium=partner",
+                            "id": 3346611
+                        },
+                        "id": 63985619
+                    },
+                    {
+                        "displayName": "Earthling",
+                        "billingIndex": 2,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Earthling",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:45fb1334-4ee0-4c85-af82-f2e6d9a12839.json",
+                                    "mbid": "45fb1334-4ee0-4c85-af82-f2e6d9a12839"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:8fabba82-e0d8-47e1-b97d-b865e3f1185e.json",
+                                    "mbid": "8fabba82-e0d8-47e1-b97d-b865e3f1185e"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:357d8b82-87c6-4a33-b3d8-6638c9a7f2a4.json",
+                                    "mbid": "357d8b82-87c6-4a33-b3d8-6638c9a7f2a4"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:368758d1-4cca-421e-b081-f14c07c44f9a.json",
+                                    "mbid": "368758d1-4cca-421e-b081-f14c07c44f9a"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/202176-earthling?utm_source=47817&utm_medium=partner",
+                            "id": 202176
+                        },
+                        "id": 65048774
+                    },
+                    {
+                        "displayName": "Bruce Lamont",
+                        "billingIndex": 3,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Bruce Lamont",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:d69b0cd3-bddc-4049-ae9a-91f4d9450204.json",
+                                    "mbid": "d69b0cd3-bddc-4049-ae9a-91f4d9450204"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/563786-bruce-lamont?utm_source=47817&utm_medium=partner",
+                            "id": 563786
+                        },
+                        "id": 65048779
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-06T20:00:00-0400",
+                    "time": "20:00:00",
+                    "date": "2018-06-06"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.0035083,
+                    "lng": -83.0005752
+                },
+                "uri": "http://www.songkick.com/concerts/33269059-inter-arma-at-ruby-tuesday?utm_source=47817&utm_medium=partner",
+                "id": 33269059,
+                "venue": {
+                    "displayName": "Ruby Tuesday",
+                    "lat": 40.0035083,
+                    "lng": -83.0005752,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/63587-ruby-tuesday?utm_source=47817&utm_medium=partner",
+                    "id": 63587
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.042126,
+                "displayName": "Everything Everything with Sego at The Basement (June 6, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Everything Everything",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Everything Everything",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:251e10fb-4ed1-4a79-8655-7f22d461a689.json",
+                                    "mbid": "251e10fb-4ed1-4a79-8655-7f22d461a689"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/1729573-everything-everything?utm_source=47817&utm_medium=partner",
+                            "id": 1729573
+                        },
+                        "id": 64152259
+                    },
+                    {
+                        "displayName": "Sego",
+                        "billingIndex": 2,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Sego",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:f2ca3d68-ee61-4cb8-bc8f-47db3636bab6.json",
+                                    "mbid": "f2ca3d68-ee61-4cb8-bc8f-47db3636bab6"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/8193448-sego?utm_source=47817&utm_medium=partner",
+                            "id": 8193448
+                        },
+                        "id": 64178569
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-06T19:00:00-0400",
+                    "time": "19:00:00",
+                    "date": "2018-06-06"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.969488,
+                    "lng": -83.010005
+                },
+                "uri": "http://www.songkick.com/concerts/33361889-everything-everything-at-basement?utm_source=47817&utm_medium=partner",
+                "id": 33361889,
+                "venue": {
+                    "displayName": "The Basement",
+                    "lat": 39.969488,
+                    "lng": -83.010005,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/2466-basement?utm_source=47817&utm_medium=partner",
+                    "id": 2466
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.029841,
+                "displayName": "Tonic at EXPRESS LIVE! (June 6, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Tonic",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Tonic",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:03394467-0e58-45de-8c09-5e393ca3501f.json",
+                                    "mbid": "03394467-0e58-45de-8c09-5e393ca3501f"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:e0e9ed26-0abe-41c4-9f7f-bc50649fd8fd.json",
+                                    "mbid": "e0e9ed26-0abe-41c4-9f7f-bc50649fd8fd"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:5f8dfb7a-3cf6-47a1-a361-eb3b187f09f6.json",
+                                    "mbid": "5f8dfb7a-3cf6-47a1-a361-eb3b187f09f6"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:939bc3e4-3321-4030-ba05-e19b14483baa.json",
+                                    "mbid": "939bc3e4-3321-4030-ba05-e19b14483baa"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:704bc111-2dac-42de-adeb-940f4b0210f8.json",
+                                    "mbid": "704bc111-2dac-42de-adeb-940f4b0210f8"
+                                },
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:ed8e4b83-27de-4bac-8bce-18c7d5505ff6.json",
+                                    "mbid": "ed8e4b83-27de-4bac-8bce-18c7d5505ff6"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/366564-tonic?utm_source=47817&utm_medium=partner",
+                            "id": 366564
+                        },
+                        "id": 64287139
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-06T18:00:00-0400",
+                    "time": "18:00:00",
+                    "date": "2018-06-06"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.9696888,
+                    "lng": -83.009785
+                },
+                "uri": "http://www.songkick.com/concerts/33436569-tonic-at-express-live?utm_source=47817&utm_medium=partner",
+                "id": 33436569,
+                "venue": {
+                    "displayName": "EXPRESS LIVE!",
+                    "lat": 39.9696888,
+                    "lng": -83.009785,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/777-express-live?utm_source=47817&utm_medium=partner",
+                    "id": 777
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.014846,
+                "displayName": "Lea Michele and Darren Criss at Ohio Theatre (June 6, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Lea Michele",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Lea Michele",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:6bb57027-e15a-40fe-974e-fa788711cb75.json",
+                                    "mbid": "6bb57027-e15a-40fe-974e-fa788711cb75"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/1092274-lea-michele?utm_source=47817&utm_medium=partner",
+                            "id": 1092274
+                        },
+                        "id": 64418189
+                    },
+                    {
+                        "displayName": "Darren Criss",
+                        "billingIndex": 2,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Darren Criss",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:989a05be-85e2-4586-a5f4-4207a0a28391.json",
+                                    "mbid": "989a05be-85e2-4586-a5f4-4207a0a28391"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/2253564-darren-criss?utm_source=47817&utm_medium=partner",
+                            "id": 2253564
+                        },
+                        "id": 64418194
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-06T20:00:00-0400",
+                    "time": "20:00:00",
+                    "date": "2018-06-06"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.959863,
+                    "lng": -82.998928
+                },
+                "uri": "http://www.songkick.com/concerts/33509654-lea-michele-at-ohio-theatre?utm_source=47817&utm_medium=partner",
+                "id": 33509654,
+                "venue": {
+                    "displayName": "Ohio Theatre",
+                    "lat": 39.959863,
+                    "lng": -82.998928,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/4732-ohio-theatre?utm_source=47817&utm_medium=partner",
+                    "id": 4732
+                }
+            }
+        ]
+    },
+    {
+        "id": 9480,
+        "displayName": "Columbus",
+        "events": [
             {
                 "type": "Concert",
                 "popularity": 0.044643,
@@ -4578,6 +6330,125 @@
             },
             {
                 "type": "Concert",
+                "popularity": 0.00229,
+                "displayName": "The Widdler at Club Voodoos (June 8, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "The Widdler",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "The Widdler",
+                            "identifier": [
+                                {
+                                    "href": "http://api.songkick.com/api/3.0/artists/mbid:a66145e9-2391-4e0f-93f8-357ddac7f3b6.json",
+                                    "mbid": "a66145e9-2391-4e0f-93f8-357ddac7f3b6"
+                                }
+                            ],
+                            "uri": "http://www.songkick.com/artists/2600416-widdler?utm_source=47817&utm_medium=partner",
+                            "id": 2600416
+                        },
+                        "id": 65450154
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-08T21:00:00-0400",
+                    "time": "21:00:00",
+                    "date": "2018-06-08"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.9299621,
+                    "lng": -82.9952808
+                },
+                "uri": "http://www.songkick.com/concerts/34075694-widdler-at-club-voodoos?utm_source=47817&utm_medium=partner",
+                "id": 34075694,
+                "venue": {
+                    "displayName": "Club Voodoos",
+                    "lat": 39.9299621,
+                    "lng": -82.9952808,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/3638919-club-voodoos?utm_source=47817&utm_medium=partner",
+                    "id": 3638919
+                }
+            },
+            {
+                "type": "Concert",
+                "popularity": 0.000041,
+                "displayName": "Natalie Claro with The Circle (IT) at Wild Goose Creative (June 8, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Natalie Claro",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Natalie Claro",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/8775979-natalie-claro?utm_source=47817&utm_medium=partner",
+                            "id": 8775979
+                        },
+                        "id": 65452684
+                    },
+                    {
+                        "displayName": "The Circle (IT)",
+                        "billingIndex": 2,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "The Circle (IT)",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/8521873-circle-it?utm_source=47817&utm_medium=partner",
+                            "id": 8521873
+                        },
+                        "id": 65452679
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-08T19:30:00-0400",
+                    "time": "19:30:00",
+                    "date": "2018-06-08"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.014421,
+                    "lng": -83.000556
+                },
+                "uri": "http://www.songkick.com/concerts/34077264-natalie-claro-at-wild-goose-creative?utm_source=47817&utm_medium=partner",
+                "id": 34077264,
+                "venue": {
+                    "displayName": "Wild Goose Creative",
+                    "lat": 40.014421,
+                    "lng": -83.000556,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/782921-wild-goose-creative?utm_source=47817&utm_medium=partner",
+                    "id": 782921
+                }
+            },
+            {
+                "type": "Concert",
                 "popularity": 0.016315,
                 "displayName": "Hayley Kiyoko at Newport Music Hall (June 9, 2018)",
                 "status": "ok",
@@ -4918,13 +6789,7 @@
                     "uri": "http://www.songkick.com/venues/5477-woodlands-tavern?utm_source=47817&utm_medium=partner",
                     "id": 5477
                 }
-            }
-        ]
-    },
-    {
-        "id": 9480,
-        "displayName": "Columbus",
-        "events": [
+            },
             {
                 "type": "Concert",
                 "popularity": 0,
@@ -6349,6 +8214,75 @@
                     "id": 3234
                 }
             },
+            {
+                "type": "Concert",
+                "popularity": 0.000038,
+                "displayName": "Tomato Dodgers with The Roof Dogs at Misfit Manor (June 13, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Tomato Dodgers",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Tomato Dodgers",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/8366893-tomato-dodgers?utm_source=47817&utm_medium=partner",
+                            "id": 8366893
+                        },
+                        "id": 65469754
+                    },
+                    {
+                        "displayName": "The Roof Dogs",
+                        "billingIndex": 2,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "The Roof Dogs",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/8978964-roof-dogs?utm_source=47817&utm_medium=partner",
+                            "id": 8978964
+                        },
+                        "id": 65469759
+                    }
+                ],
+                "ageRestriction": null,
+                "start": {
+                    "datetime": "2018-06-13T07:00:00-0400",
+                    "time": "07:00:00",
+                    "date": "2018-06-13"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 40.0098779,
+                    "lng": -83.0063966
+                },
+                "uri": "http://www.songkick.com/concerts/34086364-tomato-dodgers-at-misfit-manor?utm_source=47817&utm_medium=partner",
+                "id": 34086364,
+                "venue": {
+                    "displayName": "Misfit Manor",
+                    "lat": 40.0098779,
+                    "lng": -83.0063966,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/3231559-misfit-manor?utm_source=47817&utm_medium=partner",
+                    "id": 3231559
+                }
+            }
+        ]
+    },
+    {
+        "id": 9480,
+        "displayName": "Columbus",
+        "events": [
             {
                 "type": "Concert",
                 "popularity": 0.011318,
@@ -8429,13 +10363,7 @@
                     "uri": "http://www.songkick.com/venues/800571-used-kids-records?utm_source=47817&utm_medium=partner",
                     "id": 800571
                 }
-            }
-        ]
-    },
-    {
-        "id": 9480,
-        "displayName": "Columbus",
-        "events": [
+            },
             {
                 "type": "Concert",
                 "popularity": 0.00001,
@@ -9699,7 +11627,13 @@
                     "uri": "http://www.songkick.com/venues/2762233-steiners-speakeasy?utm_source=47817&utm_medium=partner",
                     "id": 2762233
                 }
-            },
+            }
+        ]
+    },
+    {
+        "id": 9480,
+        "displayName": "Columbus",
+        "events": [
             {
                 "type": "Concert",
                 "popularity": 0.000113,
@@ -11533,13 +13467,7 @@
                     "uri": "http://www.songkick.com/venues/2466-basement?utm_source=47817&utm_medium=partner",
                     "id": 2466
                 }
-            }
-        ]
-    },
-    {
-        "id": 9480,
-        "displayName": "Columbus",
-        "events": [
+            },
             {
                 "type": "Concert",
                 "popularity": 0.001335,
@@ -12801,7 +14729,13 @@
                     "uri": "http://www.songkick.com/venues/3657789-middle-earth?utm_source=47817&utm_medium=partner",
                     "id": 3657789
                 }
-            },
+            }
+        ]
+    },
+    {
+        "id": 9480,
+        "displayName": "Columbus",
+        "events": [
             {
                 "type": "Concert",
                 "popularity": 0.000992,
@@ -14642,6 +16576,129 @@
             },
             {
                 "type": "Concert",
+                "popularity": 0,
+                "displayName": "Eddie Bars with Kaptino, Zhonny, The Rgrls, and 3 more… at Club Voodoos (June 28, 2018)",
+                "status": "ok",
+                "performance": [
+                    {
+                        "displayName": "Eddie Bars",
+                        "billingIndex": 1,
+                        "billing": "headline",
+                        "artist": {
+                            "displayName": "Eddie Bars",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9546069-eddie-bars?utm_source=47817&utm_medium=partner",
+                            "id": 9546069
+                        },
+                        "id": 65464104
+                    },
+                    {
+                        "displayName": "Kaptino",
+                        "billingIndex": 2,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Kaptino",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9546074-kaptino?utm_source=47817&utm_medium=partner",
+                            "id": 9546074
+                        },
+                        "id": 65464109
+                    },
+                    {
+                        "displayName": "Zhonny",
+                        "billingIndex": 3,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Zhonny",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9546079-zhonny?utm_source=47817&utm_medium=partner",
+                            "id": 9546079
+                        },
+                        "id": 65464114
+                    },
+                    {
+                        "displayName": "The Rgrls",
+                        "billingIndex": 4,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "The Rgrls",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9546084-rgrls?utm_source=47817&utm_medium=partner",
+                            "id": 9546084
+                        },
+                        "id": 65464119
+                    },
+                    {
+                        "displayName": "Ced Spitta",
+                        "billingIndex": 5,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Ced Spitta",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9546089-ced-spitta?utm_source=47817&utm_medium=partner",
+                            "id": 9546089
+                        },
+                        "id": 65464124
+                    },
+                    {
+                        "displayName": "Jefe' Bluntana",
+                        "billingIndex": 6,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Jefe' Bluntana",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9546094-jefe-bluntana?utm_source=47817&utm_medium=partner",
+                            "id": 9546094
+                        },
+                        "id": 65464129
+                    },
+                    {
+                        "displayName": "Famous Rude",
+                        "billingIndex": 7,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Famous Rude",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9546099-famous-rude?utm_source=47817&utm_medium=partner",
+                            "id": 9546099
+                        },
+                        "id": 65464134
+                    }
+                ],
+                "ageRestriction": "18",
+                "start": {
+                    "datetime": "2018-06-28T07:30:00-0400",
+                    "time": "07:30:00",
+                    "date": "2018-06-28"
+                },
+                "location": {
+                    "city": "Columbus, OH, US",
+                    "lat": 39.9299621,
+                    "lng": -82.9952808
+                },
+                "uri": "http://www.songkick.com/concerts/34083269-eddie-bars-at-club-voodoos?utm_source=47817&utm_medium=partner",
+                "id": 34083269,
+                "venue": {
+                    "displayName": "Club Voodoos",
+                    "lat": 39.9299621,
+                    "lng": -82.9952808,
+                    "metroArea": {
+                        "displayName": "Columbus",
+                        "country": {
+                            "displayName": "US"
+                        },
+                        "uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner",
+                        "id": 9480,
+                        "state": {
+                            "displayName": "OH"
+                        }
+                    },
+                    "uri": "http://www.songkick.com/venues/3638919-club-voodoos?utm_source=47817&utm_medium=partner",
+                    "id": 3638919
+                }
+            },
+            {
+                "type": "Concert",
                 "popularity": 0.010302,
                 "displayName": "Joe Diffie at Bluestone (June 29, 2018)",
                 "status": "ok",
@@ -14763,13 +16820,7 @@
                     "uri": "http://www.songkick.com/venues/14551-rumba-cafe?utm_source=47817&utm_medium=partner",
                     "id": 14551
                 }
-            }
-        ]
-    },
-    {
-        "id": 9480,
-        "displayName": "Columbus",
-        "events": [
+            },
             {
                 "type": "Concert",
                 "popularity": 0.000011,
@@ -15812,8 +17863,8 @@
             },
             {
                 "type": "Concert",
-                "popularity": 0.000207,
-                "displayName": "Graduating Life with Mover // Shaker at Donato's Basement (July 1, 2018)",
+                "popularity": 0.000254,
+                "displayName": "Graduating Life with Mover // Shaker, Overgrow, and minor 'love at Donato's Basement (July 1, 2018)",
                 "status": "ok",
                 "performance": [
                     {
@@ -15839,6 +17890,30 @@
                             "id": 8230843
                         },
                         "id": 64219849
+                    },
+                    {
+                        "displayName": "Overgrow",
+                        "billingIndex": 3,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "Overgrow",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9486339-overgrow?utm_source=47817&utm_medium=partner",
+                            "id": 9486339
+                        },
+                        "id": 65459874
+                    },
+                    {
+                        "displayName": "minor 'love",
+                        "billingIndex": 4,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "minor 'love",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/9051734-minor-love?utm_source=47817&utm_medium=partner",
+                            "id": 9051734
+                        },
+                        "id": 65459879
                     }
                 ],
                 "ageRestriction": null,
@@ -16063,7 +18138,13 @@
                     "uri": null,
                     "id": null
                 }
-            },
+            }
+        ]
+    },
+    {
+        "id": 9480,
+        "displayName": "Columbus",
+        "events": [
             {
                 "type": "Concert",
                 "popularity": 0.040028,
@@ -18108,13 +20189,7 @@
                     "uri": "http://www.songkick.com/venues/2762233-steiners-speakeasy?utm_source=47817&utm_medium=partner",
                     "id": 2762233
                 }
-            }
-        ]
-    },
-    {
-        "id": 9480,
-        "displayName": "Columbus",
-        "events": [
+            },
             {
                 "type": "Concert",
                 "popularity": 0.000033,
@@ -19491,7 +21566,13 @@
                     "uri": "http://www.songkick.com/venues/223433-columbus-commons-denison-university?utm_source=47817&utm_medium=partner",
                     "id": 223433
                 }
-            },
+            }
+        ]
+    },
+    {
+        "id": 9480,
+        "displayName": "Columbus",
+        "events": [
             {
                 "type": "Concert",
                 "popularity": 0.000149,
@@ -21563,13 +23644,7 @@
                     "uri": "http://www.songkick.com/venues/14551-rumba-cafe?utm_source=47817&utm_medium=partner",
                     "id": 14551
                 }
-            }
-        ]
-    },
-    {
-        "id": 9480,
-        "displayName": "Columbus",
-        "events": [
+            },
             {
                 "type": "Concert",
                 "popularity": 0.000144,
@@ -22901,10 +24976,16 @@
                     "uri": "http://www.songkick.com/venues/16908-celeste-center-ohio-state-fairgrounds?utm_source=47817&utm_medium=partner",
                     "id": 16908
                 }
-            },
+            }
+        ]
+    },
+    {
+        "id": 9480,
+        "displayName": "Columbus",
+        "events": [
             {
                 "type": "Concert",
-                "popularity": 0.04373,
+                "popularity": 0.043708,
                 "displayName": "Thompson Square at Tequila Cowboy (July 27, 2018)",
                 "status": "ok",
                 "performance": [
@@ -22928,8 +25009,8 @@
                 ],
                 "ageRestriction": null,
                 "start": {
-                    "datetime": null,
-                    "time": null,
+                    "datetime": "2018-07-27T20:00:00-0400",
+                    "time": "20:00:00",
                     "date": "2018-07-27"
                 },
                 "location": {
@@ -24953,13 +27034,7 @@
                     "uri": "http://www.songkick.com/venues/527666-a-and-r-music-bar?utm_source=47817&utm_medium=partner",
                     "id": 527666
                 }
-            }
-        ]
-    },
-    {
-        "id": 9480,
-        "displayName": "Columbus",
-        "events": [
+            },
             {
                 "type": "Concert",
                 "popularity": 0.091094,
@@ -25569,8 +27644,8 @@
             },
             {
                 "type": "Concert",
-                "popularity": 0.022894,
-                "displayName": "The Spill Canvas with Punchline and Selfish Things at Skully's Music Diner (August 8, 2018)",
+                "popularity": 0.022872,
+                "displayName": "The Spill Canvas with Punchline, Selfish Things, and We Are The Movies at Skully's Music Diner (August 8, 2018)",
                 "status": "ok",
                 "performance": [
                     {
@@ -25631,6 +27706,18 @@
                             "id": 8956304
                         },
                         "id": 65369744
+                    },
+                    {
+                        "displayName": "We Are The Movies",
+                        "billingIndex": 4,
+                        "billing": "support",
+                        "artist": {
+                            "displayName": "We Are The Movies",
+                            "identifier": [],
+                            "uri": "http://www.songkick.com/artists/8768834-we-are-the-movies?utm_source=47817&utm_medium=partner",
+                            "id": 8768834
+                        },
+                        "id": 65452509
                     }
                 ],
                 "ageRestriction": null,
@@ -26420,7 +28507,13 @@
                     "uri": "http://www.songkick.com/venues/3733189-crest-parsons?utm_source=47817&utm_medium=partner",
                     "id": 3733189
                 }
-            },
+            }
+        ]
+    },
+    {
+        "id": 9480,
+        "displayName": "Columbus",
+        "events": [
             {
                 "type": "Concert",
                 "popularity": 0.006788,
@@ -29047,13 +31140,7 @@
                     "uri": "http://www.songkick.com/venues/527666-a-and-r-music-bar?utm_source=47817&utm_medium=partner",
                     "id": 527666
                 }
-            }
-        ]
-    },
-    {
-        "id": 9480,
-        "displayName": "Columbus",
-        "events": [
+            },
             {
                 "type": "Concert",
                 "popularity": 0.000072,
@@ -30379,7 +32466,7 @@
             },
             {
                 "type": "Concert",
-                "popularity": 0.042479,
+                "popularity": 0.042678,
                 "displayName": "Julia Michaels at Nationwide Arena (September 25, 2018)",
                 "status": "ok",
                 "performance": [
@@ -30432,7 +32519,13 @@
                     "uri": "http://www.songkick.com/venues/522-nationwide-arena?utm_source=47817&utm_medium=partner",
                     "id": 522
                 }
-            },
+            }
+        ]
+    },
+    {
+        "id": 9480,
+        "displayName": "Columbus",
+        "events": [
             {
                 "type": "Concert",
                 "popularity": 0.032984,

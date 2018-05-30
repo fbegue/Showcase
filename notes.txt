@@ -26,22 +26,18 @@ o dosearch has no output ability right now b/c its on front end; needs to mostly
 //===================================
 //todo:
 
-
-
-o test get_all_tracks with new promise structure
-
-o user_tracks and top_artists are out of date (need updated to use make_request)
-
-o playlist_tracks gets a playlist's tracks, we should extract artists
-o call playlist_tracks for every playlist and compile artist list
-
-
 o fix token issue (disabled hash parse for live token)
   my init token request, although it has the correct 'user-top-read', i get 403'd
   right now getting a token from dev test console and forcing everything to use
   that token works, but not sure what's wrong with init
 
+o sleeper should only be used with better design - need to figure out
+  fastest way to query this info - certainly not a call within a call?
+  or maybe just have a json repository of artist info?
 
+o user_tracks and top_artists are out of date (need updated to use make_request)
+
+o put meaningful stats on operations that take awhile (# track completed/total, etc)
 
 o how to limit artist gathering to those currently touring? or just not like old people lol.
 
@@ -68,11 +64,9 @@ o need to hookup angular mainly
 //===================================
 //todo:
 
+ o executing compare and events get sequentially
 
-o compare with Spotify data meaningfully
-
-o will we need fuzzy matching for songkick versus spotify artist names?
-
+ o todo: handle festivals differently (event.type = 'Festival')
 
 //===================================
 //log:
