@@ -144,8 +144,6 @@ if (typeof(window) !== 'undefined') {
 		var records = [];
 
 
-
-
 		/**
 		 * Designed for paging requests
 		 * trying to reuse my request maker
@@ -209,6 +207,97 @@ if (typeof(window) !== 'undefined') {
 
 			})//promise
 		}; //make_request
+
+		/**
+		 * //todo: needs to be generatlized
+		 * Designed for one-off requests
+		 * Only reads the URL from the url_object
+		 * doesn't care if we fail, still calls done
+		 * @function make_request
+		 **/
+		var make_request_simple =  function(req,cache){
+
+			return new Promise(function(done, fail) {
+
+				var url = req.url;
+
+				console.log("sending request",url);
+
+				$.ajax({
+					dataType: 'json',
+					beforeSend: function (request) {
+						request.setRequestHeader("Authorization", 'Bearer ' + req.token);
+						//var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
+						//request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
+					},
+					url: url,
+				}).done(function(payload){
+
+					console.log("retrieved: ",payload);
+
+					// cache.push(payload)
+					cache[payload.id] = payload;
+
+					//wasn't a simple id coded object? we dont want the cache state handed back
+					//because it was almost for sure a dummy
+
+					if(payload.id){
+						done(cache);
+					}
+					else{
+						done(payload)
+					}
+
+
+				})
+					.fail(function(err){
+
+						console.log("there was a problem: ");
+						console.log(err);
+						done(cache)
+					})
+			})
+
+		}; //make_request_simple
+
+
+		/**
+		 * Hit a search endpoint to try and resolve an input string to an artist profile in Spotify
+		 * @function playlist_tracks
+		 **/
+		exports.search_artists  = function(query){
+
+			console.log("search_artists");
+
+			return new Promise(function(done, fail) {
+
+				var req = {};
+				// req.token = token;
+				req.token = global_access_token
+
+				//todo: test query
+				//todo: convert query with spaces into %20
+				query = "kamasi%20Washington";
+				console.warn("FORCING QUERY: ",query);
+				req.url = "https://api.spotify.com/v1/search?q=" + query + "&type=artist";
+
+				console.log(global_access_token);
+				make_request_simple(req,cache.dummy).then(function(result){
+
+					console.log("result:",result);
+
+					//todo: assuming first match is always the one we want
+
+					var artist = {};
+					result.artists ? artist =  result.artists[0] : {};
+
+					done(artist)
+
+				})
+
+			})
+		};
+
 
 		/**
 		 *
@@ -573,7 +662,29 @@ if (typeof(window) !== 'undefined') {
 
 
 
+		/**
+		 * Do a quick profile fetching test
+		 * @function testAPI
+		 **/
+		exports.testAPI = function(){
+			console.log("testAPI");
 
+			var params = getHashParams();
+			global_access_token =  params.access_token
+			console.log("global_access_token set: ",global_access_token);
+
+			$.ajax({
+				dataType: 'json',
+				beforeSend: function(request) {
+					request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
+				},
+				url:"https://api.spotify.com/v1/me",
+				success: function(body) {
+					console.log("body: ",body);
+					console.log("testAPI success!");
+				}
+			});
+		}
 
 
 		/////////////////////////////////////
@@ -812,29 +923,6 @@ if (typeof(window) !== 'undefined') {
 						word: word,
 						tracks: []
 					});
-				}
-			});
-		}
-
-		/**
-		 * Do a quick profile fetching test
-		 * @function testAPI
-		 **/
-		exports.testAPI = function(){
-			console.log("testAPI");
-
-			var params = getHashParams();
-			global_access_token =    params.access_token
-
-			$.ajax({
-				dataType: 'json',
-				beforeSend: function(request) {
-					request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
-				},
-				url:"https://api.spotify.com/v1/me",
-				success: function(body) {
-					console.log("body: ",body);
-					console.log("testAPI success!");
 				}
 			});
 		}

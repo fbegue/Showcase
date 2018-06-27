@@ -21,7 +21,12 @@ var app = express();
 var request = require('request'); // "Request" library
 var fs      = require('fs');
 
-var service = require('./service.js');
+
+//var songkick = require('./songkick.js');
+var spotify = require('./spotify.js');
+
+
+
 
 //==========================================================================================
 //BEGIN SPOTIFY AUTH SECTION
@@ -33,17 +38,14 @@ var client_id = '178a441343904c588cef9acf8165a5d4'; // Your client id
 var client_secret = '1c09323e0aad42cfaef5f23bb08b6428'; // Your secret
 var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
+var refresh_token_global = {}
+var access_token_global = {};
 
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
  * @return {string} The generated string
  */
-
-
-service.search_artists();
-
-
   var generateRandomString = function(length) {
   var text = '';
   var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -90,10 +92,6 @@ app.get('/login', function(req, res) {
       state: state
     }));
 });
-
-
-var refresh_token_global = {}
-var access_token_global = {};
 
 
 
@@ -176,23 +174,33 @@ app.get('/callback', function(req, res) {
   }
 });
 
-
 app.get('/test', function(req, res) {
 
-	console.log("testing endpoint");
-	res.send({"testprop":"testvalue"})
-});
+	console.log("testing spotify.js");
+	req.token = access_token_global;
+	req.query = "queryTest"
+	spotify.search_artists(req).then(function(result){
 
-app.get('/search_artists', function(req, res) {
+		console.log("search_artists returns",result);
+		res.send({"result":result})
 
-	console.log("search_artists");
-	service.search_artists().then(function(){
-
-
-		 res.send({"search_artists":"testvalue"})
 	})
 
+
 });
+
+// service.search_artists();
+
+// app.get('/search_artists', function(req, res) {
+//
+// 	console.log("search_artists");
+// 	service.search_artists().then(function(){
+//
+//
+// 		 res.send({"search_artists":"testvalue"})
+// 	})
+//
+// });
 
 
 app.get('/getToken', function(req, res) {
