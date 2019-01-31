@@ -65,14 +65,15 @@
       <button onclick="search_artists()">search_artists</button>
     </div>
 
-    <!--<div ng-controller="myCtrl2">-->
-    <!--test:{{test}}-->
-    <!--</div>-->
-
     <div ng-controller="myCtrl">
 
-      <div>selected metro: {{global_metro.displayName}}</div>
-      <div>select metro:</div>  <button style="color:red" ng-click="get_metro_events(global_metro)">get_metro_events</button>
+      <div class="" >selected metro: {{global_metro.displayName}}</div>
+      <div class="" > [YYYY-MM-DD] start date <input ng-model="dateFilter.start">  & end date <input ng-model="dateFilter.end"></div>
+      <div class="" >raw_filename <input ng-model="raw_filename"></div>
+      <div class="" >areaDatesArtists_filename <input ng-model="areaDatesArtists_filename"></div>
+
+      <div class="" >select metro: <button style="color:red" ng-click="get_metro_events(global_metro)">get_metro_events</button> </div>
+
 
       <div style="display:flex;flex-direction:row;">
         <div >

@@ -177,15 +177,17 @@ if (typeof(window) !== 'undefined') {
 			$scope.shared['genres'] = false;
 			$scope.shared['artists']  = false;
 
-			let postData = function (addy,payload) {
-				return  $http.post(addy,payload);
-			};
 
 			$scope.testPost = function(){
 				postData('localhost:8887/test',{test:"in"}).then(function(data) {
 					console.log(data) ;
 					//$scope.$apply();
 				});
+			};
+
+
+			let postData = function (addy,payload) {
+				return  $http.post(addy,payload);
 			};
 
 			let getData = function (file) {
@@ -199,22 +201,42 @@ if (typeof(window) !== 'undefined') {
 				//$scope.$apply();
 			});
 
+
+			$scope.global_metro = {};
+
 			getData('metros.json').then(function(data) {
 				console.log(data) ;
 				$scope.metros = data.data.metros;
 				console.log($scope.metros);
-				//$scope.$apply();
+
+				//todo: move somewhere else
+				$scope.global_metro = $scope.metros[0];
+				$scope.raw_filename = "raw_" + $scope.global_metro.displayName +"_" + $scope.dateFilter.start  + "-" + $scope.dateFilter.end  + ".json";
+				$scope.areaDatesArtists_filename = "areaDatesArtists_" +  $scope.global_metro.displayName +"_" +$scope.dateFilter.start  + "-" + $scope.dateFilter.end  + ".json";
+
 			});
 
-			var make_request_local =  function(url_object,cache){
+			var make_request_local =  function(payload,cache){
 
 				return new Promise(function(done, fail) {
-
-					var url_local = "http://localhost:8888/";
-					console.log("sending request : " + url_object.type + " :: " + url_object.url);
+					// var req = {
+					// 	method: 'POST',
+					// 	url: payload.url,
+					// 	headers: {
+					// 		'Content-Type': undefined,
+					// 		'Access-Control-Allow-Origin':'*'
+					// 	},
+					// 	data: { test: 'test' }
+					// }
+					var url_local = 'http://localhost:8888/';
+					console.log("sending request : " + payload.type + " :: " + payload.url_postfix);
 					$.ajax({
-						url: url_local + url_object.url,
-						type:url_object.type
+						url: url_local + payload.url_postfix,
+						type:payload.type,
+						//TODO: what the fuck is wrong with this shit
+						//data:JSON.stringify({test:"test"}),
+						contentType: JSON.stringify(payload.body)
+						 // contentType: 'application/json',
 					}).done(function(payload){
 
 						console.log("retrieved: ",payload);
@@ -230,17 +252,31 @@ if (typeof(window) !== 'undefined') {
 
 			}; //make_request
 
-			$scope.testEndpoint = function(){
+			$scope.get_metro_events = function(metro){
+
+				// console.log("get_metro_events hook",metro);
+				// postData('localhost:8888/get_metro_events',
+				// 	{req})
+				// 	.then(function(data) {
+				// 		console.log("get_metro_events returns:",data);
+				// 		//$scope.$apply();
+				// 	}).catch(function(err){
+				// 	console.error(err)
+				// })
 
 				var req = {};
-				req.type = "GET";
-				req.url = "test";
+				req.type = "POST";
+				req.url_postfix = "get_metro_events";
+				req.body = {
+					metro:metro,
+					dateFilter:$scope.dateFilter,
+					raw_filename:$scope.raw_filename,
+					areaDatesArtists_filename:$scope.areaDatesArtists_filename
+				};
 
 				make_request_local(req).then(function(result){
-
 					console.log("result",result);
-
-					console.log("testEndpoint finished!");
+					console.log("make_request_local finished!");
 				})
 			};
 
@@ -257,21 +293,13 @@ if (typeof(window) !== 'undefined') {
 				$scope.global_metro = metro;
 			};
 
-			//TODO: CORS policy blocks (ITS TO THE SAME SITE THO WTF
-
-			$scope.get_metro_events = function(metro){
-				console.log("get_metro_events hook",metro);
-
-				postData('localhost:8888/get_metro_events',{metro:metro})
-					.then(function(data) {
-						console.log("get_metro_events returns:",data);
-					//$scope.$apply();
-				}).catch(function(err){
-					console.error(err)
-
-				})
-			};
-
+			$scope.dateFilter= {};
+			//$scope.dateFilter.end = "";
+			//$scope.dateFilter.start = "";
+			$scope.dateFilter.end = '2019-02-20';
+			$scope.dateFilter.start =  '2019-01-20';
+			// $scope.raw_filename = "";
+			// $scope.areaDatesArtists_filename= "";
 
 			$scope.get_all_tracks = exports.get_all_tracks;
 			$scope.get_user_playlists = exports.get_user_playlists;

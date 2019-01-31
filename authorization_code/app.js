@@ -24,9 +24,28 @@ var fs      = require('fs');
 //register songkick module.exports as routes
 
 var songkick = require('./songkick.js');
-for(let key in songkick){
-	app.post("/"+key,songkick[key]);
-}
+
+app.post("/get_metro_events",songkick["get_metro_events"])
+
+// for(let key in songkick){
+//     let type = songkick[key]['type']
+//     switch(type){
+//         case 'POST':
+//         {app.post("/"+key,songkick[key])
+//         }break;
+//         case 'GET':
+//         {app.get("/"+key,songkick[key])
+//         }break;
+//         default:
+//         {
+//
+//         }
+//     }
+//
+// }
+
+console.log('Listening on 8888');
+app.listen(8888);
 
 
 //==========================================================================================
@@ -240,8 +259,7 @@ app.get('/refresh_token', function(req, res) {
 
 });
 
-console.log('Listening on 8888');
-app.listen(8888);
+
 
 
 //==========================================================================================

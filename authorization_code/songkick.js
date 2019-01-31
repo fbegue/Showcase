@@ -248,6 +248,7 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
 	return new Promise(function(done2, fail) {
 
+
 		//used for stats in return object
 		var event_count = 0;
 
@@ -268,19 +269,19 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 					params.page = page_count;
 					params.per_page = 50;
 
-					console.log("getting page {" + page_count + "}...");
+					console.log("getting" + metro.displayName + " " + metro.id + " page {" + page_count + "}...");
 					songkickApi.getLocationUpcomingEvents(metro.id,params)
 						.then(function(events){
 
-							// console.log(events.length);
+							 ///console.log(JSON.stringify(events, null,4));
 
 							var filterInRange = function(event){
 
 								var res = true;
 								var eDate = event.start.date;
-								// console.log( dateFilter.start + " > "  + eDate +  " < "+ dateFilter.end);
-								// console.log( eDate < dateFilter.start)
-								// console.log( eDate > dateFilter.end);
+								console.log( dateFilter.start + " > "  + eDate +  " < "+ dateFilter.end);
+								console.log( eDate < dateFilter.start)
+								console.log( eDate > dateFilter.end);
 
 								//if start invalid, set false and ignore end value
 								//if end invalid, set false and ignore start value unless start is false, then take start
@@ -520,14 +521,19 @@ var metros = [
 
 
 module.exports.get_metro_events = function(req, res){
-	console.log("get_metro_events",req);
 
-	//todo: not receiving appropriate params
-	get_metro_events().then(function(result){
+
+	//TODO: what the fuck is wrong with this shit
+	req.body = JSON.parse(req.headers['content-type']);
+	console.log("get_metro_events",(JSON.stringify(req.body,null,4)))
+
+	get_metro_events(req.body.metro,req.body.dateFilter,req.body.raw_filename,req.body.areaDatesArtists_filename).then(function(result){
 		console.log(result);
 		res.send(result);
 	})
 };
+module.exports.get_metro_events.type = "POST;"
+
 
 //module.exports.fuzzy_compare = fuzzy_compare;
 
