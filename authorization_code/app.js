@@ -21,11 +21,12 @@ var app = express();
 var request = require('request'); // "Request" library
 var fs      = require('fs');
 
+//register songkick module.exports as routes
 
-//var songkick = require('./songkick.js');
-var spotify = require('./spotify.js');
-
-
+var songkick = require('./songkick.js');
+for(let key in songkick){
+	app.post("/"+key,songkick[key]);
+}
 
 
 //==========================================================================================
@@ -57,7 +58,6 @@ var access_token_global = {};
 };
 
 var stateKey = 'spotify_auth_state';
-
 
 
 app.use(express.static(__dirname + '/public'))
@@ -99,7 +99,10 @@ app.get('/login', function(req, res) {
 //trying to export from here and grab in broswer, but can't load
 //var exports = {refresh_token_global:refresh_token_global,access_token_global:access_token_global}
 
-var scope = 'user-read-private user-read-email user-top-read playlist-read-private';
+let all_scopes =["playlist-read-private", "playlist-modify-private", "playlist-modify-public", "playlist-read-collaborative", "user-modify-playback-state", "user-read-currently-playing", "user-read-playback-state", "user-top-read", "user-read-recently-played", "app-remote-control", "streaming", "user-read-birthdate", "user-read-email", "user-read-private", "user-follow-read", "user-follow-modify", "user-library-modify", "user-library-read"];
+let all_scopes_str = "playlist-read-private playlist-modify-private playlist-modify-public playlist-read-collaborative user-modify-playback-state user-read-currently-playing user-read-playback-state user-top-read user-read-recently-played app-remote-control streaming user-read-birthdate user-read-email user-read-private user-follow-read user-follow-modify user-library-modify user-library-read";
+//var scope = 'user-read-private user-read-email user-top-read playlist-read-private playlist-read-collaborative';
+let scope = all_scopes_str;
 
 app.get('/callback', function(req, res) {
 
@@ -174,20 +177,20 @@ app.get('/callback', function(req, res) {
   }
 });
 
-app.get('/test', function(req, res) {
-
-	console.log("testing spotify.js");
-	req.token = access_token_global;
-	req.query = "queryTest"
-	spotify.search_artists(req).then(function(result){
-
-		console.log("search_artists returns",result);
-		res.send({"result":result})
-
-	})
-
-
-});
+// app.get('/test', function(req, res) {
+//
+// 	console.log("testing spotify.js");
+// 	req.token = access_token_global;
+// 	req.query = "queryTest"
+// 	spotify.search_artists(req).then(function(result){
+//
+// 		console.log("search_artists returns",result);
+// 		res.send({"result":result})
+//
+// 	})
+//
+//
+// });
 
 // service.search_artists();
 

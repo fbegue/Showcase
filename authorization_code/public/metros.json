@@ -1,0 +1,16 @@
+{
+  "metros":[
+    {"displayName":"Columbus",
+      "id":9480},
+    {"displayName": "Salt Lake City",
+      "id":13560},
+    {"displayName":"SF Bay Area",
+      "id":26330},
+    {"displayName":"Cleveland",
+      "id":14700},
+    {"displayName":"Cincinnati",
+      "id":22040},
+    {"displayName":"Dayton",
+      "id":3673}
+  ]
+}

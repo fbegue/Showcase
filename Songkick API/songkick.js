@@ -16,6 +16,9 @@ var FuzzyMatching = require('fuzzy-matching');
 const songkickApi = new Songkick(apikey);
 
 
+
+
+
 //figure out metro ids (i think these are universal location ids for places)
 
 //not sure yet about returns for these - are they always city & metro object pairs:
@@ -521,10 +524,10 @@ var areaDatesArtists = "areaDatesArtists_" + metro_select.displayName +"_" + dat
 
 //todo: executing these sequentially giving me some issue
 
-get_metro_events(metro_select,dateFilter,raw,areaDatesArtists)
-	.then(function(){
-		console.log("finished get_metro_events");
-	});
+// get_metro_events(metro_select,dateFilter,raw,areaDatesArtists)
+// 	.then(function(){
+// 		console.log("finished get_metro_events");
+// 	});
 
 
 

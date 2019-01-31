@@ -1,4 +1,40 @@
-{"friends":
-{"display_name": "Aubrey Beltran",
-  "id": "123073652"}
+{
+  "friends": [
+    {
+      "display_name": "Franky Begue",
+      "id": "dacandyman01"
+    },
+    {
+      "display_name": "Aubrey Beltran",
+      "id": "123073652"
+    },
+    {
+      "display_name": "Cassie Miller",
+      "id": "1248560792"
+    },
+    {
+      "display_name": "Aubrey Beltran",
+      "id": "123073652"
+    },
+    {
+      "display_name": "Dustin Reinhart",
+      "id": "1222520083"
+    },
+    {
+      "display_name": "Dan Niemiec",
+      "id": "123028477"
+    },
+    {
+      "display_name": "Logan Maus",
+      "id": "1220109517"
+    },
+    {
+      "display_name": "Jake Lavender",
+      "id": "1292167736"
+    },
+    {
+      "display_name": "Claudia",
+      "id": "123869982"
+    }
+  ]
 }

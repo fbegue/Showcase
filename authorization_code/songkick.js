@@ -15,6 +15,16 @@ var FuzzyMatching = require('fuzzy-matching');
 
 const songkickApi = new Songkick(apikey);
 
+module.exports.test = function(req, res){
+	console.log("test!");
+	let data = "test";
+	res.send({
+		data
+	});
+};
+
+
+
 
 //figure out metro ids (i think these are universal location ids for places)
 
@@ -114,6 +124,7 @@ var find_metros = function() {
 }
 
 //find_metros()
+
 
 /**
  * fuzzy compare two json files
@@ -507,6 +518,19 @@ var metros = [
 		"id":3673}
 ];
 
+
+module.exports.get_metro_events = function(req, res){
+	console.log("get_metro_events",req);
+
+	//todo: not receiving appropriate params
+	get_metro_events().then(function(result){
+		console.log(result);
+		res.send(result);
+	})
+};
+
+//module.exports.fuzzy_compare = fuzzy_compare;
+
 var dateFilter = {};
 dateFilter.start = '2018-07-12'
 dateFilter.end = '2018-07-18';
@@ -520,10 +544,10 @@ var areaDatesArtists = "areaDatesArtists_" + metro_select.displayName +"_" + dat
 
 //todo: executing these sequentially giving me some issue
 
-get_metro_events(metro_select,dateFilter,raw,areaDatesArtists)
-	.then(function(){
-		console.log("finished get_metro_events");
-	});
+// get_metro_events(metro_select,dateFilter,raw,areaDatesArtists)
+// 	.then(function(){
+// 		console.log("finished get_metro_events");
+// 	});
 
 
 
@@ -548,7 +572,6 @@ get_metro_events(metro_select,dateFilter,raw,areaDatesArtists)
 // 	});
 
 
-//todo: trying to figure out some promise things...
 
 
 // get_metro_events(metro_select,dateFilter,raw,areaDatesArtists)

@@ -14,56 +14,74 @@
 
 
 
-
-
-
-var module = angular.module('playlistGen', [])
-var controller = module.controller("myCtrl", function($scope) {
-	console.log("myCtrl");
-	$scope.test = "test"
-
-	var make_request_local =  function(url_object,cache){
-
-		return new Promise(function(done, fail) {
-
-			var url_local = "http://localhost:8888/";
-			console.log("sending request : " + url_object.type + " :: " + url_object.url);
-			$.ajax({
-				url: url_local + url_object.url,
-				type:url_object.type
-			}).done(function(payload){
-
-				console.log("retrieved: ",payload);
-				done(payload);
-
-			})
-				.fail(function(err){
-
-					console.log("there was a problem: ");
-					console.log(err);
-				})
-		})
-
-	}; //make_request
-
-	$scope.testEndpoint = function(){
-
-		var req = {};
-		req.type = "GET";
-		req.url = "test";
-
-		make_request_local(req).then(function(result){
-
-			console.log("result",result);
-
-			console.log("testEndpoint finished!");
-		})
-	};
-
-})
+var global_user = {};
+//
+// var module = angular.module('playlistGen', []);
+// var controller = module.controller("myCtrl", function($scope,$http) {
+// 	console.log("myCtrl");
+// 	$scope.test = "test";
+//
+// 	let getData = function () {
+// 		return  $http.get('friends_id_map.json');
+// 	};
+//
+// 	getData().then(function(data) {
+// 		console.log(data) ;
+// 		$scope.users = data.data.friends;
+// 		console.log($scope.users);
+// 		//$scope.$apply();
+// 	});
+//
+// 	var make_request_local =  function(url_object,cache){
+//
+// 		return new Promise(function(done, fail) {
+//
+// 			var url_local = "http://localhost:8888/";
+// 			console.log("sending request : " + url_object.type + " :: " + url_object.url);
+// 			$.ajax({
+// 				url: url_local + url_object.url,
+// 				type:url_object.type
+// 			}).done(function(payload){
+//
+// 				console.log("retrieved: ",payload);
+// 				done(payload);
+//
+// 			})
+// 				.fail(function(err){
+//
+// 					console.log("there was a problem: ");
+// 					console.log(err);
+// 				})
+// 		})
+//
+// 	}; //make_request
+//
+// 	$scope.testEndpoint = function(){
+//
+// 		var req = {};
+// 		req.type = "GET";
+// 		req.url = "test";
+//
+// 		make_request_local(req).then(function(result){
+//
+// 			console.log("result",result);
+//
+// 			console.log("testEndpoint finished!");
+// 		})
+// 	};
+//
+// 	$scope.set_user = function(user){
+// 		console.log("set user:",user)
+// 		global_user = user;
+// 	}
+//
+//
+// })
 
 
 var global_access_token = {};
+
+
 
 /**
  * Obtains parameters from the hash of the URL
@@ -71,7 +89,7 @@ var global_access_token = {};
  */
 
 var getHashParams = function() {
-	console.log("getHashParams");
+	//console.log("getHashParams");
 	var hashParams = {};
 	var e, r = /([^&;=]+)=?([^&;]*)/g,
 		q = window.location.hash.substring(1);
@@ -110,25 +128,218 @@ if (typeof(window) !== 'undefined') {
 
 	(function(exports) {
 
+
+		var module = angular.module('playlistGen', []);
+
+		//todo: only designed for two people
+		module.filter('sharedFilter', function() {
+			return function(input,type,shared) {
+
+				console.log(shared[type]);
+				if(shared[type]){
+					let output = [];
+					let users = Object.keys(user_cache);
+					console.log(users);
+
+					if(type === 'artists'){
+
+						user_cache[users[0]].artists.simple.forEach(function(art1){
+							user_cache[users[1]].artists.simple.forEach(function(art2){
+								if(art1.name === art2.name){
+									output.indexOf(art1) === -1 ? output.push(art1):{};
+								}
+							})
+
+						})
+					}
+					else if(type === 'genres'){
+						user_cache[users[0]].genres.forEach(function(g1){
+							user_cache[users[1]].genres.forEach(function(g2){
+								if(g1 === g2){
+									output.indexOf(g1) === -1 ? output.push(g1):{};
+								}
+							})
+
+						})
+					}
+					return output;
+				}
+
+				else{return input}
+			};
+		});
+
+		var controller = module.controller("myCtrl", function($scope,$http) {
+			console.log("myCtrl");
+			$scope.test = "test";
+
+			$scope.shared = {};
+			$scope.shared['genres'] = false;
+			$scope.shared['artists']  = false;
+
+			let postData = function (addy,payload) {
+				return  $http.post(addy,payload);
+			};
+
+			$scope.testPost = function(){
+				postData('localhost:8887/test',{test:"in"}).then(function(data) {
+					console.log(data) ;
+					//$scope.$apply();
+				});
+			};
+
+			let getData = function (file) {
+				return  $http.get(file);
+			};
+
+			getData('friends_id_map.json').then(function(data) {
+				console.log(data) ;
+				$scope.users = data.data.friends;
+				console.log($scope.users);
+				//$scope.$apply();
+			});
+
+			getData('metros.json').then(function(data) {
+				console.log(data) ;
+				$scope.metros = data.data.metros;
+				console.log($scope.metros);
+				//$scope.$apply();
+			});
+
+			var make_request_local =  function(url_object,cache){
+
+				return new Promise(function(done, fail) {
+
+					var url_local = "http://localhost:8888/";
+					console.log("sending request : " + url_object.type + " :: " + url_object.url);
+					$.ajax({
+						url: url_local + url_object.url,
+						type:url_object.type
+					}).done(function(payload){
+
+						console.log("retrieved: ",payload);
+						done(payload);
+
+					})
+						.fail(function(err){
+
+							console.log("there was a problem: ");
+							console.log(err);
+						})
+				})
+
+			}; //make_request
+
+			$scope.testEndpoint = function(){
+
+				var req = {};
+				req.type = "GET";
+				req.url = "test";
+
+				make_request_local(req).then(function(result){
+
+					console.log("result",result);
+
+					console.log("testEndpoint finished!");
+				})
+			};
+
+			$scope.global_user = {};
+
+			$scope.set_user = function(user){
+				console.log("set user:",user);
+				global_user = user;
+				$scope.global_user = user;
+			};
+			$scope.set_metro = function(metro){
+				console.log("set_metro:",metro);
+				//global_metro = metro;
+				$scope.global_metro = metro;
+			};
+
+			//TODO: CORS policy blocks (ITS TO THE SAME SITE THO WTF
+
+			$scope.get_metro_events = function(metro){
+				console.log("get_metro_events hook",metro);
+
+				postData('localhost:8888/get_metro_events',{metro:metro})
+					.then(function(data) {
+						console.log("get_metro_events returns:",data);
+					//$scope.$apply();
+				}).catch(function(err){
+					console.error(err)
+
+				})
+			};
+
+
+			$scope.get_all_tracks = exports.get_all_tracks;
+			$scope.get_user_playlists = exports.get_user_playlists;
+
+			$scope.set_user_cache = function(){
+				getData('dacandyman01_usercache_v1.json').then(function(data) {
+					exports.set_user_cache({id:'dacandyman01'},data.data);
+				});
+				getData('jake_usercache_v1.json').then(function(data) {
+					exports.set_user_cache({id:'1292167736'},data.data);
+				});
+			};
+
+			//todo: hardcoded, should just run thru friends map
+			$scope.show = {};
+			$scope.show['dacandyman01'] = {};
+			$scope.show['1292167736'] = {};
+
+			$scope.show['dacandyman01']['playlists'] = true;
+			$scope.show['dacandyman01']['artists'] = true;
+			$scope.show['dacandyman01']['genres'] = true;
+
+			$scope.show['1292167736']['playlists'] = true;
+			$scope.show['1292167736']['artists'] = true;
+			$scope.show['1292167736']['genres'] = true;
+
+			$scope.user_cache = user_cache;
+
+			$scope.applyIt = function(){
+				try{$scope.$apply();}
+				catch(e){}
+			}
+		});
+
+
 		var cache = {};
-		cache.dummy = [];
-		cache.artists = {};
-		cache.playlists = {};
+		let user_cache = {};
 
-		cache.artists.simple = [];
-		cache.artists.full = [];
+		let clean_cache = function(cache){
+			cache.dummy = [];
+			cache.artists = {};
+			cache.playlists = {};
 
-		cache.artistsInfoMap = {};
+			cache.artists.simple = [];
+			cache.artists.full = [];
 
+			cache.artistsInfoMap = {};
+			cache.artistsInfoMap_simple = {};
 
-		cache.playlists.simple  = [];
-		cache.playlists.full = [];
+			cache.playlists.simple  = [];
+			cache.playlists.full = [];
 
-		cache.tracks = [];
+			cache.tracks = [];
+			cache.genres = [];
+			cache.genres_artist_map = {};
 
-		cache.playlist_tracks_map = {};
-		cache.user_playlist_map_full = {}
-		cache.user_playlist_map_simple = {}
+			cache.playlist_tracks_map = {};
+			cache.user_playlist_map_full = {};
+			cache.user_playlist_map_simple = {};
+		};
+		clean_cache(cache);
+
+		exports.clean_cache = clean_cache;
+
+		exports.set_user_cache = function(user,cache){
+			user_cache[user.id] = cache;
+			console.log(user_cache);
+		};
 
 		//spotify api doesn't seem to care if I fuck up these url formations:
 		//https://api.spotify.com/v1/users/dacandyman01/playlists?&offset=150&limit=50
@@ -152,7 +363,6 @@ if (typeof(window) !== 'undefined') {
 		 *  Always explicitly set to "" if not in use
 		 * 	url_object.fields = ""
 		 *
-		 * @function make_request
 		 **/
 		var make_request =  function(url_object,cache){
 
@@ -161,6 +371,9 @@ if (typeof(window) !== 'undefined') {
 				var url = url_object.url + "?" + url_object.fields + off + url_object.offset + lim + url_object.limit;
 
 				console.log("sending request",url);
+
+				let params = getHashParams();
+				global_access_token = params.access_token
 
 				$.ajax({
 					dataType: 'json',
@@ -209,61 +422,50 @@ if (typeof(window) !== 'undefined') {
 		}; //make_request
 
 		/**
-		 * //todo: needs to be generatlized
+		 * //todo: needs to be generalized
 		 * Designed for one-off requests
 		 * Only reads the URL from the url_object
 		 * doesn't care if we fail, still calls done
-		 * @function make_request
+		 * @function make_request_simple
 		 **/
-		var make_request_simple =  function(req,cache){
+		var make_request_simple =  function(req,cache,sleep){
 
 			return new Promise(function(done, fail) {
 
-				var url = req.url;
+				let params = getHashParams();
+				global_access_token = params.access_token
+				console.log("sending request", req.url);
 
-				console.log("sending request",url);
+				let call = () =>{
+					$.ajax({
+						dataType: 'json',
+						beforeSend: function (request) {
+							request.setRequestHeader("Authorization", 'Bearer ' + global_access_token);
+						},
+						url: req.url,
+					}).done(function(payload){
 
-				$.ajax({
-					dataType: 'json',
-					beforeSend: function (request) {
-						request.setRequestHeader("Authorization", 'Bearer ' + req.token);
-						//var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
-						//request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
-					},
-					url: url,
-				}).done(function(payload){
-
-					console.log("retrieved: ",payload);
-
-					// cache.push(payload)
-					cache[payload.id] = payload;
-
-					//wasn't a simple id coded object? we dont want the cache state handed back
-					//because it was almost for sure a dummy
-
-					if(payload.id){
-						done(cache);
-					}
-					else{
+						console.log("retrieved: ",payload);
+						cache[payload.id] = payload;
 						done(payload)
-					}
-
-
-				})
-					.fail(function(err){
-
-						console.log("there was a problem: ");
-						console.log(err);
-						done(cache)
 					})
+						.fail(function(err){
+							console.error("make_request_simple has a problem: ",err);
+							done(cache)
+						})
+				};
+				if(sleep){
+					console.log("sleeping",sleep)
+					setTimeout(() =>{call()},sleep)
+				}
+				else{call()}
 			})
-
 		}; //make_request_simple
 
 
 		/**
 		 * Hit a search endpoint to try and resolve an input string to an artist profile in Spotify
-		 * @function playlist_tracks
+		 * @function search_artists
 		 **/
 		exports.search_artists  = function(query){
 
@@ -283,14 +485,11 @@ if (typeof(window) !== 'undefined') {
 
 				console.log(global_access_token);
 				make_request_simple(req,cache.dummy).then(function(result){
-
 					console.log("result:",result);
 
 					//todo: assuming first match is always the one we want
-
 					var artist = {};
 					result.artists ? artist =  result.artists[0] : {};
-
 					done(artist)
 
 				})
@@ -299,7 +498,9 @@ if (typeof(window) !== 'undefined') {
 		};
 
 
-		/**
+		/**Get tracks for every playlist you throw at it {playlist_tracks_map}
+		 * While processing the playlist track entries, it also fills out artistsInfoMap, artistsInfoMap_simple
+		 * Called while iterating over playlists from get_all_tracks
 		 *
 		 * @function playlist_tracks
 		 **/
@@ -307,24 +508,10 @@ if (typeof(window) !== 'undefined') {
 		var playlist_finished_count = 0;
 		exports.playlist_tracks = function(user,playlist){
 
-
-
 			return new Promise(function(done, fail) {
 
-				//todo: haven't tested this with large playlists (over limit 50, requiring multiple trips)
-
-
-				//todo: disabled hash fetching
-				// var params = getHashParams();
-				// global_access_token = params.access_token
-				//console.log(global_access_token);
-
-				//todo: forcing me as user
-				//user = "/dacandyman01"
-
-				//todo: forcing static id for testing
+				//user = "dacandyman01"
 				//playlist.id = "/5qdfEl1ylx7MLZTmJXydSJ"
-
 
 				//var url_example = "https://api.spotify.com/v1/users/dacandyman01/playlists/5qdfEl1ylx7MLZTmJXydSJ/tracks?fields=items.track.artists&limit=50&offset=0"
 
@@ -349,116 +536,195 @@ if (typeof(window) !== 'undefined') {
 				make_request(url_object,cache.dummy)
 					.then(function(data){
 
-						//todo: trying to also go get artist genre info before committing
+						cache.playlist_tracks_map[playlist.id] = data;
 
-						var promiseTrack = new Promise(function(resolved) {
-
-							resolved();
-						});
-
-						// var promises = [];
-
-						var do_track = false;
+						//var do_track = false;
+						let artist_list = [];
+						let skip = 0;
 
 						data.forEach(function(ob){
 							ob.track.artists.forEach(function(artist){
-								if(cache.artistsInfoMap[artist.id]){
-									//console.log("$match",artist.id);
-								}
+								if(artist_list.indexOf(artist.id) !== -1){skip++;}
+
 								else {
-									do_track = true;
-
-									var url3 = "https://api.spotify.com/v1/artists";
-
-									var url_object2 = {};
-									url_object2.url = url3 + "/" + artist.id
-									// url_object.offset = 0;
-									// url_object.limit = 50;
-									url_object2.fields = "";
-
-									promiseTrack = promiseTrack.then(function () {
-										return (
-											make_request_simple(url_object2, cache.artistsInfoMap)
-												.then(sleeper(50))
-										)
-									});
-
-									// promises.push(make_request_simple(url_object2,cache.artists.reallyFull))
-									// // console.log('fetching full artist object for : ' + artist.name );
-									//
-									// 	Promise.all(promises).then(function(results){
-									//
-									// 		// console.log("fetching full artist object response for: " + artist.name);
-									// 		console.log("$results");
-									// 		console.log(results);
-									//
-									// 		cache.playlist_tracks_map[playlist.id] = data;
-									//
-									// 		console.log("playlist_tracks finished with length: ",data.length);
-									// 		// console.log("artists.simple cache updated:",cache.artists.simple);
-									//
-									// 		done(data);
-									//
-									// 	})
+									//do_track = true;
+									artist_list.push(artist.id);
 								}
-							});
+							}); ///track artists
+						}); //data
+
+						console.log("$skipped",skip);
+						let payloads = [];
+						let custom_it = 0;
+						let payload = [];
+
+						artist_list.forEach(function(id,i){
+
+							if(i === 0){payload.push(id)}
+							else{
+								//everytime we hit a multiple of 50, create a new payload
+								if(!(i % 50 === 0)){payload.push(id)}
+								else{
+									console.log("archive & reset payload");
+									payloads.push(payload);
+									custom_it = 0;
+									payload = [];
+								}
+							}
 						});
 
+						//leftover
+						if(payload.length){payloads.push(payload)}
+						console.log("$payloads",payloads);
 
-						if(do_track){
-							promiseTrack.then(function(results) {
-								cache.playlist_tracks_map[playlist.id] = data;
+						//declare outside of iterator
+						// var promiseTrack = new Promise(function(resolved) {
+						// 	resolved();
+						// });
+						//let do_track;
 
-								playlist_finished_count++;
-								console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
+						let promises = []
+						payloads.forEach(function(payload){
 
-								console.log("current cache.artistsInfoMap size: ");
-								console.log(count_properties(cache.artistsInfoMap));
-								done(data);
-							})
-						}else{
-							playlist_finished_count++;
-							console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
-							done(data)
-						}
+							//do_track = true;
+							//form a comma seperated list of 50 artists ids
+							let payload_str  = "";
+							payload.forEach(function(id,i){
+								payload_str = payload_str + id;
+								i !== payload.length - 1 ? payload_str =  payload_str + "," :{}});
+
+							var url = "https://api.spotify.com/v1/artists?ids=";
+							var url_object = {};
+							url_object.url = url  + payload_str;
+							url_object.fields = "";
+
+							promises.push(make_request_simple(url_object, cache.dummy,100));
+
+							// var reqSleep =  function(){
+							//     return new Promise(function(done, fail) {
+							// 	    make_request_simple(url_object, cache.artistsInfoMap)
+							// 		    .then(sleeper(50))
+							// 		    .then( () =>{done()})
+							//     })
+							// };
+							// promises.push(reqSleep);
+						});
+
+						// exports.artists_multi = function(){
+
+						Promise.all(promises).then(function(results){
+							//console.log("$results",results);
+
+							let all_artists = [];
+							results.forEach((r)=>{all_artists = all_artists.concat(r.artists)});
+
+							console.log(all_artists);
+							console.log("$artists fetched total",all_artists.length);
+
+							all_artists.forEach(function(ar){
+								//guess we had a null one time?
+								let simp;
+								if(ar){
+									cache.artistsInfoMap[ar.id] = ar;
+									simp = {};simp.display_name = ar.name; simp.id = ar.id;
+									cache.artistsInfoMap_simple[ar.id] = simp;
+
+									ar.genres.forEach((g)=>{
+										if(cache.genres.indexOf(g) === -1){
+											cache.genres.push(g);
+										}
+									});
+
+									//will certainly create duplicate artist entry/overlap which is the point
+									ar.genres.forEach((g)=>{
+										if(!cache.genres_artist_map[g]){
+											cache.genres_artist_map[g] = [];
+											cache.genres_artist_map[g].push(simp);
+										}else{
+											cache.genres_artist_map[g].push(simp);
+										}
+									})
+								}//non null artist
+							});
+
+							// console.log("artistsInfoMap",cache.artistsInfoMap);
+							// console.log("artistsInfoMap_simple",cache.artistsInfoMap_simple);
+							//
+							// console.log("genres",cache.genres);
+							// console.log("genres_artist_map",cache.genres_artist_map);
+							done();
+						})
+
+						// promiseTrack.then(function(results) {
+						//
+						// 	console.log("$results",results);
+						// 	console.log(cache.artistsInfoMap);
+						// 	//cache.playlist_tracks_map[playlist.id] = data;
+						//
+						// 	// playlist_finished_count++;
+						// 	// console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
+						// 	//
+						// 	// console.log("current cache.artistsInfoMap size: ");
+						// 	// console.log(count_properties(cache.artistsInfoMap));
+						// 	//done(data);
+						// });
+
+
+						// }else{
+						// 	playlist_finished_count++;
+						// 	console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
+						// 	done(data)
+						// }
+						// if(do_track){
+						// 	promiseTrack.then(function(results) {
+						//
+						// 		console.log("$results",results);
+						// 		// cache.playlist_tracks_map[playlist.id] = data;
+						// 		//
+						// 		// playlist_finished_count++;
+						// 		// console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
+						// 		//
+						// 		// console.log("current cache.artistsInfoMap size: ");
+						// 		// console.log(count_properties(cache.artistsInfoMap));
+						// 		done(data);
+						// 	})
+						// }else{
+						// 	console.log("$here");
+						// 	playlist_finished_count++;
+						// 	console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
+						// 	done(data)
+						// }
 					})
 			})//promise
 
 		};//playlist_tracks
 
 
-		/**
-		 * has been modified to extract unique artists
+		/** run thru the cache.playlists, calling playlist_tracks for each
+		 *  at the end, as a result of playlist_track's work, we have
+		 *  a cache of interesting data which we preserve in a user cache and clear it.
+		 *
+		 *
 		 * @function get_all_tracks
 		 **/
-		exports.get_all_tracks = function(){
+		exports.get_all_tracks = function(user){
+			console.log("user",user);
 
 			var promiseTrack = new Promise(function(resolved) {
-				console.log("get_all_tracks::");
+				console.log("get_all_tracks...");
 				resolved();
 			});
 
-			//sets cache.playlists.simple as well as returns user
-			var user = exports.load_playlists_select();
-
-			// var user = "dacandyman01";
-			// var user  = "spotify"
 
 			console.log("getting tracks for " + cache.playlists.simple.length + " playlists..." );
-
-
 
 			cache.playlists.simple.forEach(function(playlist_simple) {
 
 				promiseTrack = promiseTrack.then(function() {
 					return (
-						exports.playlist_tracks(user,playlist_simple)
-							.then(sleeper(200))
-						//setTimeout(function(){exports.playlist_tracks(user,playlist_simple) }, 3000)
+						exports.playlist_tracks(user.id,playlist_simple)
+							//.then(sleeper(200))
 					)
-					// .then(function(){
-					// 	setTimeout(function(){ console.log("pause..."); }, 3000);
-					// })
 				});
 			});
 
@@ -468,11 +734,18 @@ if (typeof(window) !== 'undefined') {
 				//i.e. its not super useful. instead we've been maintaining a map of every playlist's track
 				//which is updated every time a playlist request is exhausted
 
-				console.log("get_all_tracks promise chain finished:",cache.playlist_tracks_map);
+				console.log("============================================================");
+				console.log("get_all_tracks promise chain finished");
+
+
+				// console.log("cache.playlist_tracks_map",cache.playlist_tracks_map);
+				// console.log(Object.keys(cache.playlist_tracks_map).length);
+				// console.log("cache.artistsInfoMap",cache.artistsInfoMap);
+				// console.log(Object.keys(cache.artistsInfoMap).length);
 
 				//extract all tracks from playlist
 
-				for (var playlistID in cache.playlist_tracks_map) {
+				for (let playlistID in cache.playlist_tracks_map) {
 					if (cache.playlist_tracks_map.hasOwnProperty(playlistID)) {
 						cache.playlist_tracks_map[playlistID].forEach(function(track){
 							cache.tracks.push(track)
@@ -480,25 +753,29 @@ if (typeof(window) !== 'undefined') {
 					}
 				}
 
-				console.log("cache.tracks:",cache.tracks);
+				// console.log("cache.tracks:",cache.tracks);
+				// console.log("cache.genres",cache.genres);
+				// console.log("genres_artist_map",cache.genres_artist_map);
+
+				//reorder genres
+				cache.genres = cache.genres.sort();
 
 				//push all unique artists
-
-
 
 				cache.tracks.forEach(function(track){
 					track.track.artists.forEach(function(artist){
 						var art = {}; art.id = artist.id; art.name = artist.name;
 
-						if(cache.artistsInfoMap[art.id]){
-							if(cache.artistsInfoMap[art.id].genres){
-								art.genres = cache.artistsInfoMap[art.id].genres;
-							}
-						}
+						//this is handled in playlist_tracks now
+
+						// if(cache.artistsInfoMap[art.id]){
+						// 	if(cache.artistsInfoMap[art.id].genres){
+						// 		art.genres = cache.artistsInfoMap[art.id].genres;
+						// 	}
+						// }
 
 						if(findWithAttr(cache.artists.full,"id",art.id) === -1){
 							cache.artists.full.push(art);
-
 							var tuple = {};
 							tuple.name = art.name;
 							tuple.genres = art.genres;
@@ -507,12 +784,11 @@ if (typeof(window) !== 'undefined') {
 					})
 				});
 
-				// console.log("adding artist info to cache.artists.full ...");
+				//console.log("unique artists in cache.artists.simple:",cache.artists.simple);
 
-				console.log("unique artists in cache.artists.simple:",cache.artists.simple);
-
-				console.log("artist info",cache.artistsInfoMap);
-
+				user_cache[user.id] = JSON.parse(JSON.stringify(cache));
+				console.log(user_cache[user.id]);
+				exports.clean_cache(cache)
 
 			})
 				.catch(function(err){
@@ -592,27 +868,16 @@ if (typeof(window) !== 'undefined') {
 		 * @function user_playlists
 		 **/
 		exports.get_user_playlists = function(user){
-
-			//todo: disabled hash fetching
-			// var params = getHashParams();
-			// global_access_token = params.access_token
-			console.log(global_access_token);
-
-			//todo: forcing me as user
-			//user = "/dacandyman01"
-			user = "/123073652"
-			//user = "/123028477"
 			var url1 = "/playlists";
 
 			//var url_example = "https://api.spotify.com/v1/users/dacandyman01/playlists?offset=0&limit=50"
 			//var test_console = "https://beta.developer.spotify.com/console/get-playlists/?user_id=wizzler&limit=&offset=";
 
 			var url_object = {};
-			url_object.url =  url_users + user + url1
+			url_object.url =  url_users + "/" + user.id + url1;
 			url_object.offset = 0;
 			url_object.limit = 50;
 			url_object.fields = "";
-
 
 			make_request(url_object,cache.playlists.full)
 				.then(function(data){
@@ -661,30 +926,74 @@ if (typeof(window) !== 'undefined') {
 		};//user_playlists
 
 
-
 		/**
 		 * Do a quick profile fetching test
 		 * @function testAPI
 		 **/
-		exports.testAPI = function(){
+		exports.testAPI = function(op){
 			console.log("testAPI");
 
-			var params = getHashParams();
-			global_access_token =  params.access_token
-			console.log("global_access_token set: ",global_access_token);
+			switch(op) {
+				case "user":
+					var params = getHashParams();
+					global_access_token =  params.access_token
+					console.log("global_access_token set: ",global_access_token);
 
-			$.ajax({
-				dataType: 'json',
-				beforeSend: function(request) {
-					request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
-				},
-				url:"https://api.spotify.com/v1/me",
-				success: function(body) {
-					console.log("body: ",body);
-					console.log("testAPI success!");
-				}
-			});
-		}
+					$.ajax({
+						dataType: 'json',
+						beforeSend: function(request) {
+							request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
+						},
+						url:"https://api.spotify.com/v1/me",
+						success: function(body) {
+							console.log("body: ",body);
+							console.log("testAPI success!");
+						}
+					});
+					break;
+
+				case "playlistTracks":
+					//https://developer.spotify.com/console/get-playlist-tracks/?playlist_id=&market=&fields=&limit=&offset=
+					console.log("playlistTracks");
+					var url_object = {};
+					let playlist = {};playlist.id = "37i9dQZEVXcGolgKZUussr";
+					url_object.url =  "https://api.spotify.com/v1/playlists/"+ playlist.id +"/tracks"
+					url_object.offset = 0;
+					url_object.limit = 50;
+					url_object.fields = "fields=items.track.artists";
+					console.log('fetching playlist_tracks for : ' + playlist.id );
+					cache.dummy = [];
+					make_request(url_object,cache.dummy).then(function(result){
+
+						console.log(result);
+					}).catch(function(err){
+						console.error(err);
+					})
+					break;
+				case "artist":
+					console.log("artist");
+
+					var url_object = {};
+					let artist = {};artist.id = "2utNxkLhreF1oIfO8kQT3q";
+					url_object.url =  "https://api.spotify.com/v1/artists/" + artist.id;
+					url_object.offset = 0;
+					url_object.limit = 50;
+					url_object.fields = "fields=items.track.artists";
+					console.log('fetching artist profile for : ' + artist.id );
+					cache.dummy = [];
+					make_request_simple(url_object,cache.dummy).then(function(result){
+
+						console.log(result);
+					}).catch(function(err){
+						console.error(err);
+					})
+					break;
+				default:
+				// code block
+			}
+
+		} //testAPI
+
 
 
 		/////////////////////////////////////
@@ -974,7 +1283,7 @@ if (typeof(window) !== 'undefined') {
 
 
 
-		var token = "";
+		var token = "BQBp8TJonAbRUf1MOQtpuLA4kI_j14M8QgySOrg85j6vDfsYRq7EVgFtoXIapfhfP5s0Q4hnmm3KDKagJQaMakm7_NOfVTldxGOngtHIngZSX_4nDSsRHlPg7dembiT_9XFrYXc_wc5uIy0b-u8iYHekcTalYL0hglCylUqMKY6Phz4Nn-WBnyEXx9F0YlMMhc2PAHmfGA"
 
 		exports.forceToken = function() {
 			console.log("forceToken");
