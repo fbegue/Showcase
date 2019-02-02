@@ -153,7 +153,7 @@ var fuzzy_compare = function(performances,artist_input,matchesName){
 		my_artists.forEach(function(artist_genre) {
 			artists_only.push(artist_genre.name)
 
-		})
+		});
 
 		console.log("-------");
 		console.log(artists_only);
@@ -174,7 +174,9 @@ var fuzzy_compare = function(performances,artist_input,matchesName){
 						//try to match each artist from an event
 						var try_match = fm.get(art);
 
-						if(try_match.distance > .8){
+						//todo: what is appropriate distance here?
+
+						if(try_match.distance > .9){
 							var match = {};
 							match.artists = [];
 							match.artists.push(art)
@@ -240,6 +242,25 @@ var fuzzy_compare = function(performances,artist_input,matchesName){
 	})
 };
 
+var metros = [
+	{"displayName":"Columbus",
+		"id":9480},
+	{"displayName": "Salt Lake City",
+		"id":13560},
+	{"displayName":"SF Bay Area",
+		"id":26330},
+	{"displayName":"Cleveland",
+		"id":14700},
+	{"displayName":"Cincinnati",
+		"id":22040},
+	{"displayName":"Dayton",
+		"id":3673}
+];
+
+var dateFilter = {};
+dateFilter.start = '2018-07-12'
+dateFilter.end = '2018-07-18';
+
 /**
  * then get events upcoming for a metro
  * @function get_metro_events
@@ -279,9 +300,9 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
 								var res = true;
 								var eDate = event.start.date;
-								console.log( dateFilter.start + " > "  + eDate +  " < "+ dateFilter.end);
-								console.log( eDate < dateFilter.start)
-								console.log( eDate > dateFilter.end);
+								// console.log( dateFilter.start + " > "  + eDate +  " < "+ dateFilter.end);
+								// console.log( eDate < dateFilter.start)
+								// console.log( eDate > dateFilter.end);
 
 								//if start invalid, set false and ignore end value
 								//if end invalid, set false and ignore start value unless start is false, then take start
@@ -471,29 +492,28 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
 			var json = JSON.stringify(results,null,4)
 
+			done2(results);
+
 			fs.writeFile(raw, json, function(err) {
 
 				if(err) {   return console.log(err); }
 				else{ console.log(raw + " saved!");}
-
 			});
 
 			var output = {};
 			output.result = {};
-
-			output.result.area = metro_select.displayName;
+			output.result.area = metro.displayName;
 			output.result.events = event_count;
 			output.result.dates = performance_dates;
 
-
-			json = JSON.stringify(output,null,4)
+			json = JSON.stringify(output,null,4);
 
 			fs.writeFile(areaDatesArtists, json, function(err) {
 
 				if(err) {   return console.log(err); }
 				else{
 					console.log(areaDatesArtists + " saved!");
-					done2();
+					done2(results);
 				}
 
 			});
@@ -504,49 +524,26 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
 }//get_metro_events
 
-var metros = [
-	{"displayName":"Columbus",
-		"id":9480},
-	{"displayName": "Salt Lake City",
-		"id":13560},
-	{"displayName":"SF Bay Area",
-		"id":26330},
-	{"displayName":"Cleveland",
-		"id":14700},
-	{"displayName":"Cincinnati",
-		"id":22040},
-	{"displayName":"Dayton",
-		"id":3673}
-];
-
 
 module.exports.get_metro_events = function(req, res){
-
 
 	//TODO: what the fuck is wrong with this shit
 	req.body = JSON.parse(req.headers['content-type']);
 	console.log("get_metro_events",(JSON.stringify(req.body,null,4)))
 
 	get_metro_events(req.body.metro,req.body.dateFilter,req.body.raw_filename,req.body.areaDatesArtists_filename).then(function(result){
-		console.log(result);
+		//console.log(result);
 		res.send(result);
 	})
 };
 module.exports.get_metro_events.type = "POST;"
 
-
 //module.exports.fuzzy_compare = fuzzy_compare;
 
-var dateFilter = {};
-dateFilter.start = '2018-07-12'
-dateFilter.end = '2018-07-18';
-// dateFilter.end = '2018-06-05';
 
-//todo: best way to parametrize these calls?
 
-var metro_select = metros[2]
-var raw = "raw_" + metro_select.displayName +"_" + dateFilter.start + "-" + dateFilter.end + ".json"
-var areaDatesArtists = "areaDatesArtists_" + metro_select.displayName +"_" + dateFilter.start + "-" + dateFilter.end + ".json"
+// var raw = "raw_" + metro_select.displayName +"_" + dateFilter.start + "-" + dateFilter.end + ".json"
+// var areaDatesArtists = "areaDatesArtists_" + metro_select.displayName +"_" + dateFilter.start + "-" + dateFilter.end + ".json"
 
 //todo: executing these sequentially giving me some issue
 
@@ -554,8 +551,6 @@ var areaDatesArtists = "areaDatesArtists_" + metro_select.displayName +"_" + dat
 // 	.then(function(){
 // 		console.log("finished get_metro_events");
 // 	});
-
-
 
 //var artist_input = "my_artists.json";
 // // var artist_input = "aubrey_123073652_artists.json";

@@ -14,6 +14,10 @@
     "jsdom": "10.1.0",
     "querystring": "~0.2.0",
     "request": "^2.88.0",
-    "songkick-api-node": "1.0.2"
+    "songkick-api-node": "1.0.2",
+    "grunt-contrib-watch": "latest",
+    "grunt-browserify": "latest",
+    "grunt-express": "latest",
+    "grunt-express-server": "latest"
   }
 }

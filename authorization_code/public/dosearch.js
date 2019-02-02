@@ -12,7 +12,11 @@
 //https://github.com/possan/playlistcreator-example/blob/master/app.js
 //https://github.com/possan/playlistcreator-example/blob/master/index.html
 
+var FuzzyMatching = require('fuzzy-matching');
 
+var fm = new FuzzyMatching(["test"]);
+let match = fm.get("test");
+console.log("$match",match);
 
 var global_user = {};
 //
@@ -168,6 +172,37 @@ if (typeof(window) !== 'undefined') {
 				else{return input}
 			};
 		});
+
+		module.filter('fuzzyBy', ['$parse', function ( $parse ) {
+			return function (collection, property, search, csensitive) {
+
+				var sensitive = csensitive || false,
+					prop, getter;
+
+				collection = isObject(collection) ? toArray(collection) : collection;
+
+				if(!isArray(collection) || isUndefined(property)
+					|| isUndefined(search)) {
+					return collection;
+				}
+
+				getter = $parse(property);
+
+				return collection.filter(function(elm) {
+
+					prop = getter(elm);
+					if(!isString(prop)) {
+						return false;
+					}
+
+					prop = (sensitive) ? prop : prop.toLowerCase();
+					search = (sensitive) ? search : search.toLowerCase();
+
+					return hasApproxPattern(prop, search) !== false
+				})
+			}
+
+		}]);
 
 		var controller = module.controller("myCtrl", function($scope,$http) {
 			console.log("myCtrl");

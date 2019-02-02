@@ -6,9 +6,11 @@
 
   <!--todo: does this go here exactly?-->
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.js"></script>
-  <script type="text/javascript" src="dosearch.js"></script>
+  <!--<script type="text/javascript" src="dosearch.js"></script>-->
   <script type="text/javascript" src="../Songkick API/songkick.js"></script>
   <script type="text/javascript" src="artists.js"></script>
+
+  <script src="bundle.js"></script>
 
 
 
@@ -67,30 +69,54 @@
 
     <div ng-controller="myCtrl">
 
-      <div class="" >selected metro: {{global_metro.displayName}}</div>
-      <div class="" > [YYYY-MM-DD] start date <input ng-model="dateFilter.start">  & end date <input ng-model="dateFilter.end"></div>
-      <div class="" >raw_filename <input ng-model="raw_filename"></div>
-      <div class="" >areaDatesArtists_filename <input ng-model="areaDatesArtists_filename"></div>
-
-      <div class="" >select metro: <button style="color:red" ng-click="get_metro_events(global_metro)">get_metro_events</button> </div>
-
-
       <div style="display:flex;flex-direction:row;">
-        <div >
-          <ul>
-            <li ng-repeat="m in metros">
-              <button ng-click="set_metro(m)">{{m.displayName}}</button>
-            </li>
-          </ul>
-        </div>
-        <!--<button ng-click="get_all_tracks(global_user)">getAllTracks</button>-->
-        <!--<button ng-click="get_user_playlists(global_user)">get_user_playlists</button>-->
-        <!--<button ng-click="set_user_cache()">set_user_cache</button>-->
+        <div>
 
-        <!--<button ng-click ="applyIt()">applyIt</button>-->
-        <!--<button ng-click ="testPost()">testPost</button>-->
-        <!--<button class="btn btn-default" ng-click="testEndpoint()">testEndpoint</button>-->
-      </div>
+          <div class="" >selected metro: {{global_metro}}</div>
+          <div class="" > [YYYY-MM-DD] start date <input ng-model="dateFilter.start">  & end date <input ng-model="dateFilter.end"></div>
+          <div class="" >raw_filename <input ng-model="raw_filename"></div>
+          <div class="" >areaDatesArtists_filename <input ng-model="areaDatesArtists_filename"></div>
+
+          <div class="" >select metro: <button style="color:red" ng-click="get_metro_events(global_metro)">get_metro_events</button> </div>
+
+          <div style="display:flex;flex-direction:row;">
+            <div >
+              <ul>
+                <li ng-repeat="m in metros">
+                  <button ng-click="set_metro(m)">{{m.displayName}}</button>
+                </li>
+              </ul>
+            </div>
+            <!--<button ng-click="get_all_tracks(global_user)">getAllTracks</button>-->
+            <!--<button ng-click="get_user_playlists(global_user)">get_user_playlists</button>-->
+            <!--<button ng-click="set_user_cache()">set_user_cache</button>-->
+
+            <!--<button ng-click ="applyIt()">applyIt</button>-->
+            <!--<button ng-click ="testPost()">testPost</button>-->
+            <!--<button class="btn btn-default" ng-click="testEndpoint()">testEndpoint</button>-->
+          </div>
+
+        </div>
+
+        <div>
+
+          <div ng-repeat="e in metro_cache[global_metro.id]">
+            <div style="font-weight:bold">{{e.displayName}} @ {{e.venue.displayName}} on {{getEventDate(e)}}</div>
+            <div>  artists: <div ng-repeat="a in e.performance">{{a.displayName}} (<span style="font-style:italic" ng-repeat="g in a.artist.genres">{{g}}</span>)</div>
+
+              <!--todo: doesn't work (no index?)-->
+             <span ng-hide="$index = performance.length">,</span>
+
+           </span>
+            </div>
+
+          </div>
+
+        </div>
+
+
+      </div><!--column-->
+
 
       <div style="display:flex;flex-direction:row;">
 
