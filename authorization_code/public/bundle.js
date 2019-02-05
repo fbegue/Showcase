@@ -273,16 +273,59 @@
 						artistSongkick_id:"number",
 					};
 
-					
-					//todo: images relation table
-				
-
 
 					// let events_performancesDef = {
 					// 	event_id:"number",
 					// 	performance_id:"number"
 					// };
-					
+
+
+					//todo: images relation table
+					let artistDef = {
+						id:"string",
+						name: "string",
+						popularity: "number",
+						uri: "string"
+					};
+
+					//genreDef
+
+					let artists_genresDef = {
+						artist_id:"string",
+						genre_id: "number"
+					};
+
+					//todo: collaborative,tracks,images
+					let playlistDef = {
+						id:"string",
+						name:"string",
+						//owner.display_name
+						owner:"string",
+						public:"boolean",
+						uri:"string"
+					};
+
+					let playlists_artistsDef = {
+						playlist_id:"string",
+						artist_id:"string"
+					};
+
+					let playlists_tracksDef = {
+						playlist_id:"string",
+						track_id:"string"
+					};
+
+					let artists_tracksDef = {
+						artist_id:"string",
+						track_id:"string"
+					};
+
+					//todo: very minimal
+					let trackDef = {
+						id:"string",
+						name:"string"
+					};
+
 					let defStr = function(def){
 						let defStr = "";
 						Object.keys(def).forEach(function(key,i){
@@ -358,25 +401,17 @@
 						let res4 = alasql("select * from events e JOIN events_performances ep on e.id = ep.event_id JOIN performances p on p.id = ep.performance_id");
 						console.log("res4",res4);
 
-						
 						let artist_ex = {
 							id: "070kGpqtESdDsLb3gdMIyx",
 							name: "Easton Corbin",
 							popularity: 62,
 							uri: "spotify:artist:070kGpqtESdDsLb3gdMIyx"
 						};
-						
-						let artistDef = {
-							id:"string",
-							name: "string",
-							popularity: "number",
-							uri: "string"
-						};
 
 						let artistDefStr = defStr(artistDef);
 						console.log(artistDefStr);
 						alasql("CREATE TABLE artists (" + artistDefStr + ")");
-						alasql("INSERT INTO artists VALUES ( " + vlister(artist_ex)  + " )");
+						//alasql("INSERT INTO artists VALUES ( " + vlister(artist_ex)  + " )");
 
 						let res5 = alasql("select * from artists;");
 						console.log("$res",res5);
@@ -393,29 +428,48 @@
 						
 						let genreDefStr = "id number AUTOINCREMENT , name string";
 						alasql("CREATE TABLE genres (" + genreDefStr + ")");
-						alasql("INSERT INTO genres VALUES ( " + vlister(genre_ex)  + " )");
+						//alasql("INSERT INTO genres VALUES ( " + vlister(genre_ex)  + " )");
 
 						console.log("select * from genres;",alasql("select * from genres;"));
-
 
 						let artists_genres_ex = {
 							artist_id:"070kGpqtESdDsLb3gdMIyx",
 							genre_id: 1
 						};
 
-						let artists_genresDef = {
-							artist_id:"string",
-							genre_id: "number"
-						};
-
 						let artists_genresDefStr = defStr(artists_genresDef);
 						alasql("CREATE TABLE artists_genres (" + artists_genresDefStr + ")");
-						alasql("INSERT INTO artists_genres VALUES ( " + vlister(artists_genres_ex)  + " )");
+						//alasql("INSERT INTO artists_genres VALUES ( " + vlister(artists_genres_ex)  + " )");
 
 						console.log("select * from artists_genres;",alasql("select * from artists_genres;"));
 
 						let join = alasql("select * from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id");
 						console.log("join artists, genres",join);
+
+
+						let track_ex = {
+							id:"4a1s4abQkfbaLkWBn6uMLf",
+							name:"This Far From Memphis"
+						};
+
+						let trackDefStr = defStr(trackDef);
+						alasql("CREATE TABLE tracks (" + trackDefStr + ")");
+						//alasql("INSERT INTO tracks VALUES ( " + vlister(track_ex)  + " )");
+						console.log("select * from tracks;",alasql("select * from tracks;"));
+
+						let artists_tracks_ex = {
+							artist_id:"070kGpqtESdDsLb3gdMIyx",
+							track_id:"4a1s4abQkfbaLkWBn6uMLf"
+						};
+
+						let artists_tracksDefStr = defStr(artists_tracksDef);
+						alasql("CREATE TABLE artists_tracks (" + artists_tracksDefStr + ")");
+						//alasql("INSERT INTO artists_tracks VALUES ( " + vlister(artists_tracks_ex)  + " )");
+						console.log("select * from artists_tracks;",alasql("select * from artists_tracks;"));
+
+						let join3 = alasql("select * from artists a JOIN artists_tracks at on a.id = at.artist_id JOIN tracks t on t.id = at.track_id");
+						console.log("join artists, tracks",join3);
+
 
 						let playlists_ex = {
 							id: "5vDmqTWcShNGe7ENaud90q",
@@ -425,19 +479,9 @@
 							uri: "spotify:user:1292167736:playlist:5vDmqTWcShNGe7ENaud90q"
 						};
 
-						//todo: collaborative,tracks,images
-						let playlistsDef = {
-							id:"string",
-							name:"string",
-							//owner.display_name
-							owner:"string",
-							public:"boolean",
-							uri:"string"
-						};
-
-						let playlistsDefStr = defStr(playlistsDef);
+						let playlistsDefStr = defStr(playlistDef);
 						alasql("CREATE TABLE playlists (" + playlistsDefStr + ")");
-						alasql("INSERT INTO playlists VALUES ( " + vlister(playlists_ex)  + " )");
+						//alasql("INSERT INTO playlists VALUES ( " + vlister(playlists_ex)  + " )");
 
 						console.log("select * from playlists;",alasql("select * from playlists;"));
 
@@ -446,25 +490,33 @@
 							artist_id:"070kGpqtESdDsLb3gdMIyx"
 						};
 
-						let playlists_artistsDef = {
-							playlist_id:"string",
-							artist_id:"string"
-						};
 
 						let playlists_artistsDefStr = defStr(playlists_artistsDef);
 						alasql("CREATE TABLE playlists_artists (" + playlists_artistsDefStr + ")");
-						alasql("INSERT INTO playlists_artists VALUES ( " + vlister(playlists_artists_ex)  + " )");
+						//alasql("INSERT INTO playlists_artists VALUES ( " + vlister(playlists_artists_ex)  + " )");
 
 						console.log("select * from playlists_artists;",alasql("select * from playlists_artists;"));
 
-						let join2 = alasql("select * from playlists p JOIN playlists_artists pa on p.id = pa.playlist_id JOIN artists a on a.id = pa.artist_id");
-						console.log("join playlists, artists",join2);
+						//let join2 = alasql("select * from playlists p JOIN playlists_artists pa on p.id = pa.playlist_id JOIN artists a on a.id = pa.artist_id");
+						//console.log("join playlists, artists",join2);
+
+
+
+						let playlists_tracks_ex = {
+							playlist_id:"5vDmqTWcShNGe7ENaud90q",
+							track_id:"4a1s4abQkfbaLkWBn6uMLf"
+						};
+
+						let playlists_tracksDefStr = defStr(playlists_tracksDef);
+						alasql("CREATE TABLE playlists_tracks (" + playlists_tracksDefStr + ")");
+						//alasql("INSERT INTO playlists_tracks VALUES ( " + vlister(playlists_tracks_ex)  + " )");
+						console.log("select * from playlists_tracks;",alasql("select * from playlists_tracks;"));
+
+						let join4 = alasql("select * from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id JOIN tracks t on t.id = pt.track_id");
+						console.log("join playlists, tracks",join4);
 
 
 						//todo: artist_artistSongkick ? what's the point if its not persistant tho...
-
-						//todo: tracks (really shouldn't go straight from playlists -> artists)
-						
 						
 					};
 
@@ -1174,6 +1226,7 @@
 
 										if(tuple.error){$scope.unresolved_artists.push(tuple.query)}
 										else{
+
 											//todo: other caches?
 											//todo: somethings a little fucked here, don't know what though
 											tuple.spotify_artist.name === "Consider the Source" ? console.log(tuple):{};
@@ -1355,9 +1408,18 @@
 							.then(function(data){
 								//data = cache.playlists.full
 
-								console.log("user_playlists finished with records length: ",cache.playlists.full.length);
-								console.log("data: ",cache.playlists.full);
+								//todo: cleanup, shouldn't be using cache
 
+								console.log("user_playlists finished with records length:" ,cache.playlists.full.length);
+								console.log("data: ",JSON.parse(JSON.stringify(cache.playlists.full)));
+
+								cache.playlists.full.forEach(function(playlist){
+									playlist.owner = playlist.owner.id;
+									reduce(playlistDef,playlist);
+									alasql("INSERT INTO playlists VALUES ( " + vlister(playlist)  + " )");
+								});
+
+								console.log("select * from playlists;",alasql("select * from playlists;"));
 
 								cache.playlists.simple = data.map(function(item,index) {
 										var rObj = {}; rObj.id = item.id; rObj.name = item.name;
@@ -1426,7 +1488,7 @@
 							url_object.url =  url_users + user + url1 + "/" + playlist.id + url2
 							url_object.offset = 0;
 							url_object.limit = 50;
-							url_object.fields = "fields=items.track.artists";
+							url_object.fields = "fields=items.track(id,name,artists)";
 
 							console.log('fetching playlist_tracks for : ' + playlist.id );
 
@@ -1486,7 +1548,7 @@
 									// });
 									//let do_track;
 
-									let promises = []
+									let promises = [];
 									payloads.forEach(function(payload){
 
 										//do_track = true;
@@ -1517,6 +1579,8 @@
 
 									Promise.all(promises).then(function(results){
 										//console.log("$results",results);
+
+										//todo: need to know playlist associated with each artist
 
 										let all_artists = [];
 										results.forEach((r)=>{all_artists = all_artists.concat(r.artists)});
