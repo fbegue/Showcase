@@ -18,10 +18,8 @@
   </component>
   <component name="ChangeListManager">
     <list id="b42abc44-fc3f-4476-9229-482094258a06" name="fucking idea folder" comment="fuck this thing" />
-    <list default="true" id="b24e5d1f-7383-41ff-a721-7dbb75469dd8" name="Default" comment="added tracks, finished dbs. in the middle of fixing up playlist_tracks">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.gitignore" />
+    <list default="true" id="b24e5d1f-7383-41ff-a721-7dbb75469dd8" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/authorization_code/public/bundle.js" afterPath="$PROJECT_DIR$/authorization_code/public/bundle.js" />
     </list>
     <ignored path=".idea/" />
     <ignored path="$PROJECT_DIR$/.idea/" />
@@ -389,7 +387,7 @@
       <workItem from="1549314684019" duration="2441000" />
       <workItem from="1549381127385" duration="75000" />
       <workItem from="1549396300944" duration="529000" />
-      <workItem from="1549399035549" duration="3625000" />
+      <workItem from="1549399035549" duration="3722000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1517433036503</created>
@@ -447,11 +445,18 @@
       <option name="project" value="LOCAL" />
       <updated>1548944576197</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="added tracks, finished dbs. in the middle of fixing up playlist_tracks">
+      <created>1549404289259</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1549404289259</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="146541000" />
+    <option name="totallyTimeSpent" value="146638000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
@@ -459,7 +464,7 @@
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1670179" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.07788162" sideWeight="0.5258166" order="10" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.23052959" sideWeight="0.5258166" order="10" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.07788162" sideWeight="0.47418335" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24506749" sideWeight="0.48946258" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -491,7 +496,8 @@
     <MESSAGE value="just notes" />
     <MESSAGE value="dayoff" />
     <MESSAGE value="metro prints" />
-    <option name="LAST_COMMIT_MESSAGE" value="metro prints" />
+    <MESSAGE value="added tracks, finished dbs. in the middle of fixing up playlist_tracks" />
+    <option name="LAST_COMMIT_MESSAGE" value="added tracks, finished dbs. in the middle of fixing up playlist_tracks" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
