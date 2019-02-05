@@ -134,7 +134,7 @@
 				var module = angular.module('playlistGen', []);
 
 				//todo: only designed for two people
-				module.filter('sharedFilter', function() {
+				module.filter('sharedFilter', function()  {
 					return function(input,type,shared) {
 
 						//console.log(shared[type]);
@@ -171,6 +171,36 @@
 					};
 				});
 
+				module.filter('hasGenre', function()  {
+					return function(input,filterGenre,user_cache) {
+						let output = [];
+
+						if(input === undefined){
+							return input;
+						}
+						else{
+
+							console.log(input);
+							console.log(filterGenre);
+							console.log(user_cache);
+
+							input.forEach(function(event){
+								event.performance.forEach(function(p){
+									let spotId = user_cache.global.artistsSongkickSpotifyMap[p.artist.id];
+									let genres;
+									user_cache.global.artistsInfoMap[spotId] ? genres = user_cache.global.artistsInfoMap[spotId].genres:genres = [];
+									if (genres.indexOf(filterGenre) !== -1 && output.indexOf(event) === -1) {
+										output.push(event)
+									}
+								})
+							});
+						}
+
+						console.log(output);
+						return output;
+					};
+				});
+
 				//todo: need to not display a PERFORMANCE if I don't care about underlying ARTIST
 
 				module.filter('myArtists', function() {
@@ -186,13 +216,676 @@
 						});
 					}});
 
-				var controller = module.controller("myCtrl", function($scope,$http) {
+				let controller = module.controller("myCtrl", function($scope,$http) {
 					console.log("myCtrl");
 					$scope.test = "test";
+
+					//examples
+
+					//you can't store things like this, just convert them on selects
+					// alasql.fn.datetime = function(dateStr) {
+					// 	var date = new Date(dateStr);
+					// 	return date.toLocaleString();
+					// };
+
+					//alasql("CREATE TABLE cities (city string, pop number, date string)");
+					// alasql("INSERT INTO cities VALUES ('Paris',2249975),('Berlin',3517424),('Madrid',3041579)");
+					//let x = new Date().toISOString();
+					//alasql("INSERT INTO cities VALUES ('Paris',2249975, '" + x +"')");
+
+					//var res = alasql("SELECT * FROM cities WHERE pop < 3500000 ORDER BY pop DESC");
+					//var res = alasql('SELECT date ,city FROM cities');
+
+					let vlister = function(object){
+						return Object.values(object).map(function(value){
+							return "'" + value + "'"
+						}).join(",");
+					};
+
+					//var y = vlister({"one":{"fuck":1},"two":2,"three":3});
+					// let vlister = function(object,ignore){
+					// 	let y = Object.values(object).map(function(value){
+					// 		if(value !== object["two"]){
+					// 			return "'" + value + "'"
+					// 		}else{return '';}
+					// 	});
+					// 	y.forEach(function(v,i){
+					// 		if(v === ""){console.log(v);y.splice(i,1);}
+					// 	});
+					// 	return y;
+					// };
+
+					let eventDef = {
+						id:"number",
+						displayName:"string",
+						type:"string",
+						uri:"string",
+						start:"string",
+						location:"string",
+						metro_id:"number"
+					};
+
+					let performanceDef = {
+						id:"number",
+						displayName:"string",
+						billing:"string",
+						billingIndex:"number",
+						artistSongkick_id:"number",
+					};
+
+					
+					//todo: images relation table
+				
+
+
+					// let events_performancesDef = {
+					// 	event_id:"number",
+					// 	performance_id:"number"
+					// };
+					
+					let defStr = function(def){
+						let defStr = "";
+						Object.keys(def).forEach(function(key,i){
+							defStr = defStr + key + " " + def[key];
+							if(Object.keys(def).length !== i + 1){defStr = defStr + ", "}
+						});
+						return defStr;
+					};
+
+					let createDB = function(){
+
+
+						let eventDefStr = defStr(eventDef);
+						
+						let event_ex = {
+							id:36490829,
+							displayName:'Beppe Gambetta at United Church of Granville (February 3, 2019)',
+							location:'Granville, OH, US',
+							start:null,
+							type:'Concert',
+							uri:'http://www.songkick.com/concerts/36490829-beppe-gambetta-at-united-church-of-granville?utm_source=47817&utm_medium=partner',
+							metro_id:9480
+						};
+
+						alasql("CREATE TABLE events (" + eventDefStr + ")");
+						//alasql("INSERT INTO events VALUES ( " + vlister(event_ex)  + " )");
+						let res = alasql("select * from events;");
+						console.log("$res",res);
+
+						let performanceCol ="id number, displayName string, artistSongkick_id number, billingIndex number,billing string";
+
+						let performanceDefStr = defStr(performanceDef);
+
+						let  performance_ex = {
+							id:69550639,
+							displayName:'Beppe Gambetta',
+							artistSongkick_id:468935,
+							billingIndex: 1,
+							billing:'headline'
+						};
+						let  performance_ex2 = {
+							id:69559999,
+							displayName:'Beppe Gambetta2',
+							artistSongkick_id:468935,
+							billingIndex: 1,
+							billing:'headline'
+						};
+
+						alasql("CREATE TABLE performances (" + performanceDefStr + ")");
+						//alasql("INSERT INTO performances VALUES ( " + vlister(performance_ex)  + " )");
+						//alasql("INSERT INTO performances VALUES ( " + vlister(performance_ex2)  + " )");
+						let res2 = alasql("select * from performances;");
+						console.log("$res",res2);
+
+
+						let events_performancesCol ="event_id number, performance_id number";
+
+						let  event_performance_ex = {
+							event_id:36490829,
+							performance_id:69550639
+						};
+						let  event_performance_ex2 = {
+							event_id:36490829,
+							performance_id:69559999
+						};
+
+						alasql("CREATE TABLE events_performances (" + events_performancesCol + ")");
+						//alasql("INSERT INTO events_performances VALUES ( " + vlister(event_performance_ex)  + " )");
+						//alasql("INSERT INTO events_performances VALUES ( " + vlister(event_performance_ex2)  + " )");
+						let res3 = alasql("select * from events_performances;");
+						console.log("$res",res3);
+
+						let res4 = alasql("select * from events e JOIN events_performances ep on e.id = ep.event_id JOIN performances p on p.id = ep.performance_id");
+						console.log("res4",res4);
+
+						
+						let artist_ex = {
+							id: "070kGpqtESdDsLb3gdMIyx",
+							name: "Easton Corbin",
+							popularity: 62,
+							uri: "spotify:artist:070kGpqtESdDsLb3gdMIyx"
+						};
+						
+						let artistDef = {
+							id:"string",
+							name: "string",
+							popularity: "number",
+							uri: "string"
+						};
+
+						let artistDefStr = defStr(artistDef);
+						console.log(artistDefStr);
+						alasql("CREATE TABLE artists (" + artistDefStr + ")");
+						alasql("INSERT INTO artists VALUES ( " + vlister(artist_ex)  + " )");
+
+						let res5 = alasql("select * from artists;");
+						console.log("$res",res5);
+
+						// let genreDef = {
+						// 	id:"number",
+						// 	name: "string"
+						// };
+
+						let genre_ex = {
+							id:null,
+							name: "country"
+						};
+						
+						let genreDefStr = "id number AUTOINCREMENT , name string";
+						alasql("CREATE TABLE genres (" + genreDefStr + ")");
+						alasql("INSERT INTO genres VALUES ( " + vlister(genre_ex)  + " )");
+
+						console.log("select * from genres;",alasql("select * from genres;"));
+
+
+						let artists_genres_ex = {
+							artist_id:"070kGpqtESdDsLb3gdMIyx",
+							genre_id: 1
+						};
+
+						let artists_genresDef = {
+							artist_id:"string",
+							genre_id: "number"
+						};
+
+						let artists_genresDefStr = defStr(artists_genresDef);
+						alasql("CREATE TABLE artists_genres (" + artists_genresDefStr + ")");
+						alasql("INSERT INTO artists_genres VALUES ( " + vlister(artists_genres_ex)  + " )");
+
+						console.log("select * from artists_genres;",alasql("select * from artists_genres;"));
+
+						let join = alasql("select * from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id");
+						console.log("join artists, genres",join);
+
+						let playlists_ex = {
+							id: "5vDmqTWcShNGe7ENaud90q",
+							name: "Classic Rock/Rock",
+							owner:"Jake Lavender",
+							public: true,
+							uri: "spotify:user:1292167736:playlist:5vDmqTWcShNGe7ENaud90q"
+						};
+
+						//todo: collaborative,tracks,images
+						let playlistsDef = {
+							id:"string",
+							name:"string",
+							//owner.display_name
+							owner:"string",
+							public:"boolean",
+							uri:"string"
+						};
+
+						let playlistsDefStr = defStr(playlistsDef);
+						alasql("CREATE TABLE playlists (" + playlistsDefStr + ")");
+						alasql("INSERT INTO playlists VALUES ( " + vlister(playlists_ex)  + " )");
+
+						console.log("select * from playlists;",alasql("select * from playlists;"));
+
+						let playlists_artists_ex = {
+							playlist_id:"5vDmqTWcShNGe7ENaud90q",
+							artist_id:"070kGpqtESdDsLb3gdMIyx"
+						};
+
+						let playlists_artistsDef = {
+							playlist_id:"string",
+							artist_id:"string"
+						};
+
+						let playlists_artistsDefStr = defStr(playlists_artistsDef);
+						alasql("CREATE TABLE playlists_artists (" + playlists_artistsDefStr + ")");
+						alasql("INSERT INTO playlists_artists VALUES ( " + vlister(playlists_artists_ex)  + " )");
+
+						console.log("select * from playlists_artists;",alasql("select * from playlists_artists;"));
+
+						let join2 = alasql("select * from playlists p JOIN playlists_artists pa on p.id = pa.playlist_id JOIN artists a on a.id = pa.artist_id");
+						console.log("join playlists, artists",join2);
+
+
+						//todo: artist_artistSongkick ? what's the point if its not persistant tho...
+
+						//todo: tracks (really shouldn't go straight from playlists -> artists)
+						
+						
+					};
+
+					createDB();
+
+					let d3_launch = function(){
+						var json_data = {
+							"name": " ",
+							"children": [
+								{
+									"name": "Interactive tools",
+									"free": true,
+									"description": "Interactive authoring tools",
+									"children": [
+										{
+											"name": "Browser-based",
+											"description": "Web-based 'cloud' applications for authoring data visualisations",
+											"free": true,
+											"children": [
+												{
+													"name": "Datawrapper",
+													"description": "An open-source platform for publishing charts on the web. Cloud-based or self-hosted.",
+													"url": "https://datawrapper.de/",
+													"free": true
+												},
+												{
+													"name": "Google Sheets",
+													"description": "Spreadsheet in the cloud with charting",
+													"free": true
+												},
+												{
+													"name": "plotly",
+													"description": "Cloud-based interactive tool for creating data visualisations",
+													"url": "https://plot.ly/",
+													"free": true
+												},
+												{
+													"name": "RAW",
+													"description": "Open-source interactive tool for creating and exporting D3-like charts",
+													"url": "http://raw.densitydesign.org/",
+													"free": true
+												}
+											]
+										},
+										{
+											"name": "Desktop",
+											"children": [
+												{
+													"name": "Tableau Desktop",
+													"description": "Powerful tool for data analytics and visualisation",
+													"url": "http://www.tableausoftware.com/products/desktop"
+												},
+												{
+													"name": "Tableau Public",
+													"description": "Free version of Tableau Desktop where charts are public",
+													"url": "http://www.tableausoftware.com/products/public",
+													"free": true
+												}
+											]
+										}
+									]
+								},
+								{
+									"name": "Coding",
+									"description": "Code-based data visualisation creation",
+									"free": true,
+									"children": [
+										{
+											"name": "JavaScript",
+											"description": "The language behind most (all?) browser-based data visualisations",
+											"free": true,
+											"children": [
+												{
+													"name": "Charting libraries",
+													"description": "Off-the-shelf pre-designed charts. Easy to use but less flexible.",
+													"free": true,
+													"children": [
+														{
+															"name": "Google Charts",
+															"description": "A good selection of charts including bar, line, scatter, geo, pie, donut, org etc.",
+															"url": "https://developers.google.com/chart/",
+															"free": true
+														},
+														{
+															"name": "HighCharts",
+															"description": "A well maintained commercial library of commonly used chart types",
+															"url": "https://www.highcharts.com/"
+														},
+														{
+															"name": "InfoVis",
+															"description": "A lovely selection of charts including bar, pie, sunburst, icicle, network, trees etc.",
+															"url": "https://philogb.github.io/jit/",
+															"free": true
+														},
+														{
+															"name": "Mapping",
+															"description": "Libraries for visualising geographic data",
+															"free": true,
+															"children": [
+																{
+																	"name": "Kartograph",
+																	"description": "Lovely vector based mapping library with good browser support",
+																	"url": "http://kartograph.org/",
+																	"free": true
+																},
+																{
+																	"name": "Leaflet",
+																	"description": "Tile-based mapping library",
+																	"url": "http://leafletjs.com/",
+																	"free": true
+																}
+															]
+														},
+														{
+															"name": "MetricsGraphics.js",
+															"description": "Beautiful line, scatter and histogram charts built on top of D3",
+															"url": "http://metricsgraphicsjs.org/",
+															"free": true
+														},
+														{
+															"name": "NVD3",
+															"description": "A general purpose charting library built on top of D3",
+															"url": "http://nvd3.org/",
+															"free": true
+														},
+														{
+															"name": "Sigma",
+															"description": "Library for visualising networks",
+															"url": "http://sigmajs.org/",
+															"free": true
+														}
+													]
+												},
+												{
+													"name": "Custom coded",
+													"description": "For maximum flexibility, custom coding is the way to go. These libraries will lend a hand.",
+													"free": true,
+													"children": [
+														{
+															"name": "D3",
+															"description": "The jewel in the crown of web-based data visualisation. A library packed full of components for building any data visualisation you can imagine.",
+															"url": "https://d3js.org/",
+															"free": true
+														},
+														{
+															"name": "Ractive",
+															"description": "Relatively new, Ractive helps you make your HTML and SVG interactive",
+															"url": "http://www.ractivejs.org/",
+															"free": true
+														},
+														{
+															"name": "Raphaël",
+															"description": "A general purpose drawing library with good browser support",
+															"url": "http://raphaeljs.com/",
+															"free": true
+														},
+														{
+															"name": "Snap.svg",
+															"description": "A modern version of Raphaël that supports modern browsers",
+															"url": "http://snapsvg.io/",
+															"free": true
+														},
+														{
+															"name": "Variance",
+															"description": "A declarative, mark-up based data visualisation library",
+															"url": "https://variancecharts.com/"
+														},
+														{
+															"name": "Vega",
+															"description": "A declarative language for specifying data visualistions",
+															"url": "https://trifacta.github.io/vega/",
+															"free": true
+														}
+													]
+												}
+											]
+										},
+										{
+											"name": "Other",
+											"description": "Non-JavaScript languages for producing web-based data visualisations",
+											"free": true,
+											"children": [
+												{
+													"name": "Python",
+													"description": "Python's a very popular language in data science and is a pleasant language to learn and use",
+													"free": true,
+													"children": [
+														{
+															"name": "Bokeh",
+															"description": "A powerful tool for producing interactive plots, dashboards and data applications",
+															"url": "https://bokeh.pydata.org/",
+															"free": true
+														}
+													]
+												},
+												{
+													"name": "R",
+													"description": "Very popular language for data science",
+													"free": true,
+													"children": [
+														{
+															"name": "Shiny",
+															"description": "A platform for producing web applications using R",
+															"url": "http://shiny.rstudio.com/",
+															"free": true
+														}
+													]
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+
+						var m = [20, 120, 20, 20],
+							w = 1280 - m[1] - m[3],
+							h = 800 - m[0] - m[2],
+							i = 0,
+							root;
+
+						var tree = d3.layout.tree()
+							.size([h, w]);
+
+						var diagonal = d3.svg.diagonal()
+							.projection(function(d) { return [d.y, d.x]; });
+
+						var vis = d3.select("#body").append("svg:svg")
+							.attr("width", w + m[1] + m[3])
+							.attr("height", h + m[0] + m[2])
+							.append("svg:g")
+							.attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+						root = json_data;
+						root.x0 = h / 2;
+						root.y0 = 0;
+
+						function toggleAll(d) {
+							if (d.children) {
+								d.children.forEach(toggleAll);
+								toggle(d);
+							}
+						}
+
+						// Initialize the display to show a few nodes.
+						// root.children.forEach(toggleAll);
+						// toggle(root.children[1]);
+						// toggle(root.children[1].children[2]);
+						// toggle(root.children[9]);
+						// toggle(root.children[9].children[0]);
+
+						update(root);
+
+
+						function update(source) {
+							var duration = d3.event && d3.event.altKey ? 5000 : 500;
+
+							// Compute the new tree layout.
+							var nodes = tree.nodes(root).reverse();
+
+							// Normalize for fixed-depth.
+							nodes.forEach(function(d) { d.y = d.depth * 180; });
+
+							// Update the nodes…
+							var node = vis.selectAll("g.node")
+								.data(nodes, function(d) { return d.id || (d.id = ++i); });
+
+							// Enter any new nodes at the parent's previous position.
+							var nodeEnter = node.enter().append("svg:g")
+								.attr("class", "node")
+								.attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
+								.on("click", function(d) { toggle(d); update(d); });
+
+							nodeEnter.append("svg:circle")
+								.attr("r", 1e-6)
+								.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+
+							nodeEnter.append('a')
+								.attr('xlink:href', function(d) {
+									return d.url;
+								})
+								.append("svg:text")
+								.attr("x", function(d) { return d.children || d._children ? -10 : 10; })
+								.attr("dy", ".35em")
+								.attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+								.text(function(d) { return d.name; })
+								.style('fill', function(d) {
+									return d.free ? 'black' : '#999';
+								})
+								.style("fill-opacity", 1e-6);
+
+							nodeEnter.append("svg:title")
+								.text(function(d) {
+									return d.description;
+								});
+
+							// Transition nodes to their new position.
+							var nodeUpdate = node.transition()
+								.duration(duration)
+								.attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+
+							nodeUpdate.select("circle")
+								.attr("r", 6)
+								.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+
+							nodeUpdate.select("text")
+								.style("fill-opacity", 1);
+
+							// Transition exiting nodes to the parent's new position.
+							var nodeExit = node.exit().transition()
+								.duration(duration)
+								.attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+								.remove();
+
+							nodeExit.select("circle")
+								.attr("r", 1e-6);
+
+							nodeExit.select("text")
+								.style("fill-opacity", 1e-6);
+
+							// Update the links…
+							var link = vis.selectAll("path.link")
+								.data(tree.links(nodes), function(d) { return d.target.id; });
+
+							// Enter any new links at the parent's previous position.
+							link.enter().insert("svg:path", "g")
+								.attr("class", "link")
+								.attr("d", function(d) {
+									var o = {x: source.x0, y: source.y0};
+									return diagonal({source: o, target: o});
+								})
+								.transition()
+								.duration(duration)
+								.attr("d", diagonal);
+
+							// Transition links to their new position.
+							link.transition()
+								.duration(duration)
+								.attr("d", diagonal);
+
+							// Transition exiting nodes to the parent's new position.
+							link.exit().transition()
+								.duration(duration)
+								.attr("d", function(d) {
+									var o = {x: source.x, y: source.y};
+									return diagonal({source: o, target: o});
+								})
+								.remove();
+
+							// Stash the old positions for transition.
+							nodes.forEach(function(d) {
+								d.x0 = d.x;
+								d.y0 = d.y;
+							});
+						}
+
+// Toggle children.
+						function toggle(d) {
+							if (d.children) {
+								d._children = d.children;
+								d.children = null;
+							} else {
+								d.children = d._children;
+								d._children = null;
+							}
+						}
+					};
+					//d3_launch();
+
 
 					$scope.shared = {};
 					$scope.shared['genres'] = false;
 					$scope.shared['artists']  = false;
+
+					// $scope.genreFreq = function(v1, v2,user) {
+					// 	console.log("$user",user);
+					// 	return (user_cache[u.id]['genres_frequency'][v1] < user_cache[u.id]['genres_frequency'][v2]) ? -1 : 1;
+					// };
+
+					$scope.descendFreq = true;
+					$scope.genreFreq = function(user) {
+
+						return function(v1){
+							if(!user){return null}
+							else{return (user_cache[user.id]['genres_frequency'][v1]);}
+						}
+					};
+
+					$scope.filterGenre = "";
+					$scope.set_filterGenre = function(g){
+						$scope.filterGenre = g;
+						$scope.applyIt()
+					};
+
+					$scope.genreEventMatches = function(g,global_metro){
+
+						//metro_cache[global_metro.id]['artistsInfoMap']
+
+						//for each genre from spotify
+						//go thru every events artists's genres
+
+						let g_artist_hit = 0;
+						if($scope.metro_cache_performances[global_metro['id']]) {
+
+							$scope.metro_cache_performances[global_metro['id']].forEach(function (p) {
+
+								let spotId = $scope.user_cache.global.artistsSongkickSpotifyMap[p.artist.id];
+								//console.log(spotId);
+								let genres;
+								$scope.user_cache.global.artistsInfoMap[spotId] ? genres = $scope.user_cache.global.artistsInfoMap[spotId].genres:genres = [];
+
+								//we found genre in that artist
+								if (genres.indexOf(g) !== -1) {
+									g_artist_hit++;
+								}
+							});
+							//console.log(g + " " + g_artist_hit);
+							return g_artist_hit;
+						}else{return null}
+					};
+
 
 					$scope.applyIt = function(){
 						try{$scope.$apply();}
@@ -351,6 +1044,19 @@
 						})
 					}; //write schedule
 
+					//todo: something with this
+					$scope.unresolved_artists = [];
+
+					let reduce = function(def,record){
+						let dkeys = Object.keys(def);
+						let rkeys = Object.keys(record);
+						rkeys.forEach(function(rk){
+							if(dkeys.indexOf(rk) === -1){
+								delete record[rk]
+							}
+						});
+					};
+
 					$scope.get_metro_events = function(metro){
 
 						// console.log("get_metro_events hook",metro);
@@ -376,13 +1082,14 @@
 							areaDatesArtists_filename:$scope.areaDatesArtists_filename || "areaDatesArtists_" + metro.displayName +"_" + $scope.dateFilter.start + "-" + $scope.dateFilter.end + ".json"
 						};
 
-						make_request_local(req).then(function(results){
-							console.log("get_metro_events results",results);
+						make_request_local(req).then(function(events){
+							console.log("get_metro_events results",events.length);
+							//console.log("$user_cache",user_cache);
 
-							let events = [];
-							results.forEach(function(set){
-								events = events.concat(set.events);
-							});
+							// let events = [];
+							// metroResults.forEach(function(set){
+							// 	events = events.concat(set.events);
+							// });
 
 							let artist_names = [];
 							let artist_name_map = {};
@@ -391,32 +1098,119 @@
 								artist_name_map[art.name] = art;
 							});
 
-							console.log("create fuzzyset",);
+							console.log("create fuzzyset",artist_name_map);
 							var fm = new FuzzyMatching(artist_names);
 
+							let promises = [];
+
+
 							events.forEach(function(event){
-								event.performance.forEach(function(p){
-									let match = fm.get(p.displayName);
-									console.log("$match",match.value + " =? " + p.displayName);
+
+								//do performances first
+
+								let e_p = {};
+								event.performance.forEach(function(perf){
+									// console.log(perf);
+
+									e_p = {};
+									e_p.event_id = event.id;
+									e_p.performance_id = perf.id;
+									//todo: push events_performances records
+
+									//events_performancesDef
+									alasql("INSERT INTO events_performances VALUES ( " + vlister(e_p)  + " )");
+
+									// !$scope.metro_cache_performances[metroResults[0]['id']] ? $scope.metro_cache_performances[metroResults[0]['id']] = [] :{};
+									// $scope.metro_cache_performances[metroResults[0]['id']].push(p);
+
+									//todo: make this check my database for match info first
+									let match = fm.get(perf.displayName);
+									//console.log("$match",match.value + " =? " + p.displayName);
 
 									//todo: what is appropriate distance here?
 
 									if(match.distance >= .8){
-										p.artist_match = match.value;
-										p.artist = artist_name_map[match.value]
+										perf.artist_match = match.value;
+										perf.artist = artist_name_map[match.value]
 									}
-								})
+									else{
+										//todo: we will process these and update our table later
+										promises.push($scope.search_artists(perf.displayName,perf));
+									}
+
+									perf.artistSongkick_id = perf.artist.id;
+									reduce(performanceDef,perf);
+
+									//sanitize
+									let varchar_keys = ["displayName"];
+									varchar_keys.forEach(function(key) {	perf[key] = perf[key].replace(/'/g, "''");});
+
+									alasql("INSERT INTO performances VALUES ( " + vlister(perf)  + " )");
+								});
+
+								//events
+
+								//sanitize
+								let varchar_keys = ["displayName"];
+								varchar_keys.forEach(function(key) {	event[key] = event[key].replace(/'/g, "''");});
+
+								//console.log(event);
+
+								event.location ? event.location = event.location.city :  event.location = "not specified";
+								event.start = event.start.datetime;
+
+								reduce(eventDef,event);
+								//console.log(vlister(event));
+
+								alasql("INSERT INTO events VALUES ( " + vlister(event)  + " )");
+
 							});
 
-							$scope.metro_cache[results[0]['id']] = events;
-							console.log($scope.metro_cache);
-							$scope.applyIt();
+							Promise.all(promises)
+								.then(function(results){
+									console.log("$results",results);
 
-						})
+									results.forEach(function(tuple){
+
+										if(tuple.error){$scope.unresolved_artists.push(tuple.query)}
+										else{
+											//todo: other caches?
+											//todo: somethings a little fucked here, don't know what though
+											tuple.spotify_artist.name === "Consider the Source" ? console.log(tuple):{};
+
+											$scope.user_cache['global'].artists.full.push(tuple.spotify_artist);
+											$scope.user_cache['global'].artistsInfoMap[tuple.spotify_artist.id] = tuple.spotify_artist;
+
+											$scope.user_cache['global'].artistsSongkickSpotifyMap[tuple.songkick_artist_id] = tuple.spotify_artist.id
+										}
+									});
+
+									console.log("unresolved_artists",$scope.unresolved_artists);
+									$scope.metro_cache[events[0]['id']] = events;
+									console.log($scope.metro_cache);
+									console.log($scope.user_cache);
+
+									console.log('events:',alasql("select * from events;"));
+									console.log('performances:',alasql("select * from performances;"));
+									console.log('events_performances:',alasql("select * from events_performances;"));
+
+									let res4 = alasql("select * from events e JOIN events_performances ep on e.id = ep.event_id JOIN performances p on p.id = ep.performance_id where e.id = 35513049");
+
+									console.log("res4",res4);
+
+									$scope.applyIt();
+
+								});//all
+						})//make_request_local
 					};
 
 					$scope.global_user = {};
 
+					//todo: default jake
+					$scope.global_user = {
+						"display_name": "Jake Lavender",
+						"id": "1292167736"
+					};
 
 
 					$scope.set_user = function(user){
@@ -438,8 +1232,425 @@
 					// $scope.raw_filename = "";
 					// $scope.areaDatesArtists_filename= "";
 
-					$scope.get_all_tracks = exports.get_all_tracks;
-					$scope.get_user_playlists = exports.get_user_playlists;
+					/** run thru the cache.playlists, calling playlist_tracks for each
+					 *  at the end, as a result of playlist_track's work, we have
+					 *  a cache of interesting data which we preserve in a user cache and clear it.
+					 *
+					 *
+					 * @function get_all_tracks
+					 **/
+					$scope.get_all_tracks = function(user){
+						console.log("user",user);
+
+						var promiseTrack = new Promise(function(resolved) {
+							console.log("get_all_tracks...");
+							resolved();
+						});
+
+						console.log("getting tracks for " + cache.playlists.simple.length + " playlists..." );
+
+						cache.playlists.simple.forEach(function(playlist_simple) {
+
+							promiseTrack = promiseTrack.then(function() {
+								return (
+									$scope.playlist_tracks(user.id,playlist_simple)
+									//.then(sleeper(200))
+								)
+							});
+						});
+
+						promiseTrack.then(function(results) {
+
+							//results will be the last result of the $scope.playlist_tracks() promise chain
+							//i.e. its not super useful. instead we've been maintaining a map of every playlist's track
+							//which is updated every time a playlist request is exhausted
+
+							console.log("============================================================");
+							console.log("get_all_tracks promise chain finished");
+
+
+							// console.log("cache.playlist_tracks_map",cache.playlist_tracks_map);
+							// console.log(Object.keys(cache.playlist_tracks_map).length);
+							// console.log("cache.artistsInfoMap",cache.artistsInfoMap);
+							// console.log(Object.keys(cache.artistsInfoMap).length);
+
+							//extract all tracks from playlist
+
+							for (let playlistID in cache.playlist_tracks_map) {
+								if (cache.playlist_tracks_map.hasOwnProperty(playlistID)) {
+									cache.playlist_tracks_map[playlistID].forEach(function(track){
+										cache.tracks.push(track)
+									});
+								}
+							}
+
+							// console.log("cache.tracks:",cache.tracks);
+							// console.log("cache.genres",cache.genres);
+							// console.log("genres_artist_map",cache.genres_artist_map);
+
+							//reorder genres
+							cache.genres = cache.genres.sort();
+
+							//push all unique artists
+
+							// cache.tracks.forEach(function(track){
+							// 	track.track.artists.forEach(function(artist){
+							// 		var art = {}; art.id = artist.id; art.name = artist.name;
+							//
+							// 		//this is handled in playlist_tracks now
+							//
+							// 		// if(cache.artistsInfoMap[art.id]){
+							// 		// 	if(cache.artistsInfoMap[art.id].genres){
+							// 		// 		art.genres = cache.artistsInfoMap[art.id].genres;
+							// 		// 	}
+							// 		// }
+							//
+							// 		if(findWithAttr(cache.artists.full,"id",art.id) === -1){
+							// 			cache.artists.full.push(art);
+							// 			var tuple = {};
+							// 			tuple.name = art.name;
+							// 			tuple.genres = art.genres;
+							// 			cache.artists.simple.push(tuple);
+							// 		}
+							// 	})
+							// });
+
+							//console.log("unique artists in cache.artists.simple:",cache.artists.simple);
+
+							user_cache[user.id] = JSON.parse(JSON.stringify(cache));
+
+							//todo: not sure about plans with global on user_cache quite yet...
+
+							user_cache['global'].artists.full = user_cache['global'].artists.full.concat(user_cache[user.id].artists.full);
+							user_cache['global'].playlists.full = user_cache['global'].playlists.full.concat(user_cache[user.id].playlists.full);
+
+							console.log(user_cache[user.id]);
+							exports.clean_cache(cache);
+
+							$scope.applyIt()
+
+						})
+							.catch(function(err){
+								console.log("promiseTrack err: ",err);
+							});
+					};
+					/**
+					 * load my playlists into cache.playlists.simple, cache.playlists.full, and
+					 * mapped by user into cache.playlists.userMap
+					 * @function user_playlists
+					 **/
+					$scope.get_user_playlists =function(user){
+						var url1 = "/playlists";
+
+						//var url_example = "https://api.spotify.com/v1/users/dacandyman01/playlists?offset=0&limit=50"
+						//var test_console = "https://beta.developer.spotify.com/console/get-playlists/?user_id=wizzler&limit=&offset=";
+
+						var url_object = {};
+						url_object.url =  url_users + "/" + user.id + url1;
+						url_object.offset = 0;
+						url_object.limit = 50;
+						url_object.fields = "";
+
+						make_request(url_object,cache.playlists.full)
+							.then(function(data){
+								//data = cache.playlists.full
+
+								console.log("user_playlists finished with records length: ",cache.playlists.full.length);
+								console.log("data: ",cache.playlists.full);
+
+
+								cache.playlists.simple = data.map(function(item,index) {
+										var rObj = {}; rObj.id = item.id; rObj.name = item.name;
+										return rObj;
+									}
+								);
+
+								//todo: sometimes owner.id is NOT string, but instead the ### representation
+
+								//populating map with keys = many spotify user ids
+								cache.playlists.full.forEach(function(list){
+									if(cache.user_playlist_map_full[list.owner.id] === undefined){
+										cache.user_playlist_map_full[list.owner.id] = [];
+									}
+									cache.user_playlist_map_full[list.owner.id].push(list)
+								});
+
+								//mapping over to simple requires iterating thru props of mapping
+								for (var id in cache.user_playlist_map_full) {
+									if (cache.user_playlist_map_full.hasOwnProperty(id)) {
+										cache.user_playlist_map_simple[id] = cache.user_playlist_map_full[id].map(function(item,index) {
+												var rObj = {}; rObj.id = item.id; rObj.name = item.name;
+												return rObj;
+											}
+										)
+									}
+								}
+
+								//todo:
+								//console.log("playlists.simple cache updated:",cache.playlists.simple);
+								//cache.playlists.simple = cache.user_playlist_map_simple["dacandyman01"];
+								//cache.playlists.simple = cache.user_playlist_map_full["dacandyman01"];
+
+								console.log("get_user_playlists finished.");
+								console.log("cache.playlists.full",cache.playlists.full);
+								console.log("cache.playlists.simple",cache.playlists.simple);
+								console.log("---------------------------------------------------");
+								console.log("cache.user_playlist_map_full",cache.user_playlist_map_full);
+								console.log("cache.user_playlist_map_simple",cache.user_playlist_map_simple);
+							})
+
+					};//user_playlists
+
+					/**Get tracks for every playlist you throw at it {playlist_tracks_map}
+					 * While processing the playlist track entries, it also fills out artistsInfoMap, artistsInfoMap_simple
+					 * Called while iterating over playlists from get_all_tracks
+					 *
+					 * @function playlist_tracks
+					 **/
+
+					var playlist_finished_count = 0;
+					$scope.playlist_tracks = function(user,playlist){
+
+						return new Promise(function(done, fail) {
+
+							//user = "dacandyman01"
+							//playlist.id = "/5qdfEl1ylx7MLZTmJXydSJ"
+
+							//var url_example = "https://api.spotify.com/v1/users/dacandyman01/playlists/5qdfEl1ylx7MLZTmJXydSJ/tracks?fields=items.track.artists&limit=50&offset=0"
+
+							user = "/" + user
+							var url1 = "/playlists";
+							var url2 = "/tracks";
+
+							var url_object = {};
+							url_object.url =  url_users + user + url1 + "/" + playlist.id + url2
+							url_object.offset = 0;
+							url_object.limit = 50;
+							url_object.fields = "fields=items.track.artists";
+
+							console.log('fetching playlist_tracks for : ' + playlist.id );
+
+							//todo: cache'ing a single playlist's tracks isn't particularly useful right now...
+							// and we're only using this to get artists out anyways, so cache is dummy
+
+							//todo: should I be clearing cache here?
+
+							cache.dummy = [];
+							make_request(url_object,cache.dummy)
+								.then(function(data){
+
+									cache.playlist_tracks_map[playlist.id] = data;
+
+									//var do_track = false;
+									let artist_list = [];
+									let skip = 0;
+
+									data.forEach(function(ob){
+										ob.track.artists.forEach(function(artist){
+											if(artist_list.indexOf(artist.id) !== -1){skip++;}
+
+											else {
+												//do_track = true;
+												artist_list.push(artist.id);
+											}
+										}); ///track artists
+									}); //data
+
+									console.log("$skipped",skip);
+									let payloads = [];
+									let custom_it = 0;
+									let payload = [];
+
+									artist_list.forEach(function(id,i){
+
+										if(i === 0){payload.push(id)}
+										else{
+											//everytime we hit a multiple of 50, create a new payload
+											if(!(i % 50 === 0)){payload.push(id)}
+											else{
+												console.log("archive & reset payload");
+												payloads.push(payload);
+												custom_it = 0;
+												payload = [];
+											}
+										}
+									});
+
+									//leftover
+									if(payload.length){payloads.push(payload)}
+									console.log("$payloads",payloads);
+
+									//declare outside of iterator
+									// var promiseTrack = new Promise(function(resolved) {
+									// 	resolved();
+									// });
+									//let do_track;
+
+									let promises = []
+									payloads.forEach(function(payload){
+
+										//do_track = true;
+										//form a comma seperated list of 50 artists ids
+										let payload_str  = "";
+										payload.forEach(function(id,i){
+											payload_str = payload_str + id;
+											i !== payload.length - 1 ? payload_str =  payload_str + "," :{}});
+
+										var url = "https://api.spotify.com/v1/artists?ids=";
+										var url_object = {};
+										url_object.url = url  + payload_str;
+										url_object.fields = "";
+
+										promises.push(make_request_simple(url_object, cache.dummy,100));
+
+										// var reqSleep =  function(){
+										//     return new Promise(function(done, fail) {
+										// 	    make_request_simple(url_object, cache.artistsInfoMap)
+										// 		    .then(sleeper(50))
+										// 		    .then( () =>{done()})
+										//     })
+										// };
+										// promises.push(reqSleep);
+									});
+
+									// exports.artists_multi = function(){
+
+									Promise.all(promises).then(function(results){
+										//console.log("$results",results);
+
+										let all_artists = [];
+										results.forEach((r)=>{all_artists = all_artists.concat(r.artists)});
+
+										console.log(all_artists);
+										console.log("$artists fetched total",all_artists.length);
+
+										all_artists.forEach(function(ar){
+											//guess we had a null one time?
+											let simp;
+											if(ar){
+
+												cache.artists.full.push(ar)
+												cache.artistsInfoMap[ar.id] = ar;
+
+												simp = {};simp.display_name = ar.name; simp.id = ar.id;
+												cache.artistsInfoMap_simple[ar.id] = simp;
+												cache.artists.simple.push(simp)
+
+												ar.genres.forEach((g)=>{
+													if(cache.genres.indexOf(g) === -1){
+														cache.genres.push(g);
+													}
+													if(!cache.genres_frequency[g]){
+														cache.genres_frequency[g] = 1;
+													}
+													else{cache.genres_frequency[g]++}
+												});
+
+												//will certainly create duplicate artist entry/overlap which is the point
+												ar.genres.forEach((g)=>{
+													if(!cache.genres_artist_map[g]){
+														cache.genres_artist_map[g] = [];
+														cache.genres_artist_map[g].push(simp);
+													}else{
+														cache.genres_artist_map[g].push(simp);
+													}
+												})
+											}//non null artist
+										});
+
+										// console.log("artistsInfoMap",cache.artistsInfoMap);
+										// console.log("artistsInfoMap_simple",cache.artistsInfoMap_simple);
+										//
+										// console.log("genres",cache.genres);
+										// console.log("genres_artist_map",cache.genres_artist_map);
+										done();
+									})
+
+									// promiseTrack.then(function(results) {
+									//
+									// 	console.log("$results",results);
+									// 	console.log(cache.artistsInfoMap);
+									// 	//cache.playlist_tracks_map[playlist.id] = data;
+									//
+									// 	// playlist_finished_count++;
+									// 	// console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
+									// 	//
+									// 	// console.log("current cache.artistsInfoMap size: ");
+									// 	// console.log(count_properties(cache.artistsInfoMap));
+									// 	//done(data);
+									// });
+
+
+									// }else{
+									// 	playlist_finished_count++;
+									// 	console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
+									// 	done(data)
+									// }
+									// if(do_track){
+									// 	promiseTrack.then(function(results) {
+									//
+									// 		console.log("$results",results);
+									// 		// cache.playlist_tracks_map[playlist.id] = data;
+									// 		//
+									// 		// playlist_finished_count++;
+									// 		// console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
+									// 		//
+									// 		// console.log("current cache.artistsInfoMap size: ");
+									// 		// console.log(count_properties(cache.artistsInfoMap));
+									// 		done(data);
+									// 	})
+									// }else{
+									// 	console.log("$here");
+									// 	playlist_finished_count++;
+									// 	console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
+									// 	done(data)
+									// }
+								})
+						})//promise
+
+					};//playlist_tracks
+
+
+					//todo: assuming first match is always the one we want
+
+					/**
+					 * Hit a search endpoint to try and resolve an input string to an artist profile in Spotify
+					 * @function search_artists
+					 **/
+					$scope.search_artists  = function(query,p){
+
+						//console.log("search_artists");
+						return new Promise(function(done, fail) {
+
+							query === "Consider the Source" ? console.log("$tup",p):{}
+
+							//todo: convert query with spaces into %20.
+							//query = "kamasi%20Washington";
+							//console.warn("FORCING QUERY: ",query);
+
+							var req = {};
+							req.url = "https://api.spotify.com/v1/search?q=" + query + "&type=artist";
+
+							make_request_simple(req,cache.dummy,200).then(function(result){
+								//console.log("result:",result);
+
+								//todo: weird dereferencing here?
+
+								//p.id === 89185? console.log("$tup",p):{}
+
+								var artist = {};
+								if(result.artists.items.length >0){
+									//result.artists.items[0].name === "Consider the Source" ? console.log("$tup",p):{}
+									done({songkick_artist_id:p.artistSongkick_id,spotify_artist:result.artists.items[0]})
+								}
+								else{
+									done({error:"no match found",query:query})
+								}
+
+							})
+						})
+					};
+
 
 					$scope.set_user_cache = function(){
 						getData('dacandyman01_usercache_v1.json').then(function(data) {
@@ -455,22 +1666,24 @@
 					$scope.show['dacandyman01'] = {};
 					$scope.show['1292167736'] = {};
 
+					//todo: autocollapse artists for now, too long
 					$scope.show['dacandyman01']['playlists'] = true;
-					$scope.show['dacandyman01']['artists'] = true;
+					$scope.show['dacandyman01']['artists'] = false;
 					$scope.show['dacandyman01']['genres'] = true;
 
 					$scope.show['1292167736']['playlists'] = true;
-					$scope.show['1292167736']['artists'] = true;
+					$scope.show['1292167736']['artists'] = false;
 					$scope.show['1292167736']['genres'] = true;
 
 					$scope.user_cache = user_cache;
 					$scope.metro_cache = {};
+					$scope.metro_cache_performances = {}
 				});
 
 
 				var cache = {};
 				let user_cache = {};
-				user_cache['global'] = {artists:{full:[],simple:[]},playlists:{full:[],simple:[]}};
+				user_cache['global'] = {artists:{full:[],simple:[]},playlists:{full:[],simple:[]},artistsInfoMap:{},artistsSongkickSpotifyMap:{}};
 
 				let clean_cache = function(cache){
 					cache.dummy = [];
@@ -489,6 +1702,7 @@
 					cache.tracks = [];
 					cache.genres = [];
 					cache.genres_artist_map = {};
+					cache.genres_frequency = {};
 
 					cache.playlist_tracks_map = {};
 					cache.user_playlist_map_full = {};
@@ -513,7 +1727,7 @@
 
 				var url_users = "https://api.spotify.com/v1/users";
 				var off = "&offset=";
-				var lim = "&limit="
+				var lim = "&limit=";
 				var offset_base = 50;
 
 				var page_num = 0;
@@ -529,7 +1743,7 @@
 				 * 	url_object.fields = ""
 				 *
 				 **/
-				var make_request =  function(url_object,cache){
+				var make_request =  function(url_object,cache,sleep){
 
 					return new Promise(function(done, fail) {
 
@@ -539,50 +1753,55 @@
 
 						let params = getHashParams();
 						global_access_token = params.access_token
+						let call = () =>{
+							$.ajax({
+								dataType: 'json',
+								beforeSend: function (request) {
+									request.setRequestHeader("Authorization", 'Bearer ' + global_access_token);
+									//var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
+									//request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
+								},
+								url: url,
+							}).done(function(payload){
 
-						$.ajax({
-							dataType: 'json',
-							beforeSend: function (request) {
-								request.setRequestHeader("Authorization", 'Bearer ' + global_access_token);
-								//var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
-								//request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
-							},
-							url: url,
-						}).done(function(payload){
+								console.log("payload page " + page_num,payload);
+								// console.log(JSON.stringify(payload,null,4));
 
-							console.log("payload page " + page_num,payload);
-							// console.log(JSON.stringify(payload,null,4));
+								var results = payload["items"]
+								results.forEach(function(result){cache.push(result)})
 
-							var results = payload["items"]
-							results.forEach(function(result){cache.push(result)})
+								if(results.length === 50){
+									page_num++;
+									url_object.offset = url_object.offset + offset_base ;
 
-							if(results.length === 50){
-								page_num++;
-								url_object.offset = url_object.offset + offset_base ;
+									console.log("new offset: ", url_object.offset);
+									console.log("records length: ", cache.length);
 
-								console.log("new offset: ", url_object.offset);
-								console.log("records length: ", cache.length);
+									//todo: not really sure what I was thinking here...
 
-								//todo: not really sure what I was thinking here...
-
-								make_request(url_object,cache).then(function(){
-
-									// console.log("finished multipart fetch I guess?",cache.length);
+									make_request(url_object,cache).then(function(){
+										// console.log("finished multipart fetch I guess?",cache.length);
+										done(cache)
+									})
+								}
+								else{
+									console.log("finished, # of records: " + cache.length);
+									console.log(cache);
 									done(cache)
-								})
-							}
-							else{
-								console.log("finished, # of records: " + cache.length);
-								console.log(cache);
-								done(cache)
-							}
+								}
 
-						}).fail(function(err){
+							}).fail(function(err){
 
-							console.log("there was a problem: ");
-							console.log(err);
-						})
+								console.log("there was a problem: ");
+								console.log(err);
+							})
+						}//call
 
+						if(sleep){
+							console.log("sleeping",sleep)
+							setTimeout(() =>{call()},sleep)
+						}
+						else{call()}
 					})//promise
 				}; //make_request
 
@@ -599,7 +1818,7 @@
 
 						let params = getHashParams();
 						global_access_token = params.access_token
-						console.log("sending request", req.url);
+						//console.log("sending request", req.url);
 
 						let call = () =>{
 							$.ajax({
@@ -610,7 +1829,7 @@
 								url: req.url,
 							}).done(function(payload){
 
-								console.log("retrieved: ",payload);
+								//console.log("retrieved: ",payload);
 								cache[payload.id] = payload;
 								done(payload)
 							})
@@ -620,356 +1839,12 @@
 								})
 						};
 						if(sleep){
-							console.log("sleeping",sleep)
+							//console.log("sleeping",sleep)
 							setTimeout(() =>{call()},sleep)
 						}
 						else{call()}
 					})
 				}; //make_request_simple
-
-
-				/**
-				 * Hit a search endpoint to try and resolve an input string to an artist profile in Spotify
-				 * @function search_artists
-				 **/
-				exports.search_artists  = function(query){
-
-					console.log("search_artists");
-
-					return new Promise(function(done, fail) {
-
-						var req = {};
-						// req.token = token;
-						req.token = global_access_token
-
-						//todo: test query
-						//todo: convert query with spaces into %20
-						query = "kamasi%20Washington";
-						console.warn("FORCING QUERY: ",query);
-						req.url = "https://api.spotify.com/v1/search?q=" + query + "&type=artist";
-
-						console.log(global_access_token);
-						make_request_simple(req,cache.dummy).then(function(result){
-							console.log("result:",result);
-
-							//todo: assuming first match is always the one we want
-							var artist = {};
-							result.artists ? artist =  result.artists[0] : {};
-							done(artist)
-
-						})
-
-					})
-				};
-
-
-				/**Get tracks for every playlist you throw at it {playlist_tracks_map}
-				 * While processing the playlist track entries, it also fills out artistsInfoMap, artistsInfoMap_simple
-				 * Called while iterating over playlists from get_all_tracks
-				 *
-				 * @function playlist_tracks
-				 **/
-
-				var playlist_finished_count = 0;
-				exports.playlist_tracks = function(user,playlist){
-
-					return new Promise(function(done, fail) {
-
-						//user = "dacandyman01"
-						//playlist.id = "/5qdfEl1ylx7MLZTmJXydSJ"
-
-						//var url_example = "https://api.spotify.com/v1/users/dacandyman01/playlists/5qdfEl1ylx7MLZTmJXydSJ/tracks?fields=items.track.artists&limit=50&offset=0"
-
-						user = "/" + user
-						var url1 = "/playlists";
-						var url2 = "/tracks";
-
-						var url_object = {};
-						url_object.url =  url_users + user + url1 + "/" + playlist.id + url2
-						url_object.offset = 0;
-						url_object.limit = 50;
-						url_object.fields = "fields=items.track.artists";
-
-						console.log('fetching playlist_tracks for : ' + playlist.id );
-
-						//todo: cache'ing a single playlist's tracks isn't particularly useful right now...
-						// and we're only using this to get artists out anyways, so cache is dummy
-
-						//todo: should I be clearing cache here?
-
-						cache.dummy = [];
-						make_request(url_object,cache.dummy)
-							.then(function(data){
-
-								cache.playlist_tracks_map[playlist.id] = data;
-
-								//var do_track = false;
-								let artist_list = [];
-								let skip = 0;
-
-								data.forEach(function(ob){
-									ob.track.artists.forEach(function(artist){
-										if(artist_list.indexOf(artist.id) !== -1){skip++;}
-
-										else {
-											//do_track = true;
-											artist_list.push(artist.id);
-										}
-									}); ///track artists
-								}); //data
-
-								console.log("$skipped",skip);
-								let payloads = [];
-								let custom_it = 0;
-								let payload = [];
-
-								artist_list.forEach(function(id,i){
-
-									if(i === 0){payload.push(id)}
-									else{
-										//everytime we hit a multiple of 50, create a new payload
-										if(!(i % 50 === 0)){payload.push(id)}
-										else{
-											console.log("archive & reset payload");
-											payloads.push(payload);
-											custom_it = 0;
-											payload = [];
-										}
-									}
-								});
-
-								//leftover
-								if(payload.length){payloads.push(payload)}
-								console.log("$payloads",payloads);
-
-								//declare outside of iterator
-								// var promiseTrack = new Promise(function(resolved) {
-								// 	resolved();
-								// });
-								//let do_track;
-
-								let promises = []
-								payloads.forEach(function(payload){
-
-									//do_track = true;
-									//form a comma seperated list of 50 artists ids
-									let payload_str  = "";
-									payload.forEach(function(id,i){
-										payload_str = payload_str + id;
-										i !== payload.length - 1 ? payload_str =  payload_str + "," :{}});
-
-									var url = "https://api.spotify.com/v1/artists?ids=";
-									var url_object = {};
-									url_object.url = url  + payload_str;
-									url_object.fields = "";
-
-									promises.push(make_request_simple(url_object, cache.dummy,100));
-
-									// var reqSleep =  function(){
-									//     return new Promise(function(done, fail) {
-									// 	    make_request_simple(url_object, cache.artistsInfoMap)
-									// 		    .then(sleeper(50))
-									// 		    .then( () =>{done()})
-									//     })
-									// };
-									// promises.push(reqSleep);
-								});
-
-								// exports.artists_multi = function(){
-
-								Promise.all(promises).then(function(results){
-									//console.log("$results",results);
-
-									let all_artists = [];
-									results.forEach((r)=>{all_artists = all_artists.concat(r.artists)});
-
-									console.log(all_artists);
-									console.log("$artists fetched total",all_artists.length);
-
-									all_artists.forEach(function(ar){
-										//guess we had a null one time?
-										let simp;
-										if(ar){
-
-											cache.artists.full.push(ar)
-											cache.artistsInfoMap[ar.id] = ar;
-
-											simp = {};simp.display_name = ar.name; simp.id = ar.id;
-											cache.artistsInfoMap_simple[ar.id] = simp;
-											cache.artists.simple.push(simp)
-
-											ar.genres.forEach((g)=>{
-												if(cache.genres.indexOf(g) === -1){
-													cache.genres.push(g);
-												}
-											});
-
-											//will certainly create duplicate artist entry/overlap which is the point
-											ar.genres.forEach((g)=>{
-												if(!cache.genres_artist_map[g]){
-													cache.genres_artist_map[g] = [];
-													cache.genres_artist_map[g].push(simp);
-												}else{
-													cache.genres_artist_map[g].push(simp);
-												}
-											})
-										}//non null artist
-									});
-
-									// console.log("artistsInfoMap",cache.artistsInfoMap);
-									// console.log("artistsInfoMap_simple",cache.artistsInfoMap_simple);
-									//
-									// console.log("genres",cache.genres);
-									// console.log("genres_artist_map",cache.genres_artist_map);
-									done();
-								})
-
-								// promiseTrack.then(function(results) {
-								//
-								// 	console.log("$results",results);
-								// 	console.log(cache.artistsInfoMap);
-								// 	//cache.playlist_tracks_map[playlist.id] = data;
-								//
-								// 	// playlist_finished_count++;
-								// 	// console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
-								// 	//
-								// 	// console.log("current cache.artistsInfoMap size: ");
-								// 	// console.log(count_properties(cache.artistsInfoMap));
-								// 	//done(data);
-								// });
-
-
-								// }else{
-								// 	playlist_finished_count++;
-								// 	console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
-								// 	done(data)
-								// }
-								// if(do_track){
-								// 	promiseTrack.then(function(results) {
-								//
-								// 		console.log("$results",results);
-								// 		// cache.playlist_tracks_map[playlist.id] = data;
-								// 		//
-								// 		// playlist_finished_count++;
-								// 		// console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
-								// 		//
-								// 		// console.log("current cache.artistsInfoMap size: ");
-								// 		// console.log(count_properties(cache.artistsInfoMap));
-								// 		done(data);
-								// 	})
-								// }else{
-								// 	console.log("$here");
-								// 	playlist_finished_count++;
-								// 	console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
-								// 	done(data)
-								// }
-							})
-					})//promise
-
-				};//playlist_tracks
-
-
-				/** run thru the cache.playlists, calling playlist_tracks for each
-				 *  at the end, as a result of playlist_track's work, we have
-				 *  a cache of interesting data which we preserve in a user cache and clear it.
-				 *
-				 *
-				 * @function get_all_tracks
-				 **/
-				exports.get_all_tracks = function(user){
-					console.log("user",user);
-
-					var promiseTrack = new Promise(function(resolved) {
-						console.log("get_all_tracks...");
-						resolved();
-					});
-
-
-					console.log("getting tracks for " + cache.playlists.simple.length + " playlists..." );
-
-					cache.playlists.simple.forEach(function(playlist_simple) {
-
-						promiseTrack = promiseTrack.then(function() {
-							return (
-								exports.playlist_tracks(user.id,playlist_simple)
-								//.then(sleeper(200))
-							)
-						});
-					});
-
-					promiseTrack.then(function(results) {
-
-						//results will be the last result of the exports.playlist_tracks() promise chain
-						//i.e. its not super useful. instead we've been maintaining a map of every playlist's track
-						//which is updated every time a playlist request is exhausted
-
-						console.log("============================================================");
-						console.log("get_all_tracks promise chain finished");
-
-
-						// console.log("cache.playlist_tracks_map",cache.playlist_tracks_map);
-						// console.log(Object.keys(cache.playlist_tracks_map).length);
-						// console.log("cache.artistsInfoMap",cache.artistsInfoMap);
-						// console.log(Object.keys(cache.artistsInfoMap).length);
-
-						//extract all tracks from playlist
-
-						for (let playlistID in cache.playlist_tracks_map) {
-							if (cache.playlist_tracks_map.hasOwnProperty(playlistID)) {
-								cache.playlist_tracks_map[playlistID].forEach(function(track){
-									cache.tracks.push(track)
-								});
-							}
-						}
-
-						// console.log("cache.tracks:",cache.tracks);
-						// console.log("cache.genres",cache.genres);
-						// console.log("genres_artist_map",cache.genres_artist_map);
-
-						//reorder genres
-						cache.genres = cache.genres.sort();
-
-						//push all unique artists
-
-						// cache.tracks.forEach(function(track){
-						// 	track.track.artists.forEach(function(artist){
-						// 		var art = {}; art.id = artist.id; art.name = artist.name;
-						//
-						// 		//this is handled in playlist_tracks now
-						//
-						// 		// if(cache.artistsInfoMap[art.id]){
-						// 		// 	if(cache.artistsInfoMap[art.id].genres){
-						// 		// 		art.genres = cache.artistsInfoMap[art.id].genres;
-						// 		// 	}
-						// 		// }
-						//
-						// 		if(findWithAttr(cache.artists.full,"id",art.id) === -1){
-						// 			cache.artists.full.push(art);
-						// 			var tuple = {};
-						// 			tuple.name = art.name;
-						// 			tuple.genres = art.genres;
-						// 			cache.artists.simple.push(tuple);
-						// 		}
-						// 	})
-						// });
-
-						//console.log("unique artists in cache.artists.simple:",cache.artists.simple);
-
-						user_cache[user.id] = JSON.parse(JSON.stringify(cache));
-
-						//todo: not sure about plans with global on user_cache quite yet...
-
-						user_cache['global'].artists.full = user_cache['global'].artists.full.concat(user_cache[user.id].artists.full);
-						user_cache['global'].playlists.full = user_cache['global'].playlists.full.concat(user_cache[user.id].playlists.full);
-
-						console.log(user_cache[user.id]);
-						exports.clean_cache(cache)
-
-					})
-						.catch(function(err){
-							console.log("promiseTrack err: ",err);
-						});
-				};
 
 
 				/**
@@ -1038,74 +1913,6 @@
 				};
 
 				/**
-				 * load my playlists into cache.playlists.simple, cache.playlists.full, and
-				 * mapped by user into cache.playlists.userMap
-				 * @function user_playlists
-				 **/
-				exports.get_user_playlists = function(user){
-					var url1 = "/playlists";
-
-					//var url_example = "https://api.spotify.com/v1/users/dacandyman01/playlists?offset=0&limit=50"
-					//var test_console = "https://beta.developer.spotify.com/console/get-playlists/?user_id=wizzler&limit=&offset=";
-
-					var url_object = {};
-					url_object.url =  url_users + "/" + user.id + url1;
-					url_object.offset = 0;
-					url_object.limit = 50;
-					url_object.fields = "";
-
-					make_request(url_object,cache.playlists.full)
-						.then(function(data){
-							//data = cache.playlists.full
-
-							console.log("user_playlists finished with records length: ",cache.playlists.full.length);
-							console.log("data: ",cache.playlists.full);
-
-
-							cache.playlists.simple = data.map(function(item,index) {
-									var rObj = {}; rObj.id = item.id; rObj.name = item.name;
-									return rObj;
-								}
-							);
-
-							//todo: sometimes owner.id is NOT string, but instead the ### representation
-
-							//populating map with keys = many spotify user ids
-							cache.playlists.full.forEach(function(list){
-								if(cache.user_playlist_map_full[list.owner.id] === undefined){
-									cache.user_playlist_map_full[list.owner.id] = [];
-								}
-								cache.user_playlist_map_full[list.owner.id].push(list)
-							});
-
-							//mapping over to simple requires iterating thru props of mapping
-							for (var id in cache.user_playlist_map_full) {
-								if (cache.user_playlist_map_full.hasOwnProperty(id)) {
-									cache.user_playlist_map_simple[id] = cache.user_playlist_map_full[id].map(function(item,index) {
-											var rObj = {}; rObj.id = item.id; rObj.name = item.name;
-											return rObj;
-										}
-									)
-								}
-							}
-
-							//todo:
-							//console.log("playlists.simple cache updated:",cache.playlists.simple);
-							//cache.playlists.simple = cache.user_playlist_map_simple["dacandyman01"];
-							//cache.playlists.simple = cache.user_playlist_map_full["dacandyman01"];
-
-							console.log("get_user_playlists finished.");
-							console.log("cache.playlists.full",cache.playlists.full);
-							console.log("cache.playlists.simple",cache.playlists.simple);
-							console.log("---------------------------------------------------");
-							console.log("cache.user_playlist_map_full",cache.user_playlist_map_full);
-							console.log("cache.user_playlist_map_simple",cache.user_playlist_map_simple);
-						})
-
-				};//user_playlists
-
-
-				/**
 				 * Do a quick profile fetching test
 				 * @function testAPI
 				 **/
@@ -1172,7 +1979,6 @@
 					}
 
 				} //testAPI
-
 
 
 				/////////////////////////////////////

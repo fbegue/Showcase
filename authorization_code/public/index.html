@@ -50,6 +50,158 @@
     <div id="oauth">
     </div>
 
+    <style>
+
+      body {
+        background: #eee;
+      }
+
+      .card {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 300px;
+        height: 300px;
+        margin: -150px;
+        float: left;
+        perspective: 500px;
+      }
+
+      .content {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+
+        transition: transform 1s;
+        transform-style: preserve-3d;
+      }
+
+      .card:hover .content {
+        transform: rotateY( 180deg ) ;
+        transition: transform 0.5s;
+      }
+
+      .front,
+      .back {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        background: white;
+        line-height: 300px;
+        color: #03446A;
+        text-align: center;
+        font-size: 60px;
+        border-radius: 5px;
+        backface-visibility: hidden;
+      }
+
+      .back {
+        background: #03446A;
+        color: white;
+        transform: rotateY( 180deg );
+      }
+
+     /*tree*/
+
+      #body {
+        width: 1200px;
+        margin: 0 auto;
+        position: relative;
+      }
+
+      rect {
+        fill: none;
+        pointer-events: all;
+      }
+
+      pre {
+        font-size: 18px;
+      }
+
+      line {
+        stroke: #0E0;
+        stroke-width: 1.5px;
+      }
+
+      .string, .regexp {
+        color: #f39;
+      }
+
+      .keyword {
+        color: #00c;
+      }
+
+      .comment {
+        color: #777;
+        font-style: oblique;
+      }
+
+      .number {
+        color: #369;
+      }
+
+      .class, .special {
+        color: #1181B8;
+      }
+
+      a:link, a:visited {
+        color: steelblue;
+        text-decoration: none;
+      }
+
+      a:hover {
+        color: #666;
+      }
+
+
+
+      .node circle {
+        cursor: pointer;
+        fill: #fff;
+        stroke: steelblue;
+        stroke-width: 1.5px;
+      }
+
+      .node text {
+        font-size: 12px;
+      }
+
+      path.link {
+        fill: none;
+        stroke: #ccc;
+        stroke-width: 2.0px;
+      }
+    </style>
+
+
+    <!--<div style="display:flex;flex-direction:row;">-->
+
+
+      <!--<div class="card">-->
+        <!--<div class="content">-->
+          <!--<div class="front">-->
+            <!--Front-->
+          <!--</div>-->
+          <!--<div class="back">-->
+            <!--Back!-->
+          <!--</div>-->
+        <!--</div>-->
+      <!--</div>-->
+    <!--</div>-->
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/alasql@0.4"></script>
+
+    <!--todo: outdated version to get codepen I copied to work-->
+    <!--<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>-->
+    <script src="d3.min.js" charset="utf-8"></script>
+    <div  style="display: none"id="body">
+
+    </div>
+
+
     <div style="display:flex;flex-direction:row;">
 
       <button class="btn btn-default" id="obtain-new-token">Factory Token Refresh</button>
@@ -87,35 +239,11 @@
                 </li>
               </ul>
             </div>
-            <!--<button ng-click="get_all_tracks(global_user)">getAllTracks</button>-->
-            <!--<button ng-click="get_user_playlists(global_user)">get_user_playlists</button>-->
-            <!--<button ng-click="set_user_cache()">set_user_cache</button>-->
-
-            <!--<button ng-click ="applyIt()">applyIt</button>-->
-            <!--<button ng-click ="testPost()">testPost</button>-->
-            <!--<button class="btn btn-default" ng-click="testEndpoint()">testEndpoint</button>-->
           </div>
 
         </div>
 
-        <div>
-
-          <div ng-repeat="e in metro_cache[global_metro.id]">
-            <div style="font-weight:bold">{{e.displayName}} @ {{e.venue.displayName}} on {{getEventDate(e)}}</div>
-            <div>  artists: <div ng-repeat="a in e.performance">{{a.displayName}} (<span style="font-style:italic" ng-repeat="g in a.artist.genres">{{g}}</span>)</div>
-
-              <!--todo: doesn't work (no index?)-->
-             <span ng-hide="$index = performance.length">,</span>
-
-           </span>
-            </div>
-
-          </div>
-
-        </div>
-
-
-      </div><!--column-->
+      </div><!--row-->
 
 
       <div style="display:flex;flex-direction:row;">
@@ -126,29 +254,31 @@
 
         <button ng-click ="applyIt()">applyIt</button>
         <button ng-click ="testPost()">testPost</button>
+        <div><button ng-click ="search_artists(artistSearch)">search_artists</button> <input ng-model="artistSearch"></div>
         <button class="btn btn-default" ng-click="testEndpoint()">testEndpoint</button>
       </div>
 
       <div>selected user: {{global_user.display_name}}</div>
-      <div>select user:</div>
 
+      <div>select user:</div>
       <div style="display:flex;flex-direction:row;">
 
-        <div >
-          <ul>
-            <li ng-repeat="u in users">
-              <button ng-click="set_user(u)">{{u.display_name}}</button>
-            </li>
-          </ul>
+        <div style="display:flex;flex-direction:column;">
+          <div ng-repeat="u in users">
+            <button ng-click="set_user(u)">{{u.display_name}}</button>
+          </div>
         </div>
 
-        <div>filter
+        <div style="display:flex;flex-direction:column;">
+          filter
           <button ng-click="shared['artists'] = !shared['artists']">shared artists</button>
           <button ng-click="shared['genres'] = !shared['genres']">shared genres</button>
         </div>
 
         <div ng-repeat="u in users">
-          <div ng-if="user_cache[u.id]">
+          <span ng-if="user_cache[u.id]"> {{u.display_name}}</span>
+
+          <div style="min-width:15em" ng-show="user_cache[u.id]">
             <div>
               <span class="pointer" ng-click="show[u.id]['playlists'] = !show[u.id]['playlists']">PLAYLISTS+</span>
 
@@ -171,9 +301,32 @@
               ({{user_cache[u.id]["genres"].length}}) ::
 
               <div  ng-if="show[u.id]['genres']" style="font-style:italic;"
-                    ng-repeat="g in user_cache[u.id]['genres'] | orderBy:'toString()' | sharedFilter:'genres':shared">&nbsp &nbsp {{ g}}</div>
+                    ng-repeat="g in user_cache[u.id]['genres'] | orderBy:'toString()' | orderBy:genreFreq(u):descendFreq | sharedFilter:'genres':shared">
+                &nbsp &nbsp {{g}} ({{user_cache[u.id]['genres_frequency'][g]}}) <button ng-click="set_filterGenre(g)">({{genreEventMatches(g,global_metro)}})</button>
+
+              </div>
             </div>
             <div style="font-weight:bold;"> TRACKS: {{user_cache[u.id]["tracks"].length}} </div>
+
+          </div>
+        </div>
+
+        <div>
+          <div ng-repeat="e in metro_cache[global_metro.id] | hasGenre:filterGenre:user_cache">
+            <div style="font-weight:bold">{{e.displayName}} @ {{e.venue.displayName}} on {{getEventDate(e)}}</div>
+            <div>  artists: <div ng-repeat="a in e.performance">{{a.displayName}}
+              <!--todo: what an incredible waste of time-->
+              (<span style="font-style:italic" ng-repeat="g in user_cache['global']['artistsInfoMap'][user_cache['global']['artistsSongkickSpotifyMap'][a.artist.id]].genres">
+                {{g}}
+              </span>)
+              <img style="max-width: 4em;" src="{{user_cache['global']['artistsInfoMap'][user_cache['global']['artistsSongkickSpotifyMap'][a.artist.id]].images[2].url}}">
+            </div>
+
+              <!--todo: doesn't work (no index?)-->
+              <span ng-hide="$index = performance.length">,</span>
+
+              </span>
+            </div>
           </div>
         </div>
 

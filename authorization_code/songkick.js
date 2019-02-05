@@ -79,6 +79,43 @@ weekday_full[4] = "Thursday";
 weekday_full[5] = "Friday";
 weekday_full[6] = "Saturday";
 
+let sql = require('mssql');
+
+const msnodesqlv8 =  require("msnodesqlv8");
+const conn = new sql.ConnectionPool({
+	database: "master",
+	//server: "localhost\\SQLEXPRESS",
+	server: "localhost\\SQLEXPRESS",
+	user:"test",
+	password:"test",
+	driver: "msnodesqlv8"
+	// options: {
+	// 	trustedConnection: true
+	// }
+});
+
+let connect = function(){
+	console.log("connect...");
+	try {
+		conn.connect()
+			.then((res) => {
+				console.log("...success!");
+
+				let sreq = new sql.Request(conn)
+				sreq.query('select * from xtest').then((res) => {
+					console.log(res);
+				})
+			})
+			.catch(function(err){
+				console.log(err);
+			});
+
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+connect();
 
 /**
  * find metros from string query
@@ -258,7 +295,7 @@ var metros = [
 ];
 
 var dateFilter = {};
-dateFilter.start = '2018-07-12'
+dateFilter.start = '2018-07-12';
 dateFilter.end = '2018-07-18';
 
 /**
@@ -267,7 +304,7 @@ dateFilter.end = '2018-07-18';
  **/
 var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
-	return new Promise(function(done2, fail) {
+	return new Promise(function(done, fail) {
 
 
 		//used for stats in return object
@@ -393,21 +430,34 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 		//    promises.push(get_events(metro))
 		//})
 
-		promises.push(get_events(metro))
+		promises.push(get_events(metro));
 
 		//results is an object with three fields: metro id, displayName (of metro) and the future events in that metro
 		Promise.all(promises).then(function(results){
 
-			console.log("finished: ");
+			//b/c I'm doing one metro?
 
-			//get list of artists:
-
-			var performance_dates = {};
-			var dates = [];
-
-			//todo: because I'm only doing one metro?
 			results = results[0];
+			//console.log(results);
+			let events = [];
 
+		   let metro_id = results[0].id;
+		   let ids = {};
+
+			results.forEach(function(result){
+				result.events.forEach(function(event){
+					if(ids[event.id]){
+
+					}else{
+						ids[event.id] = event.id;
+						event.metro_id = metro_id;
+						//if(event.id === 35513049){	console.log(event)}
+						events.push(event);
+					}
+
+				})
+			});
+			console.log("finished: ");
 
 			/**
 			 * populate performance_dates array for writing later to songkick_performances
@@ -483,41 +533,45 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 				})
 			}; //write schedule
 
-			write_schedule();
+			//write_schedule();
 
 			console.log("----------------------");
-			console.log("results length: ",results.length);
-			console.log("events length: ",event_count);
+			console.log("# of payloads: ",results.length);
+			console.log("events length: ",events.length);
 			console.log("----------------------");
 
-			var json = JSON.stringify(results,null,4)
+			done(events);
 
-			done2(results);
+			// var json = JSON.stringify(results,null,4)
+			//
+			//
+			// fs.writeFile(raw, json, function(err) {
+			//
+			// 	if(err) {   return console.log(err); }
+			// 	else{ console.log(raw + " saved!");}
+			// });
+			//
+			// var output = {};
+			// output.result = {};
+			// output.result.area = metro.displayName;
+			// output.result.events = event_count;
+			// output.result.dates = performance_dates;
+			//
+			// json = JSON.stringify(output,null,4);
+			//
+			// fs.writeFile(areaDatesArtists, json, function(err) {
+			//
+			// 	if(err) {   return console.log(err); }
+			// 	else{
+			// 		console.log(areaDatesArtists + " saved!");
+			// 		done2(results);
+			// 	}
+			//
+			// });
 
-			fs.writeFile(raw, json, function(err) {
 
-				if(err) {   return console.log(err); }
-				else{ console.log(raw + " saved!");}
-			});
-
-			var output = {};
-			output.result = {};
-			output.result.area = metro.displayName;
-			output.result.events = event_count;
-			output.result.dates = performance_dates;
-
-			json = JSON.stringify(output,null,4);
-
-			fs.writeFile(areaDatesArtists, json, function(err) {
-
-				if(err) {   return console.log(err); }
-				else{
-					console.log(areaDatesArtists + " saved!");
-					done2(results);
-				}
-
-			});
-
+		}).catch(function(e){
+			console.log(e);
 		})
 
 	})

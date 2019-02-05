@@ -18,6 +18,8 @@
     "grunt-contrib-watch": "latest",
     "grunt-browserify": "latest",
     "grunt-express": "latest",
-    "grunt-express-server": "latest"
+    "grunt-express-server": "latest",
+    "mssql": "latest",
+    "msnodesqlv8": "latest"
   }
 }
