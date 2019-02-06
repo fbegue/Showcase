@@ -1300,6 +1300,8 @@
 							resolved();
 						});
 
+
+
 						console.log("getting tracks for " + cache.playlists.simple.length + " playlists..." );
 
 						cache.playlists.simple.forEach(function(playlist_simple) {
@@ -1319,8 +1321,7 @@
 							//which is updated every time a playlist request is exhausted
 
 							console.log("============================================================");
-							console.log("get_all_tracks promise chain finished");
-
+							console.log("get_all_tracks promise chain finished")
 
 							// console.log("cache.playlist_tracks_map",cache.playlist_tracks_map);
 							// console.log(Object.keys(cache.playlist_tracks_map).length);
@@ -1498,26 +1499,44 @@
 							//todo: should I be clearing cache here?
 
 							cache.dummy = [];
+
+
 							make_request(url_object,cache.dummy)
 								.then(function(data){
-
-									cache.playlist_tracks_map[playlist.id] = data;
-
-									//var do_track = false;
+									let playlist_track = {};
+									let track = {};
 									let artist_list = [];
-									let skip = 0;
 
-									data.forEach(function(ob){
-										ob.track.artists.forEach(function(artist){
+
+									data.forEach(function(track){
+										playlist_track = {};
+										playlist_track.playlist_id = playlist.id;
+										playlist_track.track_id = track.track.id;
+										alasql("INSERT INTO playlists_tracks VALUES ( " + vlister(playlist_track)  + " )");
+										track = {};
+										track.id = track.track.id;
+										track.name = track.track.name;
+										alasql("INSERT INTO tracks VALUES ( " + vlister(track)  + " )");
+
+										//todo: there just doesn't seem to be a way to get FULL not SIMPLIFIED artist objects
+										//back from a playlist-tracks request. see 'track object (full) desc here:
+										//https://developer.spotify.com/documentation/web-api/reference/playlists/get-playlists-tracks/
+
+										//create payloads of 50 to resolve
+
+										let skip = 0;
+										track.track.artists.forEach(function(artist){
 											if(artist_list.indexOf(artist.id) !== -1){skip++;}
-
-											else {
-												//do_track = true;
-												artist_list.push(artist.id);
-											}
+											else {artist_list.push(artist.id)}
 										}); ///track artists
-									}); //data
 
+									});
+
+									console.log("select * from playlists_tracks;",alasql("select * from playlists_tracks;"));
+									console.log("select * from tracks;",alasql("select * from tracks;"));
+
+									
+									cache.playlist_tracks_map[playlist.id] = data;
 									console.log("$skipped",skip);
 									let payloads = [];
 									let custom_it = 0;
@@ -1542,12 +1561,6 @@
 									if(payload.length){payloads.push(payload)}
 									console.log("$payloads",payloads);
 
-									//declare outside of iterator
-									// var promiseTrack = new Promise(function(resolved) {
-									// 	resolved();
-									// });
-									//let do_track;
-
 									let promises = [];
 									payloads.forEach(function(payload){
 
@@ -1564,15 +1577,6 @@
 										url_object.fields = "";
 
 										promises.push(make_request_simple(url_object, cache.dummy,100));
-
-										// var reqSleep =  function(){
-										//     return new Promise(function(done, fail) {
-										// 	    make_request_simple(url_object, cache.artistsInfoMap)
-										// 		    .then(sleeper(50))
-										// 		    .then( () =>{done()})
-										//     })
-										// };
-										// promises.push(reqSleep);
 									});
 
 									// exports.artists_multi = function(){
