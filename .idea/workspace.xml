@@ -11,16 +11,17 @@
     <bookmark url="file://$PROJECT_DIR$/authorization_code/public/dosearch.js" line="635" />
     <bookmark url="file://$PROJECT_DIR$/authorization_code/public/dosearch.js" line="885" />
     <bookmark url="file://$PROJECT_DIR$/authorization_code/public/dosearch.js" line="457" />
-    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="1414" />
+    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="1511" />
     <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="257" />
-    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="481" />
-    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="1503" />
+    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="482" />
+    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="1608" />
+    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="1411" />
+    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="1395" />
   </component>
   <component name="ChangeListManager">
     <list id="b42abc44-fc3f-4476-9229-482094258a06" name="fucking idea folder" comment="fuck this thing" />
     <list default="true" id="b24e5d1f-7383-41ff-a721-7dbb75469dd8" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/authorization_code/Gruntfile.js" afterPath="$PROJECT_DIR$/authorization_code/Gruntfile.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/authorization_code/public/bundle.js" afterPath="$PROJECT_DIR$/authorization_code/public/bundle.js" />
     </list>
     <ignored path=".idea/" />
@@ -37,43 +38,54 @@
     <favorites_list name="playlistGen" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="bundle.js" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/authorization_code/public/bundle.js">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="Gruntfile.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/authorization_code/Gruntfile.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="622">
-              <caret line="1537" column="36" lean-forward="true" selection-start-line="1537" selection-start-column="36" selection-end-line="1537" selection-end-column="36" />
+            <state relative-caret-position="310">
+              <caret line="23" column="17" lean-forward="true" selection-start-line="23" selection-start-column="17" selection-end-line="23" selection-end-column="17" />
               <folding>
-                <element signature="e#3514#4380#0" expanded="false" />
-                <element signature="e#4426#5194#0" expanded="false" />
-                <element signature="e#15505#27659#0" expanded="false" />
-                <element signature="e#28404#29226#0" expanded="false" />
-                <element signature="e#30190#31150#0" expanded="false" />
-                <element signature="e#31262#32074#0" expanded="false" />
-                <element signature="e#32120#33527#0" expanded="false" />
-                <element signature="e#35021#35040#0" expanded="false" />
-                <element signature="e#35274#35362#0" expanded="false" />
-                <element signature="e#35642#37031#0" expanded="false" />
-                <element signature="e#35948#36073#0" expanded="false" />
-                <element signature="e#36422#36530#0" expanded="false" />
-                <element signature="e#36544#36694#0" expanded="false" />
-                <element signature="e#37603#38994#0" expanded="false" />
-                <element signature="e#37688#38299#0" expanded="false" />
-                <element signature="e#37776#38288#0" expanded="false" />
-                <element signature="e#37790#37811#0" expanded="false" />
-                <element signature="e#54273#55252#0" expanded="false" />
+                <element signature="n#!!doc" expanded="true" />
+                <marker date="1549569535935" expanded="true" signature="496:1096" ph="{...}" />
+                <marker date="1549569535935" expanded="true" signature="856:1092" ph="{...}" />
+                <marker date="1549569535935" expanded="true" signature="929:1087" ph="{...}" />
+                <marker date="1549569535935" expanded="true" signature="1128:1243" ph="//..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Gruntfile.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/authorization_code/Gruntfile.js">
+      <file leaf-file-name="bundle.js" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/authorization_code/public/bundle.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="286">
-              <caret line="17" column="17" lean-forward="true" selection-start-line="17" selection-start-column="17" selection-end-line="17" selection-end-column="17" />
+            <state relative-caret-position="300">
+              <caret line="1407" column="84" lean-forward="true" selection-start-line="1407" selection-start-column="84" selection-end-line="1407" selection-end-column="84" />
               <folding>
-                <element signature="n#!!doc" expanded="true" />
+                <element signature="e#3469#4306#0" expanded="false" />
+                <element signature="e#4351#5095#0" expanded="false" />
+                <element signature="e#46382#46557#0" expanded="false" />
+                <element signature="e#46603#49553#0" expanded="false" />
+                <element signature="e#49979#56974#0" expanded="false" />
+                <element signature="e#57245#58200#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/authorization_code/public/index.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="431">
+              <caret line="296" column="43" lean-forward="true" selection-start-line="296" selection-start-column="36" selection-end-line="296" selection-end-column="43" />
+              <folding>
+                <element signature="n#style#0;n#div#0;n#div#2;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#div#0;n#div#0;n#div#2;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#div#1;n#div#0;n#div#2;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+                <marker date="1549569535948" expanded="false" signature="8269:8287" ph="..." />
+                <marker date="1549569535948" expanded="false" signature="8675:8692" ph="..." />
+                <marker date="1549569535948" expanded="false" signature="8916:8932" ph="..." />
+                <marker date="1549569535948" expanded="false" signature="9177:9194" ph="..." />
+                <marker date="1549569535948" expanded="false" signature="9395:9410" ph="..." />
               </folding>
             </state>
           </provider>
@@ -91,7 +103,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>areaDatesArtists</find>
       <find>songkick</find>
       <find>export</find>
       <find>url_object</find>
@@ -103,7 +114,6 @@
       <find>fm</find>
       <find>saved!</find>
       <find>exports.set_user_cache</find>
-      <find>console.log</find>
       <find>user_cache</find>
       <find>playlistGen</find>
       <find>$scope.raw_filename</find>
@@ -121,6 +131,8 @@
       <find>playlistDef</find>
       <find>artists_tracks</find>
       <find>playlists</find>
+      <find>join tracks</find>
+      <find>console.log</find>
     </findStrings>
     <replaceStrings>
       <replace>artists</replace>
@@ -185,10 +197,10 @@
     <handled-path value="$PROJECT_DIR$/authorization_code/node_modules" />
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-100" />
-    <option name="y" value="114" />
-    <option name="width" value="1932" />
-    <option name="height" value="793" />
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1936" />
+    <option name="height" value="1096" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -365,7 +377,8 @@
       <workItem from="1549396300944" duration="529000" />
       <workItem from="1549399035549" duration="3859000" />
       <workItem from="1549479810621" duration="202000" />
-      <workItem from="1549480107026" duration="2298000" />
+      <workItem from="1549480107026" duration="3005000" />
+      <workItem from="1549568409359" duration="3477000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1517433036503</created>
@@ -437,11 +450,18 @@
       <option name="project" value="LOCAL" />
       <updated>1549404357414</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="tracks">
+      <created>1549491426965</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1549491426965</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="149275000" />
+    <option name="totallyTimeSpent" value="153459000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
@@ -449,16 +469,16 @@
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14383562" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.23052959" sideWeight="0.5258166" order="10" side_tool="true" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.055036344" sideWeight="0.5279241" order="10" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24506749" sideWeight="0.48946258" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.055036344" sideWeight="0.47418335" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.055036344" sideWeight="0.47207588" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
@@ -482,7 +502,8 @@
     <MESSAGE value="dayoff" />
     <MESSAGE value="metro prints" />
     <MESSAGE value="added tracks, finished dbs. in the middle of fixing up playlist_tracks" />
-    <option name="LAST_COMMIT_MESSAGE" value="added tracks, finished dbs. in the middle of fixing up playlist_tracks" />
+    <MESSAGE value="tracks" />
+    <option name="LAST_COMMIT_MESSAGE" value="tracks" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -491,6 +512,35 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/authorization_code/public/bundle.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15334">
+          <caret line="1537" column="0" lean-forward="true" selection-start-line="1537" selection-start-column="0" selection-end-line="1537" selection-end-column="0" />
+          <folding>
+            <element signature="e#3469#4306#0" expanded="false" />
+            <element signature="e#4351#5095#0" expanded="false" />
+            <element signature="e#46382#46557#0" expanded="false" />
+            <element signature="e#46603#49553#0" expanded="false" />
+            <element signature="e#49979#56974#0" expanded="false" />
+            <element signature="e#57245#58200#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/authorization_code/Gruntfile.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="17" column="17" lean-forward="true" selection-start-line="17" selection-start-column="17" selection-end-line="17" selection-end-column="17" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+            <marker date="1549569535935" expanded="true" signature="496:1096" ph="{...}" />
+            <marker date="1549569535935" expanded="true" signature="856:1092" ph="{...}" />
+            <marker date="1549569535935" expanded="true" signature="929:1087" ph="{...}" />
+            <marker date="1549569535935" expanded="true" signature="1128:1243" ph="//..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/authorization_code/app.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="391">
@@ -508,37 +558,46 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/authorization_code/Gruntfile.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="286">
-          <caret line="17" column="17" lean-forward="true" selection-start-line="17" selection-start-column="17" selection-end-line="17" selection-end-column="17" />
+        <state relative-caret-position="310">
+          <caret line="23" column="17" lean-forward="true" selection-start-line="23" selection-start-column="17" selection-end-line="23" selection-end-column="17" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
+            <marker date="1549569535935" expanded="true" signature="496:1096" ph="{...}" />
+            <marker date="1549569535935" expanded="true" signature="856:1092" ph="{...}" />
+            <marker date="1549569535935" expanded="true" signature="929:1087" ph="{...}" />
+            <marker date="1549569535935" expanded="true" signature="1128:1243" ph="//..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/authorization_code/public/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="431">
+          <caret line="296" column="43" lean-forward="true" selection-start-line="296" selection-start-column="36" selection-end-line="296" selection-end-column="43" />
+          <folding>
+            <element signature="n#style#0;n#div#0;n#div#2;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#div#0;n#div#0;n#div#2;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#div#1;n#div#0;n#div#2;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+            <marker date="1549569535948" expanded="false" signature="8269:8287" ph="..." />
+            <marker date="1549569535948" expanded="false" signature="8675:8692" ph="..." />
+            <marker date="1549569535948" expanded="false" signature="8916:8932" ph="..." />
+            <marker date="1549569535948" expanded="false" signature="9177:9194" ph="..." />
+            <marker date="1549569535948" expanded="false" signature="9395:9410" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/authorization_code/public/bundle.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="622">
-          <caret line="1537" column="36" lean-forward="true" selection-start-line="1537" selection-start-column="36" selection-end-line="1537" selection-end-column="36" />
+        <state relative-caret-position="300">
+          <caret line="1407" column="84" lean-forward="true" selection-start-line="1407" selection-start-column="84" selection-end-line="1407" selection-end-column="84" />
           <folding>
-            <element signature="e#3514#4380#0" expanded="false" />
-            <element signature="e#4426#5194#0" expanded="false" />
-            <element signature="e#15505#27659#0" expanded="false" />
-            <element signature="e#28404#29226#0" expanded="false" />
-            <element signature="e#30190#31150#0" expanded="false" />
-            <element signature="e#31262#32074#0" expanded="false" />
-            <element signature="e#32120#33527#0" expanded="false" />
-            <element signature="e#35021#35040#0" expanded="false" />
-            <element signature="e#35274#35362#0" expanded="false" />
-            <element signature="e#35642#37031#0" expanded="false" />
-            <element signature="e#35948#36073#0" expanded="false" />
-            <element signature="e#36422#36530#0" expanded="false" />
-            <element signature="e#36544#36694#0" expanded="false" />
-            <element signature="e#37603#38994#0" expanded="false" />
-            <element signature="e#37688#38299#0" expanded="false" />
-            <element signature="e#37776#38288#0" expanded="false" />
-            <element signature="e#37790#37811#0" expanded="false" />
-            <element signature="e#54273#55252#0" expanded="false" />
+            <element signature="e#3469#4306#0" expanded="false" />
+            <element signature="e#4351#5095#0" expanded="false" />
+            <element signature="e#46382#46557#0" expanded="false" />
+            <element signature="e#46603#49553#0" expanded="false" />
+            <element signature="e#49979#56974#0" expanded="false" />
+            <element signature="e#57245#58200#0" expanded="false" />
           </folding>
         </state>
       </provider>
