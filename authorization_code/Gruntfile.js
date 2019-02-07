@@ -25,7 +25,20 @@ module.exports = function(grunt) {
 		},
 
 		watch: {
-			files: ['app.js','songkick.js','public/bundle.js',],
+			//todo: there is more to livereload than just pointing it here
+
+			// options:{
+			// 	livereload:{
+			// 		host:"localhost",
+			// 		port:8888
+			// 	},
+			// 	livereloadOnError:true
+			// },
+			build:{
+				files: ['app.js','songkick.js','public/bundle.js','public/index.html'],
+				tasks:[ 'express:dev' ],
+			},
+
 			//tasks: ['browserify']
 			express: {
 				files:  [ '**/*.js' ],

@@ -479,11 +479,13 @@
 							uri: "spotify:user:1292167736:playlist:5vDmqTWcShNGe7ENaud90q"
 						};
 
+
 						let playlistsDefStr = defStr(playlistDef);
 						alasql("CREATE TABLE playlists (" + playlistsDefStr + ")");
 						//alasql("INSERT INTO playlists VALUES ( " + vlister(playlists_ex)  + " )");
 
 						console.log("select * from playlists;",alasql("select * from playlists;"));
+
 
 						let playlists_artists_ex = {
 							playlist_id:"5vDmqTWcShNGe7ENaud90q",
@@ -885,6 +887,59 @@
 						}
 					};
 					//d3_launch();
+
+					$scope.db = {};
+
+					$scope.playlists = {};
+					$scope.artists = {};
+					// $scope.playlists['1292167736'] = [];
+					// $scope.playlists['1213866828'] = [];
+
+					$scope.db.playlists = function(u){
+
+						let qry = "select * from playlists where owner = '" + u.id + "' ";
+						console.log(qry);
+						console.log($scope.playlists[ u.id]);
+						$scope.playlists[ u.id] = alasql(qry);
+						console.log($scope.playlists[ u.id]);
+						return $scope.playlists[ u.id];
+					};
+
+
+					$scope.testdb = function(user){
+						user = {};
+						user.id = '1292167736';
+						console.log("playlists",alasql("select * from playlists"));
+						console.log("playlists_tracks",alasql("select * from playlists_tracks"));
+
+						let qry3 = "select p.id, pt.track_id as track_id, at.artist_id as artist_id, a.name as artist_name"
+							+ " from playlists p join playlists_tracks pt on p.id = pt.playlist_id"
+							+ " join artists_tracks at on pt.track_id = at.track_id"
+							 + " join artists a on at.artist_id = a.id"
+							+ " where p.owner  = '" + user.id + "' ";
+
+						console.log(qry3);
+						//!$scope.artists[user.id] ? $scope.playlists[user.id] = []:{};
+						// $scope.artists[user.id] = alasql(qry3);
+						// console.log(qry2,$scope.playlists[user.id]);
+						console.log("testdb",alasql(qry3));
+
+						console.log("6TZdvF1kFzwnQLgHQynzsO",alasql("select * from artists where id = '6TZdvF1kFzwnQLgHQynzsO'"));
+					};
+
+					$scope.testIn = function(){
+						let playlists_ex = {
+							id: "afsdfsdafasdfasdf",
+							name: "Classic Rock/Rock",
+							owner:"Jake Lavender",
+							public: true,
+							uri: "spotify:user:1292167736:playlist:5vDmqTWcShNGe7ENaud90q"
+						};
+						alasql("INSERT INTO playlists VALUES ( " + vlister(playlists_ex)  + " )");
+						console.log("sel",alasql("select * from playlists;"));
+						//$scope.applyIt();
+					};
+
 
 
 					$scope.shared = {};
@@ -1321,7 +1376,31 @@
 							//which is updated every time a playlist request is exhausted
 
 							console.log("============================================================");
-							console.log("get_all_tracks promise chain finished")
+							console.log("get_all_tracks promise chain finished");
+
+							//console.log("select * from playlists_tracks;",alasql("select * from playlists_tracks;"));
+							console.log("select * from tracks;",alasql("select * from tracks;"));
+							//console.log("select * from artists_tracks;",alasql("select * from artists_tracks;"));
+
+							//console.log("select * from genres;",alasql("select * from genres;"));
+							//console.log("select * from artists;",alasql("select * from artists;"));
+							//console.log("select * from artists_genres;",alasql("select * from artists_genres;"));
+
+							let qry1 = "select a.id AS artist_id, a.name AS artist_name, g.id AS genre_id, g.name AS genre_name " +
+								"from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id";
+							console.log("join all artists,genres",alasql(qry1));
+
+							let qry2 = "select * from playlists where owner = '" + user.id + "' ";
+							!$scope.playlists[user.id] ? $scope.playlists[user.id] = []:{};
+							$scope.playlists[user.id] = alasql(qry2);
+							console.log(qry2,$scope.playlists[user.id]);
+
+							// let qry3 = "select * from playlists where owner = '" + user.id + "' ";
+							// !$scope.artists[user.id] ? $scope.playlists[user.id] = []:{};
+							// $scope.artists[user.id] = alasql(qry2);
+							// console.log(qry2,$scope.playlists[user.id]);
+
+							//console.log($scope.playlists[ u.id]);
 
 							// console.log("cache.playlist_tracks_map",cache.playlist_tracks_map);
 							// console.log(Object.keys(cache.playlist_tracks_map).length);
@@ -1416,7 +1495,12 @@
 
 								cache.playlists.full.forEach(function(playlist){
 									playlist.owner = playlist.owner.id;
+
+									//sanitize
 									reduce(playlistDef,playlist);
+									let varchar_keys = ["name"];
+									varchar_keys.forEach(function(key) {	playlist[key] = playlist[key].replace(/'/g, "''");});
+
 									alasql("INSERT INTO playlists VALUES ( " + vlister(playlist)  + " )");
 								});
 
@@ -1471,7 +1555,9 @@
 					 * @function playlist_tracks
 					 **/
 
-					var playlist_finished_count = 0;
+
+					let skip_list = [];
+					let flag = true;
 					$scope.playlist_tracks = function(user,playlist){
 
 						return new Promise(function(done, fail) {
@@ -1504,57 +1590,79 @@
 							make_request(url_object,cache.dummy)
 								.then(function(data){
 									let playlist_track = {};
-									let track = {};
-									let artist_list = [];
+									let trackIn = {};
+									let artist_track = {};
 
+									let artist_list = [];
+									let skip = 0;
 
 									data.forEach(function(track){
 										playlist_track = {};
 										playlist_track.playlist_id = playlist.id;
 										playlist_track.track_id = track.track.id;
 										alasql("INSERT INTO playlists_tracks VALUES ( " + vlister(playlist_track)  + " )");
-										track = {};
-										track.id = track.track.id;
-										track.name = track.track.name;
-										alasql("INSERT INTO tracks VALUES ( " + vlister(track)  + " )");
 
-										//todo: there just doesn't seem to be a way to get FULL not SIMPLIFIED artist objects
-										//back from a playlist-tracks request. see 'track object (full) desc here:
-										//https://developer.spotify.com/documentation/web-api/reference/playlists/get-playlists-tracks/
+										trackIn = {};
+										trackIn.id = track.track.id;
+										trackIn.name = track.track.name;
+										let varchar_keys = ["name"];
+										varchar_keys.forEach(function(key) {	trackIn[key] = trackIn[key].replace(/'/g, "''");});
+										alasql("INSERT INTO tracks VALUES ( " + vlister(trackIn)  + " )");
 
-										//create payloads of 50 to resolve
+										//todo: check for unique tracks?
 
-										let skip = 0;
-										track.track.artists.forEach(function(artist){
-											if(artist_list.indexOf(artist.id) !== -1){skip++;}
-											else {artist_list.push(artist.id)}
-										}); ///track artists
+										track.track.artists.forEach(function(artistSimple){
+											artist_track = {};
+											artist_track.artist_id = artistSimple.id;
+											artist_track.track_id = track.track.id;
+											alasql("INSERT INTO artists_tracks VALUES ( " + vlister(artist_track)  + " )");
 
+											//todo: there just doesn't seem to be a way to get FULL not SIMPLIFIED artist objects
+											//back from a playlist-tracks request. see 'track object (full) desc here:
+											//https://developer.spotify.com/documentation/web-api/reference/playlists/get-playlists-tracks/
+
+											//save list for later
+											if(artist_list.indexOf(artistSimple.id) !== -1){
+												skip++;
+												artistSimple.id = '6TZdvF1kFzwnQLgHQynzsO'  ? console.log("$FUNNY") :{}
+											skip_list.push(artistSimple.id)
+											}
+											else {artist_list.push(artistSimple.id)}
+										});
 									});
 
 									console.log("select * from playlists_tracks;",alasql("select * from playlists_tracks;"));
 									console.log("select * from tracks;",alasql("select * from tracks;"));
+									console.log("select * from artists_tracks;",alasql("select * from artists_tracks;"));
 
-									
-									cache.playlist_tracks_map[playlist.id] = data;
 									console.log("$skipped",skip);
+									console.log("artist_list",artist_list);
+
 									let payloads = [];
 									let custom_it = 0;
 									let payload = [];
 
-									artist_list.forEach(function(id,i){
+									// artist_list.forEach(function(id,i){
+									// 	if(skip_list.indexOf(id) !== -1){
+									// 		artist_list.splice(i,1);
+									// 	}
+									// });
 
-										if(i === 0){payload.push(id)}
-										else{
-											//everytime we hit a multiple of 50, create a new payload
-											if(!(i % 50 === 0)){payload.push(id)}
+									//create payloads of 50 to resolve
+									artist_list.forEach(function(id,i){
+										id === '6TZdvF1kFzwnQLgHQynzsO' ? console.log("$d",id):{};
+											if(i === 0){payload.push(id)}
 											else{
-												console.log("archive & reset payload");
-												payloads.push(payload);
-												custom_it = 0;
-												payload = [];
+												//everytime we hit a multiple of 50, create a new payload
+												if(!(i % 50 === 0)){payload.push(id)}
+												else{
+													console.log("archive & reset payload");
+													payloads.push(payload);
+													custom_it = 0;
+													payload = [];
+												}
 											}
-										}
+
 									});
 
 									//leftover
@@ -1564,7 +1672,6 @@
 									let promises = [];
 									payloads.forEach(function(payload){
 
-										//do_track = true;
 										//form a comma seperated list of 50 artists ids
 										let payload_str  = "";
 										payload.forEach(function(id,i){
@@ -1579,12 +1686,8 @@
 										promises.push(make_request_simple(url_object, cache.dummy,100));
 									});
 
-									// exports.artists_multi = function(){
-
 									Promise.all(promises).then(function(results){
 										//console.log("$results",results);
-
-										//todo: need to know playlist associated with each artist
 
 										let all_artists = [];
 										results.forEach((r)=>{all_artists = all_artists.concat(r.artists)});
@@ -1592,87 +1695,72 @@
 										console.log(all_artists);
 										console.log("$artists fetched total",all_artists.length);
 
+										let unique_genre_artist_map = {};
 										all_artists.forEach(function(ar){
-											//guess we had a null one time?
-											let simp;
+											//todo: null sometimes? hows that happen exactly..?
 											if(ar){
-
-												cache.artists.full.push(ar)
-												cache.artistsInfoMap[ar.id] = ar;
-
-												simp = {};simp.display_name = ar.name; simp.id = ar.id;
-												cache.artistsInfoMap_simple[ar.id] = simp;
-												cache.artists.simple.push(simp)
-
 												ar.genres.forEach((g)=>{
-													if(cache.genres.indexOf(g) === -1){
-														cache.genres.push(g);
+													if(!unique_genre_artist_map[g]){
+														unique_genre_artist_map[g] = {artists:[]}
 													}
-													if(!cache.genres_frequency[g]){
-														cache.genres_frequency[g] = 1;
-													}
-													else{cache.genres_frequency[g]++}
+													unique_genre_artist_map[g].artists.push(ar);
 												});
-
-												//will certainly create duplicate artist entry/overlap which is the point
-												ar.genres.forEach((g)=>{
-													if(!cache.genres_artist_map[g]){
-														cache.genres_artist_map[g] = [];
-														cache.genres_artist_map[g].push(simp);
-													}else{
-														cache.genres_artist_map[g].push(simp);
-													}
-												})
 											}//non null artist
-										});
+										});//all_artists
 
-										// console.log("artistsInfoMap",cache.artistsInfoMap);
-										// console.log("artistsInfoMap_simple",cache.artistsInfoMap_simple);
+										let artist_genre = {};
+										let genre = {};
+										let genreInd = 0;
+
+										for(let key in unique_genre_artist_map){
+											genre = {};
+											genre.id = ++genreInd;
+											genre.name = key;
+											alasql("INSERT INTO genres VALUES ( " + vlister(genre)  + " )");
+
+											unique_genre_artist_map[key].artists.forEach(function(ar){
+												artist_genre = {};
+												artist_genre.artist_id = ar.id;
+												artist_genre.genre_id = genreInd;
+												alasql("INSERT INTO artists_genres VALUES ( " + vlister(artist_genre)  + " )");
+
+												console.log("$IND",skip_list.indexOf('6TZdvF1kFzwnQLgHQynzsO'));
+												// ? console.log("$d",skip_list.indexOf(ar.id)):{};
+
+												//console.log(skip_list.length);
+
+												// if(skip_list.indexOf(ar.id) === -1){
+												if(ar.id === '6TZdvF1kFzwnQLgHQynzsO' && flag){
+													console.log("$HERE");
+													reduce(artistDef,ar);
+													let varchar_keys = ["name"];
+													varchar_keys.forEach(function(key) {	ar[key] = ar[key].replace(/'/g, "''");});
+													alasql("INSERT INTO artists VALUES ( " + vlister(ar)  + " )");
+													flag = false;
+												}
+												else{
+													//sanitize
+													ar.id === '6TZdvF1kFzwnQLgHQynzsO' ? console.log("$FUCK"):{}
+													reduce(artistDef,ar);
+													let varchar_keys = ["name"];
+													varchar_keys.forEach(function(key) {	ar[key] = ar[key].replace(/'/g, "''");});
+													alasql("INSERT INTO artists VALUES ( " + vlister(ar)  + " )");
+												}
+
+											});
+										}
+
+										// console.log("select * from genres;",alasql("select * from genres;"));
+										// console.log("select * from artists;",alasql("select * from artists;"));
+										// console.log("select * from artists_genres;",alasql("select * from artists_genres;"));
 										//
-										// console.log("genres",cache.genres);
-										// console.log("genres_artist_map",cache.genres_artist_map);
+										// let qry = "select a.id AS artist_id, a.name AS artist_name, g.id AS genre_id, g.name AS genre_name " +
+										// 	"from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id";
+										// console.log("join artists with their genres",alasql(qry));
+
+
 										done();
 									})
-
-									// promiseTrack.then(function(results) {
-									//
-									// 	console.log("$results",results);
-									// 	console.log(cache.artistsInfoMap);
-									// 	//cache.playlist_tracks_map[playlist.id] = data;
-									//
-									// 	// playlist_finished_count++;
-									// 	// console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
-									// 	//
-									// 	// console.log("current cache.artistsInfoMap size: ");
-									// 	// console.log(count_properties(cache.artistsInfoMap));
-									// 	//done(data);
-									// });
-
-
-									// }else{
-									// 	playlist_finished_count++;
-									// 	console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
-									// 	done(data)
-									// }
-									// if(do_track){
-									// 	promiseTrack.then(function(results) {
-									//
-									// 		console.log("$results",results);
-									// 		// cache.playlist_tracks_map[playlist.id] = data;
-									// 		//
-									// 		// playlist_finished_count++;
-									// 		// console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
-									// 		//
-									// 		// console.log("current cache.artistsInfoMap size: ");
-									// 		// console.log(count_properties(cache.artistsInfoMap));
-									// 		done(data);
-									// 	})
-									// }else{
-									// 	console.log("$here");
-									// 	playlist_finished_count++;
-									// 	console.log(playlist_finished_count + " :: playlist_tracks finished with length: ",data.length);
-									// 	done(data)
-									// }
 								})
 						})//promise
 
@@ -1680,7 +1768,6 @@
 
 
 					//todo: assuming first match is always the one we want
-
 					/**
 					 * Hit a search endpoint to try and resolve an input string to an artist profile in Spotify
 					 * @function search_artists
@@ -1699,11 +1786,10 @@
 							var req = {};
 							req.url = "https://api.spotify.com/v1/search?q=" + query + "&type=artist";
 
-							make_request_simple(req,cache.dummy,200).then(function(result){
+							make_request_simple(req,cache.dummy,100).then(function(result){
 								//console.log("result:",result);
 
 								//todo: weird dereferencing here?
-
 								//p.id === 89185? console.log("$tup",p):{}
 
 								var artist = {};
@@ -1733,6 +1819,7 @@
 					$scope.show = {};
 					$scope.show['dacandyman01'] = {};
 					$scope.show['1292167736'] = {};
+					$scope.show['1213866828'] = {};
 
 					//todo: autocollapse artists for now, too long
 					$scope.show['dacandyman01']['playlists'] = true;
@@ -1742,6 +1829,10 @@
 					$scope.show['1292167736']['playlists'] = true;
 					$scope.show['1292167736']['artists'] = false;
 					$scope.show['1292167736']['genres'] = true;
+
+					$scope.show['1213866828']['playlists'] = true;
+					$scope.show['1213866828']['artists'] = false;
+					$scope.show['1213866828']['genres'] = true;
 
 					$scope.user_cache = user_cache;
 					$scope.metro_cache = {};

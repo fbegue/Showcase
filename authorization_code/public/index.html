@@ -273,7 +273,9 @@
           filter
           <button ng-click="shared['artists'] = !shared['artists']">shared artists</button>
           <button ng-click="shared['genres'] = !shared['genres']">shared genres</button>
+          <button ng-click="testdb()">testdb</button>
         </div>
+
 
         <div ng-repeat="u in users">
           <span ng-if="user_cache[u.id]"> {{u.display_name}}</span>
@@ -282,10 +284,9 @@
             <div>
               <span class="pointer" ng-click="show[u.id]['playlists'] = !show[u.id]['playlists']">PLAYLISTS+</span>
 
-              ({{user_cache[u.id]["playlists"]["simple"].length}}) ::
-
-              <div ng-if="show[u.id]['playlists']" style="font-style:italic;"
-                   ng-repeat="p in user_cache[u.id]['playlists']['simple']">&nbsp &nbsp {{p.name}}</div>
+                <div ng-show="show[u.id]['playlists']" style="font-style:italic;"
+                     ng-repeat="p in playlists[u.id]">&nbsp &nbsp {{p.name}}
+                </div>
             </div>
 
             <div>
@@ -293,8 +294,9 @@
               ({{user_cache[u.id]["artists"]["simple"].length}}) ::
 
               <div  ng-if="show[u.id]['artists']" style="font-style:italic;"
-                    ng-repeat="a in user_cache[u.id]['artists']['simple'] | orderBy:'toString()' | sharedFilter:'artists':shared">&nbsp &nbsp {{ a.name}}</div>
+                    ng-repeat="a in artists[u.id]">&nbsp &nbsp {{ a.name}}</div>
             </div>
+            <!--| orderBy:'toString()' | sharedFilter:'artists':shared-->
 
             <div>
               <span class="pointer" ng-click="show[u.id]['genres'] = !show[u.id]['genres']">GENRES+</span>
