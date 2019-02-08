@@ -892,6 +892,7 @@
 
 				$scope.playlists = {};
 				$scope.artists = {};
+				$scope.genres = {};
 				// $scope.playlists['1292167736'] = [];
 				// $scope.playlists['1213866828'] = [];
 
@@ -1405,39 +1406,35 @@
 						// 	// + " JOIN genres g on g.id = ag.genre_id"
 						// 	//+  " where p.owner = '" + user.id + "' ";
 
-						let qry3 = "select distinct a.id, a.name as name, t.name as track_name"
-							+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+						//todo: order by similar genres? sounds hard
+
+						let qry3 = "select distinct artists.id as artist_id, artists.name as name"
+							+ " from artists where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+							//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
 							+ " JOIN tracks t on t.id = pt.track_id"
 							+ " JOIN artists_tracks at on at.track_id = t.id"
 							+ " JOIN artists a on a.id = at.artist_id "
 							// + " JOIN artists_genres ag on a.id = ag.artist_id"
 							// + " JOIN genres g on g.id = ag.genre_id"
-							+  " where owner = '" + user.id + "' ";
+							+  " where owner = '" + user.id + "')";
 
 						!$scope.artists[user.id] ? $scope.artists[user.id] = []:{};
 						$scope.artists[user.id] = alasql(qry3);
 						console.log(qry3,$scope.artists[user.id]);
 
-						//console.log($scope.playlists[ u.id]);
+						let qry4 = "select distinct genres.id as genre_id, genres.name as name"
+							+ " from genres where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+							//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+							+ " JOIN tracks t on t.id = pt.track_id"
+							+ " JOIN artists_tracks at on at.track_id = t.id"
+							+ " JOIN artists a on a.id = at.artist_id "
+							+ " JOIN artists_genres ag on a.id = ag.artist_id"
+							+ " JOIN genres g on g.id = ag.genre_id"
+							+  " where owner = '" + user.id + "')";
 
-						// console.log("cache.playlist_tracks_map",cache.playlist_tracks_map);
-						// console.log(Object.keys(cache.playlist_tracks_map).length);
-						// console.log("cache.artistsInfoMap",cache.artistsInfoMap);
-						// console.log(Object.keys(cache.artistsInfoMap).length);
-
-						//extract all tracks from playlist
-
-						for (let playlistID in cache.playlist_tracks_map) {
-							if (cache.playlist_tracks_map.hasOwnProperty(playlistID)) {
-								cache.playlist_tracks_map[playlistID].forEach(function(track){
-									cache.tracks.push(track)
-								});
-							}
-						}
-
-						// console.log("cache.tracks:",cache.tracks);
-						// console.log("cache.genres",cache.genres);
-						// console.log("genres_artist_map",cache.genres_artist_map);
+						$scope.genres[user.id] ? $scope.genres[user.id] = []:{};
+						$scope.genres[user.id] = alasql(qry4);
+						console.log(qry4,$scope.genres[user.id]);
 
 						//reorder genres
 						cache.genres = cache.genres.sort();
@@ -1565,6 +1562,33 @@
 						})
 
 				};//user_playlists
+
+
+
+				$scope.genres_frequency = function(genreTuple,user){
+					//select count(distinct artists.id),
+
+					//select unique playlist->track->artists, and figure out how many times
+					//a param genre is mentioned for that artist's genres
+
+					//todo: this gets each track, so dupes of artists. try using distinct
+
+					let qry = "select a.id as artist_id, a.name as name, t.name as track_name, g.name as genre_name from "
+						+ " playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+						//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+						+ " JOIN tracks t on t.id = pt.track_id"
+						+ " JOIN artists_tracks at on at.track_id = t.id"
+						+ " JOIN artists a on a.id = at.artist_id "
+						+ " JOIN artists_genres ag on a.id = ag.artist_id"
+						+ " JOIN genres g on g.id = ag.genre_id"
+						+  " where owner = '" + user.id + "' and g.id = " + genreTuple.genre_id + "";
+
+					console.log(qry,alasql(qry));
+
+					let qry2 = "select id, name from genres g where g.id = " + genreTuple.genre_id;
+					console.log(qry,alasql(qry2));
+
+				};
 
 				/**Get tracks for every playlist you throw at it {playlist_tracks_map}
 				 * While processing the playlist track entries, it also fills out artistsInfoMap, artistsInfoMap_simple

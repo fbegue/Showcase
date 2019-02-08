@@ -302,9 +302,14 @@
               <span class="pointer" ng-click="show[u.id]['genres'] = !show[u.id]['genres']">GENRES+</span>
               ({{user_cache[u.id]["genres"].length}}) ::
 
+              <!--| orderBy:genreFreq(u):descendFreq | sharedFilter:'genres':shared"-->
+
               <div  ng-if="show[u.id]['genres']" style="font-style:italic;"
-                    ng-repeat="g in user_cache[u.id]['genres'] | orderBy:'toString()' | orderBy:genreFreq(u):descendFreq | sharedFilter:'genres':shared">
-                &nbsp &nbsp {{g}} ({{user_cache[u.id]['genres_frequency'][g]}}) <button ng-click="set_filterGenre(g)">({{genreEventMatches(g,global_metro)}})</button>
+                    ng-repeat="g in genres[u.id] | orderBy:'toString()'" >
+                &nbsp &nbsp {{g.name}}
+                <!--({{genres_frequency(g,u)}})-->
+              <!--<button ng-click="set_filterGenre(g)">({{genreEventMatches(g,global_metro)}})</button>-->
+                <button ng-click="test = genres_frequency(g,u)">({{test}})</button>
 
               </div>
             </div>
