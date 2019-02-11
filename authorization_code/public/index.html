@@ -276,38 +276,43 @@
           <button ng-click="testdb()">testdb</button>
         </div>
 
+        <!--todo: this should have some other condition besides playlists-->
 
-        <div ng-repeat="u in users">
-          <span ng-if="user_cache[u.id]"> {{u.display_name}}</span>
+        <div ng-if="user_cache[u.id]['playlists'].length >0" ng-repeat="u in users">
+         {{u.display_name}}
 
           <div style="min-width:15em" ng-show="user_cache[u.id]">
             <div>
               <span class="pointer" ng-click="show[u.id]['playlists'] = !show[u.id]['playlists']">PLAYLISTS+</span>
+              ({{user_cache[u.id]['playlists'].length}})
 
                 <div ng-show="show[u.id]['playlists']" style="font-style:italic;"
-                     ng-repeat="p in playlists[u.id]">&nbsp &nbsp {{p.name}}
+                     ng-repeat="p in user_cache[u.id]['playlists']">&nbsp &nbsp {{p.name}}
                 </div>
             </div>
 
             <div>
               <span class="pointer"ng-click="show[u.id]['artists'] = !show[u.id]['artists']">ARTISTS+</span>
-              ({{user_cache[u.id]["artists"]["simple"].length}}) ::
+              ({{user_cache[u.id]['artists'].length}})
 
               <div  ng-if="show[u.id]['artists']" style="font-style:italic;"
-                    ng-repeat="a in artists[u.id]">&nbsp &nbsp {{ a.name}}</div>
+                    ng-repeat="a in user_cache[u.id]['artists'] | orderByArtistFreq:artist_freq_map[u.id]">
+                &nbsp &nbsp {{ a.name}} ({{artist_freq_map[u.id][a.artist_id]}})
+
+              </div>
             </div>
             <!--| orderBy:'toString()' | sharedFilter:'artists':shared-->
 
             <div>
               <span class="pointer" ng-click="show[u.id]['genres'] = !show[u.id]['genres']">GENRES+</span>
-              ({{user_cache[u.id]["genres"].length}}) ::
+              ({{user_cache[u.id]["genres"].length}})
 
               <!--| orderBy:genreFreq(u):descendFreq | sharedFilter:'genres':shared"-->
 
               <div  ng-if="show[u.id]['genres']" style="font-style:italic;"
-                    ng-repeat="g in genres[u.id] | orderBy:'toString()'" >
-                &nbsp &nbsp {{g.name}}
-                <!--({{genres_frequency(g,u)}})-->
+                    ng-repeat="g in user_cache[u.id]['genres'] | orderByGenreFreq:genre_freq_map[u.id]" >
+                &nbsp &nbsp {{g.name}}     ({{genre_freq_map[u.id][g.genre_id]}})
+
               <!--<button ng-click="set_filterGenre(g)">({{genreEventMatches(g,global_metro)}})</button>-->
                 <button ng-click="test = genres_frequency(g,u)">({{test}})</button>
 
@@ -319,14 +324,18 @@
         </div>
 
         <div>
-          <div ng-repeat="e in metro_cache[global_metro.id] | hasGenre:filterGenre:user_cache">
+          <!--| hasGenre:filterGenre:user_cache-->
+          <div ng-repeat="e in metro_cache[global_metro.id] ">
             <div style="font-weight:bold">{{e.displayName}} @ {{e.venue.displayName}} on {{getEventDate(e)}}</div>
-            <div>  artists: <div ng-repeat="a in e.performance">{{a.displayName}}
-              <!--todo: what an incredible waste of time-->
-              (<span style="font-style:italic" ng-repeat="g in user_cache['global']['artistsInfoMap'][user_cache['global']['artistsSongkickSpotifyMap'][a.artist.id]].genres">
+
+            <!--todo: this displayName belongs to the performance, not the artist performing-->
+            <div>  artists: <div ng-repeat="p in getPerfs(e)">{{p.displayName}}
+
+              (<span style="font-style:italic" ng-repeat="g in getGenres(p)">
                 {{g}}
               </span>)
-              <img style="max-width: 4em;" src="{{user_cache['global']['artistsInfoMap'][user_cache['global']['artistsSongkickSpotifyMap'][a.artist.id]].images[2].url}}">
+              <!--<img style="max-width: 4em;" src="">-->
+
             </div>
 
               <!--todo: doesn't work (no index?)-->

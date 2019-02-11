@@ -11,25 +11,25 @@
     <bookmark url="file://$PROJECT_DIR$/authorization_code/public/dosearch.js" line="635" />
     <bookmark url="file://$PROJECT_DIR$/authorization_code/public/dosearch.js" line="885" />
     <bookmark url="file://$PROJECT_DIR$/authorization_code/public/dosearch.js" line="457" />
-    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="1508" />
-    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="257" />
-    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="482" />
-    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="1632" />
-    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="1396" />
-    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="1567" />
+    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="535" />
+    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="1245" />
+    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="1349" />
+    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="297" />
+    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="1610" />
+    <bookmark url="file://$PROJECT_DIR$/authorization_code/public/bundle.js" line="1896" />
   </component>
   <component name="ChangeListManager">
-    <list id="b42abc44-fc3f-4476-9229-482094258a06" name="fucking idea folder" comment="fuck this thing" />
     <list default="true" id="b24e5d1f-7383-41ff-a721-7dbb75469dd8" name="Default" comment="line 1412 bundle.js think I figured out unique artists for a user">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/authorization_code/public/bundle.js" afterPath="$PROJECT_DIR$/authorization_code/public/bundle.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/authorization_code/public/index.html" afterPath="$PROJECT_DIR$/authorization_code/public/index.html" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/authorization_code/public/bundle.js" beforeDir="false" afterPath="$PROJECT_DIR$/authorization_code/public/bundle.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/authorization_code/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/authorization_code/public/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/authorization_code/public/jake_usercache_v1.json" beforeDir="false" afterPath="$PROJECT_DIR$/authorization_code/public/jake_usercache_v1.json" afterDir="false" />
     </list>
+    <list id="b42abc44-fc3f-4476-9229-482094258a06" name="fucking idea folder" comment="fuck this thing" />
     <ignored path=".idea/" />
     <ignored path="$PROJECT_DIR$/.idea/" />
     <ignored path="$PROJECT_DIR$/node_modules/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
-    <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -40,53 +40,50 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="Gruntfile.js" pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/authorization_code/Gruntfile.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="310">
-              <caret line="23" column="17" lean-forward="true" selection-start-line="23" selection-start-column="17" selection-end-line="23" selection-end-column="17" />
+            <state relative-caret-position="255">
+              <caret line="17" column="17" selection-start-line="17" selection-start-column="17" selection-end-line="17" selection-end-column="17" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
-                <marker date="1549569535935" expanded="true" signature="496:1096" ph="{...}" />
-                <marker date="1549569535935" expanded="true" signature="856:1092" ph="{...}" />
-                <marker date="1549569535935" expanded="true" signature="929:1087" ph="{...}" />
-                <marker date="1549569535935" expanded="true" signature="1128:1243" ph="//..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="bundle.js" pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/authorization_code/public/jake_usercache_v1.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="34">
+              <caret line="27" column="18" selection-start-line="27" selection-start-column="3" selection-end-line="27" selection-end-column="18" />
+              <folding>
+                <element signature="e#17#608#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/authorization_code/public/bundle.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="314">
-              <caret line="1568" column="27" lean-forward="true" selection-start-line="1568" selection-start-column="27" selection-end-line="1568" selection-end-column="27" />
-              <folding>
-                <element signature="e#3469#4306#0" expanded="false" />
-                <element signature="e#4351#5095#0" expanded="false" />
-                <element signature="e#46619#46794#0" expanded="false" />
-                <element signature="e#46840#49790#0" expanded="false" />
-                <element signature="e#51302#58297#0" expanded="false" />
-                <element signature="e#58568#59523#0" expanded="false" />
-              </folding>
+            <state relative-caret-position="209">
+              <caret line="1254" lean-forward="true" selection-start-line="1254" selection-end-line="1254" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/authorization_code/public/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="537">
-              <caret line="311" column="59" lean-forward="false" selection-start-line="311" selection-start-column="58" selection-end-line="311" selection-end-column="59" />
+            <state relative-caret-position="345">
+              <caret line="204" column="50" lean-forward="true" selection-start-line="204" selection-start-column="50" selection-end-line="204" selection-end-column="50" />
               <folding>
+                <element signature="n#style#0;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#div#0;n#div#2;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#div#0;n#div#0;n#div#0;n#div#2;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#div#0;n#div#1;n#div#0;n#div#2;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#div#0;n#div#2;n#div#0;n#div#2;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
-                <marker date="1549659327845" expanded="false" signature="8800:8817" ph="..." />
-                <marker date="1549659327845" expanded="false" signature="9041:9057" ph="..." />
-                <marker date="1549659327845" expanded="false" signature="9302:9319" ph="..." />
-                <marker date="1549659327845" expanded="false" signature="9520:9535" ph="..." />
               </folding>
             </state>
           </provider>
@@ -104,36 +101,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>songkick</find>
-      <find>export</find>
-      <find>url_object</find>
+      <find>insert into playlists</find>
+      <find>make_request</find>
+      <find>postData</find>
+      <find>unresolved_artists</find>
+      <find>process_playlists</find>
+      <find>set_user_</find>
+      <find>$scope.process_tracks</find>
+      <find>process_artists</find>
+      <find>$scope.playlists[user.id]</find>
+      <find>select distinct_genres</find>
+      <find>$scope.user_cache[user.id].tracks</find>
+      <find>$scope.user_cache[user.id]</find>
+      <find>process_tracks</find>
+      <find>playlist_tracks</find>
+      <find>user</find>
+      <find>$scope.digestIt();</find>
+      <find>set_user</find>
+      <find>genre_freq_map</find>
+      <find>genres_frequency</find>
+      <find>artists_frequency</find>
+      <find>INSERT INTO artists</find>
+      <find>getEventDate</find>
+      <find>insert into artists</find>
+      <find>def</find>
+      <find>getPerfs</find>
+      <find>genreFreqOrder</find>
+      <find>artist_artistSongkick</find>
+      <find>performances</find>
+      <find>get_metro</find>
       <find>get_metro_events</find>
-      <find>global_metro</find>
-      <find>metro_select</find>
-      <find>fuzzy_compare</find>
-      <find>require</find>
-      <find>fm</find>
-      <find>saved!</find>
-      <find>exports.set_user_cache</find>
-      <find>user_cache</find>
-      <find>playlistGen</find>
-      <find>$scope.raw_filename</find>
-      <find>FuzzyMatching</find>
-      <find>user_cache['global'].artists</find>
-      <find>get_all</find>
-      <find>weekday</find>
-      <find>.8</find>
-      <find>dacandyman01</find>
-      <find>todo</find>
-      <find>set_user_cache</find>
-      <find>start</find>
-      <find>8</find>
-      <find>alasql(&quot;INSERT INTO</find>
-      <find>playlistDef</find>
-      <find>artists_tracks</find>
-      <find>playlists</find>
-      <find>join tracks</find>
-      <find>console.log</find>
     </findStrings>
     <replaceStrings>
       <replace>artists</replace>
@@ -165,7 +162,6 @@
         <option value="$PROJECT_DIR$/Songkick API/matches_SF Bay Area_2018-06-01-2018-09-31.json" />
         <option value="$PROJECT_DIR$/authorization_code/public/dacandyman01_artists_genre.json" />
         <option value="$PROJECT_DIR$/authorization_code/public/friends_id_map.json" />
-        <option value="$PROJECT_DIR$/authorization_code/public/jake_usercache_v1.json" />
         <option value="$PROJECT_DIR$/package.json" />
         <option value="$PROJECT_DIR$/Songkick API/tiny_server.js" />
         <option value="$PROJECT_DIR$/authorization_code/public/package.json" />
@@ -176,13 +172,12 @@
         <option value="$PROJECT_DIR$/authorization_code/songkick.js" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/authorization_code/Gruntfile.js" />
+        <option value="$PROJECT_DIR$/authorization_code/public/jake_usercache_v1.json" />
         <option value="$PROJECT_DIR$/authorization_code/public/index.html" />
         <option value="$PROJECT_DIR$/authorization_code/public/bundle.js" />
       </list>
     </option>
   </component>
-  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
-  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
   <component name="JsFlowSettings">
     <service-enabled>true</service-enabled>
     <exe-path />
@@ -190,35 +185,40 @@
     <other-services-enabled>true</other-services-enabled>
     <auto-save>true</auto-save>
   </component>
-  <component name="JsGulpfileManager">
-    <detection-done>true</detection-done>
-    <sorting>DEFINITION_ORDER</sorting>
-  </component>
-  <component name="NodeModulesDirectoryManager">
-    <handled-path value="$PROJECT_DIR$/authorization_code/node_modules" />
-  </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
-    <option name="width" value="1936" />
-    <option name="height" value="1096" />
+    <option name="x" value="-11" />
+    <option name="y" value="-11" />
+    <option name="width" value="1942" />
+    <option name="height" value="1102" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1">
-      <flattenPackages />
-      <showMembers />
-      <showModules />
-      <showLibraryContents />
-      <hideEmptyPackages />
-      <abbreviatePackageNames />
-      <autoscrollToSource />
-      <autoscrollFromSource />
-      <sortByType />
-      <manualOrder />
+    <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="Showcase" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Showcase" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Showcase" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Showcase" type="462c0819:PsiDirectoryNode" />
+              <item name="authorization_code" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Showcase" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Showcase" type="462c0819:PsiDirectoryNode" />
+              <item name="authorization_code" type="462c0819:PsiDirectoryNode" />
+              <item name="public" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
       <pane id="Scope">
         <subPane subId="Project Files">
           <expand>
@@ -255,29 +255,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scratches" />
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="Showcase" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Showcase" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Showcase" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Showcase" type="462c0819:PsiDirectoryNode" />
-              <item name="authorization_code" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Showcase" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Showcase" type="462c0819:PsiDirectoryNode" />
-              <item name="authorization_code" type="462c0819:PsiDirectoryNode" />
-              <item name="public" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -295,18 +272,18 @@
     <property name="settings.editor.selected.configurable" value="application.passwordSafe" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Candy.DESKTOP-TMB4Q31\WebstormProjects\Showcase\authorization_code\public" />
+      <recent name="C:\Users\Candy.DESKTOP-TMB4Q31\WebstormProjects\Showcase\authorization_code" />
+      <recent name="C:\Users\DICK-SHRIVELER\WebStormProjects\Showcase\authorization_code\public" />
+      <recent name="C:\Users\DICK-SHRIVELER\WebStormProjects\Showcase\Songkick API" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Candy.DESKTOP-TMB4Q31\WebstormProjects\Showcase\authorization_code" />
       <recent name="C:\Users\Candy.DESKTOP-TMB4Q31\WebstormProjects\Showcase\authorization_code\public" />
       <recent name="C:\Users\Candy.DESKTOP-TMB4Q31\WebstormProjects\Showcase\Songkick API" />
       <recent name="C:\Users\Candy.DESKTOP-TMB4Q31\WebstormProjects\Showcase" />
       <recent name="C:\Users\DICK-SHRIVELER\WebStormProjects\Showcase\authorization_code\public" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Candy.DESKTOP-TMB4Q31\WebstormProjects\Showcase\authorization_code\public" />
-      <recent name="C:\Users\Candy.DESKTOP-TMB4Q31\WebstormProjects\Showcase\authorization_code" />
-      <recent name="C:\Users\DICK-SHRIVELER\WebStormProjects\Showcase\authorization_code\public" />
-      <recent name="C:\Users\DICK-SHRIVELER\WebStormProjects\Showcase\Songkick API" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -322,21 +299,22 @@
     </option>
   </component>
   <component name="RunManager" selected="Node.js.songkick.js">
-    <configuration name="songkick.js" type="NodeJSConfigurationType" factoryName="Node.js" temporary="true" nameIsGenerated="true" path-to-node="project" path-to-js-file="$PROJECT_DIR$/authorization_code/public/Songkick API/songkick.js" working-dir="$PROJECT_DIR$/authorization_code/public/Songkick API" />
-    <configuration name="testing.js" type="NodeJSConfigurationType" factoryName="Node.js" temporary="true" nameIsGenerated="true" path-to-node="project" path-to-js-file="testing.js" working-dir="$PROJECT_DIR$/authorization_code/public" />
-    <list size="2">
-      <item index="0" class="java.lang.String" itemvalue="Node.js.testing.js" />
-      <item index="1" class="java.lang.String" itemvalue="Node.js.songkick.js" />
+    <configuration name="songkick.js" type="NodeJSConfigurationType" temporary="true" nameIsGenerated="true" path-to-js-file="$PROJECT_DIR$/authorization_code/public/Songkick API/songkick.js" working-dir="$PROJECT_DIR$/authorization_code/public/Songkick API">
+      <method v="2" />
+    </configuration>
+    <configuration name="testing.js" type="NodeJSConfigurationType" temporary="true" nameIsGenerated="true" path-to-js-file="testing.js" working-dir="$PROJECT_DIR$/authorization_code/public">
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Node.js.testing.js" />
+      <item itemvalue="Node.js.songkick.js" />
     </list>
     <recent_temporary>
-      <list size="2">
-        <item index="0" class="java.lang.String" itemvalue="Node.js.songkick.js" />
-        <item index="1" class="java.lang.String" itemvalue="Node.js.testing.js" />
+      <list>
+        <item itemvalue="Node.js.songkick.js" />
+        <item itemvalue="Node.js.testing.js" />
       </list>
     </recent_temporary>
-  </component>
-  <component name="ShelveChangesManager" show_recycled="false">
-    <option name="remove_strategy" value="false" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -380,6 +358,7 @@
       <workItem from="1549479810621" duration="202000" />
       <workItem from="1549480107026" duration="3005000" />
       <workItem from="1549568409359" duration="9185000" />
+      <workItem from="1549820638747" duration="1995000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1517433036503</created>
@@ -469,38 +448,57 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="159167000" />
+    <option name="totallyTimeSpent" value="187843000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14383562" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.055036344" sideWeight="0.5300316" order="10" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24506749" sideWeight="0.48946258" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.055036344" sideWeight="0.46996838" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32948583" sideWeight="0.49790576" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14541623" />
+      <window_info id="Structure" order="1" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Docker" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Messages" order="0" />
+      <window_info anchor="bottom" id="Message" order="1" />
+      <window_info anchor="bottom" id="Find" order="2" sideWeight="0.49790576" weight="0.32948583" />
+      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.48946258" weight="0.24506749" />
+      <window_info anchor="bottom" id="Debug" order="4" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="5" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="6" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="7" />
+      <window_info anchor="bottom" id="Changes" order="8" />
+      <window_info anchor="bottom" id="Terminal" order="9" />
+      <window_info active="true" anchor="bottom" id="Event Log" order="10" sideWeight="0.5300316" side_tool="true" visible="true" weight="0.053997923" />
+      <window_info anchor="bottom" id="Version Control" order="11" sideWeight="0.46996838" weight="0.055036344" />
+      <window_info anchor="bottom" id="Application Servers" order="12" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
     </layout>
+    <layout-to-restore>
+      <window_info content_ui="combo" id="Project" order="0" weight="0.14383562" />
+      <window_info id="Structure" order="1" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Messages" order="0" />
+      <window_info anchor="bottom" id="Message" order="1" />
+      <window_info anchor="bottom" id="Find" order="2" sideWeight="0.49790576" weight="0.32948583" />
+      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.48946258" weight="0.24506749" />
+      <window_info anchor="bottom" id="Debug" order="4" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="5" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="6" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="7" />
+      <window_info anchor="bottom" id="Changes" order="8" />
+      <window_info anchor="bottom" id="Terminal" order="9" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5300316" side_tool="true" weight="0.055036344" />
+      <window_info anchor="bottom" id="Version Control" order="11" sideWeight="0.46996838" visible="true" weight="0.055036344" />
+      <window_info anchor="bottom" id="Application Servers" order="12" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout-to-restore>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
-  </component>
-  <component name="VcsContentAnnotationSettings">
-    <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
@@ -514,100 +512,59 @@
     <MESSAGE value="line 1412 bundle.js think I figured out unique artists for a user" />
     <option name="LAST_COMMIT_MESSAGE" value="line 1412 bundle.js think I figured out unique artists for a user" />
   </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <option name="time" value="7" />
-    </breakpoint-manager>
-    <watches-manager />
-  </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/authorization_code/public/bundle.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15334">
-          <caret line="1537" column="0" lean-forward="true" selection-start-line="1537" selection-start-column="0" selection-end-line="1537" selection-end-column="0" />
-          <folding>
-            <element signature="e#3469#4306#0" expanded="false" />
-            <element signature="e#4351#5095#0" expanded="false" />
-            <element signature="e#46619#46794#0" expanded="false" />
-            <element signature="e#46840#49790#0" expanded="false" />
-            <element signature="e#51302#58297#0" expanded="false" />
-            <element signature="e#58568#59523#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/authorization_code/Gruntfile.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" column="17" lean-forward="true" selection-start-line="17" selection-start-column="17" selection-end-line="17" selection-end-column="17" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-            <marker date="1549569535935" expanded="true" signature="496:1096" ph="{...}" />
-            <marker date="1549569535935" expanded="true" signature="856:1092" ph="{...}" />
-            <marker date="1549569535935" expanded="true" signature="929:1087" ph="{...}" />
-            <marker date="1549569535935" expanded="true" signature="1128:1243" ph="//..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/authorization_code/app.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="391">
-          <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
-          <folding />
+          <caret line="23" selection-start-line="23" selection-end-line="23" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
-          <caret line="1" column="5" lean-forward="false" selection-start-line="1" selection-start-column="5" selection-end-line="1" selection-end-column="5" />
+          <caret line="1" column="5" selection-start-line="1" selection-start-column="5" selection-end-line="1" selection-end-column="5" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/authorization_code/Gruntfile.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="310">
-          <caret line="23" column="17" lean-forward="true" selection-start-line="23" selection-start-column="17" selection-end-line="23" selection-end-column="17" />
+        <state relative-caret-position="255">
+          <caret line="17" column="17" selection-start-line="17" selection-start-column="17" selection-end-line="17" selection-end-column="17" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
-            <marker date="1549569535935" expanded="true" signature="496:1096" ph="{...}" />
-            <marker date="1549569535935" expanded="true" signature="856:1092" ph="{...}" />
-            <marker date="1549569535935" expanded="true" signature="929:1087" ph="{...}" />
-            <marker date="1549569535935" expanded="true" signature="1128:1243" ph="//..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/authorization_code/public/jake_usercache_v1.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="27" column="18" selection-start-line="27" selection-start-column="3" selection-end-line="27" selection-end-column="18" />
+          <folding>
+            <element signature="e#17#608#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/authorization_code/public/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="537">
-          <caret line="311" column="59" lean-forward="false" selection-start-line="311" selection-start-column="58" selection-end-line="311" selection-end-column="59" />
+        <state relative-caret-position="345">
+          <caret line="204" column="50" lean-forward="true" selection-start-line="204" selection-start-column="50" selection-end-line="204" selection-end-column="50" />
           <folding>
+            <element signature="n#style#0;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#div#0;n#div#2;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#div#0;n#div#0;n#div#0;n#div#2;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#div#0;n#div#1;n#div#0;n#div#2;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#div#0;n#div#2;n#div#0;n#div#2;n#div#4;n#div#4;n#div#1;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <marker date="1549659327845" expanded="false" signature="8800:8817" ph="..." />
-            <marker date="1549659327845" expanded="false" signature="9041:9057" ph="..." />
-            <marker date="1549659327845" expanded="false" signature="9302:9319" ph="..." />
-            <marker date="1549659327845" expanded="false" signature="9520:9535" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/authorization_code/public/bundle.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="314">
-          <caret line="1568" column="27" lean-forward="true" selection-start-line="1568" selection-start-column="27" selection-end-line="1568" selection-end-column="27" />
-          <folding>
-            <element signature="e#3469#4306#0" expanded="false" />
-            <element signature="e#4351#5095#0" expanded="false" />
-            <element signature="e#46619#46794#0" expanded="false" />
-            <element signature="e#46840#49790#0" expanded="false" />
-            <element signature="e#51302#58297#0" expanded="false" />
-            <element signature="e#58568#59523#0" expanded="false" />
-          </folding>
+        <state relative-caret-position="209">
+          <caret line="1254" lean-forward="true" selection-start-line="1254" selection-end-line="1254" />
         </state>
       </provider>
     </entry>
