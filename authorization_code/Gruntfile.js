@@ -35,7 +35,7 @@ module.exports = function(grunt) {
 			// 	livereloadOnError:true
 			// },
 			build:{
-				files: ['app.js','songkick.js','public/bundle.js','public/index.html'],
+				files: ['app.js','songkick.js','spotify.js','public/bundle.js','public/index.html'],
 				tasks:[ 'express:dev' ],
 			},
 

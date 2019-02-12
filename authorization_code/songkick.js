@@ -115,7 +115,8 @@ let connect = function(){
 	}
 };
 
-connect();
+//todo: if trying to use localhost SQL server
+//connect();
 
 /**
  * find metros from string query
@@ -583,7 +584,7 @@ module.exports.get_metro_events = function(req, res){
 
 	//TODO: what the fuck is wrong with this shit
 	req.body = JSON.parse(req.headers['content-type']);
-	console.log("get_metro_events",(JSON.stringify(req.body,null,4)))
+	//console.log("get_metro_events",(JSON.stringify(req.body,null,4)))
 
 	get_metro_events(req.body.metro,req.body.dateFilter,req.body.raw_filename,req.body.areaDatesArtists_filename).then(function(result){
 		//console.log(result);

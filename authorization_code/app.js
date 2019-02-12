@@ -16,6 +16,7 @@
  */
 
 var express = require('express'); // Express web server framework
+var bodyParser = require('body-parser');
 var app = express();
 
 var request = require('request'); // "Request" library
@@ -24,8 +25,25 @@ var fs      = require('fs');
 //register songkick module.exports as routes
 
 var songkick = require('./songkick.js');
+var spotify = require('./spotify.js');
 
-app.post("/get_metro_events",songkick["get_metro_events"])
+
+// var maxbody = configuration.requests.limit || "50mb";
+app.use(bodyParser.json({
+	inflate: false,
+	limit: "50mb"
+}));
+app.use(bodyParser.urlencoded({
+	extended: false,
+	limit: "50mb"
+}));
+
+//app.use(cookieParser());
+
+app.post("/get_metro_events",songkick["get_metro_events"]);
+
+app.post("/make_request_simple",spotify["make_request_simple"]);
+app.post("/playlist_tracks",spotify["playlist_tracks"]);
 
 // for(let key in songkick){
 //     let type = songkick[key]['type']
