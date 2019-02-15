@@ -58,70 +58,51 @@ module.exports.playlist_tracks = function(req,res){
 		let promises = [];
 		let url1 = "https://api.spotify.com/v1/playlists/";
 		let url2 = "/tracks";
-		let payload = {};
-
-		let cache = {};
 		let offset_base = 50;
 
-		var pager =  function(options){
-			return new Promise(function(done, fail) {
-				let sendIt = function(){
-					rp(options)
-						.then(function(res) {
-							var results = res["items"];
-							!cache[options.playlist_id] ? cache[options.playlist_id] = [] : {};
-							cache[options.playlist_id] = cache[options.playlist_id].concat(results);
-
-							//spotify max limit is 50
-							if(results.length === 50){
-								payload.offset = payload.offset + offset_base ;
-								console.log("new offset: ", payload.offset);
-								console.log("records length: ",  cache[options.playlist_id].length);
-								options.uri =  payload.url + "?fields=items.track(id,name,artists)&limit="+ payload.limit + "&offset=" + payload.offset;
-								return sendIt(options);
-							}
-							else{
-								done(cache[options.playlist_id]);
-							}
-
-						}).catch(function(err){
-
-							//todo: WTF just random 404's with no fucking error messages
-						console.log("pager ERROR");
-						console.log(options.uri);
-						console.log(err.message);
-
-						setTimeout(function(){
-							return sendIt(options);
-						},500)
-					})
-				};
-				sendIt(options)
-			})
-		};
+		function getPages(options) {
+			console.log(options.uri);
+			return rp(options).then(data => {
+				console.log("data",data.items.length);
+				options.store = options.store.concat(data.items);
+				//console.log("cacheIT",cacheIT[options.playlist_id].length);
+				if (!(data.items.length === 50)){
+					let tuple = {};tuple.tracks = options.store;
+					tuple.playlist_id = options.playlist_id;
+					return tuple;
+				}
+				else{
+					options.offset = options.offset + offset_base ;
+				    options.uri =  options.url + "?fields=items.track(id,name,artists)&limit="+ options.limit + "&offset=" + options.offset;
+					return getPages(options);
+				}
+			});
+		}
 
 		//todo: just one
-		// let t = JSON.parse(JSON.stringify(req.body.playlists));
-		// req.body.playlists = [];
-		// req.body.playlists.push({id:"0fEQxXtJS7aTK4qrxznjAJ"});
-		// console.log("input len",req.body.playlists.length);
+		//let t = JSON.parse(JSON.stringify(req.body.playlists));
+		//req.body.playlists = [];
+		//short 29
+		// req.body.playlists.push({id:"0sJK4pWqr7bnQ0fgxGmJrh"});
+		//long 146
+		//req.body.playlists.push({id:"5vDmqTWcShNGe7ENaud90q"});
+		// req.body.playlists.push(t[0]);
+		// req.body.playlists.push(t[1]);
 
+		console.log("input length",req.body.playlists.length);
 		req.body.playlists.forEach(function(playlist){
-			payload = {};
-			payload.url =  url1 + playlist.id + url2;
-			payload.offset = 0;
-			payload.limit = 50;
-			options.uri = payload.url + "?fields=items.track(id,name,artists)&limit=" + payload.limit + "&offset=" + payload.offset;
+			options.url =  url1 + playlist.id + url2;
+			options.offset = 0;
+			options.limit = 50;
+			options.uri = options.url + "?fields=items.track(id,name,artists)&limit=" + options.limit + "&offset=" + options.offset;
 			options.playlist_id = playlist.id;
-			//options.uri = "https://api.spotify.com/v1/playlists/5vDmqTWcShNGe7ENaud90q/tracks?limit=50&offset=50";
-			promises.push(pager(options));
+			options.store = [];
+			promises.push(getPages(options));
 		});
 
 		Promise.all(promises)
 			.then(function(results) {
-				console.log("results",results.length);
-				//console.log(JSON.stringify(results,null,4));
-				//console.log(JSON.stringify(cache,null,4));
+				console.log("playlists processed: ",results.length);
 				console.log("FINISHED");
 				res.send(results);
 			})	.catch(function(err) {

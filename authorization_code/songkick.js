@@ -82,17 +82,17 @@ weekday_full[6] = "Saturday";
 let sql = require('mssql');
 
 const msnodesqlv8 =  require("msnodesqlv8");
-const conn = new sql.ConnectionPool({
-	database: "master",
-	//server: "localhost\\SQLEXPRESS",
-	server: "localhost\\SQLEXPRESS",
-	user:"test",
-	password:"test",
-	driver: "msnodesqlv8"
-	// options: {
-	// 	trustedConnection: true
-	// }
-});
+// const conn = new sql.ConnectionPool({
+// 	database: "master",
+// 	//server: "localhost\\SQLEXPRESS",
+// 	server: "localhost\\SQLEXPRESS",
+// 	user:"test",
+// 	password:"test",
+// 	driver: "msnodesqlv8"
+// 	// options: {
+// 	// 	trustedConnection: true
+// 	// }
+// });
 
 let connect = function(){
 	console.log("connect...");
