@@ -308,10 +308,11 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 	return new Promise(function(done, fail) {
 
 
+
 		//used for stats in return object
 		var event_count = 0;
 
-		var get_events = function(metro,page){
+		var get_events = function(metro){
 			return new Promise(function(done1, fail) {
 				console.log("get_events");
 
@@ -582,9 +583,9 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
 module.exports.get_metro_events = function(req, res){
 
-	//TODO: what the fuck is wrong with this shit
-	req.body = JSON.parse(req.headers['content-type']);
-	//console.log("get_metro_events",(JSON.stringify(req.body,null,4)))
+	console.log(req);
+	// req.body = JSON.parse(req.body);
+	console.log("get_metro_events",JSON.stringify(req.body,null,4));
 
 	get_metro_events(req.body.metro,req.body.dateFilter,req.body.raw_filename,req.body.areaDatesArtists_filename).then(function(result){
 		//console.log(result);

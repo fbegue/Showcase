@@ -42,7 +42,10 @@ app.use(bodyParser.urlencoded({
 
 app.post("/get_metro_events",songkick["get_metro_events"]);
 
-app.post("/make_request_simple",spotify["make_request_simple"]);
+app.post("/search_artists",spotify["search_artists"]);
+
+app.post("/get_artists",spotify["get_artists"]);
+
 app.post("/playlist_tracks",spotify["playlist_tracks"]);
 
 // for(let key in songkick){
