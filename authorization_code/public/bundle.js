@@ -134,6 +134,7 @@
 				var module = angular.module('playlistGen', []);
 
 
+
 				//todo: only designed for two people
 
 				//todo: changed user_cache
@@ -239,8 +240,113 @@
 					};
 				});
 
+				module.factory('linker', function () {
+					var links = {}
+					return function (arr, key) {
+						var link = links[key] || []
 
-				let controller = module.controller("myCtrl", function($scope,$http) {
+
+						arr.forEach(function (newItem, index) {
+							var oldItem = link[index]
+							if (!angular.equals(oldItem, newItem))
+								link[index] = newItem
+						})
+
+						link.length = arr.length
+
+						return links[key] = link
+					}
+				})
+
+				//todo: this is some weird shit alright.
+				//http://next.plnkr.co/edit/2Uc5zsFgVnK3ltHOUUQx?p=preview&preview
+				//https://railsguides.net/fix-angular-digest-iteration-errors-with-memoization/
+
+				//this doesn't use the linker, but probably has some weird stuff going on outside of
+				//the 'i need to initialize so the first n number runs always have undefined'
+
+				//what is my actual goal here? I want to be able to 'bind database calls to ng-repeats'
+				//I know I could (easily?) make stable containers for everything, and then use functions
+				//to update the contents of these containers. but I don't want to have to dynamically declare
+				//these when the app grows, I want to be able change things in the database and call
+				//one master function that says 'everyone that data changed, re-run your queries.
+				module.filter('getPerfs', function(linker) {
+					return function(perfs,e) {
+
+						//console.log("@change");
+						//console.log(events);
+						//console.log(e);
+
+						let qry = "select * from events e"
+							+ " JOIN events_performances ep on e.id = ep.event_id"
+							+ " JOIN performances p on p.id = ep.performance_id"
+							+ " where e.id = " + e.id;
+
+						!e.performances ? e.performances = alasql(qry):{};
+
+						if(e && perfs){
+							let array = perfs.map(function (item) {
+								item.performances = alasql(qry)
+								//console.log(item.performances);
+								return item;
+							});
+							return array
+						}
+						else{return perfs;}
+					};
+				});
+
+				module.filter('getGenres', function(linker) {
+					return function(genres,p) {
+
+						console.log("@getGenres");
+						console.log(genres);
+						console.log(p);
+
+						let t = alasql("select * from artist_artistSongkick");
+						console.log(t);
+						console.log(alasql("select * from artist_artistSongkick aas join artists a on aas.artist_id = a.id"));
+
+						//todo: no idea why this wasn't able to go get the actual genre object but whatever
+						let qry = "select * from performances p"
+							+ " JOIN artist_artistSongkick aas on p.artistSongkick_id = aas.artistSongkick_id"
+							+ " JOIN artists_genres ag on aas.artist_id = ag.artist_id"
+							// // + " JOIN artists a on aas.artist_id = a.id"
+							// + " JOIN genres g on ag.genre_id = g.id"+
+							+ " where aas.artistSongkick_id = " + p.artistSongkick_id;
+
+						let qryResult = alasql(qry);
+						console.log(p.artistSongkick_id + "::",alasql(qry));
+
+
+						let gens = [];
+						if(qryResult.length > 0){
+							let test = {};
+							test = qryResult[0]["genre_id"]
+							gens = alasql("select * from genres where id = " + test)
+							console.log("gens",gens);
+						}
+						else{
+							console.log("skipped: ",p.artistSongkick_id);
+							console.log(qryResult);
+						}
+
+						!p.genres ? p.genres = gens:{};
+
+						if(p && genres){
+							let array = genres.map(function (item) {
+								item.genres = gens;
+								console.log(item.genres);
+								return item;
+							});
+							return array
+						}
+						else{return genres;}
+					};
+				});
+
+
+				let controller = module.controller("myCtrl", function($scope,$http,linker) {
 					console.log("myCtrl");
 
 
@@ -462,6 +568,9 @@
 						};
 
 						let artistDefStr = defStr(artistDef);
+
+						//todo:
+						let test = "id string PRIMARY KEY, name string, popularity number, uri string"
 						console.log(artistDefStr);
 						alasql("CREATE TABLE artists (" + artistDefStr + ")");
 						//alasql("INSERT INTO artists VALUES ( " + vlister(artist_ex)  + " )");
@@ -1105,28 +1214,41 @@
 
 					$scope.artists_frequency = function(artist,user){
 
-							//give me as many tracks have this artist
-							let qry = "select a.id as artist_id, a.name as name, t.name as track_name"
-								+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-								+ " JOIN tracks t on t.id = pt.track_id"
-								+ " JOIN artists_tracks at on at.track_id = t.id"
-								+ " JOIN artists a on a.id = at.artist_id "
-								+  " where owner = '" + user.id + "' and a.id = '" + artist.artist_id + "'"
+						//give me as many tracks have this artist
+						let qry = "select a.id as artist_id, a.name as name, t.name as track_name"
+							+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+							+ " JOIN tracks t on t.id = pt.track_id"
+							+ " JOIN artists_tracks at on at.track_id = t.id"
+							+ " JOIN artists a on a.id = at.artist_id "
+							+  " where owner = '" + user.id + "' and a.id = '" + artist.artist_id + "'"
 
-							console.log(alasql('select * from artists_tracks'));
-							console.log(qry);
-							let results = alasql(qry);
-							console.log(results);
-							results.forEach(function(rec){
-								if(!$scope.artist_freq_map[user.id][rec.artist_id]){$scope.artist_freq_map[user.id][rec.artist_id] = 0;}
-								$scope.artist_freq_map[user.id][rec.artist_id]++;
-							});
+						//console.log(alasql('select * from artists_tracks'));
+						//console.log(qry);
+						let results = alasql(qry);
+						//console.log(results);
+						results.forEach(function(rec){
+							if(!$scope.artist_freq_map[user.id][rec.artist_id]){$scope.artist_freq_map[user.id][rec.artist_id] = 0;}
+							$scope.artist_freq_map[user.id][rec.artist_id]++;
+						});
 
-							//console.log($scope.artist_freq_map[user.id]);
+						//console.log($scope.artist_freq_map[user.id]);
 					};
 
 					//===========================================================================================
 					// INITIALIZATION AND UTILITIES
+
+					//todo: figure out how to query this table with my spotify-gathered genres
+					console.log(all_genres);
+					let unique_fams = {}
+					all_genres.forEach(function(t){
+						t.family.forEach(function(f){
+							if(!unique_fams[f]){
+								unique_fams[f] = [];
+
+							}})
+					});
+
+					console.log(unique_fams);
 
 					$scope.digestIt = function(){
 						try{$scope.$digest();}
@@ -1214,20 +1336,6 @@
 					$scope.global_user = {
 						"display_name": "Jake Lavender",
 						"id": "1292167736"
-					};
-
-					$scope.set_user = function(user){
-						console.log("set user:",user);
-						global_user = user;
-						$scope.global_user = user;
-						console.log($scope.playlists[user.id]);
-						console.log($scope.artists[user.id]);
-						console.log($scope.genres[user.id]);
-					};
-					$scope.set_metro = function(metro){
-						console.log("set_metro:",metro);
-						//global_metro = metro;
-						$scope.global_metro = metro;
 					};
 
 					$scope.set_user_cache = function(){
@@ -1319,6 +1427,13 @@
 						$scope.digestIt()
 					};
 
+					$scope.setSelected = function(array,mode){
+						console.log("setSelected",mode);
+						array.forEach(function(ar){
+							ar._cmo_checked = (mode === 'all');
+						})
+					};
+
 					//todo: hardcoded, should just run thru friends map
 					$scope.show = {};
 					$scope.show['dacandyman01'] = {};
@@ -1346,40 +1461,50 @@
 					//===========================================================================================
 					// SONGKICK EVENTS
 
-					$scope.getPerfs = function(e){
-						//let qry = "select top 10 * from events e JOIN events_performances ep on e.id = ep.event_id JOIN performances p on p.id = ep.performance_id";
-						let qry = "select * from events e"
-							+ " JOIN events_performances ep on e.id = ep.event_id"
-							+ " JOIN performances p on p.id = ep.performance_id"
-							+ " where e.id = " + e.id;
-						return alasql(qry);
-					};
+					//todo: depreciated by weird filters above
 
-					$scope.getGenres = function(p){
-						let qry = "select * from performances p"
-							+ " JOIN artist_artistSongkick aas on p.artistSongkick_id = aas.artistSongkick_id"
-							+ " JOIN artists_genres ag on aas.artist_id = ag.artist_id"
-							// + " JOIN artists a on aas.artist_id = a.id"
-							+ " JOIN genres g on ag.genre_id = g.id"
-							+ " where aas.artistSongkick_id = " + p.artistSongkick_id;
+					// $scope.perfs = [];
+					// $scope.getPerfs = function(e){
+					//
+					// 	//let qry = "select top 10 * from events e JOIN events_performances ep on e.id = ep.event_id JOIN performances p on p.id = ep.performance_id";
+					// 	let qry = "select * from events e"
+					// 		+ " JOIN events_performances ep on e.id = ep.event_id"
+					// 		+ " JOIN performances p on p.id = ep.performance_id"
+					// 		+ " where e.id = " + e.id;
+					// 	//perfs = alasql(qry);
+					//
+					// 	//var retVal = e;
+					// 	$scope.perfs = alasql(qry);
+					// 	return linker($scope.perfs,'some-key')
+					// };
+					//
+					// $scope.getGenres = function(p){
+					// 	let qry = "select * from performances p"
+					// 		+ " JOIN artist_artistSongkick aas on p.artistSongkick_id = aas.artistSongkick_id"
+					// 		+ " JOIN artists_genres ag on aas.artist_id = ag.artist_id"
+					// 		// + " JOIN artists a on aas.artist_id = a.id"
+					// 		+ " JOIN genres g on ag.genre_id = g.id"
+					// 		+ " where aas.artistSongkick_id = " + p.artistSongkick_id;
+					//
+					// 	let genres = [];
+					// 	let results = alasql(qry);
+					//
+					// 	results.forEach(function(r){
+					// 		if(genres.indexOf(r.name) === -1){
+					// 			genres.push(r.name)
+					// 		}
+					// 	});
+					//
+					// 	// if(p.artistSongkick_id === 8401188){
+					// 	// 	// console.log( alasql("select * from artist_artistSongkick"));
+					// 	// 	// console.log( alasql("select * from artists_genres"));
+					// 	// 	// console.log(qry);
+					// 	// }
+					//
+					// 	return genres;
+					// };
 
-						let genres = [];
-						let results = alasql(qry);
 
-						results.forEach(function(r){
-							if(genres.indexOf(r.name) === -1){
-								genres.push(r.name)
-							}
-						});
-
-						// if(p.artistSongkick_id === 8401188){
-						// 	// console.log( alasql("select * from artist_artistSongkick"));
-						// 	// console.log( alasql("select * from artists_genres"));
-						// 	// console.log(qry);
-						// }
-
-						return genres;
-					};
 
 
 					$scope.dateFilter= {};
@@ -1500,8 +1625,9 @@
 						};
 
 						$http.post(url_local + req.url_postfix,req.body).then(function(res){
-						// make_request_local(req).then(function(events){
-							console.log("get_metro_events results",res.data);
+							// make_request_local(req).then(function(events){
+							let events = res.data;
+							console.log("get_metro_events results",events);
 							//console.log("$user_cache",user_cache);
 
 							// let events = [];
@@ -1522,7 +1648,8 @@
 							let artist_search_payload = [];
 
 							let pushedIds = [];
-							res.data.forEach(function(event){
+
+							events.forEach(function(event){
 
 								//do performances first
 
@@ -1601,72 +1728,62 @@
 							//TODO: this doesn't seem right...too many repeats, seems to obviously be missing some
 							console.log("artist_search_payload",JSON.parse(JSON.stringify(artist_search_payload)));
 
-							$http.post(url_local + req.url_postfix,req.body).then(function(results){
-								console.log("$search_artists",results);
+							$http.post(url_local + req.url_postfix,req.body).then(function(res){
+								console.log("$results",res.data);
+
+								let artist_artistSongkick = {};
+								let payloads = [];
+								let payload = {artists:[]}
+
+								res.data.forEach(function(tuple){
+
+									if(tuple.error){$scope.unresolved_artists.push(tuple.displayName)}
+									else{
+
+										//todo: somethings a little fucked here, don't know what though
+										tuple.artist.name === "Consider the Source" ? console.log(tuple):{};
+
+										artist_artistSongkick.artist_id = tuple.artist.id;
+										artist_artistSongkick.artistSongkick_id = tuple.artistSongkick_id;
+										alasql("INSERT INTO artist_artistSongkick VALUES ( " + vlister(artist_artistSongkick)  + " )");
 
 
-							});
+										payload.artists.push(tuple.artist)
+										console.log("$len",payload.artists.length);
+										// tuple = reduce(artistDef,tuple.spotify_artist);
+										// let varchar_keys = ["name"];
+										// varchar_keys.forEach(function (key) {
+										// 	tuple[key] = tuple[key].replace(/'/g, "''");
+										// });
+										//
+										// alasql("INSERT INTO artists VALUES ( " + vlister(tuple)  + " )");
+									}
+								});
+
+								//process_artists has weird params
+								payloads.push(payload);
+								$scope.process_artists(payloads);
 
 
-							//todo: modify below and stick into then above
-							let promises = [];
+								console.log("unresolved_artists",$scope.unresolved_artists);
 
-							// Promise.all(promises)
-							// 	.then(function(results){
-							// 		console.log("$results",results);
-							//
-							// 		let artist_artistSongkick = {};
-							// 		let payloads = [];
-							// 		let payload = {artists:[]}
-							//
-							//
-							// 		results.forEach(function(tuple){
-							//
-							// 			if(tuple.error){$scope.unresolved_artists.push(tuple.query)}
-							// 			else{
-							//
-							// 				//todo: somethings a little fucked here, don't know what though
-							// 				tuple.spotify_artist.name === "Consider the Source" ? console.log(tuple):{};
-							//
-							// 				artist_artistSongkick.artist_id = tuple.spotify_artist.id;
-							// 				artist_artistSongkick.artistSongkick_id = tuple.songkick_artist_id;
-							// 				alasql("INSERT INTO artist_artistSongkick VALUES ( " + vlister(artist_artistSongkick)  + " )");
-							//
-							// 				payload.artists.push(tuple.spotify_artist)
-							// 				// tuple = reduce(artistDef,tuple.spotify_artist);
-							// 				// let varchar_keys = ["name"];
-							// 				// varchar_keys.forEach(function (key) {
-							// 				// 	tuple[key] = tuple[key].replace(/'/g, "''");
-							// 				// });
-							// 				//
-							// 				// alasql("INSERT INTO artists VALUES ( " + vlister(tuple)  + " )");
-							// 			}
-							// 		});
-							//
-							// 		//process_artists has weird params
-							// 		payloads.push(payload);
-							// 		$scope.process_artists(payloads);
-							//
-							//
-							// 		console.log("unresolved_artists",$scope.unresolved_artists);
-							//
-							// 		//todo: modify for multiple metro calls
-							//
-							// 		// $scope.metro_cache[events[0].metro_id] = events;
-							// 		$scope.metro_cache[events[0].metro_id] = alasql("select * from events;");
-							//
-							// 		console.log("metro_cache",$scope.metro_cache);
-							// 		console.log('events:',alasql("select * from events;"));
-							// 		console.log('performances:',alasql("select * from performances;"));
-							// 		console.log('events_performances:',alasql("select * from events_performances;"));
-							// 		console.log('artist_artistSongkick:',alasql("select * from artist_artistSongkick;"));
-							//
-							// 		let qry = "select * from events e JOIN events_performances ep on e.id = ep.event_id JOIN performances p on p.id = ep.performance_id";
-							// 		console.log(qry,alasql(qry));
-							//
-							// 		$scope.digestIt();
-							//
-							// 	});//all
+								//todo: modify for multiple metro calls
+
+								// $scope.metro_cache[events[0].metro_id] = events;
+								$scope.metro_cache[events[0].metro_id] = alasql("select * from events;");
+
+								console.log("metro_cache",$scope.metro_cache);
+								console.log('events:',alasql("select * from events;"));
+								console.log('performances:',alasql("select * from performances;"));
+								console.log('events_performances:',alasql("select * from events_performances;"));
+								console.log('artist_artistSongkick:',alasql("select * from artist_artistSongkick;"));
+
+								let qry = "select * from events e JOIN events_performances ep on e.id = ep.event_id JOIN performances p on p.id = ep.performance_id";
+								console.log(qry,alasql(qry));
+
+								$scope.digestIt();
+
+							});//all
 
 
 						})//$http
@@ -1705,6 +1822,17 @@
 								//little weird var pass here
 								$scope.process_playlists(data,user);
 
+								//todo: move this auto select somewher else
+
+								let selected = [];
+								$scope.user_cache[user.id]['playlists'].forEach(function(p){
+									p._cmo_checked = true;
+									selected.push(p)
+								});
+								$scope.user_cache[user.id].selected = selected;
+								console.log(selected);
+								$scope.digestIt();
+
 							})
 
 					};//user_playlists
@@ -1717,11 +1845,11 @@
 					 *
 					 * @function get_all_tracks
 					 **/
-					$scope.get_all_tracks = function(user){
+					$scope.get_all_tracks = function(user,playlists){
 
 						console.log("getting tracks for '" + user.display_name + "'s  playlists..." );
 
-						$scope.playlist_tracks(user).then(function(results) {
+						$scope.playlist_tracks(user,playlists).then(function(results) {
 
 							//todo: desc
 							//we've already done all the processing in the calls to playlist_tracks
@@ -1936,6 +2064,8 @@
 						let all_artists = [];
 						results.forEach((r)=>{all_artists = all_artists.concat(r.artists)});
 
+						console.log(all_artists.length);
+
 						//create a map of unique genres and their artists
 
 						let unique_genre_artist_map = {};
@@ -1951,7 +2081,22 @@
 										unique_genre_artist_map[g].artists.push(ar);
 									}
 								});
+
+								//we only needs keys included in the def in the next loop
+								//so destructing ar is OK
+
+
+								reduce(artistDef, ar);
+								let varchar_keys = ["name"];
+								varchar_keys.forEach(function (key) {
+									ar[key] = ar[key].replace(/'/g, "''");
+								});
+								alasql("INSERT INTO artists VALUES ( " + vlister(ar) + " )");
+
 							}//non null artist
+							else{
+								console.log("error",ar);
+							}
 						});//all_artists
 
 						let artist_genre = {};
@@ -1959,6 +2104,7 @@
 						let genreInd = 0;
 
 						//insert each genre, artist_genre and UNIQUE artist into their respective tables
+
 						for(let key in unique_genre_artist_map){
 							genre = {};
 							genre.id = ++genreInd;
@@ -1971,19 +2117,21 @@
 								artist_genre.genre_id = genreInd;
 								alasql("INSERT INTO artists_genres VALUES ( " + vlister(artist_genre)  + " )");
 
-								//there will 100% be duplicate artists over genres,
-								//so don't insert them twice
-								if(inserted_artists.indexOf(ar.id) === -1) {
-									reduce(artistDef, ar);
-									let varchar_keys = ["name"];
-									varchar_keys.forEach(function (key) {
-										ar[key] = ar[key].replace(/'/g, "''");
-									});
-									alasql("INSERT INTO artists VALUES ( " + vlister(ar) + " )");
-									inserted_artists.push(ar.id)
-								}
+								// //there will 100% be duplicate artists over genres,
+								// //so don't insert them twice
+								// if(inserted_artists.indexOf(ar.id) === -1) {
+								// 	reduce(artistDef, ar);
+								// 	let varchar_keys = ["name"];
+								// 	varchar_keys.forEach(function (key) {
+								// 		ar[key] = ar[key].replace(/'/g, "''");
+								// 	});
+								// 	alasql("INSERT INTO artists VALUES ( " + vlister(ar) + " )");
+								// 	inserted_artists.push(ar.id)
+								// }
 							});
 						}
+
+						console.log("inserted_artists",inserted_artists.length);
 
 						//console.log("select * from artists_genres;",alasql("select * from artists_genres;"));
 
@@ -1999,13 +2147,27 @@
 					 *
 					 * @function $scope.playlist_tracks
 					 **/
-					$scope.playlist_tracks = function(user){
+					$scope.playlist_tracks = function(user,plays){
 						return new Promise(function(done, fail) {
-
 							console.log("playlist_tracks for: ",user.display_name);
-							let qry = "select * from playlists where owner = '" + user.id + "' ";
-							let plays = alasql(qry);
-							console.log(qry,plays);
+
+							console.log(JSON.parse(JSON.stringify(plays,null,4)));
+							let plays_checked = [];
+							if(plays){
+								// plays.forEach(function(p,i){
+								// 	!p._cmo_checked ? plays.splice(i,1) : {};
+								// })
+								plays.forEach(function(p,i){
+									p._cmo_checked ? plays_checked.push(p):{};
+								});
+								plays = plays_checked;
+								console.log("subset ",plays);
+							}
+							else{
+								let qry = "select * from playlists where owner = '" + user.id + "' ";
+								plays = alasql(qry);
+								console.log(qry,plays);
+							}
 
 							let promises = [];
 							plays.forEach(function(play){

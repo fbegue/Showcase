@@ -10,6 +10,13 @@
   <script type="text/javascript" src="artists.js"></script>
 
   <script src="bundle.js"></script>
+  <script src="all_genres2.js"></script>
+
+
+  <script src="x-directive.multiobject.js"></script>
+  <link rel = "stylesheet"
+        type = "text/css"
+        href = "multi.css" />
 
 
 
@@ -231,13 +238,7 @@
           <div class="" >select metro: <button style="color:red" ng-click="get_metro_events(global_metro)">get_metro_events</button> </div>
 
           <div style="display:flex;flex-direction:row;">
-            <div >
-              <ul>
-                <li ng-repeat="m in metros">
-                  <button ng-click="set_metro(m)">{{m.displayName}}</button>
-                </li>
-              </ul>
-            </div>
+            <select ng-options="metro as metro.displayName for metro in metros" ng-model="global_metro"></select>
           </div>
 
         </div>
@@ -247,7 +248,7 @@
 
       <div style="display:flex;flex-direction:row;">
 
-        <button ng-click="get_all_tracks(global_user)">getAllTracks</button>
+        <button ng-click="get_all_tracks(global_user,user_cache[global_user.id].selected)">getAllTracks</button>
         <button ng-click="get_user_playlists(global_user)">get_user_playlists</button>
         <button ng-click="set_user_cache()">set_user_cache</button>
         <button ng-click ="applyIt()">applyIt</button>
@@ -262,17 +263,14 @@
       <div style="display:flex;flex-direction:row;">
 
         <div style="display:flex;flex-direction:column;">
-          <div ng-repeat="u in users">
-            <button ng-click="set_user(u)">{{u.display_name}}</button>
-          </div>
-        </div>
 
-        <div style="display:flex;flex-direction:column;">
+          <select ng-options="user as user.display_name for user in users" ng-model="global_user"></select>
           filter
           <button ng-click="shared['artists'] = !shared['artists']">shared artists</button>
           <button ng-click="shared['genres'] = !shared['genres']">shared genres</button>
           <button ng-click="testdb()">testdb</button>
         </div>
+
 
         <!--todo: this should have some other condition besides playlists-->
 
@@ -287,6 +285,17 @@
               <div ng-show="show[u.id]['playlists']" style="font-style:italic;"
                    ng-repeat="p in user_cache[u.id]['playlists']">&nbsp &nbsp {{p.name}}
               </div>
+
+              SELECT
+              <!--<button ng-click="setSelected(user_cache[global_user.id].selected,'all')">all</button>-->
+              <!--<button  ng-click="setSelected(user_cache[global_user.id].selected,'none')">none</button>-->
+
+              <!--<cfaes-multiobject ng-init="!user_cache[global_user.id].selected ? user_cache[global_user.id].selected = []:{}" -->
+                                 <!--ng-model="user_cache[global_user.id].selected" selection="user_cache[u.id]['playlists']" order="displayOrder" ordering="false"-->
+                                 <!--filterable="false" display="name" type="checkboxes">-->
+              <!--</cfaes-multiobject>-->
+
+
             </div>
 
             <div>
@@ -319,6 +328,7 @@
             <div style="font-weight:bold;"> TRACKS: {{user_cache[u.id]["tracks"].length}} </div>
 
           </div>
+
         </div>
 
         <div>
@@ -328,17 +338,18 @@
 
             <!--todo: this displayName belongs to the performance, not the artist performing-->
             <div>artists:
-              <!--<div ng-repeat="p in getPerfs(e)">{{p.displayName}}-->
+              <div ng-repeat="p in e.performances | getPerfs:e track by $index">{{p.displayName}}
 
                 <!--<span ng-if="getGenres(p).length > 0">-->
-                <!--&lt;!&ndash;(<span style="font-style:italic" ng-repeat="g in getGenres(p)"> {{g}}</span>)&ndash;&gt;-->
+                <!--(<span style="font-style:italic" ng-repeat="g in getGenres(p)"> {{g}}</span>)-->
               <!--</span>-->
-                <!--&lt;!&ndash;<img style="max-width: 4em;" src="">&ndash;&gt;-->
+                (<span style="font-style:italic" ng-repeat="g in p.genres | getGenres:p track by $index"> {{g}}</span>)
+                <img style="max-width: 4em;" src="">
 
-                <!--&lt;!&ndash;todo: doesn't work (no index?)&ndash;&gt;-->
-                <!--{{$index}}-->
-                <!--<span ng-hide="$index = getPerfs(e).length - 1">,</span>-->
-              <!--</div>-->
+                <!--todo: doesn't work (no index?)-->
+                {{$index}}
+                <span ng-hide="$index = getPerfs(e).length - 1">,</span>
+              </div>
               </span>
             </div>
           </div>

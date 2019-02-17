@@ -1,0 +1,27 @@
+ .mso-container {
+     border: 1px solid #ddd;
+     background-color: #dcdbdb;
+     max-width: 20em;
+}
+
+ cfaes-multiobject label {
+    padding: 2px;
+}
+
+ cfaes-multiobject div span {
+    vertical-align: middle;
+ }
+
+.multi-container {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+[type="checkbox"],
+[type="radio"] {
+    height: 20px;
+    width: 20px;
+    padding: 0px;
+    margin: 0px 7px;
+    vertical-align: middle;
+}

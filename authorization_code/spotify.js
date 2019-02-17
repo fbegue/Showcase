@@ -43,6 +43,9 @@ var _request = function(req){
 //todo:
 //module.exports.get_user_playlists
 
+//todo: try getPages again but check that options is being preserved
+//let op = JSON.parse(JSON.stringify(options));
+
 
 module.exports.playlist_tracks = function(req,res){
 
@@ -206,10 +209,10 @@ module.exports.search_artists = function(req, res){
 			    //and I make a correct link, I can save that knowledge to lean on later
 			    let tuple = {artistSongkick_id:op.artistSongkick_id};
 			    if(res.artists.items.length > 0){
-				    tuple.artist = res.artists.items[0].id
+				    tuple.artist = res.artists.items[0]
 			    }
 			    else{
-				    tuple.artist = op.displayName;
+				    tuple.artistName = op.displayName;
 				    tuple.error = true;
 				    tuple.artistSearch = op.displayName_clean;
 			    }
