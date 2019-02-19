@@ -372,7 +372,15 @@
 
 					let vlister = function(object){
 						return Object.values(object).map(function(value){
-							return "'" + value + "'"
+							// console.log(object);
+							// console.log(typeof value);
+							if(typeof value === 'object' && value !== null){
+								console.log("object");
+								return '@'+JSON.stringify(value)
+							}
+							else{
+								return "'" + value + "'"
+							}
 						}).join(",");
 					};
 
@@ -578,21 +586,27 @@
 						let res5 = alasql("select * from artists;");
 						console.log("$res",res5);
 
-						// let genreDef = {
-						// 	id:"number",
-						// 	name: "string"
-						// };
+						let genreDef = {
+							id:"number",
+							name: "string",
+							family:"json"
+						};
 
 						let genre_ex = {
 							id:null,
-							name: "country"
+							name: "country rock",
+							family:['country','rock']
 						};
 
-						let genreDefStr = "id number AUTOINCREMENT , name string";
+						let genreDefStr = "id number AUTOINCREMENT , name string, family json";
 						alasql("CREATE TABLE genres (" + genreDefStr + ")");
-						//alasql("INSERT INTO genres VALUES ( " + vlister(genre_ex)  + " )");
 
-						console.log("select * from genres;",alasql("select * from genres;"));
+						//example using json
+						//alasql("INSERT INTO genres VALUES (null,'country rock',@['country','rock'])");
+
+						// alasql("INSERT INTO genres VALUES ( " + vlister(genre_ex)  + " )");
+
+						console.log("select * from genres;",JSON.stringify(alasql("select * from genres;"),null,4));
 
 						let artists_genres_ex = {
 							artist_id:"070kGpqtESdDsLb3gdMIyx",
@@ -1239,16 +1253,40 @@
 
 					//todo: figure out how to query this table with my spotify-gathered genres
 					console.log(all_genres);
-					let unique_fams = {}
+					$scope.unique_fams = {};
+				    $scope.genreFam_map = {};
+				    $scope.familyColor_map = {};
+
+					$scope.familyColor_map["pop"] = '#386ffd';
+					$scope.familyColor_map["electro house"] = '#e8e1a2';
+					$scope.familyColor_map["rock"] = 'orange';
+					$scope.familyColor_map["hip hop"] = 'lightblue';
+					$scope.familyColor_map["r&b"] = '#10a010';
+					$scope.familyColor_map["latin"] = 'lightgreen';
+					$scope.familyColor_map["folk"] = '#C5B0D5';
+					$scope.familyColor_map["country"] = '#D62728';
+					$scope.familyColor_map["metal"] = '#FF9896';
+					$scope.familyColor_map["punk"] = '#9467BD';
+					$scope.familyColor_map["blues"] = '#8C564B';
+					$scope.familyColor_map["reggae"] = 'tan';
+					$scope.familyColor_map["world"] = 'pink';
+					$scope.familyColor_map["jazz"] = '#a87373';
+					$scope.familyColor_map["classical"] = 'grey';
+
 					all_genres.forEach(function(t){
 						t.family.forEach(function(f){
-							if(!unique_fams[f]){
-								unique_fams[f] = [];
+							if(!$scope.unique_fams[f]){
+								$scope.unique_fams[f] = [];
+							}
+							$scope.unique_fams[f].push(t.name)
+						});
 
-							}})
+						$scope.genreFam_map[t.name] = t.family
+
 					});
 
-					console.log(unique_fams);
+					console.log("unique_fams",$scope.unique_fams);
+					console.log("genreFam_map",$scope.genreFam_map);
 
 					$scope.digestIt = function(){
 						try{$scope.$digest();}
@@ -1387,7 +1425,7 @@
 						$scope.user_cache[user.id]['artists'] =  alasql(qry_distinct_artists);
 
 						//todo: order by similar genres? sounds hard
-						let qry_distinct_genres = "select distinct genres.id as genre_id, genres.name as name"
+						let qry_distinct_genres = "select distinct genres.id as genre_id, genres.name as name, genres.family as family"
 							+ " from genres where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
 							//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
 							+ " JOIN tracks t on t.id = pt.track_id"
@@ -2104,12 +2142,15 @@
 						let genreInd = 0;
 
 						//insert each genre, artist_genre and UNIQUE artist into their respective tables
-
+						//console.log("here");
 						for(let key in unique_genre_artist_map){
+							//console.log("here");
 							genre = {};
 							genre.id = ++genreInd;
 							genre.name = key;
+							genre.family = $scope.genreFam_map[genre.name];
 							alasql("INSERT INTO genres VALUES ( " + vlister(genre)  + " )");
+							console.log(alasql("select * from  genres"));
 
 							unique_genre_artist_map[key].artists.forEach(function(ar){
 								artist_genre = {};

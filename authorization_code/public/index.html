@@ -318,7 +318,11 @@
 
               <div  ng-if="show[u.id]['genres']" style="font-style:italic;"
                     ng-repeat="g in user_cache[u.id]['genres'] | orderByGenreFreq:genre_freq_map[u.id]" >
-                &nbsp &nbsp {{g.name}}     ({{genre_freq_map[u.id][g.genre_id]}})
+                &nbsp &nbsp {{g.name}}
+                <span ng-style="{color:familyColor_map[g.family]}">({{genreFam_map[g.name]}})  </span>
+                <!--{{ genreFam_map[g.name][0]}}-->
+                <!--{{familyColor_map[genreFam_map[g.name][0]]}}-->
+                ({{genre_freq_map[u.id][g.genre_id]}})
 
                 <!--<button ng-click="set_filterGenre(g)">({{genreEventMatches(g,global_metro)}})</button>-->
                 <button ng-click="test = genres_frequency(g,u)">({{test}})</button>
