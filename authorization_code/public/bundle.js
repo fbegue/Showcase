@@ -222,14 +222,7 @@
 						});
 					}});
 
-				module.filter('orderByGenreFreq', function () {
-					return function (input,user_genre_freq_map) {
-						input.sort(function (a, b) {
-							return user_genre_freq_map[b.genre_id] - user_genre_freq_map[a.genre_id];
-						});
-						return input;
-					};
-				});
+			
 
 				module.filter('orderByArtistFreq', function () {
 					return function (input,user_artist_freq_map) {
@@ -346,9 +339,120 @@
 				});
 
 
+				let global_familyColor_map = {};
+				global_familyColor_map["pop"] = '#386ffd';
+				global_familyColor_map["electro house"] = '#e8e1a2';
+				global_familyColor_map["rock"] = 'orange';
+				global_familyColor_map["hip hop"] = 'lightblue';
+				global_familyColor_map["r&b"] = '#10a010';
+				global_familyColor_map["latin"] = 'lightgreen';
+				global_familyColor_map["folk"] = '#C5B0D5';
+				global_familyColor_map["country"] = '#D62728';
+				global_familyColor_map["metal"] = '#FF9896';
+				global_familyColor_map["punk"] = '#9467BD';
+				global_familyColor_map["blues"] = '#8C564B';
+				global_familyColor_map["reggae"] = 'tan';
+				global_familyColor_map["world"] = 'pink';
+				global_familyColor_map["jazz"] = '#a87373';
+				global_familyColor_map["classical"] = 'grey';
+
+				//todo: combine with orderByGenre so that they are grouped by family, but within
+				//each family they are ordered by frequency. also either need to make a manual way
+				//of ordering the families, or by default sort the family's order by the totals of their genres
+
+				// module.filter('orderByGenreFreq', function () {
+				// 	return function (input,user_genre_freq_map) {
+				// 		input.sort(function (a, b) {
+				// 			return user_genre_freq_map[b.genre_id] - user_genre_freq_map[a.genre_id];
+				// 		});
+				// 		return input;
+				// 	};
+				// });
+
+				module.filter('orderByGenre', function () {
+					return function (input,sortType,user_genre_freq_map,familyColor_mapEval) {
+
+						let output = [];
+						let output_map = {};
+						let other = [];
+						if(sortType === 'genreFreq'){
+
+						}
+						else{
+							let keys = Object.keys(global_familyColor_map);
+							keys.forEach(function(k){
+								output_map[k] = [];
+							});
+
+							console.log("1",output_map);
+							input.forEach(function(g){
+								if(g.family[0]){
+									console.log(g.family[0]);
+									output_map[g.family[0]].push(g);
+								}
+								else{
+									other.push(g);
+								}
+
+							});
+
+							console.log("2",output_map);
+							for(var g in output_map){
+								output_map[g].forEach(function(g){
+									output.push(g);
+								})
+							}
+
+							// console.log("1",input);
+							// input.sort(function (a,b) {
+							// 	if(a.familyInd === -1){
+							// 		//no_match.push(no_match)
+							// 		return -1
+							// 	}
+							// 	else if(b.familyInd === -1){
+							// 		return -1
+							// 	}
+							//
+							// 	else{
+							// 		return a.familyInd < b.familyInd ? -1 : 1;
+							// 	}
+							// })
+
+
+							console.log("3",other);
+							console.log(output);
+							return output
+							//console.log(no_match);
+							// console.log(familyColor_mapEval);
+							// console.log(global_familyColor_map);
+							// let keys = Object.keys(global_familyColor_map);
+							// console.log("$in",input);
+							// console.log(keys);
+							// input.sort(function (a, b) {
+							// 	console.log(a);
+							// 	console.log(b);
+							// 	console.log(keys.indexOf(a.family[0]) + "::" + keys.indexOf(b.family[0]));
+							// 	// return keys.indexOf(a) - keys.indexOf(b);
+							// 	// if( keys.indexOf(a) === -1){
+							// 	// 	input.splice(input.indexOf(a),1)
+							// 	// 	return 1
+							// 	// }
+							// 	// else{
+							// 	// 	return keys.indexOf(a) < keys.indexOf(b) ? -1 : 1;
+							// 	// }
+							// 	return keys.indexOf(a) < keys.indexOf(b) ? -1 : 1;
+							//
+							// });
+							// console.log("$out",input);
+							// return input;
+						}
+
+					};
+				});
+				
 				let controller = module.controller("myCtrl", function($scope,$http,linker) {
 					console.log("myCtrl");
-
+					$scope.sortType = "genreGroup"
 
 					//===========================================================================================
 					//DB SETUP AND TESTING
@@ -375,7 +479,7 @@
 							// console.log(object);
 							// console.log(typeof value);
 							if(typeof value === 'object' && value !== null){
-								console.log("object");
+								//console.log("object");
 								return '@'+JSON.stringify(value)
 							}
 							else{
@@ -602,6 +706,7 @@
 						alasql("CREATE TABLE genres (" + genreDefStr + ")");
 
 						//example using json
+						//https://github.com/agershun/alasql/wiki/JSON
 						//alasql("INSERT INTO genres VALUES (null,'country rock',@['country','rock'])");
 
 						// alasql("INSERT INTO genres VALUES ( " + vlister(genre_ex)  + " )");
@@ -1255,23 +1360,8 @@
 					console.log(all_genres);
 					$scope.unique_fams = {};
 				    $scope.genreFam_map = {};
-				    $scope.familyColor_map = {};
+				    $scope.familyColor_map = global_familyColor_map;
 
-					$scope.familyColor_map["pop"] = '#386ffd';
-					$scope.familyColor_map["electro house"] = '#e8e1a2';
-					$scope.familyColor_map["rock"] = 'orange';
-					$scope.familyColor_map["hip hop"] = 'lightblue';
-					$scope.familyColor_map["r&b"] = '#10a010';
-					$scope.familyColor_map["latin"] = 'lightgreen';
-					$scope.familyColor_map["folk"] = '#C5B0D5';
-					$scope.familyColor_map["country"] = '#D62728';
-					$scope.familyColor_map["metal"] = '#FF9896';
-					$scope.familyColor_map["punk"] = '#9467BD';
-					$scope.familyColor_map["blues"] = '#8C564B';
-					$scope.familyColor_map["reggae"] = 'tan';
-					$scope.familyColor_map["world"] = 'pink';
-					$scope.familyColor_map["jazz"] = '#a87373';
-					$scope.familyColor_map["classical"] = 'grey';
 
 					all_genres.forEach(function(t){
 						t.family.forEach(function(f){
@@ -2143,14 +2233,25 @@
 
 						//insert each genre, artist_genre and UNIQUE artist into their respective tables
 						//console.log("here");
+
+						let no_family = [];
 						for(let key in unique_genre_artist_map){
 							//console.log("here");
 							genre = {};
 							genre.id = ++genreInd;
 							genre.name = key;
-							genre.family = $scope.genreFam_map[genre.name];
+							if($scope.genreFam_map[genre.name] !== undefined){
+								genre.family = $scope.genreFam_map[genre.name];
+								console.log(vlister(genre));
+							}
+							else{
+								genre.family = "";
+								no_family.push(genre)
+							}
+
+
 							alasql("INSERT INTO genres VALUES ( " + vlister(genre)  + " )");
-							console.log(alasql("select * from  genres"));
+							//console.log(alasql("select * from  genres"));
 
 							unique_genre_artist_map[key].artists.forEach(function(ar){
 								artist_genre = {};
@@ -2173,6 +2274,9 @@
 						}
 
 						console.log("inserted_artists",inserted_artists.length);
+
+						//todo:
+						console.warn("couldn't find a family for these genres",no_family);
 
 						//console.log("select * from artists_genres;",alasql("select * from artists_genres;"));
 

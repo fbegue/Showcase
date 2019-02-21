@@ -269,6 +269,8 @@
           <button ng-click="shared['artists'] = !shared['artists']">shared artists</button>
           <button ng-click="shared['genres'] = !shared['genres']">shared genres</button>
           <button ng-click="testdb()">testdb</button>
+          <button ng-click="genreSort === 'genreFreq' ? genreSort = 'genreGroup':{}">genreSort {{genreSort}}</button>
+
         </div>
 
 
@@ -317,9 +319,10 @@
               <!--| orderBy:genreFreq(u):descendFreq | sharedFilter:'genres':shared"-->
 
               <div  ng-if="show[u.id]['genres']" style="font-style:italic;"
-                    ng-repeat="g in user_cache[u.id]['genres'] | orderByGenreFreq:genre_freq_map[u.id]" >
+                    ng-repeat="g in user_cache[u.id]['genres'] | orderByGenre:genreSort:genre_freq_map[u.id]:familyColor_map[g.family[0]]" >
+                <!--ng-repeat="g in user_cache[u.id]['genres'] | orderByGenreFreq:genre_freq_map[u.id]" >-->
                 &nbsp &nbsp {{g.name}}
-                <span ng-style="{color:familyColor_map[g.family]}">({{genreFam_map[g.name]}})  </span>
+                <span ng-style="{color:familyColor_map[g.family[0]]}">({{genreFam_map[g.name]}}) </span>
                 <!--{{ genreFam_map[g.name][0]}}-->
                 <!--{{familyColor_map[genreFam_map[g.name][0]]}}-->
                 ({{genre_freq_map[u.id][g.genre_id]}})
