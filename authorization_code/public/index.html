@@ -10,10 +10,11 @@
   <script type="text/javascript" src="artists.js"></script>
 
   <script src="bundle.js"></script>
+  <script src="directives/x-directive.checkbox.js"></script>
   <script src="all_genres2.js"></script>
 
 
-  <script src="x-directive.multiobject.js"></script>
+  <script src="directives/x-directive.multiobject.js"></script>
   <link rel = "stylesheet"
         type = "text/css"
         href = "multi.css" />
@@ -44,7 +45,7 @@
 
 
 <body>
-<div class="container"  ng-app="playlistGen">
+<div class="container"  ng-app="showcase">
 
   <div id="login">
     <!--<h1>This is an example of the Authorization Code flow</h1>-->
@@ -235,7 +236,7 @@
           <div class="" >raw_filename <input ng-model="raw_filename"></div>
           <div class="" >areaDatesArtists_filename <input ng-model="areaDatesArtists_filename"></div>
 
-          <div class="" >select metro: <button style="color:red" ng-click="get_metro_events(global_metro)">get_metro_events</button> </div>
+          <div class="" >select metro: <button style="color:red" ng-click="get_metro_events(glorderByGenreobal_metro)">get_metro_events</button> </div>
 
           <div style="display:flex;flex-direction:row;">
             <select ng-options="metro as metro.displayName for metro in metros" ng-model="global_metro"></select>
@@ -293,8 +294,8 @@
               <!--<button  ng-click="setSelected(user_cache[global_user.id].selected,'none')">none</button>-->
 
               <!--<cfaes-multiobject ng-init="!user_cache[global_user.id].selected ? user_cache[global_user.id].selected = []:{}" -->
-                                 <!--ng-model="user_cache[global_user.id].selected" selection="user_cache[u.id]['playlists']" order="displayOrder" ordering="false"-->
-                                 <!--filterable="false" display="name" type="checkboxes">-->
+              <!--ng-model="user_cache[global_user.id].selected" selection="user_cache[u.id]['playlists']" order="displayOrder" ordering="false"-->
+              <!--filterable="false" display="name" type="checkboxes">-->
               <!--</cfaes-multiobject>-->
 
 
@@ -318,19 +319,63 @@
 
               <!--| orderBy:genreFreq(u):descendFreq | sharedFilter:'genres':shared"-->
 
-              <div  ng-if="show[u.id]['genres']" style="font-style:italic;"
-                    ng-repeat="g in user_cache[u.id]['genres'] | orderByGenre:genreSort:genre_freq_map[u.id]:familyColor_map[g.family[0]]" >
-                <!--ng-repeat="g in user_cache[u.id]['genres'] | orderByGenreFreq:genre_freq_map[u.id]" >-->
-                &nbsp &nbsp {{g.name}}
-                <span ng-style="{color:familyColor_map[g.family[0]]}">({{genreFam_map[g.name]}}) </span>
-                <!--{{ genreFam_map[g.name][0]}}-->
-                <!--{{familyColor_map[genreFam_map[g.name][0]]}}-->
-                ({{genre_freq_map[u.id][g.genre_id]}})
+              <div  ng-if="show[u.id]['genres']" style="font-style:italic;" ng-style="{color:familyColor_map[f]}"
+                    ng-repeat="f in globalFamilies | byFamilyFreq:u:family_freq_map" >
 
-                <!--<button ng-click="set_filterGenre(g)">({{genreEventMatches(g,global_metro)}})</button>-->
-                <button ng-click="test = genres_frequency(g,u)">({{test}})</button>
+                <!--todo:-->
+                <showcase-checkbox ng-model="user_cache_ctrl[u.id]['family-event'][f]"  type="checkbox" field="family-event" key="Id"></showcase-checkbox>
+
+                <span ng-click="user_cache_ctrl[u.id][f] = !user_cache_ctrl[u.id][f]"
+                      style="font-weight:bold;cursor:pointer">
+                  {{f}} <span> ({{family_freq_map[u.id][f]}})</span>
+                </span>
+
+                <!-- old complicated way-->
+                <!--ng-repeat="g in user_cache[u.id]['genres'] | orderByGenre:genreSort:genre_freq_map[u.id]:familyColor_map[g.family[0]]" >-->
+
+                <div ng-if="user_cache_ctrl[u.id][f]"
+                     ng-repeat="g in user_cache[u.id]['genres'] | thisFamily:f:familyGenre_map | byGenreFreq:u:genre_freq_map"
+                     ng-style="{color:familyColor_map[g.family[f]]}">
+
+                  &nbsp &nbsp &nbsp &nbsp {{g.name}} ({{genre_freq_map[u.id][g.genre_id]}})
+                  <span ng-if="g.family.length >1">
+
+                    <button ng-click="user_cache_ctrl[u.id][g.name] = !user_cache_ctrl[u.id][g.name]"
+                    style="transform: scale(.5);margin-left: -.5em;">+</button>
+                    <span ng-if="user_cache_ctrl[u.id][g.name]">
+                    (<span ng-repeat="g in g.family"
+                           ng-style="{color:familyColor_map[genreFam_map[g]]}">
+                      {{g}}
+                    </span>)
+                      </span>
+                  </span>
+                </div>
+
+
+                <!--<span ng-style="{color:familyColor_map[g.family[0]]}">({{genreFam_map[g.name]}}) </span>-->
+                <!--&lt;!&ndash;{{ genreFam_map[g.name][0]}}&ndash;&gt;-->
+                <!--&lt;!&ndash;{{familyColor_map[genreFam_map[g.name][0]]}}&ndash;&gt;-->
+                <!--({{genre_freq_map[u.id][g.genre_id]}})-->
+
+                <!--&lt;!&ndash;<button ng-click="set_filterGenre(g)">({{genreEventMatches(g,global_metro)}})</button>&ndash;&gt;-->
+                <!--<button ng-click="test = genres_frequency(g,u)">({{test}})</button>-->
 
               </div>
+
+              <!--<div  ng-if="show[u.id]['genres']" style="font-style:italic;"-->
+                    <!--ng-repeat="g in user_cache[u.id]['genres'] | orderByGenre:genreSort:genre_freq_map[u.id]:familyColor_map[g.family[0]]" >-->
+                <!--&lt;!&ndash;ng-repeat="g in user_cache[u.id]['genres'] | orderByGenreFreq:genre_freq_map[u.id]" >&ndash;&gt;-->
+
+                <!--&nbsp &nbsp {{g.name}}-->
+                <!--<span ng-style="{color:familyColor_map[g.family[0]]}">({{genreFam_map[g.name]}}) </span>-->
+                <!--&lt;!&ndash;{{ genreFam_map[g.name][0]}}&ndash;&gt;-->
+                <!--&lt;!&ndash;{{familyColor_map[genreFam_map[g.name][0]]}}&ndash;&gt;-->
+                <!--({{genre_freq_map[u.id][g.genre_id]}})-->
+
+                <!--&lt;!&ndash;<button ng-click="set_filterGenre(g)">({{genreEventMatches(g,global_metro)}})</button>&ndash;&gt;-->
+                <!--<button ng-click="test = genres_frequency(g,u)">({{test}})</button>-->
+
+              <!--</div>-->
             </div>
             <div style="font-weight:bold;"> TRACKS: {{user_cache[u.id]["tracks"].length}} </div>
 
@@ -349,7 +394,7 @@
 
                 <!--<span ng-if="getGenres(p).length > 0">-->
                 <!--(<span style="font-style:italic" ng-repeat="g in getGenres(p)"> {{g}}</span>)-->
-              <!--</span>-->
+                <!--</span>-->
                 (<span style="font-style:italic" ng-repeat="g in p.genres | getGenres:p track by $index"> {{g}}</span>)
                 <img style="max-width: 4em;" src="">
 
@@ -418,80 +463,80 @@
 <!-- I use this to perform intial log in with Spotify, but not after-->
 <!---->
 <script>
-	(function() {
+  (function() {
 
-		/**
-		 * Obtains parameters from the hash of the URL
-		 * @return Object
-		 */
-		function getHashParams() {
-			var hashParams = {};
-			var e, r = /([^&;=]+)=?([^&;]*)/g,
-				q = window.location.hash.substring(1);
-			while ( e = r.exec(q)) {
-				hashParams[e[1]] = decodeURIComponent(e[2]);
-			}
-			return hashParams;
-		}
+    /**
+     * Obtains parameters from the hash of the URL
+     * @return Object
+     */
+    function getHashParams() {
+      var hashParams = {};
+      var e, r = /([^&;=]+)=?([^&;]*)/g,
+              q = window.location.hash.substring(1);
+      while ( e = r.exec(q)) {
+        hashParams[e[1]] = decodeURIComponent(e[2]);
+      }
+      return hashParams;
+    }
 
-		var userProfileSource = document.getElementById('user-profile-template').innerHTML,
-			userProfileTemplate = Handlebars.compile(userProfileSource),
-			userProfilePlaceholder = document.getElementById('user-profile');
+    var userProfileSource = document.getElementById('user-profile-template').innerHTML,
+            userProfileTemplate = Handlebars.compile(userProfileSource),
+            userProfilePlaceholder = document.getElementById('user-profile');
 
-		var oauthSource = document.getElementById('oauth-template').innerHTML,
-			oauthTemplate = Handlebars.compile(oauthSource),
-			oauthPlaceholder = document.getElementById('oauth');
+    var oauthSource = document.getElementById('oauth-template').innerHTML,
+            oauthTemplate = Handlebars.compile(oauthSource),
+            oauthPlaceholder = document.getElementById('oauth');
 
-		var params = getHashParams();
+    var params = getHashParams();
 
-		var access_token = params.access_token,
-			refresh_token = params.refresh_token,
-			error = params.error;
+    var access_token = params.access_token,
+            refresh_token = params.refresh_token,
+            error = params.error;
 
-		if (error) {
-			alert('There was an error during the authentication');
-		} else {
-			if (access_token) {
-				// render oauth info
-				oauthPlaceholder.innerHTML = oauthTemplate({
-					access_token: access_token,
-					refresh_token: refresh_token
-				});
+    if (error) {
+      alert('There was an error during the authentication');
+    } else {
+      if (access_token) {
+        // render oauth info
+        oauthPlaceholder.innerHTML = oauthTemplate({
+          access_token: access_token,
+          refresh_token: refresh_token
+        });
 
-				$.ajax({
-					url: 'https://api.spotify.com/v1/me',
-					headers: {
-						'Authorization': 'Bearer ' + access_token
-					},
-					success: function(response) {
-						userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+        $.ajax({
+          url: 'https://api.spotify.com/v1/me',
+          headers: {
+            'Authorization': 'Bearer ' + access_token
+          },
+          success: function(response) {
+            userProfilePlaceholder.innerHTML = userProfileTemplate(response);
 
-						$('#login').hide();
-						$('#loggedin').show();
-					}
-				});
-			} else {
-				// render initial screen
-				$('#login').show();
-				$('#loggedin').hide();
-			}
+            $('#login').hide();
+            $('#loggedin').show();
+          }
+        });
+      } else {
+        // render initial screen
+        $('#login').show();
+        $('#loggedin').hide();
+      }
 
-			document.getElementById('obtain-new-token').addEventListener('click', function() {
-				$.ajax({
-					url: '/refresh_token',
-					data: {
-						'refresh_token': refresh_token
-					}
-				}).done(function(data) {
-					access_token = data.access_token;
-					oauthPlaceholder.innerHTML = oauthTemplate({
-						access_token: access_token,
-						refresh_token: refresh_token
-					});
-				});
-			}, false);
-		}
-	})();
+      document.getElementById('obtain-new-token').addEventListener('click', function() {
+        $.ajax({
+          url: '/refresh_token',
+          data: {
+            'refresh_token': refresh_token
+          }
+        }).done(function(data) {
+          access_token = data.access_token;
+          oauthPlaceholder.innerHTML = oauthTemplate({
+            access_token: access_token,
+            refresh_token: refresh_token
+          });
+        });
+      }, false);
+    }
+  })();
 </script>
 </body>
 </html>

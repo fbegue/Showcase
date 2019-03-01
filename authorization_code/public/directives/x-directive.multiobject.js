@@ -30,7 +30,7 @@
 
 //right now when I 'toggle' it removes from the value reported, so...?
 
-angular.module("playlistGen").filter("isVisible", function() {
+angular.module("showcase").filter("isVisible", function() {
 	return function(items, flag) {
 		if(!flag && flag !== false) {
 			flag = true;
@@ -50,7 +50,7 @@ angular.module("playlistGen").filter("isVisible", function() {
 });
 
 
-angular.module("playlistGen").directive("cfaesMultiobject", function() {
+angular.module("showcase").directive("cfaesMultiobject", function() {
 	var modes = {};
 
 	modes.unlimited = "multi";

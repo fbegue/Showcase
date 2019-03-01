@@ -131,7 +131,27 @@
 			(function(exports) {
 
 
-				var module = angular.module('playlistGen', []);
+				var module = angular.module('showcase', []);
+
+				let global_familyColor_map = {};
+				global_familyColor_map["pop"] = '#386ffd';
+				global_familyColor_map["electro house"] = 'rgb(214, 196, 36)';
+				global_familyColor_map["rock"] = 'orange';
+				global_familyColor_map["hip hop"] = 'lightblue';
+				global_familyColor_map["r&b"] = '#10a010';
+				global_familyColor_map["latin"] = 'lightgreen';
+				global_familyColor_map["folk"] = '#C5B0D5';
+				global_familyColor_map["country"] = '#D62728';
+				global_familyColor_map["metal"] = '#FF9896';
+				global_familyColor_map["punk"] = '#9467BD';
+				global_familyColor_map["blues"] = '#8C564B';
+				global_familyColor_map["reggae"] = 'tan';
+				global_familyColor_map["world"] = 'pink';
+				global_familyColor_map["jazz"] = '#a87373';
+				global_familyColor_map["classical"] = 'grey';
+
+				let globalFamilies =  ["pop", "electro house", "rock", "hip hop", "r&b", "latin", "folk", "country", "metal", "punk", "blues", "reggae", "world", "jazz", "classical"]
+
 
 
 
@@ -222,7 +242,7 @@
 						});
 					}});
 
-			
+
 
 				module.filter('orderByArtistFreq', function () {
 					return function (input,user_artist_freq_map) {
@@ -339,22 +359,6 @@
 				});
 
 
-				let global_familyColor_map = {};
-				global_familyColor_map["pop"] = '#386ffd';
-				global_familyColor_map["electro house"] = '#e8e1a2';
-				global_familyColor_map["rock"] = 'orange';
-				global_familyColor_map["hip hop"] = 'lightblue';
-				global_familyColor_map["r&b"] = '#10a010';
-				global_familyColor_map["latin"] = 'lightgreen';
-				global_familyColor_map["folk"] = '#C5B0D5';
-				global_familyColor_map["country"] = '#D62728';
-				global_familyColor_map["metal"] = '#FF9896';
-				global_familyColor_map["punk"] = '#9467BD';
-				global_familyColor_map["blues"] = '#8C564B';
-				global_familyColor_map["reggae"] = 'tan';
-				global_familyColor_map["world"] = 'pink';
-				global_familyColor_map["jazz"] = '#a87373';
-				global_familyColor_map["classical"] = 'grey';
 
 				//todo: combine with orderByGenre so that they are grouped by family, but within
 				//each family they are ordered by frequency. also either need to make a manual way
@@ -369,87 +373,39 @@
 				// 	};
 				// });
 
-				module.filter('orderByGenre', function () {
-					return function (input,sortType,user_genre_freq_map,familyColor_mapEval) {
 
+				module.filter('thisFamily', function () {
+					return function (input,familyName) {
+						//given a bunch of genres with family names registered (POSSIBLY multiple)
+						// only return the genres that are from the family, of the families we're iterating thru
 						let output = [];
-						let output_map = {};
-						let other = [];
-						if(sortType === 'genreFreq'){
-
-						}
-						else{
-							let keys = Object.keys(global_familyColor_map);
-							keys.forEach(function(k){
-								output_map[k] = [];
-							});
-
-							console.log("1",output_map);
-							input.forEach(function(g){
-								if(g.family[0]){
-									console.log(g.family[0]);
-									output_map[g.family[0]].push(g);
-								}
-								else{
-									other.push(g);
-								}
-
-							});
-
-							console.log("2",output_map);
-							for(var g in output_map){
-								output_map[g].forEach(function(g){
-									output.push(g);
-								})
+						input.forEach(function (g) {
+							if (g.family.length > 0 && g.family.indexOf(familyName) !== -1){
+								output.push(g);
 							}
-
-							// console.log("1",input);
-							// input.sort(function (a,b) {
-							// 	if(a.familyInd === -1){
-							// 		//no_match.push(no_match)
-							// 		return -1
-							// 	}
-							// 	else if(b.familyInd === -1){
-							// 		return -1
-							// 	}
-							//
-							// 	else{
-							// 		return a.familyInd < b.familyInd ? -1 : 1;
-							// 	}
-							// })
-
-
-							console.log("3",other);
-							console.log(output);
-							return output
-							//console.log(no_match);
-							// console.log(familyColor_mapEval);
-							// console.log(global_familyColor_map);
-							// let keys = Object.keys(global_familyColor_map);
-							// console.log("$in",input);
-							// console.log(keys);
-							// input.sort(function (a, b) {
-							// 	console.log(a);
-							// 	console.log(b);
-							// 	console.log(keys.indexOf(a.family[0]) + "::" + keys.indexOf(b.family[0]));
-							// 	// return keys.indexOf(a) - keys.indexOf(b);
-							// 	// if( keys.indexOf(a) === -1){
-							// 	// 	input.splice(input.indexOf(a),1)
-							// 	// 	return 1
-							// 	// }
-							// 	// else{
-							// 	// 	return keys.indexOf(a) < keys.indexOf(b) ? -1 : 1;
-							// 	// }
-							// 	return keys.indexOf(a) < keys.indexOf(b) ? -1 : 1;
-							//
-							// });
-							// console.log("$out",input);
-							// return input;
-						}
-
-					};
+						});
+						return output
+					}
 				});
-				
+
+				module.filter('byFamilyFreq', function () {
+					return function (input,user,family_freq_map) {
+						input.sort(function(a,b){
+							return (family_freq_map[user.id][a] < family_freq_map[user.id][b]) ? 1: -1
+						})
+						return input
+					}
+				});
+
+				module.filter('byGenreFreq', function () {
+					return function (input,user,genre_freq_map) {
+						input.sort(function(a,b){
+							return (genre_freq_map[user.id][a.genre_id] < genre_freq_map[user.id][b.genre_id]) ? 1: -1
+						})
+						return input
+					}
+				});
+
 				let controller = module.controller("myCtrl", function($scope,$http,linker) {
 					console.log("myCtrl");
 					$scope.sortType = "genreGroup"
@@ -1279,6 +1235,9 @@
 
 					$scope.genres_frequency = function(genreTuple,user){
 
+						//console.log("setting genres_frequency for ", user.display_name);
+
+
 						//get the tracks that belong to this genre
 						// var qry_tracks = "select a.id as artist_id, a.name as name, t.name as track_name, g.name as genre_name from "
 						// 	+ " playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
@@ -1294,7 +1253,7 @@
 						//a param genre is mentioned for that artist's genres
 						//todo: couldn't figure this one out. instead did JS sorting on simple query
 
-						let sub_qry = "select a.id as artist_id, a.name as name, t.name as track_name, g.name as genre_name, g.id as genre_id"
+						let sub_qry = "select a.id as artist_id, a.name as name, t.name as track_name, g.name as genre_name, g.id as genre_id, g.family as family"
 							+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
 							+ " JOIN tracks t on t.id = pt.track_id"
 							+ " JOIN artists_tracks at on at.track_id = t.id"
@@ -1316,13 +1275,27 @@
 						let used_artists = [];
 						let results = alasql(sub_qry);
 
+						//console.log("$r" ,results);
+
 						results.forEach(function(rec){
 							if(!$scope.genre_freq_map[user.id][rec.genre_id]){$scope.genre_freq_map[user.id][rec.genre_id] = 0;}
 							if(used_artists.indexOf(rec.artist_id) === -1){
 								$scope.genre_freq_map[user.id][rec.genre_id]++;
 								used_artists.push(rec.artist_id)
 							}
+
+							//mostly only one family, if any
+							if(rec.family.length > 0){
+								rec.family.forEach(function(f){
+									$scope.family_freq_map[user.id][f]++;
+								})
+							}
+
 						});
+
+						//console.log("$ffm" ,$scope.family_freq_map[user.id]);
+
+
 
 						// console.log(genre_freq_map);
 						// console.log(used_artists);
@@ -1358,24 +1331,26 @@
 
 					//todo: figure out how to query this table with my spotify-gathered genres
 					console.log(all_genres);
-					$scope.unique_fams = {};
-				    $scope.genreFam_map = {};
-				    $scope.familyColor_map = global_familyColor_map;
+					$scope.familyGenre_map = {};
+					$scope.genreFam_map = {};
+					$scope.familyColor_map = global_familyColor_map;
+					$scope.globalFamilies = globalFamilies;
+
 
 
 					all_genres.forEach(function(t){
 						t.family.forEach(function(f){
-							if(!$scope.unique_fams[f]){
-								$scope.unique_fams[f] = [];
+							if(!$scope.familyGenre_map[f]){
+								$scope.familyGenre_map[f] = [];
 							}
-							$scope.unique_fams[f].push(t.name)
+							$scope.familyGenre_map[f].push(t.name)
 						});
 
 						$scope.genreFam_map[t.name] = t.family
 
 					});
 
-					console.log("unique_fams",$scope.unique_fams);
+					console.log("familyGenre_map",$scope.familyGenre_map);
 					console.log("genreFam_map",$scope.genreFam_map);
 
 					$scope.digestIt = function(){
@@ -1429,6 +1404,7 @@
 					$scope.user_cache = {};
 					$scope.genre_freq_map = {};
 					$scope.artist_freq_map = {};
+					$scope.family_freq_map = {};
 
 					getData('friends_id_map.json').then(function(data) {
 						console.log(data) ;
@@ -1443,6 +1419,27 @@
 							$scope.user_cache[u.id].genres = [];
 							$scope.genre_freq_map[u.id] = {};
 							$scope.artist_freq_map[u.id] = {};
+
+							$scope.user_cache_ctrl[u.id] = {}
+
+							all_genres.forEach(function(g){
+								$scope.user_cache_ctrl[u.id][g] = false;
+							});
+
+							$scope.family_freq_map[u.id] = {};
+							$scope.user_cache_ctrl[u.id]['family-event'] = {};
+
+							globalFamilies.forEach(function(f){
+
+								//todo: need to reorganize user_cache_ctrl
+								$scope.user_cache_ctrl[u.id][f] = false;
+
+								$scope.user_cache_ctrl[u.id]['family-event'][f] = true;
+
+								$scope.family_freq_map[u.id][f] = 0;
+
+							})
+
 						})
 						//$scope.$apply();
 					});
@@ -1510,7 +1507,7 @@
 							// + " JOIN genres g on g.id = ag.genre_id"
 							+  " where owner = '" + user.id + "')";
 
-						console.log(qry_distinct_artists);
+						//console.log(qry_distinct_artists);
 						//console.log(alasql("select * from artists"));
 						$scope.user_cache[user.id]['artists'] =  alasql(qry_distinct_artists);
 
@@ -1538,7 +1535,7 @@
 							// + " JOIN genres g on g.id = ag.genre_id"
 							+  " where owner = '" + user.id + "')";
 
-						console.log(qry_distinct_tracks);
+						//console.log(qry_distinct_tracks);
 						$scope.user_cache[user.id].tracks =  alasql(qry_distinct_tracks);
 
 						console.log("setting genre_freq map...");
@@ -1585,6 +1582,7 @@
 					$scope.metro_cache = {};
 					$scope.metro_cache_performances = {}
 
+					$scope.user_cache_ctrl = {};
 
 					//===========================================================================================
 					// SONGKICK EVENTS
@@ -2010,7 +2008,7 @@
 							});
 
 							//todo: order by similar genres? sounds hard
-							let qry_distinct_genres = "select distinct genres.id as genre_id, genres.name as name"
+							let qry_distinct_genres = "select distinct genres.id as genre_id, genres.name as name, genres.family as family"
 								+ " from genres where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
 								//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
 								+ " JOIN tracks t on t.id = pt.track_id"
@@ -2242,7 +2240,6 @@
 							genre.name = key;
 							if($scope.genreFam_map[genre.name] !== undefined){
 								genre.family = $scope.genreFam_map[genre.name];
-								console.log(vlister(genre));
 							}
 							else{
 								genre.family = "";
