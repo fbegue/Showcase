@@ -307,7 +307,11 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
 	return new Promise(function(done, fail) {
 
+		dateFilter.start = new Date(dateFilter.start);
+		dateFilter.end = new Date(dateFilter.end);
 
+		console.log(dateFilter.start);
+		console.log(dateFilter.end);
 
 		//used for stats in return object
 		var event_count = 0;
@@ -333,12 +337,12 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 					songkickApi.getLocationUpcomingEvents(metro.id,params)
 						.then(function(events){
 
-							 ///console.log(JSON.stringify(events, null,4));
+							 //console.log(JSON.stringify(events, null,4));
 
 							var filterInRange = function(event){
 
 								var res = true;
-								var eDate = event.start.date;
+								var eDate = new Date(event.start.date)
 								// console.log( dateFilter.start + " > "  + eDate +  " < "+ dateFilter.end);
 								// console.log( eDate < dateFilter.start)
 								// console.log( eDate > dateFilter.end);
@@ -347,26 +351,17 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 								//if end invalid, set false and ignore start value unless start is false, then take start
 
 								if(dateFilter.start && dateFilter.end){
+									if(eDate < dateFilter.start){	res = false;}
+									if(eDate > dateFilter.end || !res){res = false;}
 
-									if(eDate < dateFilter.start){
-										res = false;
-									}
+								}else if(dateFilter.start && !dateFilter.end) {
+									if(eDate < dateFilter.start){res = false;}
 
-									if(eDate > dateFilter.end || !res){
-										res = false;
-									}
-								}
-								else if(dateFilter.start && !dateFilter.end) {
-									if(eDate < dateFilter.start){
-										res = false;
-									}
 								}else if(!dateFilter.start && dateFilter.end) {
-									if(eDate > dateFilter.end){
-										res = false;
-									}
+									if(eDate > dateFilter.end){res = false;}
 								}
-
-								//console.log(":: " + res);
+								// console.log(":: " + res);
+								// console.log(event.start.date);
 								return res;
 							};
 
@@ -397,6 +392,7 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 							});
 
 							console.log("--------------------------------");
+							console.log("outrange:",outRange.length);
 							console.log("new events:",result.events.length);
 							console.log("total events:",event_count);
 							console.log("paging invariant:",events.length);
@@ -404,7 +400,7 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 							//if page length is < 50
 							//OR if we're starting to get zero-inrange results back, but we have SOME (for dateFilter.start)
 
-							if(events.length < 50 || (result.events.length === 0 && all_results.length != 0)){
+							if(events.length < 50 || (result.events.length === 0 && all_results.length !== 0)){
 
 								console.log("invariant tripped. stopping.");
 								console.log(result.events.length === 0);

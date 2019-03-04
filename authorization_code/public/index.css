@@ -1,0 +1,153 @@
+/*spotify stuff*/
+
+#login, #loggedin {
+    display: none;
+}
+.text-overflow {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 500px;
+}
+.pointer:hover{
+    cursor:pointer;
+}
+
+
+#familyList  .familyItem{
+    padding: 1em;
+}
+
+#familyList  .familyItem:hover {
+    background:#e4e0e0;
+}
+
+#familyList .contained {
+    background: #cac3c3 !important;
+}
+
+
+
+/*fun little card flipping thing*/
+
+body {
+    background: #eee;
+}
+
+.card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300px;
+    height: 300px;
+    margin: -150px;
+    float: left;
+    perspective: 500px;
+}
+
+.content {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+
+    transition: transform 1s;
+    transform-style: preserve-3d;
+}
+
+.card:hover .content {
+    transform: rotateY( 180deg ) ;
+    transition: transform 0.5s;
+}
+
+.front,
+.back {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: white;
+    line-height: 300px;
+    color: #03446A;
+    text-align: center;
+    font-size: 60px;
+    border-radius: 5px;
+    backface-visibility: hidden;
+}
+
+.back {
+    background: #03446A;
+    color: white;
+    transform: rotateY( 180deg );
+}
+
+
+/*d3 tree graph*/
+
+#body {
+    width: 1200px;
+    margin: 0 auto;
+    position: relative;
+}
+
+rect {
+    fill: none;
+    pointer-events: all;
+}
+
+pre {
+    font-size: 18px;
+}
+
+line {
+    stroke: #0E0;
+    stroke-width: 1.5px;
+}
+
+.string, .regexp {
+    color: #f39;
+}
+
+.keyword {
+    color: #00c;
+}
+
+.comment {
+    color: #777;
+    font-style: oblique;
+}
+
+.number {
+    color: #369;
+}
+
+.class, .special {
+    color: #1181B8;
+}
+
+a:link, a:visited {
+    color: steelblue;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #666;
+}
+
+
+
+.node circle {
+    cursor: pointer;
+    fill: #fff;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+}
+
+.node text {
+    font-size: 12px;
+}
+
+path.link {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 2.0px;
+}

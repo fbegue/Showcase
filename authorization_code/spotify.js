@@ -115,7 +115,7 @@ module.exports.playlist_tracks = function(req,res){
 module.exports.get_artists = function(req, res){
 
 	// console.log("search_artists",JSON.stringify(req.body,null,4));
-	console.log("search_artists",req.body.queries.length);
+	console.log("get_artists",req.body.queries.length);
 
 	// var promiseThrottle = new PromiseThrottle({
 	// 	requestsPerSecond: 5,           // up to 1 request per second
@@ -169,7 +169,10 @@ module.exports.search_artists = function(req, res){
 	//req.url = "https://api.spotify.com/v1/search?q=" + req.body.url + "&type=artist";
 
 	var promiseThrottle = new PromiseThrottle({
-		requestsPerSecond: 1,           // up to 1 request per second
+		requestsPerSecond: 10,
+		//362
+		// requestsPerSecond: 20,
+		//124
 		promiseImplementation: Promise  // the Promise library you are using
 	});
 
@@ -219,7 +222,8 @@ module.exports.search_artists = function(req, res){
 		    	done(tuple)
 		    })
 	    })
-	}
+	};
+
 	req.body.perfTuples.forEach(function(tuple){
 		//spotify says it requires this, maybe rp is doing conversion for me? idk
 		tuple.displayName_clean =  tuple.displayName.replace(/\(US\)/g, ""); //%20
@@ -232,11 +236,9 @@ module.exports.search_artists = function(req, res){
 		options.displayName = tuple.displayName;
 		//console.log(options.artistSongkick_id);
 		//console.log(options.uri);
-		promises.push(searchReq(options))
+		//promises.push(searchReq(options))
 		//promises.push(rp(options))
-
-
-		//promises.push(promiseThrottle.add(rp.bind(this,options))
+		promises.push(promiseThrottle.add(searchReq.bind(this,options)));
 		// .then(function(res) {
 		// 	console.log("done",res);
 		// })

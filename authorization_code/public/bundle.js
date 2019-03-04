@@ -312,13 +312,13 @@
 				module.filter('getGenres', function(linker) {
 					return function(genres,p) {
 
-						console.log("@getGenres");
-						console.log(genres);
-						console.log(p);
+						// console.log("@getGenres");
+						// console.log(genres);
+						// console.log(p);
 
 						let t = alasql("select * from artist_artistSongkick");
-						console.log(t);
-						console.log(alasql("select * from artist_artistSongkick aas join artists a on aas.artist_id = a.id"));
+						// console.log(t);
+						// console.log(alasql("select * from artist_artistSongkick aas join artists a on aas.artist_id = a.id"));
 
 						//todo: no idea why this wasn't able to go get the actual genre object but whatever
 						let qry = "select * from performances p"
@@ -329,20 +329,22 @@
 							+ " where aas.artistSongkick_id = " + p.artistSongkick_id;
 
 						let qryResult = alasql(qry);
-						console.log(p.artistSongkick_id + "::",alasql(qry));
+						//console.log(p.artistSongkick_id + "::",alasql(qry));
 
 
 						let gens = [];
-						if(qryResult.length > 0){
-							let test = {};
-							test = qryResult[0]["genre_id"]
-							gens = alasql("select * from genres where id = " + test)
-							console.log("gens",gens);
-						}
-						else{
-							console.log("skipped: ",p.artistSongkick_id);
-							console.log(qryResult);
-						}
+
+
+						// if(qryResult.length > 0){
+						// 	let test = {};
+						// 	test = qryResult[0]["genre_id"]
+						// 	gens = alasql("select * from genres where id = " + test)
+						// 	console.log("gens",gens);
+						// }
+						// else{
+						// 	console.log("skipped: ",p.artistSongkick_id);
+						// 	console.log(qryResult);
+						// }
 
 						!p.genres ? p.genres = gens:{};
 
@@ -389,11 +391,15 @@
 				});
 
 				module.filter('byFamilyFreq', function () {
-					return function (input,user,family_freq_map) {
-						input.sort(function(a,b){
-							return (family_freq_map[user.id][a] < family_freq_map[user.id][b]) ? 1: -1
-						})
-						return input
+					return function (input,user,usersGenres,family_freq_map) {
+						console.log("byFamilyFreq",usersGenres.length);
+						let output = JSON.parse(JSON.stringify(input));
+						if(usersGenres.length !== 0) {
+							output.sort(function (a, b) {
+								return (family_freq_map[user.id][a] < family_freq_map[user.id][b]) ? 1 : -1
+							})
+						}
+						return output
 					}
 				});
 
@@ -1402,9 +1408,28 @@
 					let getData = function (file) {return  $http.get(file);};
 
 					$scope.user_cache = {};
+					$scope.user_cache_ctrl = {};
 					$scope.genre_freq_map = {};
 					$scope.artist_freq_map = {};
 					$scope.family_freq_map = {};
+
+					// $scope.show = {};
+					// $scope.show['dacandyman01'] = {};
+					// $scope.show['1292167736'] = {};
+					// $scope.show['1213866828'] = {};
+
+					// $scope.show['dacandyman01']['playlists'] = true;
+					// $scope.show['dacandyman01']['artists'] = false;
+					// $scope.show['dacandyman01']['genres'] = true;
+					//
+					// $scope.show['1292167736']['playlists'] = true;
+					// $scope.show['1292167736']['artists'] = false;
+					// $scope.show['1292167736']['genres'] = true;
+					//
+					// $scope.show['1213866828']['playlists'] = true;
+					// $scope.show['1213866828']['artists'] = false;
+					// $scope.show['1213866828']['genres'] = true;
+
 
 					getData('friends_id_map.json').then(function(data) {
 						console.log(data) ;
@@ -1422,12 +1447,26 @@
 
 							$scope.user_cache_ctrl[u.id] = {}
 
+							//selected
+							$scope.user_cache_ctrl[u.id]['playlists'] = []
+							$scope.user_cache_ctrl[u.id]['families'] = [];
+
 							all_genres.forEach(function(g){
 								$scope.user_cache_ctrl[u.id][g] = false;
 							});
 
 							$scope.family_freq_map[u.id] = {};
 							$scope.user_cache_ctrl[u.id]['family-event'] = {};
+							$scope.user_cache_ctrl[u.id].show = {};
+							$scope.user_cache_ctrl[u.id].show.playlists = true;
+
+							$scope.user_cache_ctrl[u.id].show.user = true;
+							$scope.user_cache_ctrl[u.id].show.playlists = true;
+							$scope.user_cache_ctrl[u.id].show.artists = false;
+							$scope.user_cache_ctrl[u.id].show.genres = true;
+							$scope.user_cache_ctrl[u.id].show.families = true;
+
+
 
 							globalFamilies.forEach(function(f){
 
@@ -1552,37 +1591,115 @@
 						$scope.digestIt()
 					};
 
-					$scope.setSelected = function(array,mode){
-						console.log("setSelected",mode);
-						array.forEach(function(ar){
-							ar._cmo_checked = (mode === 'all');
-						})
+					// $scope.setSelected = function(array,mode){
+					// 	console.log("setSelected",mode);
+					// 	array.forEach(function(ar){
+					// 		ar._cmo_checked = (mode === 'all');
+					// 	})
+					// };
+
+					$scope.selected = {};
+					$scope.selected['playlists'] = []
+
+					// $scope.setP = function(){
+					//
+					// 	$scope.testPlaylists = $scope.user_cache['1292167736']['playlists'];
+					// 	console.log($scope.testPlaylists );
+					// 	$scope.digestIt()
+					// }
+
+					$scope.testPlaylists = [
+						{
+							"id": "5vDmqTWcShNGe7ENaud90q",
+							"name": "Classic Rock/Rock",
+							"owner": "1292167736",
+							"public": "true",
+							"uri": "spotify:playlist:5vDmqTWcShNGe7ENaud90q",
+							// "_cmo_checked": true
+						},
+						{
+							"id": "0sJK4pWqr7bnQ0fgxGmJrh",
+							"name": "weird shit",
+							"owner": "1292167736",
+							"public": "true",
+							"uri": "spotify:playlist:0sJK4pWqr7bnQ0fgxGmJrh",
+							// "_cmo_checked": true
+						},
+						{
+							"id": "0fEQxXtJS7aTK4qrxznjAJ",
+							"name": "country",
+							"owner": "1292167736",
+							"public": "true",
+							"uri": "spotify:playlist:0fEQxXtJS7aTK4qrxznjAJ",
+							// "_cmo_checked": true
+						}
+					]
+
+				// 	$scope.testPlaylistsLookup = {
+				// 		"5vDmqTWcShNGe7ENaud90q":{
+				// 			"id": "5vDmqTWcShNGe7ENaud90q",
+				// 			"name": "Classic Rock/Rock",
+				// 			"owner": "1292167736",
+				// 			"public": "true",
+				// 			"uri": "spotify:playlist:5vDmqTWcShNGe7ENaud90q",
+				// 			// "_cmo_checked": true
+				// 		},
+				// 		"0sJK4pWqr7bnQ0fgxGmJrh":{
+				// 			"id": "0sJK4pWqr7bnQ0fgxGmJrh",
+				// 			"name": "weird shit",
+				// 			"owner": "1292167736",
+				// 			"public": "true",
+				// 			"uri": "spotify:playlist:0sJK4pWqr7bnQ0fgxGmJrh",
+				// 			// "_cmo_checked": true
+				// 		},
+				// 		"0fEQxXtJS7aTK4qrxznjAJ":{
+				// 			"id": "0fEQxXtJS7aTK4qrxznjAJ",
+				// 			"name": "country",
+				// 			"owner": "1292167736",
+				// 			"public": "true",
+				// 			"uri": "spotify:playlist:0fEQxXtJS7aTK4qrxznjAJ",
+				// 			// "_cmo_checked": true
+				// 		}
+				// }
+
+					$scope.familySelected = function(u,f){
+						return $scope.user_cache_ctrl[u.id]['families'].indexOf(f) !== -1;
+						// let ret = $scope.user_cache_ctrl[u.id]['families'].indexOf(f) !== -1;
+						// console.log("familySelected",ret);
+						// return ret
 					};
 
-					//todo: hardcoded, should just run thru friends map
-					$scope.show = {};
-					$scope.show['dacandyman01'] = {};
-					$scope.show['1292167736'] = {};
-					$scope.show['1213866828'] = {};
+					$scope.toggleFamily = function(u,f){
+						let index = $scope.user_cache_ctrl[u.id]['families'].indexOf(f);
+						if(index !== -1){
+							$scope.user_cache_ctrl[u.id]['families'].splice(index,1)
+						}
+						else{
+							$scope.user_cache_ctrl[u.id]['families'].push(f);
+						}
+					};
 
-					//todo: autocollapse artists for now, too long
-					$scope.show['dacandyman01']['playlists'] = true;
-					$scope.show['dacandyman01']['artists'] = false;
-					$scope.show['dacandyman01']['genres'] = true;
 
-					$scope.show['1292167736']['playlists'] = true;
-					$scope.show['1292167736']['artists'] = false;
-					$scope.show['1292167736']['genres'] = true;
+					$scope.getSelectedGenres = function(u){
+						let total = 0;
+						$scope.user_cache_ctrl[u.id]['families'].forEach(function(f){
+							total+= $scope.familyGenre_map[f].length
+						})
+						return total;
+					};
 
-					$scope.show['1213866828']['playlists'] = true;
-					$scope.show['1213866828']['artists'] = false;
-					$scope.show['1213866828']['genres'] = true;
+					$scope.lookup = {};
+					$scope.lookup['genres'] = {};
+					$scope.lookup['playlists'] = {};
 
-					//$scope.user_cache = user_cache;
-					$scope.metro_cache = {};
-					$scope.metro_cache_performances = {}
+					$scope.playlistLookup = function(id){
+						return $scope.lookup['playlists'][id]
+					}
 
-					$scope.user_cache_ctrl = {};
+					$scope.genreLookup = function(genre_id){
+						return $scope.lookup['genres'][genre_id];
+					};
+
 
 					//===========================================================================================
 					// SONGKICK EVENTS
@@ -1633,11 +1750,16 @@
 
 
 
+					$scope.metro_cache = {};
+					$scope.metro_cache_performances = {}
+
 					$scope.dateFilter= {};
 					//$scope.dateFilter.end = "";
 					//$scope.dateFilter.start = "";
-					$scope.dateFilter.end = '2019-02-20';
-					$scope.dateFilter.start =  '2019-02-10';
+					 $scope.dateFilter.end =  '2019-04-04';
+					// $scope.dateFilter.start = '2019-03-04';
+					$scope.dateFilter.start =  '2019-03-04';
+					// $scope.dateFilter.end = '2019-03-11';
 					// $scope.raw_filename = "";
 					// $scope.areaDatesArtists_filename= "";
 
@@ -1871,11 +1993,11 @@
 
 										artist_artistSongkick.artist_id = tuple.artist.id;
 										artist_artistSongkick.artistSongkick_id = tuple.artistSongkick_id;
-										alasql("INSERT INTO artist_artistSongkick VALUES ( " + vlister(artist_artistSongkick)  + " )");
+ 										alasql("INSERT INTO artist_artistSongkick VALUES ( " + vlister(artist_artistSongkick)  + " )");
 
 
 										payload.artists.push(tuple.artist)
-										console.log("$len",payload.artists.length);
+										//console.log("$len",payload.artists.length);
 										// tuple = reduce(artistDef,tuple.spotify_artist);
 										// let varchar_keys = ["name"];
 										// varchar_keys.forEach(function (key) {
@@ -1950,13 +2072,13 @@
 
 								//todo: move this auto select somewher else
 
-								let selected = [];
-								$scope.user_cache[user.id]['playlists'].forEach(function(p){
-									p._cmo_checked = true;
-									selected.push(p)
-								});
-								$scope.user_cache[user.id].selected = selected;
-								console.log(selected);
+								// let selected = [];
+								// $scope.user_cache[user.id]['playlists'].forEach(function(p){
+								// 	p._cmo_checked = true;
+								// 	selected.push(p)
+								// });
+								// $scope.user_cache[user.id].selected = selected;
+								// console.log(selected);
 								$scope.digestIt();
 
 							})
@@ -2100,6 +2222,11 @@
 						//let qry = "select * from playlists;";
 						let qry = "select * from playlists where owner = '" + user.id + "';";
 						$scope.user_cache[user.id]['playlists'] = alasql(qry);
+
+						$scope.user_cache[user.id]['playlists'].forEach(function(p){
+							$scope.lookup['playlists'][p.id] = p;
+						});
+
 						console.log(qry,$scope.user_cache[user.id]['playlists']);
 
 						$scope.digestIt();
@@ -2247,6 +2374,7 @@
 							}
 
 
+							$scope.lookup['genres'][genre.id] = key;
 							alasql("INSERT INTO genres VALUES ( " + vlister(genre)  + " )");
 							//console.log(alasql("select * from  genres"));
 

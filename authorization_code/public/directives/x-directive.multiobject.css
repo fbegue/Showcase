@@ -1,6 +1,6 @@
  .mso-container {
      border: 1px solid #ddd;
-     background-color: #dcdbdb;
+     /*background-color: #dcdbdb;*/
      max-width: 20em;
 }
 
@@ -16,6 +16,17 @@
     max-height: 200px;
     overflow-y: auto;
 }
+
+
+ .multi-container .multi:hover {
+   background:#e4e0e0;
+ }
+
+ /*selectRows*/
+ .multi-container .multi.contained {
+     background:#cac3c3;;
+ }
+
 
 [type="checkbox"],
 [type="radio"] {

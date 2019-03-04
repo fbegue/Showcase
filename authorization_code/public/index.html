@@ -8,37 +8,17 @@
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.js"></script>
   <!--<script type="text/javascript" src="dosearch.js"></script>-->
   <script type="text/javascript" src="artists.js"></script>
+  <link rel="stylesheet" href="index.css">
+  <!--<link rel="stylesheet" href="fontawesome.min.css">-->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 
   <script src="bundle.js"></script>
   <script src="directives/x-directive.checkbox.js"></script>
   <script src="all_genres2.js"></script>
 
-
   <script src="directives/x-directive.multiobject.js"></script>
-  <link rel = "stylesheet"
-        type = "text/css"
-        href = "multi.css" />
+  <link rel = "stylesheet" type = "text/css" href = "directives/x-directive.multiobject.css" />
 
-
-
-  <!--<script type="text/javascript" src="app.js"></script>-->
-
-
-  <style type="text/css">
-    #login, #loggedin {
-      display: none;
-    }
-    .text-overflow {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      width: 500px;
-    }
-    .pointer:hover{
-      cursor:pointer;
-    }
-
-  </style>
 </head>
 
 <!--<script src="http://code.angularjs.org/angular-1.0.1.js"></script>-->
@@ -57,134 +37,9 @@
     <div id="oauth">
     </div>
 
-    <style>
 
-      body {
-        background: #eee;
-      }
-
-      .card {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 300px;
-        height: 300px;
-        margin: -150px;
-        float: left;
-        perspective: 500px;
-      }
-
-      .content {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        box-shadow: 0 0 15px rgba(0,0,0,0.1);
-
-        transition: transform 1s;
-        transform-style: preserve-3d;
-      }
-
-      .card:hover .content {
-        transform: rotateY( 180deg ) ;
-        transition: transform 0.5s;
-      }
-
-      .front,
-      .back {
-        position: absolute;
-        height: 100%;
-        width: 100%;
-        background: white;
-        line-height: 300px;
-        color: #03446A;
-        text-align: center;
-        font-size: 60px;
-        border-radius: 5px;
-        backface-visibility: hidden;
-      }
-
-      .back {
-        background: #03446A;
-        color: white;
-        transform: rotateY( 180deg );
-      }
-
-      /*tree*/
-
-      #body {
-        width: 1200px;
-        margin: 0 auto;
-        position: relative;
-      }
-
-      rect {
-        fill: none;
-        pointer-events: all;
-      }
-
-      pre {
-        font-size: 18px;
-      }
-
-      line {
-        stroke: #0E0;
-        stroke-width: 1.5px;
-      }
-
-      .string, .regexp {
-        color: #f39;
-      }
-
-      .keyword {
-        color: #00c;
-      }
-
-      .comment {
-        color: #777;
-        font-style: oblique;
-      }
-
-      .number {
-        color: #369;
-      }
-
-      .class, .special {
-        color: #1181B8;
-      }
-
-      a:link, a:visited {
-        color: steelblue;
-        text-decoration: none;
-      }
-
-      a:hover {
-        color: #666;
-      }
-
-
-
-      .node circle {
-        cursor: pointer;
-        fill: #fff;
-        stroke: steelblue;
-        stroke-width: 1.5px;
-      }
-
-      .node text {
-        font-size: 12px;
-      }
-
-      path.link {
-        fill: none;
-        stroke: #ccc;
-        stroke-width: 2.0px;
-      }
-    </style>
-
-
+    <!--todo: example of card flip-->
     <!--<div style="display:flex;flex-direction:row;">-->
-
-
     <!--<div class="card">-->
     <!--<div class="content">-->
     <!--<div class="front">-->
@@ -196,6 +51,15 @@
     <!--</div>-->
     <!--</div>-->
     <!--</div>-->
+
+    <div style="display:flex;flex-direction:row;">
+
+
+
+      <!--<cfaes-multiobject ng-model="program[field]" selection="program.programArea.keywords" lookup="getKeyword" notifications="Keywords" root="_widget._myroot" display="name" order="name" ordering="false" type="checkboxes">-->
+
+      <!--</cfaes-multiobject>-->
+    </div>
 
 
 
@@ -236,7 +100,7 @@
           <div class="" >raw_filename <input ng-model="raw_filename"></div>
           <div class="" >areaDatesArtists_filename <input ng-model="areaDatesArtists_filename"></div>
 
-          <div class="" >select metro: <button style="color:red" ng-click="get_metro_events(glorderByGenreobal_metro)">get_metro_events</button> </div>
+          <div class="" >select metro: <button style="color:red" ng-click="get_metro_events(global_metro)">get_metro_events</button> </div>
 
           <div style="display:flex;flex-direction:row;">
             <select ng-options="metro as metro.displayName for metro in metros" ng-model="global_metro"></select>
@@ -249,7 +113,7 @@
 
       <div style="display:flex;flex-direction:row;">
 
-        <button ng-click="get_all_tracks(global_user,user_cache[global_user.id].selected)">getAllTracks</button>
+        <button ng-click="get_all_tracks(global_user,user_cache_ctrl[global_user.id]['playlists'])">getAllTracks</button>
         <button ng-click="get_user_playlists(global_user)">get_user_playlists</button>
         <button ng-click="set_user_cache()">set_user_cache</button>
         <button ng-click ="applyIt()">applyIt</button>
@@ -272,7 +136,21 @@
           <button ng-click="testdb()">testdb</button>
           <button ng-click="genreSort === 'genreFreq' ? genreSort = 'genreGroup':{}">genreSort {{genreSort}}</button>
 
+          SELECT
+          <!--<button ng-click="setSelected(user_cache[global_user.id].selected,'all')">all</button>-->
+          <!--<button  ng-click="setSelected(user_cache[global_user.id].selected,'none')">none</button>-->
+
+
+
+          <!--<cfaes-multiobject ng-model="selected['playlists']"-->
+          <!--selection="testPlaylists"-->
+          <!--lookup="playlistLookup" display="name" type="checkboxes"-->
+          <!--filterable="false">-->
+          <!--</cfaes-multiobject>-->
+
         </div>
+
+
 
 
         <!--todo: this should have some other condition besides playlists-->
@@ -282,30 +160,29 @@
 
           <div style="min-width:15em" ng-show="user_cache[u.id]">
             <div>
-              <span class="pointer" ng-click="show[u.id]['playlists'] = !show[u.id]['playlists']">PLAYLISTS+</span>
+              <span class="pointer" ng-click="user_cache_ctrl[u.id].show.playlists = !user_cache_ctrl[u.id].show.playlists">+ PLAYLISTS</span>
               ({{user_cache[u.id]['playlists'].length}})
 
-              <div ng-show="show[u.id]['playlists']" style="font-style:italic;"
-                   ng-repeat="p in user_cache[u.id]['playlists']">&nbsp &nbsp {{p.name}}
+              <!--<div ng-show="user_cache_ctrl[u.id].show.playlists" style="font-style:italic;"-->
+              <!--ng-repeat="p in user_cache[u.id]['playlists']">&nbsp &nbsp {{p.name}}-->
+              <!--</div>-->
+
+              <div ng-show="user_cache_ctrl[u.id].show.playlists">
+                <cfaes-multiobject
+                        ng-model="user_cache_ctrl[u.id]['playlists']" selection="user_cache[u.id]['playlists']"
+                        display="name" type="selectRows" lookup="playlistLookup" startselected="true">
+                </cfaes-multiobject>
               </div>
-
-              SELECT
-              <!--<button ng-click="setSelected(user_cache[global_user.id].selected,'all')">all</button>-->
-              <!--<button  ng-click="setSelected(user_cache[global_user.id].selected,'none')">none</button>-->
-
-              <!--<cfaes-multiobject ng-init="!user_cache[global_user.id].selected ? user_cache[global_user.id].selected = []:{}" -->
-              <!--ng-model="user_cache[global_user.id].selected" selection="user_cache[u.id]['playlists']" order="displayOrder" ordering="false"-->
-              <!--filterable="false" display="name" type="checkboxes">-->
-              <!--</cfaes-multiobject>-->
+              <!--order="displayOrder" ordering="false" filterable="false" -->
 
 
             </div>
 
             <div>
-              <span class="pointer"ng-click="show[u.id]['artists'] = !show[u.id]['artists']">ARTISTS+</span>
+              <span class="pointer" ng-click="user_cache_ctrl[u.id].show.artists = !user_cache_ctrl[u.id].show.artists">+ARTISTS</span>
               ({{user_cache[u.id]['artists'].length}})
 
-              <div  ng-if="show[u.id]['artists']" style="font-style:italic;"
+              <div  ng-if="user_cache_ctrl[u.id].show.artists" style="font-style:italic;"
                     ng-repeat="a in user_cache[u.id]['artists'] | orderByArtistFreq:artist_freq_map[u.id]">
                 &nbsp &nbsp {{ a.name}} ({{artist_freq_map[u.id][a.artist_id]}})
 
@@ -314,21 +191,57 @@
             <!--| orderBy:'toString()' | sharedFilter:'artists':shared-->
 
             <div>
-              <span class="pointer" ng-click="show[u.id]['genres'] = !show[u.id]['genres']">GENRES+</span>
-              ({{user_cache[u.id]["genres"].length}})
+
+              <div>
+                <span class="pointer" ng-click="user_cache_ctrl[u.id].show.families = !user_cache_ctrl[u.id].show.families">+FAMILIES</span>
+                ({{user_cache_ctrl[u.id]['families'].length}} of 15) ||
+
+                <!--todo: no individual genre selection for now-->
+                <span style="" >GENRES ({{getSelectedGenres(u)}} of {{user_cache[u.id]["genres"].length}})</span>
+                <!--<span class="pointer" ng-click="user_cache_ctrl[u.id].show.genres = !user_cache_ctrl[u.id].show.genres">GENRES+</span>-->
+              </div>
+
 
               <!--| orderBy:genreFreq(u):descendFreq | sharedFilter:'genres':shared"-->
 
-              <div  ng-if="show[u.id]['genres']" style="font-style:italic;" ng-style="{color:familyColor_map[f]}"
-                    ng-repeat="f in globalFamilies | byFamilyFreq:u:family_freq_map" >
+              <div id="familyList" ng-if="user_cache_ctrl[u.id].show.families" style="font-style:italic;" ng-style="{color:familyColor_map[f]}"
+                   ng-repeat="f in globalFamilies | byFamilyFreq:u:user_cache[u.id]['genres']:family_freq_map" >
 
                 <!--todo:-->
-                <showcase-checkbox ng-model="user_cache_ctrl[u.id]['family-event'][f]"  type="checkbox" field="family-event" key="Id"></showcase-checkbox>
+                <!--<showcase-checkbox ng-model="user_cache_ctrl[u.id]['family-event'][f]"  type="checkbox" field="family-event" key="Id"></showcase-checkbox>-->
 
-                <span ng-click="user_cache_ctrl[u.id][f] = !user_cache_ctrl[u.id][f]"
-                      style="font-weight:bold;cursor:pointer">
-                  {{f}} <span> ({{family_freq_map[u.id][f]}})</span>
+                <!--<div class="familyItem" ng-class="{'contained':familySelected(u,f)}" ng-click="toggleFamily(u,f)">-->
+                <!--<span style="font-size:2em"> {{f}} </span>-->
+                <!--<span> ({{family_freq_map[u.id][f]}})</span>-->
+                <!--<button  style="transform:scale(.7)" ng-click="user_cache_ctrl[u.id][f] = !user_cache_ctrl[u.id][f]" >...</button>-->
+                <!--&lt;!&ndash;style="font-weight:bold;cursor:pointer"&ndash;&gt;-->
+                <!--</div>-->
+
+
+                <span class="familyItem" ng-class="{'contained':familySelected(u,f)}" ng-click="toggleFamily(u,f)">
+                  <span style="font-size:2em"> {{f}} </span>
+                  <!-- -->
+                  <span> ({{family_freq_map[u.id][f]}})
+                    <!--todo: how to properly float this-->
+                    <!--<span ng-mouseover="info[f] = true" ng-mouseleave="info[f] = false" class="fa fa-info-circle">-->
+                    <!--<span style="border:1px solid lightgrey;z-index:5;position:relative;top:-10px" ng-if="info[f]"> Of the artists inputted, the genres belonging to this family hit this many times</span>-->
+                  </span>
+                  </span>
+
+                <!--style="font-weight:bold;cursor:pointer"-->
                 </span>
+                <span> <button  style="transform:scale(.7)" ng-click="user_cache_ctrl[u.id][f] = !user_cache_ctrl[u.id][f]" >...</button></span>
+
+
+
+                <!--<div ng-if="user_cache_ctrl[u.id][f]">-->
+                <!--<cfaes-multiobject-->
+                <!--ng-model="user_cache_ctrl[u.id]['genres']" selection="user_cache[u.id]['genres']"-->
+                <!--display="name" type="selectGenres" lookup="genreLookup" startselected="true">-->
+                <!--</cfaes-multiobject>-->
+
+                <!--</div>-->
+
 
                 <!-- old complicated way-->
                 <!--ng-repeat="g in user_cache[u.id]['genres'] | orderByGenre:genreSort:genre_freq_map[u.id]:familyColor_map[g.family[0]]" >-->
@@ -341,7 +254,7 @@
                   <span ng-if="g.family.length >1">
 
                     <button ng-click="user_cache_ctrl[u.id][g.name] = !user_cache_ctrl[u.id][g.name]"
-                    style="transform: scale(.5);margin-left: -.5em;">+</button>
+                            style="transform: scale(.5);margin-left: -.5em;">+</button>
                     <span ng-if="user_cache_ctrl[u.id][g.name]">
                     (<span ng-repeat="g in g.family"
                            ng-style="{color:familyColor_map[genreFam_map[g]]}">
@@ -363,17 +276,17 @@
               </div>
 
               <!--<div  ng-if="show[u.id]['genres']" style="font-style:italic;"-->
-                    <!--ng-repeat="g in user_cache[u.id]['genres'] | orderByGenre:genreSort:genre_freq_map[u.id]:familyColor_map[g.family[0]]" >-->
-                <!--&lt;!&ndash;ng-repeat="g in user_cache[u.id]['genres'] | orderByGenreFreq:genre_freq_map[u.id]" >&ndash;&gt;-->
+              <!--ng-repeat="g in user_cache[u.id]['genres'] | orderByGenre:genreSort:genre_freq_map[u.id]:familyColor_map[g.family[0]]" >-->
+              <!--&lt;!&ndash;ng-repeat="g in user_cache[u.id]['genres'] | orderByGenreFreq:genre_freq_map[u.id]" >&ndash;&gt;-->
 
-                <!--&nbsp &nbsp {{g.name}}-->
-                <!--<span ng-style="{color:familyColor_map[g.family[0]]}">({{genreFam_map[g.name]}}) </span>-->
-                <!--&lt;!&ndash;{{ genreFam_map[g.name][0]}}&ndash;&gt;-->
-                <!--&lt;!&ndash;{{familyColor_map[genreFam_map[g.name][0]]}}&ndash;&gt;-->
-                <!--({{genre_freq_map[u.id][g.genre_id]}})-->
+              <!--&nbsp &nbsp {{g.name}}-->
+              <!--<span ng-style="{color:familyColor_map[g.family[0]]}">({{genreFam_map[g.name]}}) </span>-->
+              <!--&lt;!&ndash;{{ genreFam_map[g.name][0]}}&ndash;&gt;-->
+              <!--&lt;!&ndash;{{familyColor_map[genreFam_map[g.name][0]]}}&ndash;&gt;-->
+              <!--({{genre_freq_map[u.id][g.genre_id]}})-->
 
-                <!--&lt;!&ndash;<button ng-click="set_filterGenre(g)">({{genreEventMatches(g,global_metro)}})</button>&ndash;&gt;-->
-                <!--<button ng-click="test = genres_frequency(g,u)">({{test}})</button>-->
+              <!--&lt;!&ndash;<button ng-click="set_filterGenre(g)">({{genreEventMatches(g,global_metro)}})</button>&ndash;&gt;-->
+              <!--<button ng-click="test = genres_frequency(g,u)">({{test}})</button>-->
 
               <!--</div>-->
             </div>
@@ -385,7 +298,8 @@
 
         <div>
           <!--| hasGenre:filterGenre:user_cache-->
-          <div ng-repeat="e in metro_cache[global_metro.id] ">
+          <!--| limitTo:10-->
+          <div ng-repeat="e in metro_cache[global_metro.id]">
             <div style="font-weight:bold">{{e.displayName}} @ {{e.venue.displayName}} on {{getEventDate(e)}}</div>
 
             <!--todo: this displayName belongs to the performance, not the artist performing-->
