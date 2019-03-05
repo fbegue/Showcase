@@ -309,6 +309,33 @@
 					};
 				});
 
+
+				let events = {};
+				// module.filter('getEvents', function(linker) {
+				// 	return function(perfs) {
+				// 		let output = [];
+				//
+				// 		perfs.forEach(function (p) {
+				// 			!events[p.event_id] ? events[p.event_id] = [] : {};
+				// 			events[p.event_id].push(p);
+				// 		})
+				//
+				// 		let perf = {};
+				// 		let perfKeys = ["id", "displayName", "type", "uri", "start", "location",
+				// 			"metro_id", "event_id", "performance_id", "billing", "billingIndex",
+				// 			"artistSongkick_id"]
+				//
+				// 		Object.keys(events).forEach(function (eventId) {
+				//
+				//
+				// 			perf.
+				// 			output.push(perf)
+				// 		});
+				//
+				// 		return output;
+				// 	}})
+
+
 				module.filter('getGenres', function(linker) {
 					return function(genres,p) {
 
@@ -360,6 +387,21 @@
 					};
 				});
 
+				module.filter('startFrom', function() {
+					return function(input, start) {
+						start = +start; //parse to int
+						return input.slice(start);
+
+						// if(!input){
+						// 	return input;
+						// }
+						// else{
+						// 	start = +start; //parse to int
+						// 	return input.slice(start);
+						// }
+
+					}
+				});
 
 
 				//todo: combine with orderByGenre so that they are grouped by family, but within
@@ -1342,6 +1384,20 @@
 					$scope.familyColor_map = global_familyColor_map;
 					$scope.globalFamilies = globalFamilies;
 
+					$scope.currentPage = 0;
+					$scope.pageSize = 20;
+					$scope.numberOfPages=function(){
+						//.length > 0
+						if($scope.metro_cache[$scope.global_metro.id]){
+							return Math.ceil($scope.metro_cache[$scope.global_metro.id].length/$scope.pageSize);
+						}
+						else{
+							return 0;
+						}
+
+					};
+
+
 
 
 					all_genres.forEach(function(t){
@@ -1635,32 +1691,32 @@
 						}
 					]
 
-				// 	$scope.testPlaylistsLookup = {
-				// 		"5vDmqTWcShNGe7ENaud90q":{
-				// 			"id": "5vDmqTWcShNGe7ENaud90q",
-				// 			"name": "Classic Rock/Rock",
-				// 			"owner": "1292167736",
-				// 			"public": "true",
-				// 			"uri": "spotify:playlist:5vDmqTWcShNGe7ENaud90q",
-				// 			// "_cmo_checked": true
-				// 		},
-				// 		"0sJK4pWqr7bnQ0fgxGmJrh":{
-				// 			"id": "0sJK4pWqr7bnQ0fgxGmJrh",
-				// 			"name": "weird shit",
-				// 			"owner": "1292167736",
-				// 			"public": "true",
-				// 			"uri": "spotify:playlist:0sJK4pWqr7bnQ0fgxGmJrh",
-				// 			// "_cmo_checked": true
-				// 		},
-				// 		"0fEQxXtJS7aTK4qrxznjAJ":{
-				// 			"id": "0fEQxXtJS7aTK4qrxznjAJ",
-				// 			"name": "country",
-				// 			"owner": "1292167736",
-				// 			"public": "true",
-				// 			"uri": "spotify:playlist:0fEQxXtJS7aTK4qrxznjAJ",
-				// 			// "_cmo_checked": true
-				// 		}
-				// }
+					// 	$scope.testPlaylistsLookup = {
+					// 		"5vDmqTWcShNGe7ENaud90q":{
+					// 			"id": "5vDmqTWcShNGe7ENaud90q",
+					// 			"name": "Classic Rock/Rock",
+					// 			"owner": "1292167736",
+					// 			"public": "true",
+					// 			"uri": "spotify:playlist:5vDmqTWcShNGe7ENaud90q",
+					// 			// "_cmo_checked": true
+					// 		},
+					// 		"0sJK4pWqr7bnQ0fgxGmJrh":{
+					// 			"id": "0sJK4pWqr7bnQ0fgxGmJrh",
+					// 			"name": "weird shit",
+					// 			"owner": "1292167736",
+					// 			"public": "true",
+					// 			"uri": "spotify:playlist:0sJK4pWqr7bnQ0fgxGmJrh",
+					// 			// "_cmo_checked": true
+					// 		},
+					// 		"0fEQxXtJS7aTK4qrxznjAJ":{
+					// 			"id": "0fEQxXtJS7aTK4qrxznjAJ",
+					// 			"name": "country",
+					// 			"owner": "1292167736",
+					// 			"public": "true",
+					// 			"uri": "spotify:playlist:0fEQxXtJS7aTK4qrxznjAJ",
+					// 			// "_cmo_checked": true
+					// 		}
+					// }
 
 					$scope.familySelected = function(u,f){
 						return $scope.user_cache_ctrl[u.id]['families'].indexOf(f) !== -1;
@@ -1699,6 +1755,51 @@
 					$scope.genreLookup = function(genre_id){
 						return $scope.lookup['genres'][genre_id];
 					};
+
+					$scope.getPerfs = function(e){
+
+						let output = [];
+						// console.log("getPerfs");
+
+
+						//todo: WTF am I trying to accomplish here?
+						//better than my old getPerfs filter thing I guess...
+
+						let e_p = alasql("select * from events_performances ep where ep.event_id = " + e.id);
+						$scope.metro_cache[e.metro_id]['performances'].forEach(function(p){
+							e_p.forEach(function(ep){
+								if(p.id === ep.performance_id){
+									output.push(p);
+								}
+							})
+						});
+
+						return output;
+					};
+
+					//slow as ballsack
+					$scope.getGenres = function(p){
+
+						let output = [];
+						// if(p.artistSongkick_id === 2352661) {
+						//console.log("getGenres", p);
+
+						let qry = "select a.id AS artist_id, a.name AS artist_name, g.id AS genre_id, g.name AS genre_name " +
+							"from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id JOIN " +
+							"artist_artistSongkick aas on a.id = aas.artist_id where aas.artistSongkick_id = " + p.artistSongkick_id;
+
+						let g_p = alasql(qry);
+						//console.log(g_p);
+						g_p.forEach(function (gp) {
+							output.push(gp.genre_name)
+						});
+						// }
+
+						return output;
+					};
+
+
+
 
 
 					//===========================================================================================
@@ -1756,10 +1857,10 @@
 					$scope.dateFilter= {};
 					//$scope.dateFilter.end = "";
 					//$scope.dateFilter.start = "";
-					 $scope.dateFilter.end =  '2019-04-04';
+					// $scope.dateFilter.end =  '2019-04-04';
 					// $scope.dateFilter.start = '2019-03-04';
 					$scope.dateFilter.start =  '2019-03-04';
-					// $scope.dateFilter.end = '2019-03-11';
+					$scope.dateFilter.end = '2019-03-11';
 					// $scope.raw_filename = "";
 					// $scope.areaDatesArtists_filename= "";
 
@@ -1875,7 +1976,7 @@
 						$http.post(url_local + req.url_postfix,req.body).then(function(res){
 							// make_request_local(req).then(function(events){
 							let events = res.data;
-							console.log("get_metro_events results",events);
+							console.log("get_metro_events results",JSON.parse(JSON.stringify(events)));
 							//console.log("$user_cache",user_cache);
 
 							// let events = [];
@@ -1977,7 +2078,7 @@
 							console.log("artist_search_payload",JSON.parse(JSON.stringify(artist_search_payload)));
 
 							$http.post(url_local + req.url_postfix,req.body).then(function(res){
-								console.log("$results",res.data);
+								console.log("$results",JSON.parse(JSON.stringify(res.data)));
 
 								let artist_artistSongkick = {};
 								let payloads = [];
@@ -1993,7 +2094,7 @@
 
 										artist_artistSongkick.artist_id = tuple.artist.id;
 										artist_artistSongkick.artistSongkick_id = tuple.artistSongkick_id;
- 										alasql("INSERT INTO artist_artistSongkick VALUES ( " + vlister(artist_artistSongkick)  + " )");
+										alasql("INSERT INTO artist_artistSongkick VALUES ( " + vlister(artist_artistSongkick)  + " )");
 
 
 										payload.artists.push(tuple.artist)
@@ -2018,17 +2119,25 @@
 								//todo: modify for multiple metro calls
 
 								// $scope.metro_cache[events[0].metro_id] = events;
-								$scope.metro_cache[events[0].metro_id] = alasql("select * from events;");
+								// $scope.metro_cache[events[0].metro_id] = alasql("select * from events;");
 
 								console.log("metro_cache",$scope.metro_cache);
-								console.log('events:',alasql("select * from events;"));
-								console.log('performances:',alasql("select * from performances;"));
-								console.log('events_performances:',alasql("select * from events_performances;"));
-								console.log('artist_artistSongkick:',alasql("select * from artist_artistSongkick;"));
+								// console.log('events:',alasql("select * from events;"));
+								// console.log('performances:',alasql("select * from performances;"));
+								// console.log('events_performances:',alasql("select * from events_performances;"));
+								// console.log('artist_artistSongkick:',alasql("select * from artist_artistSongkick;"));
 
-								let qry = "select * from events e JOIN events_performances ep on e.id = ep.event_id JOIN performances p on p.id = ep.performance_id";
-								console.log(qry,alasql(qry));
+								// let qry = "select p.displayName as perf_displayName, " +
+								// 	"from events e JOIN events_performances ep on e.id = ep.event_id JOIN performances p on p.id = ep.performance_id";
+								//
+								// $scope.metro_cache[events[0].metro_id] = alasql(qry);
 
+								//todo: (process_artists)
+								!$scope.metro_cache[events[0].metro_id] ? $scope.metro_cache[events[0].metro_id] = {} : {};
+
+								$scope.metro_cache[events[0].metro_id].events = alasql("select * from events;")
+								$scope.metro_cache[events[0].metro_id].performances = alasql("select * from performances;")
+								console.log($scope.metro_cache[events[0].metro_id]);
 								$scope.digestIt();
 
 							});//all
@@ -2308,7 +2417,7 @@
 					$scope.process_artists = function(results){
 
 						console.log("$process_artists");
-						console.log(results);
+						console.log(JSON.parse(JSON.stringify(results)));
 
 						//use this to print batches of resolved artists out to console
 						//in order to use as set_user_cache data
@@ -2409,6 +2518,37 @@
 						// 	"from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id";
 						// console.log("join artists with their genres",alasql(qry));
 
+
+						let register_artistSongkick_genres = function(){
+							console.log("register_artistSongkick_genres");
+
+							let qry1 = "select artistSongkick_id ,artist_id from artist_artistSongkick";
+							let artist_artistSongkick = alasql(qry1);
+
+							//console.log("artist_artistSongkick",artist_artistSongkick);
+
+							//todo:
+							$scope.metro_cache['9480'] = {};
+							$scope.metro_cache['9480'].artistSongkick_genres = {};
+
+							artist_artistSongkick.forEach(function(tuple){
+
+								//broke this into smaller pieces
+								// let qry2 = "select g.id AS genre_id, g.name AS genre_name " +
+								// 	"from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id JOIN " +
+								// 	"artist_artistSongkick aas on a.id = aas.artist_id where aas.artistSongkick_id = " + artistSongkick_id;
+
+								let qry2 = "select distinct g.id, g.name " +
+									" from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id" +
+									" where a.id = '"  + tuple.artist_id + "'";
+
+								//todo:
+								$scope.metro_cache['9480'].artistSongkick_genres[tuple.artistSongkick_id] = alasql(qry2)
+
+							})
+						};
+
+						register_artistSongkick_genres();
 					};
 
 					/**Get tracks for every playlist you throw at it {playlist_tracks_map}

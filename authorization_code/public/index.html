@@ -14,6 +14,7 @@
 
   <script src="bundle.js"></script>
   <script src="directives/x-directive.checkbox.js"></script>
+  <script src="directives/dirPagination.js"></script>
   <script src="all_genres2.js"></script>
 
   <script src="directives/x-directive.multiobject.js"></script>
@@ -299,26 +300,49 @@
         <div>
           <!--| hasGenre:filterGenre:user_cache-->
           <!--| limitTo:10-->
-          <div ng-repeat="e in metro_cache[global_metro.id]">
-            <div style="font-weight:bold">{{e.displayName}} @ {{e.venue.displayName}} on {{getEventDate(e)}}</div>
 
-            <!--todo: this displayName belongs to the performance, not the artist performing-->
-            <div>artists:
-              <div ng-repeat="p in e.performances | getPerfs:e track by $index">{{p.displayName}}
 
-                <!--<span ng-if="getGenres(p).length > 0">-->
-                <!--(<span style="font-style:italic" ng-repeat="g in getGenres(p)"> {{g}}</span>)-->
-                <!--</span>-->
-                (<span style="font-style:italic" ng-repeat="g in p.genres | getGenres:p track by $index"> {{g}}</span>)
-                <img style="max-width: 4em;" src="">
 
-                <!--todo: doesn't work (no index?)-->
-                {{$index}}
-                <span ng-hide="$index = getPerfs(e).length - 1">,</span>
+          <div ng-if="metro_cache[global_metro.id].events.length > 0">
+
+            <button ng-disabled="currentPage == 0" ng-click="currentPage=currentPage-1">
+              Previous
+            </button>
+            {{currentPage+1}}/{{numberOfPages()}}
+            <button ng-disabled="currentPage >= data.length/pageSize - 1" ng-click="currentPage=currentPage+1">
+              Next
+            </button>
+
+            <div  ng-repeat="e in metro_cache[global_metro.id].events | startFrom:currentPage*pageSize | limitTo:pageSize ">
+              <div style="font-weight:bold">{{e.displayName}} @ {{e.venue.displayName}} on {{getEventDate(e)}}</div>
+              <div>artists:
+
+                <!--todo: fun & dynamic, but impossible to do page turns with-->
+                <!--<div ng-repeat="p in e.performances | getPerfs:e track by $index">{{p.displayName}}-->
+                <div ng-repeat="p in getPerfs(e)">{{p.displayName}}
+
+                  <!--<span ng-if="getGenres(p).length > 0">-->
+                  <!--(<span style="font-style:italic" ng-repeat="g in getGenres(p)"> {{g}}</span>)-->
+                  <!--</span>-->
+                  <!--(<span style="font-style:italic" ng-repeat="g in p.genres | getGenres:p track by $index"> {{g}}</span>)-->
+
+                  <!--todo:-->
+                  <!--(<span style="font-style:italic" ng-repeat="g in getGenres(p)"> {{g}}</span>)-->
+                  (<span style="font-style:italic" ng-repeat="g in metro_cache[global_metro.id].artistSongkick_genres[p.artistSongkick_id]"> {{g.name}}</span>)
+                  <img style="max-width: 4em;" src="">
+
+                  <!--todo: doesn't work (no index?)-->
+                  {{$index}}
+                  <span ng-hide="$index = getPerfs(e).length - 1">,</span>
+                </div>
+                </span>
               </div>
-              </span>
-            </div>
-          </div>
+
+            </div><!--ngrepeat-->
+          </div><!--ngif-->
+
+
+
         </div>
 
       </div>

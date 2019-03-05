@@ -200,17 +200,18 @@ module.exports.search_artists = function(req, res){
 	let promises = [];
 
 
-
+	let tuple = {}
 	var searchReq =  function(options){
 	    return new Promise(function(done, fail) {
 	    	let op = JSON.parse(JSON.stringify(options));
 		    rp(options).then(function(res){
-			    // console.log(res);
+			  //  console.log(res);
 			    // console.log(op);
 			    //todo: in the future, probably need better checking on this
 			    //maybe some kind of memory system where, if there's an ambiguous artist name
 			    //and I make a correct link, I can save that knowledge to lean on later
-			    let tuple = {artistSongkick_id:op.artistSongkick_id};
+				tuple = {};
+			    tuple = {artistSongkick_id:op.artistSongkick_id};
 			    if(res.artists.items.length > 0){
 				    tuple.artist = res.artists.items[0]
 			    }
@@ -226,10 +227,21 @@ module.exports.search_artists = function(req, res){
 
 	req.body.perfTuples.forEach(function(tuple){
 		//spotify says it requires this, maybe rp is doing conversion for me? idk
+
 		tuple.displayName_clean =  tuple.displayName.replace(/\(US\)/g, ""); //%20
 		tuple.displayName_clean =  tuple.displayName_clean.replace(/[^a-zA-Z\s]/g, ""); //%20
 		//ex: 'Zoso – the Ultimate Led Zeppelin Experience'
 		//that's not a hyphen
+
+		options = {
+			uri: "",
+			headers: {
+				'User-Agent': 'Request-Promise',
+				"Authorization":'Bearer ' + req.body.token
+			},
+			json: true
+		};
+
 		options.uri = url_pre + tuple.displayName_clean  + url_suf;
 		options.artistSongkick_id = tuple.artistSongkick_id;
 		options.displayName_clean = tuple.displayName_clean;
@@ -246,7 +258,7 @@ module.exports.search_artists = function(req, res){
 
 	Promise.all(promises)
 		.then(function(results) {
-			//console.log(results);
+			//console.log(JSON.stringify(results,null,4));
 			console.log("FINISHED");
 			res.send(results);
 		}).catch(function(err){
