@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-  <title>Example of the Authorization Code flow with Spotify</title>
+  <title>TESTING</title>
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 
   <!--todo: does this go here exactly?-->
@@ -26,7 +26,12 @@
 
 
 <body>
+
+<image src="images/groups_bar.JPG"></image>
+
 <div class="container"  ng-app="showcase">
+
+
 
   <div id="login">
     <!--<h1>This is an example of the Authorization Code flow</h1>-->
@@ -53,6 +58,8 @@
     <!--</div>-->
     <!--</div>-->
 
+
+
     <div style="display:flex;flex-direction:row;">
 
 
@@ -74,21 +81,22 @@
     </div>
 
 
+
     <div style="display:flex;flex-direction:row;">
 
-      <button class="btn btn-default" id="obtain-new-token">Factory Token Refresh</button>
-      <button onclick="refreshToken()">refreshToken</button>
-      <button onclick="forceToken()">forceToken</button>
-      <button onclick="testAPI('playlistTracks')">testAPI playlistTracks</button>
-      <button onclick="testAPI('artist')">testAPI artist</button>
-      <button onclick="clean_cache()">clean_cache</button>
+      <!--<button class="btn btn-default" id="obtain-new-token">Factory Token Refresh</button>-->
+      <!--<button onclick="refreshToken()">refreshToken</button>-->
+      <!--<button onclick="forceToken()">forceToken</button>-->
+      <!--<button onclick="testAPI('playlistTracks')">testAPI playlistTracks</button>-->
+      <!--<button onclick="testAPI('artist')">testAPI artist</button>-->
+      <!--<button onclick="clean_cache()">clean_cache</button>-->
 
-      <!--<button onclick="top_artists()">artists</button>-->
+      <!--&lt;!&ndash;<button onclick="top_artists()">artists</button>&ndash;&gt;-->
 
-      <button onclick="load_playlists()">load_user_playlists</button>
-      <button onclick="load_playlists_select()">load_playlists_select</button>
+      <!--<button onclick="load_playlists()">load_user_playlists</button>-->
+      <!--<button onclick="load_playlists_select()">load_playlists_select</button>-->
 
-      <button onclick="search_artists()">search_artists</button>
+      <!--<button onclick="search_artists()">search_artists</button>-->
     </div>
 
     <div ng-controller="myCtrl">
@@ -117,15 +125,26 @@
         <button ng-click="get_all_tracks(global_user,user_cache_ctrl[global_user.id]['playlists'])">getAllTracks</button>
         <button ng-click="get_user_playlists(global_user)">get_user_playlists</button>
         <button ng-click="set_user_cache()">set_user_cache</button>
+        <button ng-click="playlist_create()">playlist_create</button>
+        <button ng-click="artist_topTracks()">artist_topTracks</button>
+        <button ng-click="playlist_add_tracks()">playlist_add_tracks</button>
         <button ng-click ="applyIt()">applyIt</button>
-        <button ng-click ="testPost()">testPost</button>
-        <div><button ng-click ="search_artists(artistSearch)">search_artists</button> <input ng-model="artistSearch"></div>
+        <!--<button ng-click ="testPost()">testPost</button>-->
+        <!--<div><button ng-click ="search_artists(artistSearch)">search_artists</button> <input ng-model="artistSearch"></div>-->
         <button class="btn btn-default" ng-click="testEndpoint()">testEndpoint</button>
       </div>
 
       <div>selected user: {{global_user.display_name}}</div>
 
       <div>select user:</div>
+
+      <div style="display:flex;flex-direction:row;" >
+        <!--<div> {{f}}</div>-->
+        <div ng-repeat="f in globalFamilies"> <div style="padding: .2em;border: 1px solid black;margin-right:.1em" ng-style="{background:familyColor_map[f]}" > {{f}}</div> </div>
+
+      </div>
+
+
       <div style="display:flex;flex-direction:row;">
 
         <div style="display:flex;flex-direction:column;">
@@ -305,16 +324,18 @@
 
           <div ng-if="metro_cache[global_metro.id].events.length > 0">
 
-            <button ng-disabled="currentPage == 0" ng-click="currentPage=currentPage-1">
-              Previous
-            </button>
-            {{currentPage+1}}/{{numberOfPages()}}
-            <button ng-disabled="currentPage >= data.length/pageSize - 1" ng-click="currentPage=currentPage+1">
-              Next
-            </button>
+            <div class="controlPages">
+              <button ng-disabled="currentPage == 0" ng-click="currentPage=currentPage-1">
+                Previous
+              </button>
+              {{currentPage+1}}/{{numberOfPages()}}
+              <button ng-disabled="currentPage >= data.length/pageSize - 1" ng-click="currentPage=currentPage+1">
+                Next
+              </button>
+            </div>
 
             <div  ng-repeat="e in metro_cache[global_metro.id].events | startFrom:currentPage*pageSize | limitTo:pageSize ">
-              <div style="font-weight:bold">{{e.displayName}} @ {{e.venue.displayName}} on {{getEventDate(e)}}</div>
+              <div style="font-weight:bold">{{e.displayName}} @ {{e.venue.displayName || 'NA'}} on {{getEventDate(e) || 'NA'}}</div>
               <div>artists:
 
                 <!--todo: fun & dynamic, but impossible to do page turns with-->
@@ -328,17 +349,29 @@
 
                   <!--todo:-->
                   <!--(<span style="font-style:italic" ng-repeat="g in getGenres(p)"> {{g}}</span>)-->
-                  (<span style="font-style:italic" ng-repeat="g in metro_cache[global_metro.id].artistSongkick_genres[p.artistSongkick_id]"> {{g.name}}</span>)
+                  (<span style="font-style:italic" ng-repeat="g in metro_cache[global_metro.id].artistSongkick_genres[p.artistSongkick_id]"
+                         ng-style="{color:familyColor_map[genreFam_map[g.name]]}"> {{g.name}},</span>)
                   <img style="max-width: 4em;" src="">
 
                   <!--todo: doesn't work (no index?)-->
-                  {{$index}}
-                  <span ng-hide="$index = getPerfs(e).length - 1">,</span>
+                  <!--{{$index}}-->
+                  <!--<span ng-hide="$index = getPerfs(e).length - 1">,</span>-->
                 </div>
                 </span>
               </div>
 
             </div><!--ngrepeat-->
+
+            <div class="controlPages">
+              <button ng-disabled="currentPage == 0" ng-click="currentPage=currentPage-1">
+                Previous
+              </button>
+              {{currentPage+1}}/{{numberOfPages()}}
+              <button ng-disabled="currentPage >= data.length/pageSize - 1" ng-click="currentPage=currentPage+1">
+                Next
+              </button>
+            </div>
+
           </div><!--ngif-->
 
 
@@ -367,31 +400,31 @@
 <!--</script>-->
 
 <script id="user-profile-template" type="text/x-handlebars-template">
-  <h1>Logged in as {{display_name}}</h1>
-  <div class="media">
-    <!--<div class="pull-left">-->
-    <!--<img class="media-object" width="150" src="{{images.0.url}}" />-->
+  <!--<h1>Logged in as {{display_name}}</h1>-->
+  <!--<div class="media">-->
+    <!--&lt;!&ndash;<div class="pull-left">&ndash;&gt;-->
+    <!--&lt;!&ndash;<img class="media-object" width="150" src="{{images.0.url}}" />&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+    <!--<div class="media-body">-->
+      <!--<dl class="dl-horizontal">-->
+        <!--<dt>Display name</dt><dd class="clearfix">{{display_name}}</dd>-->
+        <!--<dt>Id</dt><dd>{{id}}</dd>-->
+        <!--<dt>Email</dt><dd>{{email}}</dd>-->
+        <!--<dt>Spotify URI</dt><dd><a href="{{external_urls.spotify}}">{{external_urls.spotify}}</a></dd>-->
+        <!--<dt>Link</dt><dd><a href="{{href}}">{{href}}</a></dd>-->
+        <!--&lt;!&ndash;<dt>Profile Image</dt><dd class="clearfix"><a href="{{images.0.url}}">{{images.0.url}}</a></dd>&ndash;&gt;-->
+        <!--<dt>Country</dt><dd>{{country}}</dd>-->
+      <!--</dl>-->
     <!--</div>-->
-    <div class="media-body">
-      <dl class="dl-horizontal">
-        <dt>Display name</dt><dd class="clearfix">{{display_name}}</dd>
-        <dt>Id</dt><dd>{{id}}</dd>
-        <dt>Email</dt><dd>{{email}}</dd>
-        <dt>Spotify URI</dt><dd><a href="{{external_urls.spotify}}">{{external_urls.spotify}}</a></dd>
-        <dt>Link</dt><dd><a href="{{href}}">{{href}}</a></dd>
-        <!--<dt>Profile Image</dt><dd class="clearfix"><a href="{{images.0.url}}">{{images.0.url}}</a></dd>-->
-        <dt>Country</dt><dd>{{country}}</dd>
-      </dl>
-    </div>
-  </div>
+  <!--</div>-->
 </script>
 
 <script id="oauth-template" type="text/x-handlebars-template">
-  <h2>oAuth info</h2>
-  <dl class="dl-horizontal">
-    <dt>Access token</dt><dd class="text-overflow">{{access_token}}</dd>
-    <dt>Refresh token</dt><dd class="text-overflow">{{refresh_token}}></dd>
-  </dl>
+  <!--<h2>oAuth info</h2>-->
+  <!--<dl class="dl-horizontal">-->
+    <!--<dt>Access token</dt><dd class="text-overflow">{{access_token}}</dd>-->
+    <!--<dt>Refresh token</dt><dd class="text-overflow">{{refresh_token}}></dd>-->
+  <!--</dl>-->
 </script>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>

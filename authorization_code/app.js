@@ -48,6 +48,13 @@ app.post("/get_artists",spotify["get_artists"]);
 
 app.post("/playlist_tracks",spotify["playlist_tracks"]);
 
+app.post("/playlist_create",spotify["playlist_create"]);
+
+app.post("/artist_topTracks",spotify["artist_topTracks"]);
+
+app.post("/playlist_add_tracks",spotify["playlist_add_tracks"]);
+
+
 // for(let key in songkick){
 //     let type = songkick[key]['type']
 //     switch(type){

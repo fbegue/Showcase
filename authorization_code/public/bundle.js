@@ -1859,8 +1859,8 @@
 					//$scope.dateFilter.start = "";
 					// $scope.dateFilter.end =  '2019-04-04';
 					// $scope.dateFilter.start = '2019-03-04';
-					$scope.dateFilter.start =  '2019-03-04';
-					$scope.dateFilter.end = '2019-03-11';
+					$scope.dateFilter.start =  '2019-03-11';
+					$scope.dateFilter.end = '2019-04-11';
 					// $scope.raw_filename = "";
 					// $scope.areaDatesArtists_filename= "";
 
@@ -1891,6 +1891,7 @@
 						var d = date.getUTCDate();
 						var y  = date.getFullYear();
 						var day = date.getUTCDay();
+
 						var newDate = weekday[day] + ", " + m + "-" + d + "-" + y
 						return newDate;
 					};
@@ -2149,6 +2150,66 @@
 
 					//===========================================================================================
 					// SPOTIFY RECORDS
+
+
+					$scope.playlist_add_tracks = function(){
+						let req = {};
+						req.url_postfix = "playlist_add_tracks";
+						// req.type = "POST";
+						req.body = {};
+
+						req.body.playlist = {id:"3xTsy6eE5I1R8jC1nUdHjV"};
+						req.body.tracks = [
+							{id:"6QUngYwZ65et2ye7Bj85EK"},
+							{id:"2t5GyUfFoZg3E8ak3i7dVP"},
+							{id:"6SgQIoLn8kpu8J4wfwGWy8"}
+						];
+
+						let params = getHashParams();
+						req.body.token = params.access_token;
+
+						$http.post(url_local + req.url_postfix,req.body).then(function(res){
+
+							console.log("playlist_create",res);
+
+						});
+					};
+
+					$scope.playlist_create = function(){
+						let req = {};
+						req.url_postfix = "playlist_create";
+						// req.type = "POST";
+						req.body = {};
+
+						req.body.user = {id:"dacandyman01"};
+						//todo: can't create on anyone's account but my own (makes sense)
+						// req.body.user = $scope.global_user;
+
+
+						let params = getHashParams();
+						req.body.token = params.access_token;
+
+						$http.post(url_local + req.url_postfix,req.body).then(function(res){
+
+							console.log("playlist_create",res);
+
+						});
+					};
+
+					$scope.artist_topTracks = function(){
+						let req = {};
+						req.url_postfix = "artist_topTracks";
+						// req.type = "POST";
+						req.body = {};
+						req.body.artist = {id:"450o9jw6AtiQlQkHCdH6Ru"};
+						let params = getHashParams();
+						req.body.token = params.access_token;
+
+						$http.post(url_local + req.url_postfix,req.body).then(function(res){
+							console.log("artist_topTracks",res);
+
+						});
+					};
 
 
 					/**
@@ -2528,9 +2589,9 @@
 							//console.log("artist_artistSongkick",artist_artistSongkick);
 
 							//todo:
-							$scope.metro_cache['9480'] = {};
-							$scope.metro_cache['9480'].artistSongkick_genres = {};
-
+							$scope.metro_cache[$scope.global_metro.id] = {};
+							$scope.metro_cache[$scope.global_metro.id].artistSongkick_genres = {};
+							$scope.metro_cache[$scope.global_metro.id].artistSongkick_artist = {};
 							artist_artistSongkick.forEach(function(tuple){
 
 								//broke this into smaller pieces
@@ -2542,8 +2603,11 @@
 									" from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id" +
 									" where a.id = '"  + tuple.artist_id + "'";
 
+								let qry3 = "select * from artists a where id = '"  + tuple.artist_id + "'";
+
 								//todo:
-								$scope.metro_cache['9480'].artistSongkick_genres[tuple.artistSongkick_id] = alasql(qry2)
+								$scope.metro_cache[$scope.global_metro.id].artistSongkick_genres[tuple.artistSongkick_id] = alasql(qry2);
+								$scope.metro_cache[$scope.global_metro.id].artistSongkick_artist[tuple.artistSongkick_id] = alasql(qry3);
 
 							})
 						};

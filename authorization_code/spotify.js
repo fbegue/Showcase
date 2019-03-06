@@ -47,6 +47,152 @@ var _request = function(req){
 //let op = JSON.parse(JSON.stringify(options));
 
 
+var searchReq =  function(options){
+	return new Promise(function(done, fail) {
+		let op = JSON.parse(JSON.stringify(options));
+		rp(options).then(function(res){
+
+		})
+	})
+};
+
+
+//todo: haven't tested yet
+module.exports.playlist_add_artist_tracks =  function(req,res){
+	return new Promise(function(done, fail) {
+
+		console.log(req.body.playlist);
+		console.log(req.body.artist);
+		console.log(req.body.max);
+
+		let local = {body:{}};
+		local.body.artist = req.body.artist;
+		local.body.local = true;
+
+		module.exports.artist_topTracks(local).then(function(result1){
+			console.log("result1",result1);
+			let local2 = {body:{}};
+			local2.body.tracks = result1.tracks;
+			local2.body.playlist = req.body.playlist;
+			local2.body.local = true;
+			module.exports.playlist_add_tracks(local2).then(function(result2){
+
+				console.log("result2",result2);
+
+			})
+		})
+	})
+};
+
+
+//sometimes this seems to just run 1x, 2x more randomly?
+
+module.exports.playlist_add_tracks =  function(req,res){
+	return new Promise(function(done, fail) {
+
+		console.log(req.body.playlist);
+		console.log(req.body.tracks);
+
+		let uri =  "https://api.spotify.com/v1/playlists/" + req.body.playlist.id + "/tracks?uris=";
+		// let track_uri = "spotify:track:";
+		let track_uri = "spotify%3Atrack%3A";
+		let options = {
+			method:"POST",
+			uri: uri,
+			headers: {
+				'User-Agent': 'Request-Promise',
+				"Authorization":'Bearer ' + req.body.token,
+				"Content-Type":"application/json"
+			},
+			json: true
+		};
+
+		req.body.tracks.forEach(function(track,i){
+			options.uri += track_uri + track.id;
+			i !== req.body.tracks.length - 1 ? options.uri =  options.uri + "%2C" :{}
+		});
+
+		console.log(options.uri);
+
+		rp(options).then(function(result){
+			console.log("res",result);
+
+			if(req.body.local){
+				done(result);
+			}
+
+			//res.send(result)
+
+
+		}).catch(function(err){
+			console.log(err);
+		})
+
+	})
+};
+
+module.exports.artist_topTracks =  function(req,res){
+	return new Promise(function(done, fail) {
+
+		console.log(req.body.artist);
+		console.log(req.body.local);
+
+		let uri =  "https://api.spotify.com/v1/artists/" + req.body.artist.id + "/top-tracks?country=US";
+		let options = {
+			method:"GET",
+			uri: uri,
+			headers: {
+				'User-Agent': 'Request-Promise',
+				"Authorization":'Bearer ' + req.body.token,
+				// "Content-Type":"application/json"
+			},
+			json: true
+		};
+
+		rp(options).then(function(result){
+			console.log("result",result);
+			if(req.body.local){
+				done(result);
+			}
+			//res.send(result);
+
+		}).catch(function(err){
+			console.log(err);
+		})
+	})
+};
+
+module.exports.playlist_create =  function(req,res){
+	return new Promise(function(done, fail) {
+
+		console.log(req.body.user);
+
+		let uri = "https://api.spotify.com/v1/users/" + req.body.user.id + "/playlists";
+			let options = {
+				method:"POST",
+				uri: uri,
+				headers: {
+					'User-Agent': 'Request-Promise',
+					"Authorization":'Bearer ' + req.body.token,
+					"Content-Type":"application/json"
+				},
+				json: true
+			};
+
+		options.body = {
+			"name": "New Playlist Test1",
+			"description": "New Playlist Test1 description",
+			"public": false
+		};
+
+		rp(options).then(function(res){
+			console.log("res",res);
+		}).catch(function(err){
+			console.log(err);
+		})
+	})
+};
+
 module.exports.playlist_tracks = function(req,res){
 
 	return new Promise(function(done, fail) {
@@ -202,27 +348,27 @@ module.exports.search_artists = function(req, res){
 
 	let tuple = {}
 	var searchReq =  function(options){
-	    return new Promise(function(done, fail) {
-	    	let op = JSON.parse(JSON.stringify(options));
-		    rp(options).then(function(res){
-			  //  console.log(res);
-			    // console.log(op);
-			    //todo: in the future, probably need better checking on this
-			    //maybe some kind of memory system where, if there's an ambiguous artist name
-			    //and I make a correct link, I can save that knowledge to lean on later
+		return new Promise(function(done, fail) {
+			let op = JSON.parse(JSON.stringify(options));
+			rp(options).then(function(res){
+				//  console.log(res);
+				// console.log(op);
+				//todo: in the future, probably need better checking on this
+				//maybe some kind of memory system where, if there's an ambiguous artist name
+				//and I make a correct link, I can save that knowledge to lean on later
 				tuple = {};
-			    tuple = {artistSongkick_id:op.artistSongkick_id};
-			    if(res.artists.items.length > 0){
-				    tuple.artist = res.artists.items[0]
-			    }
-			    else{
-				    tuple.artistName = op.displayName;
-				    tuple.error = true;
-				    tuple.artistSearch = op.displayName_clean;
-			    }
-		    	done(tuple)
-		    })
-	    })
+				tuple = {artistSongkick_id:op.artistSongkick_id};
+				if(res.artists.items.length > 0){
+					tuple.artist = res.artists.items[0]
+				}
+				else{
+					tuple.artistName = op.displayName;
+					tuple.error = true;
+					tuple.artistSearch = op.displayName_clean;
+				}
+				done(tuple)
+			})
+		})
 	};
 
 	req.body.perfTuples.forEach(function(tuple){
