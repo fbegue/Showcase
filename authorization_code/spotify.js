@@ -61,20 +61,25 @@ var searchReq =  function(options){
 module.exports.playlist_add_artist_tracks =  function(req,res){
 	return new Promise(function(done, fail) {
 
+		console.log(req.body.token);
 		console.log(req.body.playlist);
 		console.log(req.body.artist);
 		console.log(req.body.max);
 
 		let local = {body:{}};
-		local.body.artist = req.body.artist;
+		Object.assign(local.body,req.body);
 		local.body.local = true;
 
 		module.exports.artist_topTracks(local).then(function(result1){
 			console.log("result1",result1);
+
 			let local2 = {body:{}};
+			Object.assign(local2.body,req.body);
+			// local2.body.playlist = req.body.playlist;
+
 			local2.body.tracks = result1.tracks;
-			local2.body.playlist = req.body.playlist;
 			local2.body.local = true;
+
 			module.exports.playlist_add_tracks(local2).then(function(result2){
 
 				console.log("result2",result2);

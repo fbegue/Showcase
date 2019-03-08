@@ -444,6 +444,8 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
 			results.forEach(function(result){
 				result.events.forEach(function(event){
+
+					console.log(JSON.parse(JSON.stringify(event)));
 					if(ids[event.id]){
 
 					}else{

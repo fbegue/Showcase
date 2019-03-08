@@ -27,7 +27,8 @@
 
 <body>
 
-<image src="images/groups_bar.JPG"></image>
+<!--todo-->
+<!--<image src="images/groups_bar.JPG"></image>-->
 
 <div class="container"  ng-app="showcase">
 
@@ -128,6 +129,7 @@
         <button ng-click="playlist_create()">playlist_create</button>
         <button ng-click="artist_topTracks()">artist_topTracks</button>
         <button ng-click="playlist_add_tracks()">playlist_add_tracks</button>
+        <button ng-click="playlist_add_artist_tracks()">playlist_add_artist_tracks</button>
         <button ng-click ="applyIt()">applyIt</button>
         <!--<button ng-click ="testPost()">testPost</button>-->
         <!--<div><button ng-click ="search_artists(artistSearch)">search_artists</button> <input ng-model="artistSearch"></div>-->
@@ -324,6 +326,7 @@
 
           <div ng-if="metro_cache[global_metro.id].events.length > 0">
 
+            <div  style="display:flex;flex-direction:row;">
             <div class="controlPages">
               <button ng-disabled="currentPage == 0" ng-click="currentPage=currentPage-1">
                 Previous
@@ -332,6 +335,10 @@
               <button ng-disabled="currentPage >= data.length/pageSize - 1" ng-click="currentPage=currentPage+1">
                 Next
               </button>
+            </div>
+
+              <button ng-click="generatePlaylist">Generate Playlist from events</button>
+              <div>{{}}</div>
             </div>
 
             <div  ng-repeat="e in metro_cache[global_metro.id].events | startFrom:currentPage*pageSize | limitTo:pageSize ">

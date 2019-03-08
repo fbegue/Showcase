@@ -486,6 +486,7 @@
 								//console.log("object");
 								return '@'+JSON.stringify(value)
 							}
+							// else if(value === null){return "test"}
 							else{
 								return "'" + value + "'"
 							}
@@ -502,14 +503,28 @@
 						return defStr;
 					};
 
+
+					//todo: trying to gurantee property order on insert? should probably just make this an array or something
+					//I think this is working but it probably shouldn't be?
+					let temp = {};
 					let reduce = function(def,record){
-						let dkeys = Object.keys(def);
-						let rkeys = Object.keys(record);
+						// console.log(def);
+						// console.log(record);
+						// console.log(dkeys);
+						// console.log(rkeys);
+
+						temp = {};
+						let dkeys = Object.getOwnPropertyNames(def);
+						let rkeys = Object.getOwnPropertyNames(record)
+
+						Object.assign(temp,record);
 						rkeys.forEach(function(rk){
-							if(dkeys.indexOf(rk) === -1){
 								delete record[rk]
-							}
 						});
+						dkeys.forEach(function(df){
+								record[df] = temp[df]
+						});
+
 						return record;
 					};
 
@@ -521,12 +536,14 @@
 
 						eventDef = {
 							id:"number",
+							metro_id:"number",
 							displayName:"string",
 							type:"string",
-							uri:"string",
-							start:"string",
 							location:"string",
-							metro_id:"number"
+							// start:"string",
+							date:"string",
+							datetime:"string",
+							uri:"string",
 						};
 
 						performanceDef = {
@@ -605,12 +622,13 @@
 
 						let event_ex = {
 							id:36490829,
+							metro_id:9480,
 							displayName:'Beppe Gambetta at United Church of Granville (February 3, 2019)',
-							location:'Granville, OH, US',
-							start:null,
 							type:'Concert',
+							location:'Granville, OH, US',
+							date:"2019-04-11",
+							datetime:"2019-04-11T19:30:00-0400",
 							uri:'http://www.songkick.com/concerts/36490829-beppe-gambetta-at-united-church-of-granville?utm_source=47817&utm_medium=partner',
-							metro_id:9480
 						};
 
 						alasql("CREATE TABLE events (" + eventDefStr + ")");
@@ -1759,7 +1777,7 @@
 					$scope.getPerfs = function(e){
 
 						let output = [];
-						// console.log("getPerfs");
+						//console.log("getPerfs",e);
 
 
 						//todo: WTF am I trying to accomplish here?
@@ -1860,7 +1878,8 @@
 					// $scope.dateFilter.end =  '2019-04-04';
 					// $scope.dateFilter.start = '2019-03-04';
 					$scope.dateFilter.start =  '2019-03-11';
-					$scope.dateFilter.end = '2019-04-11';
+					$scope.dateFilter.end =  '2019-03-12';
+					//$scope.dateFilter.end = '2019-04-11';
 					// $scope.raw_filename = "";
 					// $scope.areaDatesArtists_filename= "";
 
@@ -1886,15 +1905,34 @@
 						// weekday_full[5] = "Friday";
 						// weekday_full[6] = "Saturday";
 
-						var date = new Date(event.start);
-						var m = date.getUTCMonth() + 1;
-						var d = date.getUTCDate();
-						var y  = date.getFullYear();
-						var day = date.getUTCDay();
+						let ret = {};
+						if(event.start){
+							let haveDate = (event.start.datetime ? event.start.datetime : event.start.date);
+							var date = new Date(haveDate);
 
-						var newDate = weekday[day] + ", " + m + "-" + d + "-" + y
-						return newDate;
-					};
+							console.log("$date",date);
+							var m = date.getUTCMonth() + 1;
+							var d = date.getUTCDate();
+							var y  = date.getFullYear();
+							var day = date.getUTCDay();
+
+							console.log(m);
+							console.log(d);
+							console.log(y);
+							console.log(day);
+
+							if(event.start.datetime){
+
+							}
+							else if(event.start.date){
+
+							}
+
+							var day = date.getUTCDay();
+							ret = weekday[day] + ", " + m + "-" + d + "-" + y
+						}
+						return ret;
+					}
 
 					var write_schedule = function(results){
 						results.forEach(function(result){
@@ -2057,11 +2095,13 @@
 
 								//console.log(event);
 
-								event.location ? event.location = event.location.city :  event.location = "not specified";
-								event.start = event.start.datetime;
+								event.location ? event.location = event.location.city :  event.location = "NA";
+								event.datetime = event.start.datetime
+								event.date =  event.start.date;
 
+								//console.log("1",JSON.parse(JSON.stringify(event)));
 								reduce(eventDef,event);
-								//console.log(vlister(event));
+								//console.log("2",JSON.parse(JSON.stringify(event)));
 
 								alasql("INSERT INTO events VALUES ( " + vlister(event)  + " )");
 
@@ -2150,6 +2190,27 @@
 
 					//===========================================================================================
 					// SPOTIFY RECORDS
+
+
+					$scope.playlist_add_artist_tracks = function(){
+						let req = {};
+						req.url_postfix = "playlist_add_artist_tracks";
+						// req.type = "POST";
+						req.body = {};
+
+						//todo: parameterize playlist, artist
+						req.body.playlist = {id:"3xTsy6eE5I1R8jC1nUdHjV"};
+						req.body.artist = {id:"450o9jw6AtiQlQkHCdH6Ru"};
+
+						let params = getHashParams();
+						req.body.token = params.access_token;
+
+						$http.post(url_local + req.url_postfix,req.body).then(function(res){
+
+							console.log("playlist_create",res);
+
+						});
+					};
 
 
 					$scope.playlist_add_tracks = function(){
