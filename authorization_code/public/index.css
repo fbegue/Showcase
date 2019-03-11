@@ -26,6 +26,24 @@
     background: #cac3c3 !important;
 }
 
+.famButton{
+    padding: .2em;
+    border: 1px solid black;
+    margin-right:.1em;
+    cursor:pointer;
+}
+
+.noEventFamily{
+    background: #5d5959;
+    color: white;
+}
+
+.famSelect{
+opacity:1
+}
+.famUnSelect{
+    opacity:.7;
+}
 
 
 /*fun little card flipping thing*/
