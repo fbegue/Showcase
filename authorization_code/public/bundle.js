@@ -1493,14 +1493,34 @@
 
 
 					$scope.wikiQry = "Wynchester"
-					$scope.searchWiki = function(keyword){
+					$scope.searchWiki = function(expression){
 
 						//no content fields specified
 						//https://en.wikipedia.org/w/api.php?action=query&format=jsonfm&formatversion=2&titles=Wynchester
 
 						//i'm feeling lucky? just go to whatever page has that title
+						expression = expression.replace()
+
+						let code_prefix = function(exp){
+							//let exp = "Guns N' Roses";
+							//result: Guns_N%27_Roses
+
+							//wiki likes _ for spaces
+							exp = exp.replace(/\s/g,'_');
+
+							//https://www.w3schools.com/tags/ref_urlencode.asp
+							exp = encodeURI(exp);
+
+							//not handling apostrophes/single quotes?
+							exp = exp.replace("'","%27");
+							return exp;
+						};
+
+						let url = "https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=jsonfm&formatversion=2&titles=" + code_prefix(expression) + "&format=json";
+						console.log(url);
+						console.log(code_prefix(expression));
 						$.ajax({
-							url: "https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=jsonfm&formatversion=2&titles=" + keyword + "&format=json",
+							url: url,
 							dataType: "jsonp",
 							success: function(response) {
 
@@ -1511,7 +1531,10 @@
 								//todo: every entry I care about will have used the correct template? maybe..
 
 								let infoStr = "Infobox musical artist"
-								let pat = /genre\s*=(.*?)\\n/
+								//let pat = /genre\s*=(.*?)\\n/
+								let pat = /genre\s*=(.*)/
+
+								//let genres = temp1.match(/genre\s*=(.*)/)
 								if(content.indexOf(infoStr) !== -1){
 									console.log("matched infobox",content);
 									let genres = content.match(pat);
