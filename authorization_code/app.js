@@ -40,7 +40,11 @@ app.use(bodyParser.urlencoded({
 
 //app.use(cookieParser());
 
-app.post("/get_metro_events",songkick["get_metro_events"]);
+
+//other
+app.post("/getWikiPage",spotify["getWikiPage"]);
+
+//spotify
 
 app.post("/search_artists",spotify["search_artists"]);
 
@@ -55,6 +59,14 @@ app.post("/artist_topTracks",spotify["artist_topTracks"]);
 app.post("/playlist_add_tracks",spotify["playlist_add_tracks"]);
 
 app.post("/playlist_add_artist_tracks",spotify["playlist_add_artist_tracks"]);
+
+//songkick
+
+app.post("/get_metro_events",songkick["get_metro_events"]);
+
+
+//todo: forget why this wasn't working
+
 // for(let key in songkick){
 //     let type = songkick[key]['type']
 //     switch(type){

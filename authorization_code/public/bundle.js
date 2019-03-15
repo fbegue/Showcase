@@ -459,6 +459,8 @@
 					console.log("myCtrl");
 					$scope.sortType = "genreGroup"
 
+					let url_local = 'http://localhost:8888/';
+
 					//===========================================================================================
 					//DB SETUP AND TESTING
 
@@ -1492,91 +1494,33 @@
 					};
 
 
-					$scope.wikiQry = "Wynchester"
-					$scope.searchWiki = function(expression){
+					//$scope.wikiQry = "Wynchester"
+					$scope.wikiQry = "Guns N' Roses"
 
-						//no content fields specified
-						//https://en.wikipedia.org/w/api.php?action=query&format=jsonfm&formatversion=2&titles=Wynchester
-
-						//i'm feeling lucky? just go to whatever page has that title
-						expression = expression.replace()
-
-						let code_prefix = function(exp){
-							//let exp = "Guns N' Roses";
-							//result: Guns_N%27_Roses
-
-							//wiki likes _ for spaces
-							exp = exp.replace(/\s/g,'_');
-
-							//https://www.w3schools.com/tags/ref_urlencode.asp
-							exp = encodeURI(exp);
-
-							//not handling apostrophes/single quotes?
-							exp = exp.replace("'","%27");
-							return exp;
-						};
-
-						let url = "https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=jsonfm&formatversion=2&titles=" + code_prefix(expression) + "&format=json";
-						console.log(url);
-						console.log(code_prefix(expression));
-						$.ajax({
-							url: url,
-							dataType: "jsonp",
-							success: function(response) {
-
-								console.log("response",response);
-								//don't know what n pages or n revisions means as of yet
-
-								let content = response.query['pages'][0]['revisions'][0]['content'].toString();
-								//todo: every entry I care about will have used the correct template? maybe..
-
-								let infoStr = "Infobox musical artist"
-								//let pat = /genre\s*=(.*?)\\n/
-								let pat = /genre\s*=(.*)/
-
-								//let genres = temp1.match(/genre\s*=(.*)/)
-								if(content.indexOf(infoStr) !== -1){
-									console.log("matched infobox",content);
-									let genres = content.match(pat);
-									console.log(genres);
-								}
-
-								// if (response.query.searchinfo.totalhits === 0) {
-								// 	console.error(response);
-								// }
-								// else {
-								// 	console.log(response);
-								// }
-							},
-							error: function () {
-								alert("Error retrieving search results, please refresh the page");
+					$scope.getWikiPage = function(expression){
+						return new Promise(function(done, fail) {
+							var req = {};
+							req.type = "POST";
+							req.url_postfix = "getWikiPage";
+							let params = getHashParams();
+							req.body = {
+								expression:expression,
+								token:params.access_token
 							}
 
-						});
+							$http.post(url_local + req.url_postfix,req.body).then(function(res){
 
-						//https://www.mediawiki.org/wiki/API:Query
-						//for searching
+								console.log(res);
+								done(res);
 
-						// $.ajax({
-						// 	 url: "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=" + keyword + "&prop=info&inprop=url&utf8=&format=json",
-						// 	dataType: "jsonp",
-						// 	success: function(response) {
-						// 		console.log(response.query);
-						// 		if (response.query.searchinfo.totalhits === 0) {
-						// 			console.error(response);
-						// 		}
-						// 		else {
-						// 			console.log(response);
-						// 		}
-						// 	},
-						// 	error: function () {
-						// 		alert("Error retrieving search results, please refresh the page");
-						// 	}
-						//
-						// });
+							}).catch(function(err){
+								console.log(err);
+								fail(err)
+
+							})
+						})
 
 					};
-
 
 					all_genres.forEach(function(t){
 						t.family.forEach(function(f){
@@ -1608,7 +1552,7 @@
 						});
 					};
 
-					let url_local = 'http://localhost:8888/';
+
 
 					//depreciated
 					var make_request_local =  function(payload){
@@ -2748,22 +2692,29 @@
 						//create a map of unique genres and their artists
 
 						let unique_genre_artist_map = {};
+						let no_genre_artists = [];
+
 						all_artists.forEach(function(ar){
 
 							//todo: null sometimes? hows that happen exactly..?
 							if(ar){
-								ar.genres.forEach((g)=>{
-									if(!unique_genre_artist_map[g]){
-										unique_genre_artist_map[g] = {artists:[]}
-									}
-									if(unique_genre_artist_map[g].artists.indexOf(ar) === -1){
-										unique_genre_artist_map[g].artists.push(ar);
-									}
-								});
+
+								if(ar.genres.length > 0){
+									ar.genres.forEach((g)=>{
+										if(!unique_genre_artist_map[g]){
+											unique_genre_artist_map[g] = {artists:[]}
+										}
+										if(unique_genre_artist_map[g].artists.indexOf(ar) === -1){
+											unique_genre_artist_map[g].artists.push(ar);
+										}
+									});
+								}
+								else{
+									no_genre_artists.push(ar);
+								}
 
 								//we only needs keys included in the def in the next loop
 								//so destructing ar is OK
-
 
 								reduce(artistDef, ar);
 								let varchar_keys = ["name"];
@@ -2781,11 +2732,11 @@
 						let artist_genre = {};
 						let genre = {};
 						let genreInd = 0;
+						let no_family = [];
+
+
 
 						//insert each genre, artist_genre and UNIQUE artist into their respective tables
-						//console.log("here");
-
-						let no_family = [];
 						for(let key in unique_genre_artist_map){
 							//console.log("here");
 							genre = {};
@@ -2799,46 +2750,8 @@
 								no_family.push(genre)
 							}
 
-
 							$scope.lookup['genres'][genre.id] = key;
 							alasql("INSERT INTO genres VALUES ( " + vlister(genre)  + " )");
-
-							//todo: attempting to register best-guess genres into families
-							let registerGenre = function(genre){
-								if(!$scope.genreFam_map[genre.name]){
-									//console.log("$here",genre.name);
-									let pat = /(\w+)/g;
-									let words = genre.name.match(pat);
-									//console.log(words);
-									for(var x=0; x < words.length; x++){
-
-										// if the first word of the genre is the name of a family, put it in there
-										// ex: 'folk pop'
-										if(globalFamilies.indexOf(words[0]) !== -1){
-											//	console.log("true0");
-											$scope.genreFam_map[genre.name] = [words[0]];
-											$scope.familyGenre_map[words[0]].push(genre.name);
-											//console.log($scope.genreFam_map);
-											//console.log($scope.familyGenre_map);
-										}
-										else if(globalFamilies.indexOf(words[1]) !== -1){
-											$scope.genreFam_map[genre.name] = [words[1]];
-											$scope.familyGenre_map[words[1]].push(genre.name);
-											//console.log($scope.genreFam_map);
-											//console.log($scope.familyGenre_map);
-										}
-										else if(globalFamilies.indexOf(words[2]) !== -1){
-											//console.log("true2");
-											$scope.genreFam_map[genre.name] = [words[2]];
-											$scope.familyGenre_map[words[2]].push(genre.name);
-											//console.log($scope.genreFam_map);
-											//console.log($scope.familyGenre_map);
-										}
-									}
-								}
-							};
-
-							registerGenre(genre)
 
 							//console.log(alasql("select * from  genres"));
 
@@ -2860,7 +2773,129 @@
 								// 	inserted_artists.push(ar.id)
 								// }
 							});
-						}
+
+						}// key in unique_genre_artist_map
+
+						//registering genres that I don't recognize in my master genreFam_map
+						// into families by taking my best guess given the words in the genre
+
+						//todo: shouldn't this also modify the genre db entry?
+
+						let registerGenre = function(genre){
+							//if(!$scope.genreFam_map[genre.name]){
+							//console.log("$here",genre.name);
+							let pat = /(\w+)/g;
+							let words = genre.name.match(pat);
+							//console.log(words);
+							for(var x=0; x < words.length; x++){
+
+								// if the first word of the genre is the name of a family, put it in there
+								// ex: 'folk pop'
+								if(globalFamilies.indexOf(words[0]) !== -1){
+									//	console.log("true0");
+									$scope.genreFam_map[genre.name] = [words[0]];
+									$scope.familyGenre_map[words[0]].push(genre.name);
+									return true;
+									//console.log($scope.genreFam_map);
+									//console.log($scope.familyGenre_map);
+								}
+								else if(globalFamilies.indexOf(words[1]) !== -1){
+									$scope.genreFam_map[genre.name] = [words[1]];
+									$scope.familyGenre_map[words[1]].push(genre.name);
+									return true;
+									//console.log($scope.genreFam_map);
+									//console.log($scope.familyGenre_map);
+								}
+								else if(globalFamilies.indexOf(words[2]) !== -1){
+									//console.log("true2");
+									$scope.genreFam_map[genre.name] = [words[2]];
+									$scope.familyGenre_map[words[2]].push(genre.name);
+									return true;
+									//console.log($scope.genreFam_map);
+									//console.log($scope.familyGenre_map);
+								}
+								else{
+									return false;
+								}
+							}
+							//}
+						};
+
+						//unique_genre_artist_map (genres to their artists that came back from spotify)
+						//but the genre that came back wasn't in our master list genre->family map
+						no_family.forEach(function(genre){
+							registerGenre(genre);
+						});
+
+
+						//all_artists who didn't has a spotify result of genres:[]
+						//have been inserted into the artist table, but don't have they're
+						//newly facted genres or artist-genre associations yet
+
+						let wikiQueries = [];
+						no_genre_artists.forEach(function(ar){
+							wikiQueries.push($scope.getWikiPage(ar))
+						});
+
+						Promise.all(wikiQueries).then(function(results){
+							console.log("$results",results);
+							let tuples = []
+							results.forEach(function(r){tuples.push(r.data)});
+
+							tuples.forEach(function(t){
+								if(!(t.facts.length === 0)){
+									t.facts.forEach(function(f){
+										//f = "flamenco"
+
+										//a fact that came back matches a genre we have
+										if($scope.genreFam_map[f]){
+
+											//we've already inserted these genres above, right?
+
+
+											let genres = alasql("select * from genres");
+											console.log(genres);
+
+											let qry = "select id from genres where name = '" + f +  "'";
+											console.log(qry);
+											let genre_id = alasql(qry);
+											console.log("$f",f);
+											console.log(genre_id);
+
+											//if we couldn't find that genre, assign new artist_genre a new ind and insert
+											//that genre. otherwise, just create the new record in artist_genre with the ind we found
+											artist_genre = {};
+											artist_genre.artist_id = t.expression.id;
+
+											if(genre_id.length ===0 ){
+												++genreInd;
+
+												genre = {};
+												genre.id = genreInd;
+												genre.name = f;
+												genre.family = $scope.genreFam_map[f];
+												alasql("INSERT INTO genres VALUES ( " + vlister(genre)  + " )");
+
+												artist_genre.genre_id = genreInd;
+												console.log("$artist_genre",artist_genre);
+												alasql("INSERT INTO artists_genres VALUES ( " + vlister(artist_genre)  + " )");
+
+											}else{
+												artist_genre.genre_id = genre_id[0].id;
+												console.log("$artist_genre",artist_genre);
+												alasql("INSERT INTO artists_genres VALUES ( " + vlister(artist_genre)  + " )");
+											}
+										}
+									});
+								}
+							})
+
+							//todo: used to be at very bottom of process artists
+							//.................................
+
+
+						});//promise.all
+
 
 						console.log("inserted_artists",inserted_artists.length);
 
@@ -2908,10 +2943,13 @@
 
 						register_artistSongkick_genres();
 
-						//todo:
+						//todo: we've introduced an async component into process_artists
+						//so until we wait for that to finish, this binding here won't include that
+
 						let bigList=  "select * from artists_genres ag JOIN genres g on ag.genre_id = g.id";
 						$scope.metro_cache[$scope.global_metro.id].artist_genres =  alasql(bigList);
 						///console.log("$biglist",$scope.metro_cache[$scope.global_metro.id].artist_genres);
+
 					};
 
 					/**Get tracks for every playlist you throw at it {playlist_tracks_map}

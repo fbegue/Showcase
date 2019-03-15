@@ -56,6 +56,220 @@ var searchReq =  function(options){
 	})
 };
 
+//todo: for actual searching
+
+//https://www.mediawiki.org/wiki/API:Query
+
+// $.ajax({
+// 	 url: "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=" + keyword + "&prop=info&inprop=url&utf8=&format=json",
+// 	dataType: "jsonp",
+// 	success: function(response) {
+// 		console.log(response.query);
+// 		if (response.query.searchinfo.totalhits === 0) {
+// 			console.error(response);
+// 		}
+// 		else {
+// 			console.log(response);
+// 		}
+// 	},
+// 	error: function () {
+// 		alert("Error retrieving search results, please refresh the page");
+// 	}
+//
+// });
+
+
+
+
+//take the query, format it for wikipedia, and try to hit the exact page on the wiki
+
+//todo:
+//if we don't hit that exact right page OR hit one that isn't music, we're fucked
+//todo:
+
+
+module.exports.getWikiPage = function(req,res) {
+
+	let expression = req.body.expression.name;
+	let expression_save = JSON.parse(JSON.stringify(req.body.expression));
+
+	//no content fields specified
+	//https://en.wikipedia.org/w/api.php?action=query&format=jsonfm&formatversion=2&titles=Wynchester
+
+	//i'm feeling lucky? just go to whatever page has that title
+	expression = expression.replace();
+
+	let code_prefix = function (exp) {
+		//let exp = "Guns N' Roses";
+		//result: Guns_N%27_Roses
+
+		//wiki likes _ for spaces
+		exp = exp.replace(/\s/g, '_');
+
+		//https://www.w3schools.com/tags/ref_urlencode.asp
+		exp = encodeURI(exp);
+
+		//not handling apostrophes/single quotes?
+		exp = exp.replace("'", "%27");
+		return exp;
+	};
+
+	//todo: can I get any smaller than this?
+	// its just getting content, don't think I can go lower than that
+	//https://www.mediawiki.org/wiki/API:Revisions
+
+	let url = "https://en.wikipedia.org/w/api.php?action=query" +
+		"&prop=revisions" +
+		"&rvprop=content" +
+		"&format=jsonfm" +
+		"&formatversion=2" +
+		"&titles=" + code_prefix(expression) + "&format=json";
+	console.log("URI encode exp:",code_prefix(expression));
+	console.log("URL:",url);
+
+	let options = {
+		method: "POST",
+		uri: url,
+		headers: {
+			'User-Agent': 'Request-Promise',
+			"Content-Type": "jsonp"
+		},
+		//json: true
+	};
+
+	rp(options).then(function (result) {
+		result = JSON.parse(result);
+		//console.log("res", JSON.stringify(result,null,4));
+		let facts = [];
+
+
+		if(!result.query['pages'][0].missing){
+			//don't know what n pages or n revisions means as of yet
+			let content = result.query['pages'][0]['revisions'][0]['content'].toString();
+
+			//what is the prevelance of people actually using the correct template?
+			//I'm putting my money on pretty high
+			let infoStr = "Infobox musical artist"
+			let pat = /\[\[([A-Za-z\s\|]*)\]\]/gs
+
+			if(content.indexOf(infoStr) !== -1){
+				let matches = content.match(pat);
+				//console.log(matches);
+
+				let pat2 = /[^\w\s]/g;
+				matches.forEach(function(m){
+					if(m.indexOf("|") !== -1){
+						let split = m.split("|")
+						//console.log("$",split);
+						let a = split[0].replace(pat2," ").toLowerCase().trim();
+						let b = split[1].replace(pat2," ").toLowerCase().trim();
+						//console.log(a);console.log(b);
+						facts.push(b);facts.push(a);
+					}
+					else{
+						let y = m.replace(pat2," ").toLowerCase().trim()
+						//console.log("#",y);
+						facts.push(y)
+					}
+				});
+			}
+		}
+
+		//console.log(JSON.stringify(facts));
+		let response = {};
+		response.expression = expression_save;
+
+		function removeDups(records) {
+			let unique = {};
+			records.forEach(function(i) {
+				if(!unique[i]) {	unique[i] = true;}});
+			return Object.keys(unique);
+		}
+
+		response.facts = removeDups(facts);
+		res.send(response)
+
+	}).catch(function (err) {
+		console.log(err);
+	})
+
+	let aj = function(){
+		$.ajax({
+			url: url,
+			dataType: "jsonp",
+			success: function(response) {
+				//console.log("response",response);
+
+				//don't know what n pages or n revisions means as of yet
+				let content = response.query['pages'][0]['revisions'][0]['content'].toString();
+
+				let infoStr = "Infobox musical artist"
+				let pat = /\[\[([A-Za-z\s\|]*)\]\]/gs
+
+				if(content.indexOf(infoStr) !== -1){
+					//console.log("matched infobox",content);
+
+					let matches = content.match(pat);
+					//console.log(matches);
+
+					let facts = [];
+					let pat2 = /[^\w\s]/g;
+
+					matches.forEach(function(m){
+						if(m.indexOf("|") !== -1){
+							let split = m.split("|")
+							//console.log("$",split);
+							let a = split[0].replace(pat2," ").toLowerCase().trim();
+							let b = split[1].replace(pat2," ").toLowerCase().trim();
+							//console.log(a);console.log(b);
+							facts.push(b);facts.push(a);
+						}
+						else{
+							let y = m.replace(pat2," ").toLowerCase().trim()
+							console.log("#",y);
+							facts.push(y)
+						}
+					});
+
+					facts.forEach(function(f){
+						if($scope.genreFam_map[f]){
+							console.log("true",f);
+						}
+					});
+					// console.log($scope.genreFam_map);
+					// console.log(facts);
+				}
+			},
+			error: function () {
+				alert("Error retrieving search results, please refresh the page");
+			}
+
+		});
+	}
+
+};
+
+//https://www.mediawiki.org/wiki/API:Query
+//for searching
+
+// $.ajax({
+// 	 url: "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=" + keyword + "&prop=info&inprop=url&utf8=&format=json",
+// 	dataType: "jsonp",
+// 	success: function(response) {
+// 		console.log(response.query);
+// 		if (response.query.searchinfo.totalhits === 0) {
+// 			console.error(response);
+// 		}
+// 		else {
+// 			console.log(response);
+// 		}
+// 	},
+// 	error: function () {
+// 		alert("Error retrieving search results, please refresh the page");
+// 	}
+//
+// });
+
 
 //todo: haven't tested yet
 module.exports.playlist_add_artist_tracks =  function(req,res){
@@ -173,16 +387,16 @@ module.exports.playlist_create =  function(req,res){
 		console.log(req.body.user);
 
 		let uri = "https://api.spotify.com/v1/users/" + req.body.user.id + "/playlists";
-			let options = {
-				method:"POST",
-				uri: uri,
-				headers: {
-					'User-Agent': 'Request-Promise',
-					"Authorization":'Bearer ' + req.body.token,
-					"Content-Type":"application/json"
-				},
-				json: true
-			};
+		let options = {
+			method:"POST",
+			uri: uri,
+			headers: {
+				'User-Agent': 'Request-Promise',
+				"Authorization":'Bearer ' + req.body.token,
+				"Content-Type":"application/json"
+			},
+			json: true
+		};
 
 		options.body = {
 			"name": "New Playlist Test1",
