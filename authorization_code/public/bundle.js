@@ -456,13 +456,10 @@
 				});
 
 				let controller = module.controller("myCtrl", function($scope,$http,linker) {
-					console.log("myCtrl");
-					$scope.sortType = "genreGroup"
 
-					let url_local = 'http://localhost:8888/';
-
+					//section: DB SETUP AND TESTING
+					//creation,object definitions tests for table inserts
 					//===========================================================================================
-					//DB SETUP AND TESTING
 
 					//examples
 
@@ -479,7 +476,6 @@
 
 					//var res = alasql("SELECT * FROM cities WHERE pop < 3500000 ORDER BY pop DESC");
 					//var res = alasql('SELECT date ,city FROM cities');
-
 
 					let vlister = function(object){
 
@@ -501,7 +497,6 @@
 						//console.log("$out",output);
 						return output
 					};
-
 
 					let defStr = function(def){
 						let defStr = "";
@@ -836,6 +831,145 @@
 
 					};
 					createDB();
+
+
+					//section: INITIALIZATION & UTILITIES
+					//===========================================================================================
+
+					let url_local = 'http://localhost:8888/';
+
+					$scope.sortType = "genreGroup";
+					$scope.wikiQry = "Guns N' Roses";
+					$scope.googleQry = "Moon Hooch";
+
+					//todo: figure out how to query this table with my spotify-gathered genres
+					console.warn("imported locally:",all_genres);
+					$scope.familyGenre_map = {};
+					$scope.genreFam_map = {};
+					$scope.familyColor_map = global_familyColor_map;
+					$scope.globalFamilies = globalFamilies;
+
+					all_genres.forEach(function(t){
+						t.family.forEach(function(f){
+							if(!$scope.familyGenre_map[f]){
+								$scope.familyGenre_map[f] = [];
+							}
+							$scope.familyGenre_map[f].push(t.name)
+						});
+						$scope.genreFam_map[t.name] = t.family
+
+					});
+
+					console.log("familyGenre_map",$scope.familyGenre_map);
+					console.log("genreFam_map",$scope.genreFam_map);
+
+
+					//todo: in use?
+					$scope.playlists = {};
+					$scope.artists = {};
+					$scope.genres = {};
+
+
+					$scope.metro_cache = {};
+					$scope.metro_cache_performances = {}
+
+					$scope.dateFilter= {};
+					//$scope.dateFilter.end = "";
+					//$scope.dateFilter.start = "";
+					// $scope.dateFilter.end =  '2019-04-04';
+					// $scope.dateFilter.start = '2019-03-04';
+					$scope.dateFilter.start =  '2019-03-18';
+					// $scope.dateFilter.end =  '2019-04-18';
+					$scope.dateFilter.end =  '2019-03-19';
+					//$scope.dateFilter.end = '2019-04-11';
+					// $scope.raw_filename = "";
+					// $scope.areaDatesArtists_filename= "";
+
+
+
+					//for managing my own pagination on events
+					$scope.currentPage = 0;
+					$scope.pageSize = 20;
+					$scope.numberOfPages=function(){
+						//.length > 0
+						if($scope.metro_cache[$scope.global_metro.id].events){
+							return Math.ceil($scope.metro_cache[$scope.global_metro.id].events.length/$scope.pageSize);
+						}
+						else{
+							return 0;
+						}
+					};
+
+
+					var off = "&offset=";
+					var lim = "&limit=";
+					var offset_base = 50;
+					var page_num = 0;
+
+					/**
+					 * Designed for paging requests
+					 **/
+					let make_request =  function(url_object,cache,sleep){
+
+						return new Promise(function(done, fail) {
+
+							var url = url_object.url + "?" + url_object.fields + off + url_object.offset + lim + url_object.limit;
+
+							console.log("sending request",url);
+
+							let params = getHashParams();
+							global_access_token = params.access_token
+							let call = () =>{
+								$.ajax({
+									dataType: 'json',
+									beforeSend: function (request) {
+										request.setRequestHeader("Authorization", 'Bearer ' + global_access_token);
+										//var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
+										//request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
+									},
+									url: url,
+								}).done(function(payload){
+
+									console.log("payload page " + page_num,payload);
+									// console.log(JSON.stringify(payload,null,4));
+
+									var results = payload["items"]
+									results.forEach(function(result){cache.push(result)})
+
+									if(results.length === 50){
+										page_num++;
+										url_object.offset = url_object.offset + offset_base ;
+
+										console.log("new offset: ", url_object.offset);
+										console.log("records length: ", cache.length);
+
+										//todo: not really sure what I was thinking here...
+
+										make_request(url_object,cache).then(function(){
+											// console.log("finished multipart fetch I guess?",cache.length);
+											done(cache)
+										})
+									}
+									else{
+										console.log("finished, # of records: " + cache.length);
+										console.log(cache);
+										done(cache)
+									}
+
+								}).fail(function(err){
+
+									console.log("there was a problem: ");
+									console.log(err);
+								})
+							}//call
+
+							if(sleep){
+								console.log("sleeping",sleep)
+								setTimeout(() =>{call()},sleep)
+							}
+							else{call()}
+						})//promise
+					}; //make_request
 
 					let d3_launch = function(){
 						var json_data = {
@@ -1201,61 +1335,204 @@
 					};
 					//d3_launch();
 
-					$scope.db = {};
 
-					$scope.playlists = {};
-					$scope.artists = {};
-					$scope.genres = {};
-					// $scope.playlists['1292167736'] = [];
-					// $scope.playlists['1213866828'] = [];
+					let getData = function (file) {return  $http.get(file);};
 
-					$scope.db.playlists = function(u){
+					$scope.user_cache = {};
+					$scope.user_cache_ctrl = {};
+					$scope.genre_freq_map = {};
+					$scope.artist_freq_map = {};
+					$scope.family_freq_map = {};
 
-						let qry = "select * from playlists where owner = '" + u.id + "' ";
-						console.log(qry);
-						console.log($scope.playlists[ u.id]);
-						$scope.playlists[ u.id] = alasql(qry);
-						console.log($scope.playlists[ u.id]);
-						return $scope.playlists[ u.id];
+					getData('friends_id_map.json').then(function(data) {
+						console.log(data) ;
+						$scope.users = data.data.friends;
+						console.log($scope.users);
+
+						$scope.users.forEach(function(u){
+							$scope.user_cache[u.id] = {};
+							$scope.user_cache[u.id].playlists = [];
+							$scope.user_cache[u.id].tracks = [];
+							$scope.user_cache[u.id].artists = [];
+							$scope.user_cache[u.id].genres = [];
+							$scope.genre_freq_map[u.id] = {};
+							$scope.artist_freq_map[u.id] = {};
+
+							$scope.user_cache_ctrl[u.id] = {}
+
+							//selected
+							$scope.user_cache_ctrl[u.id]['playlists'] = []
+							$scope.user_cache_ctrl[u.id]['families'] = [];
+
+							//todo: a special user called 'metro' since we don't allow for searching of more than one metro (like, per user)
+							//at a time, but this is still a user control function
+
+							$scope.user_cache_ctrl['metro'] = {eventFamilies:[]};
+
+							all_genres.forEach(function(g){
+								$scope.user_cache_ctrl[u.id][g] = false;
+							});
+
+							$scope.family_freq_map[u.id] = {};
+							$scope.user_cache_ctrl[u.id]['family-event'] = {};
+							$scope.user_cache_ctrl[u.id].show = {};
+							$scope.user_cache_ctrl[u.id].show.playlists = true;
+
+							$scope.user_cache_ctrl[u.id].show.user = true;
+							$scope.user_cache_ctrl[u.id].show.playlists = true;
+							$scope.user_cache_ctrl[u.id].show.artists = false;
+							$scope.user_cache_ctrl[u.id].show.genres = true;
+							$scope.user_cache_ctrl[u.id].show.families = true;
+
+
+
+							globalFamilies.forEach(function(f){
+
+								//todo: need to reorganize user_cache_ctrl
+								$scope.user_cache_ctrl[u.id][f] = false;
+
+								$scope.user_cache_ctrl[u.id]['family-event'][f] = true;
+
+								$scope.family_freq_map[u.id][f] = 0;
+
+							})
+
+						})
+						//$scope.$apply();
+					});
+
+					$scope.global_metro = {};
+
+					getData('metros.json').then(function(data) {
+						console.log(data) ;
+						$scope.metros = data.data.metros;
+						console.log($scope.metros);
+						//todo: move somewhere else
+						$scope.global_metro = $scope.metros[0];
+					});
+
+					$scope.global_user = {};
+
+					//todo: default jake
+					$scope.global_user = {
+						"display_name": "Jake Lavender",
+						"id": "1292167736"
 					};
 
-
-					$scope.testdb = function(user){
-						user = {};
-						user.id = '1292167736';
-						console.log("playlists",alasql("select * from playlists"));
-						console.log("playlists_tracks",alasql("select * from playlists_tracks"));
-
-						let qry3 = "select p.id, pt.track_id as track_id, at.artist_id as artist_id, a.name as artist_name"
-							+ " from playlists p join playlists_tracks pt on p.id = pt.playlist_id"
-							+ " join artists_tracks at on pt.track_id = at.track_id"
-							+ " join artists a on at.artist_id = a.id"
-							+ " where p.owner  = '" + user.id + "' ";
-
-						console.log(qry3);
-						//!$scope.artists[user.id] ? $scope.playlists[user.id] = []:{};
-						// $scope.artists[user.id] = alasql(qry3);
-						// console.log(qry2,$scope.playlists[user.id]);
-						console.log("testdb",alasql(qry3));
-
-						console.log("6TZdvF1kFzwnQLgHQynzsO",alasql("select * from artists where id = '6TZdvF1kFzwnQLgHQynzsO'"));
+					$scope.set_user_cache = function(){
+						//todo:
+						let filename = 'jake_usercache_v1.json'
+						//let filename = 'dacandyman01_usercache_v1.json'
+						getData(filename).then(function(data) {
+							$scope.setIt({id:'1292167736'},data.data);
+						});
 					};
 
-					$scope.testIn = function(){
-						let playlists_ex = {
-							id: "afsdfsdafasdfasdf",
-							name: "Classic Rock/Rock",
-							owner:"Jake Lavender",
-							public: true,
-							uri: "spotify:user:1292167736:playlist:5vDmqTWcShNGe7ENaud90q"
+					$scope.setIt = function(user,cache){
+						console.log("setIt...");
+
+						console.log($scope.user_cache);
+						$scope.user_cache[user.id] = cache;
+
+						//recall process_playlists is the only process_ that sets user_cache
+						//alasql("INSERT INTO playlists")
+						$scope.process_playlists($scope.user_cache[user.id].playlists,user);
+
+						$scope.user_cache[user.id].playlist_tracks.forEach(function(playTrackDuple){
+
+							//alasql("INSERT INTO playlists_tracks, tracks, artists_tracks")
+							$scope.process_tracks(playTrackDuple.tracks,playTrackDuple.playlist,user)
+						});
+
+						// alasql("INSERT INTO genres, artists_genres, artists")
+						$scope.process_artists($scope.user_cache[user.id].artists_results,user);
+
+						//------------------------------------------------------------------------------------------
+						//everything below is just a clone of the binding we would do at the end of get_all_tracks()
+
+						let qry_distinct_artists = "select distinct artists.id as artist_id, artists.name as name"
+							+ " from artists where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+							//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+							+ " JOIN tracks t on t.id = pt.track_id"
+							+ " JOIN artists_tracks at on at.track_id = t.id"
+							+ " JOIN artists a on a.id = at.artist_id "
+							// + " JOIN artists_genres ag on a.id = ag.artist_id"
+							// + " JOIN genres g on g.id = ag.genre_id"
+							+  " where owner = '" + user.id + "')";
+
+						//console.log(qry_distinct_artists);
+						//console.log(alasql("select * from artists"));
+						$scope.user_cache[user.id]['artists'] =  alasql(qry_distinct_artists);
+
+						//todo: order by similar genres? sounds hard
+						let qry_distinct_genres = "select distinct genres.id as genre_id, genres.name as name, genres.family as family"
+							+ " from genres where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+							//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+							+ " JOIN tracks t on t.id = pt.track_id"
+							+ " JOIN artists_tracks at on at.track_id = t.id"
+							+ " JOIN artists a on a.id = at.artist_id "
+							+ " JOIN artists_genres ag on a.id = ag.artist_id"
+							+ " JOIN genres g on g.id = ag.genre_id"
+							+  " where owner = '" + user.id + "')";
+
+						//console.log(qry_distinct_genres);
+						$scope.user_cache[user.id]['genres'] = alasql(qry_distinct_genres);
+
+						let qry_distinct_tracks = "select distinct tracks.id as track_id, tracks.name as track_name"
+							+ " from tracks where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+							//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+							+ " JOIN tracks t on t.id = pt.track_id"
+							+ " JOIN artists_tracks at on at.track_id = t.id"
+							+ " JOIN artists a on a.id = at.artist_id "
+							// + " JOIN artists_genres ag on a.id = ag.artist_id"
+							// + " JOIN genres g on g.id = ag.genre_id"
+							+  " where owner = '" + user.id + "')";
+
+						//console.log(qry_distinct_tracks);
+						$scope.user_cache[user.id].tracks =  alasql(qry_distinct_tracks);
+
+						console.log("setting genre_freq map...");
+						$scope.user_cache[user.id]['genres'].forEach(function(genre){
+							$scope.genres_frequency(genre,user);
+						});
+
+						console.log("setting artist_freq map...");
+						$scope.user_cache[user.id]['artists'].forEach(function(artist){
+							$scope.artists_frequency(artist,user);
+						});
+
+						console.log("setIt results",$scope.user_cache[user.id]);
+						$scope.digestIt()
+					};
+
+					$scope.selected = {};
+					$scope.selected['playlists'] = []
+
+
+					$scope.digestIt = function(){
+						try{$scope.$digest();}
+						catch(e){}
+					};
+
+					$scope.testPost = function(){
+						let postData = function (addy,payload) {
+							return  $http.post(addy,payload);
 						};
-						alasql("INSERT INTO playlists VALUES ( " + vlister(playlists_ex)  + " )");
-						console.log("sel",alasql("select * from playlists;"));
-						//$scope.applyIt();
+						postData('localhost:8887/test',{test:"in"}).then(function(data) {
+							console.log(data) ;
+							//$scope.$apply();
+						});
 					};
 
+					$scope.localStorage = window.localStorage;
+
+					$scope.clearStore = function(){
+						$scope.localStorage.clear();
+					};
+
+
+					//section: UI UTILITIES
 					//===========================================================================================
-					//JS FILTERS / UI FLAGS and TOOLS
 
 					$scope.shared = {};
 					$scope.shared['genres'] = false;
@@ -1308,7 +1585,6 @@
 							return g_artist_hit;
 						}else{return null}
 					};
-
 
 					$scope.genres_frequency = function(genreTuple,user){
 
@@ -1403,7 +1679,6 @@
 						//console.log($scope.artist_freq_map[user.id]);
 					};
 
-
 					$scope.inEventFam = function(name){
 						if($scope.user_cache_ctrl['metro']){
 
@@ -1414,6 +1689,7 @@
 
 						}else{return true;}
 					};
+
 					$scope.toggleEventFamily = function(name){
 						//console.log("toggleEventFamily");
 
@@ -1435,6 +1711,7 @@
 					//with a top level condition here:
 
 					$scope.noEventFamily = true;
+
 					$scope.eventFamily = function(item){
 						let perfs = $scope.getPerfs(item)
 						let fams = $scope.user_cache_ctrl['metro']['eventFamilies'];
@@ -1471,378 +1748,56 @@
 						// console.log("$$",ret);
 						return ret;
 					};
-					//===========================================================================================
-					// INITIALIZATION AND UTILITIES
 
-					//todo: figure out how to query this table with my spotify-gathered genres
-					console.log(all_genres);
-					$scope.familyGenre_map = {};
-					$scope.genreFam_map = {};
-					$scope.familyColor_map = global_familyColor_map;
-					$scope.globalFamilies = globalFamilies;
-
-					$scope.currentPage = 0;
-					$scope.pageSize = 20;
-					$scope.numberOfPages=function(){
-						//.length > 0
-						if($scope.metro_cache[$scope.global_metro.id].events){
-							return Math.ceil($scope.metro_cache[$scope.global_metro.id].events.length/$scope.pageSize);
-						}
-						else{
-							return 0;
-						}
-					};
-
-
-					//$scope.wikiQry = "Wynchester"
-					$scope.wikiQry = "Guns N' Roses"
-
-					$scope.getWikiPage = function(expression){
-						return new Promise(function(done, fail) {
-							var req = {};
-							req.type = "POST";
-							req.url_postfix = "getWikiPage";
-							let params = getHashParams();
-							req.body = {
-								expression:expression,
-								token:params.access_token
-							}
-
-							$http.post(url_local + req.url_postfix,req.body).then(function(res){
-
-								console.log(res);
-								done(res);
-
-							}).catch(function(err){
-								console.log(err);
-								fail(err)
-
-							})
-						})
-
-					};
-
-					all_genres.forEach(function(t){
-						t.family.forEach(function(f){
-							if(!$scope.familyGenre_map[f]){
-								$scope.familyGenre_map[f] = [];
-							}
-							$scope.familyGenre_map[f].push(t.name)
-						});
-
-						$scope.genreFam_map[t.name] = t.family
-
-					});
-
-					console.log("familyGenre_map",$scope.familyGenre_map);
-					console.log("genreFam_map",$scope.genreFam_map);
-
-					$scope.digestIt = function(){
-						try{$scope.$digest();}
-						catch(e){}
-					};
-
-					$scope.testPost = function(){
-						let postData = function (addy,payload) {
-							return  $http.post(addy,payload);
-						};
-						postData('localhost:8887/test',{test:"in"}).then(function(data) {
-							console.log(data) ;
-							//$scope.$apply();
-						});
-					};
-
-
-
-					//depreciated
-					var make_request_local =  function(payload){
-
-						return new Promise(function(done, fail) {
-
-							console.log("sending request : " + payload.type + " :: " + payload.url_postfix);
-							console.log(payload);
-							$.ajax({
-								url: url_local + payload.url_postfix,
-								type:payload.type,
-								//TODO: what the fuck is wrong with this shit
-								//data:JSON.stringify({test:"test"}),
-								body: "FUCK"
-								// contentType: 'application/json',
-							}).done(function(payload){
-
-								console.log("retrieved: ",payload);
-								done(payload);
-
-							})
-								.fail(function(err){
-
-									console.log("there was a problem: ");
-									console.log(err);
-								})
-						})
-
-					}; //make_request
-
-					let getData = function (file) {return  $http.get(file);};
-
-					$scope.user_cache = {};
-					$scope.user_cache_ctrl = {};
-					$scope.genre_freq_map = {};
-					$scope.artist_freq_map = {};
-					$scope.family_freq_map = {};
-
-					// $scope.show = {};
-					// $scope.show['dacandyman01'] = {};
-					// $scope.show['1292167736'] = {};
-					// $scope.show['1213866828'] = {};
-
-					// $scope.show['dacandyman01']['playlists'] = true;
-					// $scope.show['dacandyman01']['artists'] = false;
-					// $scope.show['dacandyman01']['genres'] = true;
-					//
-					// $scope.show['1292167736']['playlists'] = true;
-					// $scope.show['1292167736']['artists'] = false;
-					// $scope.show['1292167736']['genres'] = true;
-					//
-					// $scope.show['1213866828']['playlists'] = true;
-					// $scope.show['1213866828']['artists'] = false;
-					// $scope.show['1213866828']['genres'] = true;
-
-
-					getData('friends_id_map.json').then(function(data) {
-						console.log(data) ;
-						$scope.users = data.data.friends;
-						console.log($scope.users);
-
-						$scope.users.forEach(function(u){
-							$scope.user_cache[u.id] = {};
-							$scope.user_cache[u.id].playlists = [];
-							$scope.user_cache[u.id].tracks = [];
-							$scope.user_cache[u.id].artists = [];
-							$scope.user_cache[u.id].genres = [];
-							$scope.genre_freq_map[u.id] = {};
-							$scope.artist_freq_map[u.id] = {};
-
-							$scope.user_cache_ctrl[u.id] = {}
-
-							//selected
-							$scope.user_cache_ctrl[u.id]['playlists'] = []
-							$scope.user_cache_ctrl[u.id]['families'] = [];
-
-							//todo: a special user called 'metro' since we don't allow for searching of more than one metro (like, per user)
-							//at a time, but this is still a user control function
-
-							$scope.user_cache_ctrl['metro'] = {eventFamilies:[]};
-
-							all_genres.forEach(function(g){
-								$scope.user_cache_ctrl[u.id][g] = false;
-							});
-
-							$scope.family_freq_map[u.id] = {};
-							$scope.user_cache_ctrl[u.id]['family-event'] = {};
-							$scope.user_cache_ctrl[u.id].show = {};
-							$scope.user_cache_ctrl[u.id].show.playlists = true;
-
-							$scope.user_cache_ctrl[u.id].show.user = true;
-							$scope.user_cache_ctrl[u.id].show.playlists = true;
-							$scope.user_cache_ctrl[u.id].show.artists = false;
-							$scope.user_cache_ctrl[u.id].show.genres = true;
-							$scope.user_cache_ctrl[u.id].show.families = true;
-
-
-
-							globalFamilies.forEach(function(f){
-
-								//todo: need to reorganize user_cache_ctrl
-								$scope.user_cache_ctrl[u.id][f] = false;
-
-								$scope.user_cache_ctrl[u.id]['family-event'][f] = true;
-
-								$scope.family_freq_map[u.id][f] = 0;
-
-							})
-
-						})
-						//$scope.$apply();
-					});
-
-					$scope.global_metro = {};
-
-					getData('metros.json').then(function(data) {
-						console.log(data) ;
-						$scope.metros = data.data.metros;
-						console.log($scope.metros);
-						//todo: move somewhere else
-						$scope.global_metro = $scope.metros[0];
-					});
-
-					$scope.global_user = {};
-
-					//todo: default jake
-					$scope.global_user = {
-						"display_name": "Jake Lavender",
-						"id": "1292167736"
-					};
-
-					$scope.set_user_cache = function(){
-						//todo:
-
-						// getData('dacandyman01_usercache_v1.json').then(function(data) {
-						// 	$scope.setIt({id:'dacandyman01'},data.data);
-						// });
-						getData('jake_usercache_v1.json').then(function(data) {
-							$scope.setIt({id:'1292167736'},data.data);
-						});
-
-					};
-
-					$scope.setIt = function(user,cache){
-						$scope.user_cache[user.id] = cache;
-						//user_cache['global'].artists.full = user_cache['global'].artists.full.concat(user_cache[user.id].artists.full);
-						//user_cache['global'].playlists.full = user_cache['global'].playlists.full.concat(user_cache[user.id].playlists.full);
-						console.log($scope.user_cache);
-
-						//recall process_playlists is the only process_ that sets user_cache
-						//alasql("INSERT INTO playlists")
-						$scope.process_playlists($scope.user_cache[user.id].playlists,user);
-
-						$scope.user_cache[user.id].playlist_tracks.forEach(function(playTrackDuple){
-
-							//alasql("INSERT INTO playlists_tracks, tracks, artists_tracks")
-							$scope.process_tracks(playTrackDuple.tracks,playTrackDuple.playlist,user)
-						});
-
-						// alasql("INSERT INTO genres, artists_genres, artists")
-						$scope.process_artists($scope.user_cache[user.id].artists_results,user);
-
-						//------------------------------------------------------------------------------------------
-						//everything below is just a clone of the binding we would do at the end of get_all_tracks()
-
-						let qry_distinct_artists = "select distinct artists.id as artist_id, artists.name as name"
-							+ " from artists where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							+ " JOIN tracks t on t.id = pt.track_id"
-							+ " JOIN artists_tracks at on at.track_id = t.id"
-							+ " JOIN artists a on a.id = at.artist_id "
-							// + " JOIN artists_genres ag on a.id = ag.artist_id"
-							// + " JOIN genres g on g.id = ag.genre_id"
-							+  " where owner = '" + user.id + "')";
-
-						//console.log(qry_distinct_artists);
-						//console.log(alasql("select * from artists"));
-						$scope.user_cache[user.id]['artists'] =  alasql(qry_distinct_artists);
-
-						//todo: order by similar genres? sounds hard
-						let qry_distinct_genres = "select distinct genres.id as genre_id, genres.name as name, genres.family as family"
-							+ " from genres where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							+ " JOIN tracks t on t.id = pt.track_id"
-							+ " JOIN artists_tracks at on at.track_id = t.id"
-							+ " JOIN artists a on a.id = at.artist_id "
-							+ " JOIN artists_genres ag on a.id = ag.artist_id"
-							+ " JOIN genres g on g.id = ag.genre_id"
-							+  " where owner = '" + user.id + "')";
-
-						//console.log(qry_distinct_genres);
-						$scope.user_cache[user.id]['genres'] = alasql(qry_distinct_genres);
-
-						let qry_distinct_tracks = "select distinct tracks.id as track_id, tracks.name as track_name"
-							+ " from tracks where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							+ " JOIN tracks t on t.id = pt.track_id"
-							+ " JOIN artists_tracks at on at.track_id = t.id"
-							+ " JOIN artists a on a.id = at.artist_id "
-							// + " JOIN artists_genres ag on a.id = ag.artist_id"
-							// + " JOIN genres g on g.id = ag.genre_id"
-							+  " where owner = '" + user.id + "')";
-
-						//console.log(qry_distinct_tracks);
-						$scope.user_cache[user.id].tracks =  alasql(qry_distinct_tracks);
-
-						console.log("setting genre_freq map...");
-						$scope.user_cache[user.id]['genres'].forEach(function(genre){
-							$scope.genres_frequency(genre,user);
-						});
-
-						console.log("setting artist_freq map...");
-						$scope.user_cache[user.id]['artists'].forEach(function(artist){
-							$scope.artists_frequency(artist,user);
-						});
-
-						console.log("setIt results",$scope.user_cache[user.id]);
-						$scope.digestIt()
-					};
-
-					// $scope.setSelected = function(array,mode){
-					// 	console.log("setSelected",mode);
-					// 	array.forEach(function(ar){
-					// 		ar._cmo_checked = (mode === 'all');
-					// 	})
-					// };
-
-					$scope.selected = {};
-					$scope.selected['playlists'] = []
-
-					// $scope.setP = function(){
-					//
-					// 	$scope.testPlaylists = $scope.user_cache['1292167736']['playlists'];
-					// 	console.log($scope.testPlaylists );
-					// 	$scope.digestIt()
-					// }
-
-					$scope.testPlaylists = [
-						{
-							"id": "5vDmqTWcShNGe7ENaud90q",
-							"name": "Classic Rock/Rock",
-							"owner": "1292167736",
-							"public": "true",
-							"uri": "spotify:playlist:5vDmqTWcShNGe7ENaud90q",
-							// "_cmo_checked": true
-						},
-						{
-							"id": "0sJK4pWqr7bnQ0fgxGmJrh",
-							"name": "weird shit",
-							"owner": "1292167736",
-							"public": "true",
-							"uri": "spotify:playlist:0sJK4pWqr7bnQ0fgxGmJrh",
-							// "_cmo_checked": true
-						},
-						{
-							"id": "0fEQxXtJS7aTK4qrxznjAJ",
-							"name": "country",
-							"owner": "1292167736",
-							"public": "true",
-							"uri": "spotify:playlist:0fEQxXtJS7aTK4qrxznjAJ",
-							// "_cmo_checked": true
-						}
-					]
-
-					// 	$scope.testPlaylistsLookup = {
-					// 		"5vDmqTWcShNGe7ENaud90q":{
-					// 			"id": "5vDmqTWcShNGe7ENaud90q",
-					// 			"name": "Classic Rock/Rock",
-					// 			"owner": "1292167736",
-					// 			"public": "true",
-					// 			"uri": "spotify:playlist:5vDmqTWcShNGe7ENaud90q",
-					// 			// "_cmo_checked": true
-					// 		},
-					// 		"0sJK4pWqr7bnQ0fgxGmJrh":{
-					// 			"id": "0sJK4pWqr7bnQ0fgxGmJrh",
-					// 			"name": "weird shit",
-					// 			"owner": "1292167736",
-					// 			"public": "true",
-					// 			"uri": "spotify:playlist:0sJK4pWqr7bnQ0fgxGmJrh",
-					// 			// "_cmo_checked": true
-					// 		},
-					// 		"0fEQxXtJS7aTK4qrxznjAJ":{
-					// 			"id": "0fEQxXtJS7aTK4qrxznjAJ",
-					// 			"name": "country",
-					// 			"owner": "1292167736",
-					// 			"public": "true",
-					// 			"uri": "spotify:playlist:0fEQxXtJS7aTK4qrxznjAJ",
-					// 			// "_cmo_checked": true
-					// 		}
-					// }
+					//can i turn this into a filter or something?
+					$scope.getEventDate = function(event){
+
+						var weekday = new Array(7);
+						weekday[0] =  "Sun";
+						weekday[1] = "Mon";
+						weekday[2] = "Tues";
+						weekday[3] = "Wed";
+						weekday[4] = "Thurs";
+						weekday[5] = "Fri";
+						weekday[6] = "Sat";
+
+						// var weekday_full = new Array(7);
+						// weekday_full[0] =  "Sunday";
+						// weekday_full[1] = "Monday";
+						// weekday_full[2] = "Tuesday";
+						// weekday_full[3] = "Wednesday";
+						// weekday_full[4] = "Thursday";
+						// weekday_full[5] = "Friday";
+						// weekday_full[6] = "Saturday";
+
+						let ret = {};
+
+						let haveDate = (event.datetime ? event.datetime : event.date);
+						var date = new Date(haveDate);
+
+						console.log("$date",date);
+						var m = date.getUTCMonth() + 1;
+						var d = date.getUTCDate();
+						var y  = date.getFullYear();
+						var day = date.getUTCDay();
+
+						console.log(m);
+						console.log(d);
+						console.log(y);
+						console.log(day);
+
+						// if(event.start.datetime){
+						//
+						// }
+						// else if(event.start.date){
+						//
+						// }
+
+						var day = date.getUTCDay();
+						ret = weekday[day] + ", " + m + "-" + d + "-" + y
+
+						return ret;
+					}
 
 					$scope.familySelected = function(u,f){
 						return $scope.user_cache_ctrl[u.id]['families'].indexOf(f) !== -1;
@@ -1869,6 +1824,9 @@
 						})
 						return total;
 					};
+
+
+					//assisting with multiselects
 
 					$scope.lookup = {};
 					$scope.lookup['genres'] = {};
@@ -1948,128 +1906,9 @@
 					};
 
 
-
-					$scope.localStorage = window.localStorage;
-					$scope.clearStore = function(){
-						$scope.localStorage.clear();
-					};
-
-
-
 					//===========================================================================================
 					// SONGKICK EVENTS
 
-					//todo: depreciated by weird filters above
-
-					// $scope.perfs = [];
-					// $scope.getPerfs = function(e){
-					//
-					// 	//let qry = "select top 10 * from events e JOIN events_performances ep on e.id = ep.event_id JOIN performances p on p.id = ep.performance_id";
-					// 	let qry = "select * from events e"
-					// 		+ " JOIN events_performances ep on e.id = ep.event_id"
-					// 		+ " JOIN performances p on p.id = ep.performance_id"
-					// 		+ " where e.id = " + e.id;
-					// 	//perfs = alasql(qry);
-					//
-					// 	//var retVal = e;
-					// 	$scope.perfs = alasql(qry);
-					// 	return linker($scope.perfs,'some-key')
-					// };
-					//
-					// $scope.getGenres = function(p){
-					// 	let qry = "select * from performances p"
-					// 		+ " JOIN artist_artistSongkick aas on p.artistSongkick_id = aas.artistSongkick_id"
-					// 		+ " JOIN artists_genres ag on aas.artist_id = ag.artist_id"
-					// 		// + " JOIN artists a on aas.artist_id = a.id"
-					// 		+ " JOIN genres g on ag.genre_id = g.id"
-					// 		+ " where aas.artistSongkick_id = " + p.artistSongkick_id;
-					//
-					// 	let genres = [];
-					// 	let results = alasql(qry);
-					//
-					// 	results.forEach(function(r){
-					// 		if(genres.indexOf(r.name) === -1){
-					// 			genres.push(r.name)
-					// 		}
-					// 	});
-					//
-					// 	// if(p.artistSongkick_id === 8401188){
-					// 	// 	// console.log( alasql("select * from artist_artistSongkick"));
-					// 	// 	// console.log( alasql("select * from artists_genres"));
-					// 	// 	// console.log(qry);
-					// 	// }
-					//
-					// 	return genres;
-					// };
-
-
-
-
-					$scope.metro_cache = {};
-					$scope.metro_cache_performances = {}
-
-					$scope.dateFilter= {};
-					//$scope.dateFilter.end = "";
-					//$scope.dateFilter.start = "";
-					// $scope.dateFilter.end =  '2019-04-04';
-					// $scope.dateFilter.start = '2019-03-04';
-					$scope.dateFilter.start =  '2019-03-18';
-					// $scope.dateFilter.end =  '2019-04-18';
-					$scope.dateFilter.end =  '2019-03-19';
-					//$scope.dateFilter.end = '2019-04-11';
-					// $scope.raw_filename = "";
-					// $scope.areaDatesArtists_filename= "";
-
-
-					//can i turn this into a filter or something?
-					$scope.getEventDate = function(event){
-
-						var weekday = new Array(7);
-						weekday[0] =  "Sun";
-						weekday[1] = "Mon";
-						weekday[2] = "Tues";
-						weekday[3] = "Wed";
-						weekday[4] = "Thurs";
-						weekday[5] = "Fri";
-						weekday[6] = "Sat";
-
-						// var weekday_full = new Array(7);
-						// weekday_full[0] =  "Sunday";
-						// weekday_full[1] = "Monday";
-						// weekday_full[2] = "Tuesday";
-						// weekday_full[3] = "Wednesday";
-						// weekday_full[4] = "Thursday";
-						// weekday_full[5] = "Friday";
-						// weekday_full[6] = "Saturday";
-
-						let ret = {};
-
-						let haveDate = (event.datetime ? event.datetime : event.date);
-						var date = new Date(haveDate);
-
-						console.log("$date",date);
-						var m = date.getUTCMonth() + 1;
-						var d = date.getUTCDate();
-						var y  = date.getFullYear();
-						var day = date.getUTCDay();
-
-						console.log(m);
-						console.log(d);
-						console.log(y);
-						console.log(day);
-
-						// if(event.start.datetime){
-						//
-						// }
-						// else if(event.start.date){
-						//
-						// }
-
-						var day = date.getUTCDay();
-						ret = weekday[day] + ", " + m + "-" + d + "-" + y
-
-						return ret;
-					}
 
 					var write_schedule = function(results){
 						results.forEach(function(result){
@@ -2330,7 +2169,6 @@
 					//===========================================================================================
 					// SPOTIFY RECORDS
 
-
 					$scope.playlist_add_artist_tracks = function(){
 						let req = {};
 						req.url_postfix = "playlist_add_artist_tracks";
@@ -2350,7 +2188,6 @@
 
 						});
 					};
-
 
 					$scope.playlist_add_tracks = function(){
 						let req = {};
@@ -2412,6 +2249,8 @@
 					};
 
 
+					//todo:refactor to spotify service in backend
+
 					/**
 					 * load my playlists into cache.playlists.simple, cache.playlists.full, and
 					 * mapped by user into cache.playlists.userMap
@@ -2419,10 +2258,13 @@
 					 **/
 					$scope.get_user_playlists =function(user){
 						var url1 = "/playlists";
+						var url_users = "https://api.spotify.com/v1/users";
 
 						//var url_example = "https://api.spotify.com/v1/users/dacandyman01/playlists?offset=0&limit=50"
 						//var test_console = "https://beta.developer.spotify.com/console/get-playlists/?user_id=wizzler&limit=&offset=";
 
+						let cache = {};
+						cache.dummy  = [];
 						var url_object = {};
 						url_object.url =  url_users + "/" + user.id + url1;
 						url_object.offset = 0;
@@ -3072,579 +2914,69 @@
 							})//post then
 						})};//playlist_tracks
 
+
+					//section: searching utilities
+					//===========================================================================================
+
+					//takes from page param $scope.wikiQry
+					$scope.getWikiPage = function(expression){
+						return new Promise(function(done, fail) {
+							var req = {};
+							req.type = "POST";
+							req.url_postfix = "getWikiPage";
+							let params = getHashParams();
+							req.body = {
+								expression:expression,
+								token:params.access_token
+							}
+
+							$http.post(url_local + req.url_postfix,req.body).then(function(res){
+
+								console.log(res);
+								done(res);
+
+							}).catch(function(err){
+								console.log(err);
+								fail(err)
+
+							})
+						})
+
+					};
+
+					//takes from page param $scope.googleQry
+					$scope.googleQuery = function(query){
+						var req = {};
+						req.type = "POST";
+						req.url_postfix = "googleQuery";
+
+						//todo: best way to force "music related" results
+						req.body = {query:query + "music group"};
+
+						$http.post(url_local + req.url_postfix,req.body).then(function(res){
+							// console.log(res.data);
+							let doc = $(res.data);
+							//console.log(doc);
+							let g = doc.find("span:contains('Genres')")
+							let y = $(g).next()
+							let z = y.text();
+							let genres = z.split(",")
+
+							for(var x = 0; x < genres.length; x++){
+								genres[x] = genres[x].trim();
+							}
+
+							console.log(genres);
+
+						})//$http
+					};
+
+
 				}); //controller
 
 
-				var cache = {};
-				let user_cache = {};
-				user_cache['global'] = {artists:{full:[],simple:[]},playlists:{full:[],simple:[]},artistsInfoMap:{},artistsSongkickSpotifyMap:{}};
+				//todo: depreciated
 
-				let clean_cache = function(cache){
-					cache.dummy = [];
-					cache.artists = {};
-					cache.playlists = {};
-
-					cache.artists.simple = [];
-					cache.artists.full = [];
-
-					cache.artistsInfoMap = {};
-					cache.artistsInfoMap_simple = {};
-
-					cache.playlists.simple  = [];
-					cache.playlists.full = [];
-
-					cache.tracks = [];
-					cache.genres = [];
-					cache.genres_artist_map = {};
-					cache.genres_frequency = {};
-
-					cache.playlist_tracks_map = {};
-					cache.user_playlist_map_full = {};
-					cache.user_playlist_map_simple = {};
-				};
-				clean_cache(cache);
-
-				exports.clean_cache = clean_cache;
-
-				//spotify api doesn't seem to care if I fuck up these url formations:
-				//https://api.spotify.com/v1/users/dacandyman01/playlists?&offset=150&limit=50
-				//gets parsed as
-				//https://api.spotify.com/v1/users/dacandyman01/playlists?offset=150&limit=50
-
-				var url_users = "https://api.spotify.com/v1/users";
-				var off = "&offset=";
-				var lim = "&limit=";
-				var offset_base = 50;
-
-				var page_num = 0;
-				var records = [];
-
-
-				/**
-				 * Designed for paging requests
-				 * trying to reuse my request maker
-				 * url_object:
-				 *
-				 *  Always explicitly set to "" if not in use
-				 * 	url_object.fields = ""
-				 *
-				 **/
-				var make_request =  function(url_object,cache,sleep){
-
-					return new Promise(function(done, fail) {
-
-						var url = url_object.url + "?" + url_object.fields + off + url_object.offset + lim + url_object.limit;
-
-						console.log("sending request",url);
-
-						let params = getHashParams();
-						global_access_token = params.access_token
-						let call = () =>{
-							$.ajax({
-								dataType: 'json',
-								beforeSend: function (request) {
-									request.setRequestHeader("Authorization", 'Bearer ' + global_access_token);
-									//var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
-									//request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
-								},
-								url: url,
-							}).done(function(payload){
-
-								console.log("payload page " + page_num,payload);
-								// console.log(JSON.stringify(payload,null,4));
-
-								var results = payload["items"]
-								results.forEach(function(result){cache.push(result)})
-
-								if(results.length === 50){
-									page_num++;
-									url_object.offset = url_object.offset + offset_base ;
-
-									console.log("new offset: ", url_object.offset);
-									console.log("records length: ", cache.length);
-
-									//todo: not really sure what I was thinking here...
-
-									make_request(url_object,cache).then(function(){
-										// console.log("finished multipart fetch I guess?",cache.length);
-										done(cache)
-									})
-								}
-								else{
-									console.log("finished, # of records: " + cache.length);
-									console.log(cache);
-									done(cache)
-								}
-
-							}).fail(function(err){
-
-								console.log("there was a problem: ");
-								console.log(err);
-							})
-						}//call
-
-						if(sleep){
-							console.log("sleeping",sleep)
-							setTimeout(() =>{call()},sleep)
-						}
-						else{call()}
-					})//promise
-				}; //make_request
-
-
-
-
-				/**
-				 * //todo: needs to be generalized
-				 * Designed for one-off requests
-				 * Only reads the URL from the url_object
-				 * doesn't care if we fail, still calls done
-				 * @function make_request_simple
-				 **/
-				var make_request_simple =  function(req,cache,sleep){
-
-					return new Promise(function(done, fail) {
-
-						let params = getHashParams();
-						global_access_token = params.access_token;
-						//console.log("sending request", req.url);
-
-						var call =  function(req){
-							return new Promise(function(done, fail) {
-
-								$.ajax({
-									dataType: 'json',
-									beforeSend: function (request) {
-										request.setRequestHeader("Authorization", 'Bearer ' + global_access_token);
-									},
-									url: req.url,
-								}).done(function(payload){
-
-									console.log("retrieved: ",payload);
-									cache[payload.id] = payload;
-									done(payload)
-								})
-									.fail(function(err){
-										console.error("make_request_simple has a problem: ",err);
-										done(cache)
-									})
-							})
-						};
-						var sleepIt =  function(myPromise,ms){
-							return new Promise(function(done, fail) {
-								setTimeout(done(myPromise),ms);
-								// setTimeout(function(){
-								// 	console.log("sleeping....",ms);
-								// 	// done({sleep:ms});},ms)
-								// 	done(myPromise)
-								// },ms)
-							})
-						};
-
-						//	call(req);
-						let promises = [];
-
-						sleepIt(call(req),100).then(function(res){
-							done(res)
-						})
-
-						// promises.push();
-						// promises.push();
-
-						// Promise.all([sleepIt(call(req),1200)]).then(function(resultSleep){
-						// 	console.log("single request chain finish");
-						// 	//resultSleep is always a tuple where the 2nd value is undefined
-						// 	//b/c sleep it returns nothing
-						// 	console.log(resultSleep);
-						// 	done(resultSleep)
-						//
-						// });
-
-						// sleepIt(call(req),1200).then(function(res){
-						// 	done(res)
-						// })
-					})
-				}; //make_request_simple
-
-
-				/**
-				 * load a static json version of my playlists into user_playlists_simple_cache
-				 * @function load_playlists
-				 **/
-				exports.load_playlists = function(){
-					$.getJSON("my_playlists.json", function( data ) {
-						var items = [];
-						cache.playlists.simple = data.playlists;
-						console.log("user_playlists_simple_cache loaded:",cache.playlists.simple);
-					});
-				};
-
-				/**
-				 * load a specified subset of playlists
-				 * @function load_playlists
-				 **/
-				var switchIt = 2;
-
-				exports.load_playlists_select = function(){
-
-					console.log("load_playlists_select...");
-					cache.playlists.simple = [];
-					var user = "";
-
-					switch(switchIt) {
-						case 1:
-							user = "spotify"
-							cache.playlists.simple.push(cache.user_playlist_map_simple[user][0]);//discover
-							cache.playlists.simple.push(cache.user_playlist_map_simple[user][8]);//2016
-							cache.playlists.simple.push(cache.user_playlist_map_simple[user][9]) //2017
-
-							break;
-						case 2:
-							//user = "dacandyman01"
-							user = "123073652"
-							cache.playlists.simple = cache.user_playlist_map_simple[user]
-							break;
-						case 3:
-							user = "dacandyman01"
-							var private_playlists = [
-
-								{
-									"id": "5qdfEl1ylx7MLZTmJXydSJ",
-									"name": "Electronic You"
-								},
-								{
-									"id": "2WFJbnFtt6Kd0ULu7xLD8I",
-									"name": "Dopeness (Mass Appeal)"
-								},
-								{
-									"id": "2CpL2V6u1PQHK7tBhvU1Oo",
-									"name": "campfire radio 1"
-								}];
-							cache.playlists.simple = private_playlists;
-							break;
-
-						default:
-
-					}
-
-					console.log("user_playlists_simple_cache loaded:",cache.playlists.simple);
-					return user;
-
-				};
-
-				/**
-				 * Do a quick profile fetching test
-				 * @function testAPI
-				 **/
-				exports.testAPI = function(op){
-					console.log("testAPI");
-
-					switch(op) {
-						case "user":
-							var params = getHashParams();
-							global_access_token =  params.access_token
-							console.log("global_access_token set: ",global_access_token);
-
-							$.ajax({
-								dataType: 'json',
-								beforeSend: function(request) {
-									request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
-								},
-								url:"https://api.spotify.com/v1/me",
-								success: function(body) {
-									console.log("body: ",body);
-									console.log("testAPI success!");
-								}
-							});
-							break;
-
-						case "playlistTracks":
-							//https://developer.spotify.com/console/get-playlist-tracks/?playlist_id=&market=&fields=&limit=&offset=
-							console.log("playlistTracks");
-							var url_object = {};
-							let playlist = {};playlist.id = "37i9dQZEVXcGolgKZUussr";
-							url_object.url =  "https://api.spotify.com/v1/playlists/"+ playlist.id +"/tracks"
-							url_object.offset = 0;
-							url_object.limit = 50;
-							url_object.fields = "fields=items.track.artists";
-							console.log('fetching playlist_tracks for : ' + playlist.id );
-							cache.dummy = [];
-							make_request(url_object,cache.dummy).then(function(result){
-
-								console.log(result);
-							}).catch(function(err){
-								console.error(err);
-							})
-							break;
-						case "artist":
-							console.log("artist");
-
-							var url_object = {};
-							let artist = {};artist.id = "2utNxkLhreF1oIfO8kQT3q";
-							url_object.url =  "https://api.spotify.com/v1/artists/" + artist.id;
-							url_object.offset = 0;
-							url_object.limit = 50;
-							url_object.fields = "fields=items.track.artists";
-							console.log('fetching artist profile for : ' + artist.id );
-							cache.dummy = [];
-							make_request_simple(url_object,cache.dummy).then(function(result){
-
-								console.log(result);
-							}).catch(function(err){
-								console.error(err);
-							})
-							break;
-						default:
-						// code block
-					}
-
-				} //testAPI
-
-
-				/////////////////////////////////////
-				//OUTDATED
-				/////////////////////////////////////
-
-				/**
-				 * Fetch a user's top artists.
-				 * @function top_artists
-				 * For each time range, the top 100 tracks and artists are available for each user.
-				 * In the future, it is likely that this restriction will be relaxed.
-				 * This data is typically updated once each day for each user.
-				 **/
-				exports.top_artists = function(user){
-
-					//todo: disabled hash fetching
-
-					// var params = getHashParams();
-					// global_access_token = params.access_token
-					console.log(global_access_token);
-					console.log('fetching artists for user: ' + user );
-					//var url = 'https://api.spotify.com/v1/me/top/artists
-					// https://beta.developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
-
-					//max(limit) = 50,
-					//time_range = [long_term (several years?), medium_term (~ 6 months), short_term (~ 4 weeks). Default: medium_term.]
-					// The index of the first entity to return. Default: 0 (i.e., the first track). Use with limit to get the next set of entities.
-
-					var records = [];
-					var offset_count = 0;
-					var offset = 0;
-
-					var make_request =  function(user,offset,callback){
-
-						// var url = "https://api.spotify.com/v1/me/top/artists";
-
-						//trying to figure this out, think there are max  100 top artists?
-						//"For each time range, the top 50 tracks and artists are available for each user"
-						//but i feel like using offset = 0, then offset = 49 on the second call gets me 100 unique?
-
-						//todo: check uniqueness
-						//https://beta.developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
-
-
-						var url = 'https://api.spotify.com/v1/me/top/artists?time_range=medium_term&limit=50&offset=' + offset
-						$.ajax({
-							dataType: 'json',
-							beforeSend: function(request) {
-								request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
-								//var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
-								//request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
-							},
-							url:url,
-							success: function(payload) {
-								console.log('payload: ');
-								// console.log(JSON.stringify());
-								console.log(payload);
-
-								callback(payload)
-							},
-							error: function(err) {
-								console.log("there was a problem: ");
-								console.log(err);
-							}
-						});
-					}
-
-					var check_len = function(payload){
-
-
-						var results = payload["items"]
-
-						results.forEach(function(result){   records.push(result)})
-
-						if(results.length == 50){
-
-							offset_count++
-							console.log("offset_count: "  + offset_count);
-
-							offset = offset_count * 50 - 1 //50 records is max
-
-							console.log("offset: "  + offset);
-
-							console.log("... " + records.length);
-							make_request(user,offset,check_len)
-						}
-						else{
-							console.log("finished, # of records: " + records.length);
-							console.log(records);
-						}
-
-					}
-
-					var starting_offset = 0;
-					var results = make_request(user,starting_offset,check_len)
-
-
-
-
-				};//top_artists
-
-				//apples, grapes, honey, carrots/broc, potatoes
-
-
-				/**
-				 * Fetch a user's saved tracks
-				 * @URL  https://beta.developer.spotify.com/console/get-current-user-saved-tracks/
-				 * @function user_tracks
-				 *
-				 **/
-				exports.user_tracks = function(user){
-
-					var params = getHashParams();
-					global_access_token = params.access_token
-
-					console.log('fetching tracks for user: ' + user);
-					//var url = 'https://api.spotify.com/v1/me/top/artists
-					// https://beta.developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
-
-					//max(limit) = 50,
-					//time_range = [long_term (several years?), medium_term (~ 6 months), short_term (~ 4 weeks). Default: medium_term.]
-					// The index of the first entity to return. Default: 0 (i.e., the first track). Use with limit to get the next set of entities.
-
-					var records = [];
-					var offset_count = 0;
-					var offset = 0;
-
-					var make_request =  function(user,offset,callback){
-
-						console.log("make_request!!!!!!!");
-
-						console.log("params: " + user + " " + offset);
-
-						var url = 'https://api.spotify.com/v1/me/tracks?offset=' + offset + '&limit=50'
-						$.ajax({
-							dataType: 'json',
-							beforeSend: function(request) {
-								request.setRequestHeader("Authorization", 'Bearer ' + global_access_token );
-								//var temp_token = "BQClTYekdyT4Fyt3yXsEv6BUfzSly9ihQm1FI6NusqXxeefaxaT0mAuCDL1efdF2HzZKKYqzJw1bMlDQwS9pUZqdZ4ysTDy5oVpCefsNv-O5_9KiYW87lpEZXNRKRQ_YqRKHuuf3RnlTArsBMCuZfU3B6w"
-								//request.setRequestHeader("Authorization", 'Bearer ' + temp_token );
-							},
-							url:url,
-							success: function(payload) {
-								console.log('payload: ');
-								console.log(payload);
-								callback(payload)
-
-							},
-							error: function(err) {
-								console.log("there was a problem: ");
-								console.log(err);
-							}
-						});
-					}
-
-					var check_len = function(payload){
-
-						var results = payload["items"]
-
-						results.forEach(function(result){   records.push(result)})
-
-						if(results.length == 50){
-
-							offset_count++
-							console.log("offset_count: "  + offset_count);
-
-							offset = offset_count * 50 - 1 //50 records is max
-
-							console.log("offset: "  + offset);
-
-							console.log("... " + records.length);
-							make_request(user,offset,check_len)
-						}
-						else{
-							console.log("finished, # of records: " + records.length);
-							console.log(records);
-						}
-
-					}
-
-					var starting_offset = 0;
-					var results = make_request(user,starting_offset,check_len)
-
-
-
-
-				}//user_tracks
-
-				/**
-				 * hmmmmmmmm....
-				 * @function doSearch
-				 **/
-
-				//todo: not sure what the status is here...
-				exports.doSearch = function(word, callback) {
-
-					console.log("DOSEARCH");
-					console.log(word);
-					console.log(callback);
-
-
-
-					console.log('search for ' + word);
-					var url = 'https://api.spotify.com/v1/search?type=track&limit=50&q=' + encodeURIComponent('track:"'+word+'"');
-					$.ajax(url, {
-						dataType: 'json',
-						success: function(r) {
-							console.log('got track', r);
-							callback({
-								word: word,
-								tracks: r.tracks.items
-									.map(function(item) {
-										var ret = {
-											name: item.name,
-											artist: 'Unknown',
-											artist_uri: '',
-											album: item.album.name,
-											album_uri: item.album.uri,
-											cover_url: '',
-											uri: item.uri
-										}
-										if (item.artists.length > 0) {
-											ret.artist = item.artists[0].name;
-											ret.artist_uri = item.artists[0].uri;
-										}
-										if (item.album.images.length > 0) {
-											ret.cover_url = item.album.images[item.album.images.length - 1].url;
-										}
-										return ret;
-									})
-							});
-						},
-						error: function(r) {
-							callback({
-								word: word,
-								tracks: []
-							});
-						}
-					});
-				}
-
-
-				/**
-				 * Refresh the token using the current access_token and refresh_token in the URL
-				 * @function refreshToken
-				 **/
 				exports.refreshToken = function() {
 					console.log("getNewToken");
 
@@ -3685,20 +3017,12 @@
 
 				};
 
-
-
 				var token = "BQBp8TJonAbRUf1MOQtpuLA4kI_j14M8QgySOrg85j6vDfsYRq7EVgFtoXIapfhfP5s0Q4hnmm3KDKagJQaMakm7_NOfVTldxGOngtHIngZSX_4nDSsRHlPg7dembiT_9XFrYXc_wc5uIy0b-u8iYHekcTalYL0hglCylUqMKY6Phz4Nn-WBnyEXx9F0YlMMhc2PAHmfGA"
 
 				exports.forceToken = function() {
 					console.log("forceToken");
 					global_access_token = token;
 				};
-
-				exports.callback = function(idk) {
-
-					console.log("callback executed");
-					console.log(idk);
-				}
 
 			})(window);
 

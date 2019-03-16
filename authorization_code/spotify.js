@@ -88,6 +88,57 @@ var searchReq =  function(options){
 //todo:
 
 
+var google = require('google')
+var $ = require("jquery");
+
+
+//ideas and attempts at getting google results for artist searches
+
+//google used to have a search api that was pretty open and good, but no more
+//apparantly you may be able to hack custom search to search anywhere? idk
+//https://developers.google.com/custom-search/v1/using_rest#search_results
+
+// serpapi - designed specficially for this purpose, costs $$$
+
+//knowledge graph
+//where are the genres?
+//https://developers.google.com/apis-explorer/#p/kgsearch/v1/kgsearch.entities.search?query=moon+hooch&types=MusicGroup&_h=1&
+
+//const GoogleHtmlParser = require('google-html-parser');
+//seemingly useless parsing
+
+// 	let options = {};
+// 	GoogleHtmlParser.parse(options, res.body, function(err, extractedDatas){
+// 		console.log("$e",extractedDatas);
+// 	});
+//
+// 	GoogleHtmlParser.parse(options, res.body)
+// 		.then(parsedDatas => {
+// 			console.log("$p",parsedDatas);
+// 		});
+
+
+// let google = require('google-parser');
+//google.google is not a function (maybe I can only use this with type script?)
+
+// google.google({search: "Moon Hooch"}).then(function(res){
+// 	console.log("$res",res);
+// })
+
+
+module.exports.googleQuery  = function(req,res) {
+	console.log("googleQuery",req.body.query);
+
+	google.resultsPerPage = 1;
+	google(req.body.query, function (err, result){
+		if (err) console.error(err);
+
+		res.send(result.body)
+	})
+};
+
+
+
 module.exports.getWikiPage = function(req,res) {
 
 	let expression = req.body.expression.name;

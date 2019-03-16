@@ -42,6 +42,8 @@ app.use(bodyParser.urlencoded({
 
 
 //other
+app.post("/googleQuery",spotify["googleQuery"]);
+
 app.post("/getWikiPage",spotify["getWikiPage"]);
 
 //spotify
