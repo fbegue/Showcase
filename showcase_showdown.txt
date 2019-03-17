@@ -1,0 +1,154 @@
+//showcase data and functional layout
+
+//spotify.js
+//songkick.js
+
+
+//major UI functional dataquery map
+
+//the important thing is to realize under what conditions we need to update a table listing or lookup
+//there are certain events that will start a system of signals to make sure
+//the appropriate ala queries update the appropriate datamap objects
+
+
+
+='get_metro_events' 
+
+##eventFamily (fucky filter)
+
+	//uses getPerfs to get perf info related to genres
+	###getPerfs
+
+		@"select * from events_performances ep where ep.event_id = " + e.id)
+			- events_performances
+			  (during get_metro_events)
+
+		//this one seems reasonable
+		$scope.metro_cache[e.metro_id]['performances'] 
+		(end of get_metro_events)
+
+	//need to know genres of songkick artists
+	$scope.metro_cache[$scope.global_metro.id].artistSongkick_genres
+	(register_artistSongkick_genres - end of process_artists)
+
+##getPerfs (listing perfs for event)
+
+	@"select * from events_performances ep where ep.event_id = " + e.id)
+			- events_performances
+			  (during get_metro_events)
+
+
+	*$scope.metro_cache[e.metro_id]['performances'] 
+	(end of get_metro_events)
+	
+##getGenres	(listing genres for performance)
+
+	@"select aas.artist_id,  aas.artistSongkick_id from artist_artistSongkick 
+	aas where aas.artistSongkick_id =" + p.artistSongkick_id;
+		- artist_artistSongkick
+		  (during get_metro_events)
+		  
+	@"select * from artists_genres ag JOIN genres g on ag.genre_id = g.id"
+		- artists_genres
+		  (during process_artists)
+		- genres
+		  (during process_artists)		
+	
+	*$scope.listing.genres
+	(during process_artists)
+
+## ng-style="{color:familyColor_map[genreFam_map[g.name][0]]}"
+
+	*$scope.genreFam_map
+	(during process_artists by #registerGenre)
+	
+	$scope.familyColor_map
+	(static)
+
+
+='get_user_playlists'
+
+...
+
+='get_all_tracks' 
+
+...
+
+
+//datamap
+
+global_metro
+global_user
+
+
+metro_cache[<metroId>]
+	artistSongkick_artist: {}
+	artistSongkick_genres: {}
+	artist_genres: []
+
+user_cache[<user>]
+	artists: []
+	genres: []
+	playlists: []
+	tracks: []
+
+user_cache_ctrl[<family>]
+user_cache_ctrl['families']
+user_cache_ctrl['family-event']
+user_cache_ctrl['playlists']
+user_cache_ctrl['show']
+	artists: false
+	families: true
+	genres: true
+	playlists: true
+	user: true
+	
+artist_freq_map
+family_freq_map
+
+
+
+lookup.genres
+//set during process_artists
+
+listing.genres
+//set during process_artists
+
+lookup.playlists
+
+
+//?
+genreFam_map
+genre_freq_map
+
+//static
+globalFamilies
+familyColor_map
+familyGenre_map
+
+metros
+
+//bundle.js
+
+- move 2x calls to make_request (old paging utility) to spotify.js backend
+
+//index.html
+
+//general
+- how to represent multi-genre artists with color?
+
+
+//artist listing 
+- move track listing to inside artists
+- has no genres linked as of now
+
+//genre listing
+- sorting functions:
+- 'added_at' date, maybe with a time-range slider
+- family freqency
+- 
+
+
+
+
+

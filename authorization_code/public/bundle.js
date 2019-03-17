@@ -336,56 +336,57 @@
 				// 	}})
 
 
-				module.filter('getGenres', function(linker) {
-					return function(genres,p) {
-
-						// console.log("@getGenres");
-						// console.log(genres);
-						// console.log(p);
-
-						let t = alasql("select * from artist_artistSongkick");
-						// console.log(t);
-						// console.log(alasql("select * from artist_artistSongkick aas join artists a on aas.artist_id = a.id"));
-
-						//todo: no idea why this wasn't able to go get the actual genre object but whatever
-						let qry = "select * from performances p"
-							+ " JOIN artist_artistSongkick aas on p.artistSongkick_id = aas.artistSongkick_id"
-							+ " JOIN artists_genres ag on aas.artist_id = ag.artist_id"
-							// // + " JOIN artists a on aas.artist_id = a.id"
-							// + " JOIN genres g on ag.genre_id = g.id"+
-							+ " where aas.artistSongkick_id = " + p.artistSongkick_id;
-
-						let qryResult = alasql(qry);
-						//console.log(p.artistSongkick_id + "::",alasql(qry));
-
-
-						let gens = [];
-
-
-						// if(qryResult.length > 0){
-						// 	let test = {};
-						// 	test = qryResult[0]["genre_id"]
-						// 	gens = alasql("select * from genres where id = " + test)
-						// 	console.log("gens",gens);
-						// }
-						// else{
-						// 	console.log("skipped: ",p.artistSongkick_id);
-						// 	console.log(qryResult);
-						// }
-
-						!p.genres ? p.genres = gens:{};
-
-						if(p && genres){
-							let array = genres.map(function (item) {
-								item.genres = gens;
-								console.log(item.genres);
-								return item;
-							});
-							return array
-						}
-						else{return genres;}
-					};
-				});
+				//todo: deprecated
+				// module.filter('getGenres', function(linker) {
+				// 	return function(genres,p) {
+				//
+				// 		// console.log("@getGenres");
+				// 		// console.log(genres);
+				// 		// console.log(p);
+				//
+				// 		let t = alasql("select * from artist_artistSongkick");
+				// 		// console.log(t);
+				// 		// console.log(alasql("select * from artist_artistSongkick aas join artists a on aas.artist_id = a.id"));
+				//
+				// 		//todo: no idea why this wasn't able to go get the actual genre object but whatever
+				// 		let qry = "select * from performances p"
+				// 			+ " JOIN artist_artistSongkick aas on p.artistSongkick_id = aas.artistSongkick_id"
+				// 			+ " JOIN artists_genres ag on aas.artist_id = ag.artist_id"
+				// 			// // + " JOIN artists a on aas.artist_id = a.id"
+				// 			// + " JOIN genres g on ag.genre_id = g.id"+
+				// 			+ " where aas.artistSongkick_id = " + p.artistSongkick_id;
+				//
+				// 		let qryResult = alasql(qry);
+				// 		//console.log(p.artistSongkick_id + "::",alasql(qry));
+				//
+				//
+				// 		let gens = [];
+				//
+				//
+				// 		// if(qryResult.length > 0){
+				// 		// 	let test = {};
+				// 		// 	test = qryResult[0]["genre_id"]
+				// 		// 	gens = alasql("select * from genres where id = " + test)
+				// 		// 	console.log("gens",gens);
+				// 		// }
+				// 		// else{
+				// 		// 	console.log("skipped: ",p.artistSongkick_id);
+				// 		// 	console.log(qryResult);
+				// 		// }
+				//
+				// 		!p.genres ? p.genres = gens:{};
+				//
+				// 		if(p && genres){
+				// 			let array = genres.map(function (item) {
+				// 				item.genres = gens;
+				// 				console.log(item.genres);
+				// 				return item;
+				// 			});
+				// 			return array
+				// 		}
+				// 		else{return genres;}
+				// 	};
+				// });
 
 				module.filter('startFrom', function() {
 					return function(input, start) {
@@ -837,6 +838,7 @@
 					//===========================================================================================
 
 					let url_local = 'http://localhost:8888/';
+					$scope.localStorage = window.localStorage;
 
 					$scope.sortType = "genreGroup";
 					$scope.wikiQry = "Guns N' Roses";
@@ -863,12 +865,20 @@
 					console.log("familyGenre_map",$scope.familyGenre_map);
 					console.log("genreFam_map",$scope.genreFam_map);
 
+					$scope.user_cache = {};
+					$scope.user_cache_ctrl = {};
+					$scope.genre_freq_map = {};
+					$scope.artist_freq_map = {};
+					$scope.family_freq_map = {};
 
-					//todo: in use?
-					$scope.playlists = {};
-					$scope.artists = {};
-					$scope.genres = {};
+					$scope.global_metro = {};
+					$scope.global_user = {};
 
+					//todo: default jake
+					$scope.global_user = {
+						"display_name": "Jake Lavender",
+						"id": "1292167736"
+					};
 
 					$scope.metro_cache = {};
 					$scope.metro_cache_performances = {}
@@ -906,6 +916,7 @@
 					var offset_base = 50;
 					var page_num = 0;
 
+					//todo: needs to be moved to spotify.js
 					/**
 					 * Designed for paging requests
 					 **/
@@ -1338,12 +1349,6 @@
 
 					let getData = function (file) {return  $http.get(file);};
 
-					$scope.user_cache = {};
-					$scope.user_cache_ctrl = {};
-					$scope.genre_freq_map = {};
-					$scope.artist_freq_map = {};
-					$scope.family_freq_map = {};
-
 					getData('friends_id_map.json').then(function(data) {
 						console.log(data) ;
 						$scope.users = data.data.friends;
@@ -1401,8 +1406,6 @@
 						//$scope.$apply();
 					});
 
-					$scope.global_metro = {};
-
 					getData('metros.json').then(function(data) {
 						console.log(data) ;
 						$scope.metros = data.data.metros;
@@ -1410,14 +1413,6 @@
 						//todo: move somewhere else
 						$scope.global_metro = $scope.metros[0];
 					});
-
-					$scope.global_user = {};
-
-					//todo: default jake
-					$scope.global_user = {
-						"display_name": "Jake Lavender",
-						"id": "1292167736"
-					};
 
 					$scope.set_user_cache = function(){
 						//todo:
@@ -1505,15 +1500,6 @@
 						$scope.digestIt()
 					};
 
-					$scope.selected = {};
-					$scope.selected['playlists'] = []
-
-
-					$scope.digestIt = function(){
-						try{$scope.$digest();}
-						catch(e){}
-					};
-
 					$scope.testPost = function(){
 						let postData = function (addy,payload) {
 							return  $http.post(addy,payload);
@@ -1524,41 +1510,49 @@
 						});
 					};
 
-					$scope.localStorage = window.localStorage;
-
 					$scope.clearStore = function(){
 						$scope.localStorage.clear();
 					};
 
+					$scope.digestIt = function(){
+						try{$scope.$digest();}
+						catch(e){}
+					};
 
 					//section: UI UTILITIES
 					//===========================================================================================
 
+					//todo: what is purpose of this again?
 					$scope.shared = {};
 					$scope.shared['genres'] = false;
 					$scope.shared['artists']  = false;
 
-					// $scope.genreFreq = function(v1, v2,user) {
-					// 	console.log("$user",user);
-					// 	return (user_cache[u.id]['genres_frequency'][v1] < user_cache[u.id]['genres_frequency'][v2]) ? -1 : 1;
-					// };
+					//section: provide stats, shortcut functions and sorting for genre-analysis
 
-					$scope.descendFreq = true;
-					$scope.genreFreq = function(user) {
+					//display # of genres selected determined by families selected
+					$scope.getSelectedGenres = function(u){
+						let total = 0;
+						$scope.user_cache_ctrl[u.id]['families'].forEach(function(f){
+							total+= $scope.familyGenre_map[f].length
+						})
+						return total;
+					};
 
-						return function(v1){
-							if(!user){return null}
-							else{return (user_cache[user.id]['genres_frequency'][v1]);}
+
+					//select or deselect family in UI
+					$scope.toggleFamily = function(u,f){
+						let index = $scope.user_cache_ctrl[u.id]['families'].indexOf(f);
+						if(index !== -1){
+							$scope.user_cache_ctrl[u.id]['families'].splice(index,1)
+						}
+						else{
+							$scope.user_cache_ctrl[u.id]['families'].push(f);
 						}
 					};
 
-					$scope.filterGenre = "";
-					$scope.set_filterGenre = function(g){
-						$scope.filterGenre = g;
-						$scope.digestIt();
-					};
 
-					//todo: changed user_cache
+					//todo: needs updated: changed user_cache
+					//not in use by UI currently
 					$scope.genreEventMatches = function(g,global_metro){
 
 						//metro_cache[global_metro.id]['artistsInfoMap']
@@ -1586,6 +1580,8 @@
 						}else{return null}
 					};
 
+					//todo: may need updated
+					//not in use by UI currently
 					$scope.genres_frequency = function(genreTuple,user){
 
 						//console.log("setting genres_frequency for ", user.display_name);
@@ -1657,6 +1653,21 @@
 
 					};
 
+
+					//todo: deprecated - I now provide registration on  #map family_freq_map
+					$scope.descendFreq = true;
+					$scope.genreFreq = function(user) {
+
+						return function(v1){
+							if(!user){return null}
+							else{return (user_cache[user.id]['genres_frequency'][v1]);}
+						}
+					};
+
+					//section: provide stats, shortcut functions and sorting for artist-analysis
+
+					//helper function to write #map artist_freq_map
+					//called at end of playlist_tracks/setIt
 					$scope.artists_frequency = function(artist,user){
 
 						//give me as many tracks have this artist
@@ -1679,6 +1690,22 @@
 						//console.log($scope.artist_freq_map[user.id]);
 					};
 
+					//section: provide stats, shortcut functions and sorting for event display
+
+
+					//todo: are these the same thing?
+
+					// UI reaction to family selection for filtering later
+					//is a family selected for this user?
+					$scope.familySelected = function(u,f){
+						return $scope.user_cache_ctrl[u.id]['families'].indexOf(f) !== -1;
+						// let ret = $scope.user_cache_ctrl[u.id]['families'].indexOf(f) !== -1;
+						// console.log("familySelected",ret);
+						// return ret
+					};
+
+					// UI reaction to family selection
+					//is a family selected?
 					$scope.inEventFam = function(name){
 						if($scope.user_cache_ctrl['metro']){
 
@@ -1690,6 +1717,7 @@
 						}else{return true;}
 					};
 
+					//toggle selection of eventFamilies
 					$scope.toggleEventFamily = function(name){
 						//console.log("toggleEventFamily");
 
@@ -1710,8 +1738,12 @@
 					//I'm allowing or disallowing items. for instace, the ability to just completely ignore the filter
 					//with a top level condition here:
 
+					//don't activate the filter below
 					$scope.noEventFamily = true;
 
+					//custom filter that using getPerfs for every event to determine
+					//whether or not the event's performances are a good match
+					//for the eventFamilies we've selected already
 					$scope.eventFamily = function(item){
 						let perfs = $scope.getPerfs(item)
 						let fams = $scope.user_cache_ctrl['metro']['eventFamilies'];
@@ -1725,8 +1757,28 @@
 						let ret = false;
 						if(!$scope.noEventFamily){
 							for(var x = 0; x < perfs.length; x++){
-								let genres = $scope.metro_cache[$scope.global_metro.id].artistSongkick_genres[perfs[x].artistSongkick_id];
-								//console.log(genres);
+
+								let q_artistSongkick_id = "select artist_id from artist_artistSongkick where  artistSongkick_id= " + perfs[x].artistSongkick_id + "";
+
+								//todo: WHOOA how can we have a performance's artistSongkick_id that hasn't been registered?
+								//nvm, thats what unresolved_artists is for...
+
+								//console.log(q_artistSongkick_id);
+								let q1 = alasql(q_artistSongkick_id);
+								let genres = [];
+
+								if(!q1[0]){
+									console.warn("couldn't find artist_id for this (hopefully, unresolved) performance artist", perfs[x])
+									//genres = [];
+								}
+								else{
+									let qry2 = "select distinct g.id, g.name " +
+										" from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id" +
+										" where a.id = '"  + q1[0].artist_id + "'";
+									 genres = alasql(qry2);
+									//console.log("$genres",genres);
+								}
+
 								if(genres.length > 0){
 									genres.forEach(function(g){
 										//console.log(g);
@@ -1747,98 +1799,24 @@
 						}else{ret = true;}
 						// console.log("$$",ret);
 						return ret;
+					};//eventFamily
+
+
+					//from genre-analysis
+
+					//todo: not in use by UI
+
+					$scope.filterGenre = "";
+					$scope.set_filterGenre = function(g){
+						$scope.filterGenre = g;
+						$scope.digestIt();
 					};
 
-					//can i turn this into a filter or something?
-					$scope.getEventDate = function(event){
+					//from artist-analysis
 
-						var weekday = new Array(7);
-						weekday[0] =  "Sun";
-						weekday[1] = "Mon";
-						weekday[2] = "Tues";
-						weekday[3] = "Wed";
-						weekday[4] = "Thurs";
-						weekday[5] = "Fri";
-						weekday[6] = "Sat";
-
-						// var weekday_full = new Array(7);
-						// weekday_full[0] =  "Sunday";
-						// weekday_full[1] = "Monday";
-						// weekday_full[2] = "Tuesday";
-						// weekday_full[3] = "Wednesday";
-						// weekday_full[4] = "Thursday";
-						// weekday_full[5] = "Friday";
-						// weekday_full[6] = "Saturday";
-
-						let ret = {};
-
-						let haveDate = (event.datetime ? event.datetime : event.date);
-						var date = new Date(haveDate);
-
-						console.log("$date",date);
-						var m = date.getUTCMonth() + 1;
-						var d = date.getUTCDate();
-						var y  = date.getFullYear();
-						var day = date.getUTCDay();
-
-						console.log(m);
-						console.log(d);
-						console.log(y);
-						console.log(day);
-
-						// if(event.start.datetime){
-						//
-						// }
-						// else if(event.start.date){
-						//
-						// }
-
-						var day = date.getUTCDay();
-						ret = weekday[day] + ", " + m + "-" + d + "-" + y
-
-						return ret;
-					}
-
-					$scope.familySelected = function(u,f){
-						return $scope.user_cache_ctrl[u.id]['families'].indexOf(f) !== -1;
-						// let ret = $scope.user_cache_ctrl[u.id]['families'].indexOf(f) !== -1;
-						// console.log("familySelected",ret);
-						// return ret
-					};
-
-					$scope.toggleFamily = function(u,f){
-						let index = $scope.user_cache_ctrl[u.id]['families'].indexOf(f);
-						if(index !== -1){
-							$scope.user_cache_ctrl[u.id]['families'].splice(index,1)
-						}
-						else{
-							$scope.user_cache_ctrl[u.id]['families'].push(f);
-						}
-					};
-
-
-					$scope.getSelectedGenres = function(u){
-						let total = 0;
-						$scope.user_cache_ctrl[u.id]['families'].forEach(function(f){
-							total+= $scope.familyGenre_map[f].length
-						})
-						return total;
-					};
-
-
-					//assisting with multiselects
-
-					$scope.lookup = {};
-					$scope.lookup['genres'] = {};
-					$scope.lookup['playlists'] = {};
-
-					$scope.playlistLookup = function(id){
-						return $scope.lookup['playlists'][id]
-					}
-
-					$scope.genreLookup = function(genre_id){
-						return $scope.lookup['genres'][genre_id];
-					};
+					//called as model in ng-repeat to get perfs for any event
+					//also used by eventFamily custom filter to determine
+					//event's performances viabilty with selected families
 
 					$scope.getPerfs = function(e){
 
@@ -1861,104 +1839,83 @@
 						return output;
 					};
 
-					//todo: what is the difference between getPerfs and getGenres?
-					//is it b/c $scope.metro_cache[e.metro_id]['performances'] is static, and
-					//even tho output is being recreated over and over, we're always only tracking things
-					//that belong in the static performances object?
+					//called as model in ng-repeat to get genres for any performance
 
-					//I want to avoid having to register every interesting thing I need on the page:
-					//metro_cache[global_metro.id].artistSongkick_genres[p.artistSongkick_id]
+					//todo: appears as though I could have just repeated over the genres lookup,
+					//and provided a filter that took the performance as an argument?
 
 					$scope.getGenres = function(p){
 						let output = [];
-
-
-						// if(p.artistSongkick_id === 2352661) {
-						//console.log("getGenres", p);
-
-						//let qry1 = "select aas.artist_id,  aas.artistSongkick_id from artist_artistSongkick aas where aas.artistSongkick_id =" + p.artistSongkick_id;
 
 						let qry1 = "select aas.artist_id,  aas.artistSongkick_id from artist_artistSongkick aas where aas.artistSongkick_id =" + p.artistSongkick_id;
 						let qry1_res = alasql(qry1);
 
 						if(qry1_res[0]){
 
-							let qry2 = "select g.id, g.name " +
-								"from artists_genres ag JOIN genres g on g.id = ag.genre_id where ag.artist_id = '" + qry1_res[0].artist_id + "'";
-							//let qry2_res = alasql(qry2);
+							//infdig example: output ends up being formed from a newly generated set of data every time
+							// let bigList=  "select * from artists_genres ag JOIN genres g on ag.genre_id = g.id";
+							// $scope.metro_cache[$scope.global_metro.id].artist_genres =  alasql(bigList);
 
-							//if instead of pushing on newly generated items, I had a predefined list that I used alaqueries to determine simple
-							//filter input into, would this not fuck up on digest()?
-
-							// qry2_res.forEach(function (g) {
-							// 	output.push(g)
+							//no infdig: output is always a subset of data that we've precalculated
+							//but obv this means we need to gurantee everytime we run this, we've updated this table
+							//see: $biglist
+							// $scope.metro_cache[$scope.global_metro.id].artist_genres.forEach(function (ag) {
+							// 	if(ag.artist_id === qry1_res[0].artist_id){
+							// 		output.push(ag);
+							// 	}
 							// });
 
-							//see: $biglist
-							$scope.metro_cache[$scope.global_metro.id].artist_genres.forEach(function (ag) {
-								if(ag.artist_id === qry1_res[0].artist_id){
-									output.push(ag);
-								}
+							//solution without having to pre-determine artist_genres
+							//what do we care about returning? just genre objects.
+							//i'm okay with having a listing of genres predetermined
+							//but not this relationship datamap
+
+							let bigList=  "select * from artists_genres ag JOIN genres g on ag.genre_id = g.id";
+							let artist_genres_OT = alasql(bigList);
+
+
+							// console.log($scope.listing.genres);
+							// console.log($scope.metro_cache[$scope.global_metro.id].artist_genres);
+
+							$scope.listing.genres.forEach(function(gstr){
+								artist_genres_OT.forEach(function (ag) {
+									// console.log(qry1_res[0].artist_id);
+									// console.log(ag);
+									// console.log(gstr);
+									if(ag.artist_id === qry1_res[0].artist_id){
+										if(ag.name === gstr.name){
+											output.push(gstr);
+										}
+									}
+								});
 							});
 						}
-
 						return output;
 					};
 
 
+					//assisting with multiselects
+					//todo: need to figure out where these are setup
+
+					$scope.lookup = {};
+					$scope.lookup['genres'] = {};
+					$scope.lookup['playlists'] = {};
+
+					$scope.playlistLookup = function(id){
+						return $scope.lookup['playlists'][id]
+					}
+
+					$scope.genreLookup = function(genre_id){
+						return $scope.lookup['genres'][genre_id];
+					};
+
+					//listings
+
+					$scope.listing = {};
+					$scope.listing['genres'] = [];
+
+					//section: SONGKICK EVENTS
 					//===========================================================================================
-					// SONGKICK EVENTS
-
-
-					var write_schedule = function(results){
-						results.forEach(function(result){
-							result.events.forEach(function(event){
-
-								//todo: handle festivals differently (event.type = 'Festival')
-								//performance is an array of artists (headliner, support, etc)
-								var performance = {};
-
-								var date = new Date(event.start.date);
-								var m = date.getUTCMonth() + 1;
-								var d = date.getUTCDate();
-								var y  = date.getFullYear();
-								var day = date.getUTCDay();
-
-								var newDate = weekday[day] + ", " + m + "-" + d + "-" + y
-								performance.venue = event.venue.displayName;
-								performance.artists = [];
-								performance.id = event.id;
-
-								event.performance.forEach(function(perf){
-									performance.artists.push(perf.artist.displayName)
-
-								});
-
-								//haven't created entry for date yet
-								if(dates.indexOf(newDate) == -1){
-									dates.push(newDate);
-
-
-									performance_dates[newDate] = [];
-									performance_dates[newDate].push(performance);
-								}
-								else{
-									performance_dates[newDate].push(performance);
-
-									//todo: tried to eliminate duplicate performance_dates
-									// if(performance_dates[newDate].indexOf(performance) == -1){
-									// 	performance_dates[newDate].push(performance);
-									// }
-									// else{
-									// 	console.log(performance);
-									// }
-								}
-
-							})
-
-							// }//displayName
-						})
-					}; //write schedule
 
 					//todo: something with this
 					$scope.unresolved_artists = [];
@@ -2104,7 +2061,7 @@
 
 								res.data.forEach(function(tuple){
 
-									if(tuple.error){$scope.unresolved_artists.push(tuple.displayName)}
+									if(tuple.error){$scope.unresolved_artists.push(tuple)}
 									else{
 
 										//todo: somethings a little fucked here, don't know what though
@@ -2154,7 +2111,18 @@
 								!$scope.metro_cache[events[0].metro_id] ? $scope.metro_cache[events[0].metro_id] = {} : {};
 
 								$scope.metro_cache[events[0].metro_id].events = alasql("select * from events;")
-								$scope.metro_cache[events[0].metro_id].performances = alasql("select * from performances;")
+								// $scope.metro_cache[events[0].metro_id].performances = alasql("select * from performances;")
+
+								// p.artistSongkick_id
+								// p.billing
+								// p.billingIndex
+								// p.displayName
+								// p.id
+
+								let qperf = "select * from performances;"
+
+								$scope.metro_cache[events[0].metro_id].performances = alasql(qperf)
+
 								console.log($scope.metro_cache[events[0].metro_id]);
 
 								$scope.digestIt();
@@ -2165,9 +2133,58 @@
 						})//$http
 					};
 
+					var write_schedule = function(results){
+						results.forEach(function(result){
+							result.events.forEach(function(event){
 
+								//todo: handle festivals differently (event.type = 'Festival')
+								//performance is an array of artists (headliner, support, etc)
+								var performance = {};
+
+								var date = new Date(event.start.date);
+								var m = date.getUTCMonth() + 1;
+								var d = date.getUTCDate();
+								var y  = date.getFullYear();
+								var day = date.getUTCDay();
+
+								var newDate = weekday[day] + ", " + m + "-" + d + "-" + y
+								performance.venue = event.venue.displayName;
+								performance.artists = [];
+								performance.id = event.id;
+
+								event.performance.forEach(function(perf){
+									performance.artists.push(perf.artist.displayName)
+
+								});
+
+								//haven't created entry for date yet
+								if(dates.indexOf(newDate) == -1){
+									dates.push(newDate);
+
+
+									performance_dates[newDate] = [];
+									performance_dates[newDate].push(performance);
+								}
+								else{
+									performance_dates[newDate].push(performance);
+
+									//todo: tried to eliminate duplicate performance_dates
+									// if(performance_dates[newDate].indexOf(performance) == -1){
+									// 	performance_dates[newDate].push(performance);
+									// }
+									// else{
+									// 	console.log(performance);
+									// }
+								}
+
+							})
+
+							// }//displayName
+						})
+					}; //write schedule
+
+					//section:  SPOTIFY RECORDS
 					//===========================================================================================
-					// SPOTIFY RECORDS
 
 					$scope.playlist_add_artist_tracks = function(){
 						let req = {};
@@ -2452,7 +2469,6 @@
 					 *
 					 * @function $scope.process_tracks
 					 **/
-
 					$scope.process_tracks = function(data,playlist){
 						// console.log("process_tracks");
 						// console.log(data);
@@ -2510,7 +2526,6 @@
 
 						return artist_list;
 					};
-
 
 					/**Process all the 50 artist promise payloads we submitted.
 					 * alasql("INSERT INTO genres, artists_genres, artists")
@@ -2592,7 +2607,10 @@
 								no_family.push(genre)
 							}
 
+
 							$scope.lookup['genres'][genre.id] = key;
+							$scope.listing['genres'].push(genre);
+
 							alasql("INSERT INTO genres VALUES ( " + vlister(genre)  + " )");
 
 							//console.log(alasql("select * from  genres"));
@@ -2751,6 +2769,7 @@
 						// console.log("join artists with their genres",alasql(qry));
 
 
+						//deprecated: trying to get out of the business of generating a map for every little thing
 						let register_artistSongkick_genres = function(){
 							console.log("register_artistSongkick_genres");
 
@@ -2783,13 +2802,13 @@
 							})
 						};
 
-						register_artistSongkick_genres();
+						//register_artistSongkick_genres();
 
 						//todo: we've introduced an async component into process_artists
 						//so until we wait for that to finish, this binding here won't include that
 
-						let bigList=  "select * from artists_genres ag JOIN genres g on ag.genre_id = g.id";
-						$scope.metro_cache[$scope.global_metro.id].artist_genres =  alasql(bigList);
+						//let bigList=  "select * from artists_genres ag JOIN genres g on ag.genre_id = g.id";
+						//$scope.metro_cache[$scope.global_metro.id].artist_genres =  alasql(bigList);
 						///console.log("$biglist",$scope.metro_cache[$scope.global_metro.id].artist_genres);
 
 					};
