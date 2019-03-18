@@ -287,7 +287,8 @@
                      ng-repeat="g in user_cache[u.id]['genres'] | thisFamily:f:familyGenre_map | byGenreFreq:u:genre_freq_map"
                      ng-style="{color:familyColor_map[g.family[f]]}">
 
-                  &nbsp &nbsp &nbsp &nbsp {{g.name}} ({{genre_freq_map[u.id][g.genre_id]}})
+                  <!--&nbsp &nbsp &nbsp &nbsp {{g.name}} ({{genre_freq_map[u.id][g.genre_id]}})-->
+                  &nbsp &nbsp &nbsp &nbsp {{g.name}} ({{genres_frequency_fetch(g,u)}})
                   <span ng-if="g.family.length >1">
 
                     <button ng-click="user_cache_ctrl[u.id][g.name] = !user_cache_ctrl[u.id][g.name]"

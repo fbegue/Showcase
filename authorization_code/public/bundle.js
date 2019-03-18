@@ -1583,53 +1583,44 @@
 					};
 
 					//todo: may need updated
+					//called in process_artists and get_all_tracks
 					//not in use by UI currently
-					$scope.genres_frequency = function(genreTuple,user){
 
-						//console.log("setting genres_frequency for ", user.display_name);
+					//sets genre_freq_map for a passed genre by running a huge join for tracks for a user and a genre.
+					$scope.genres_frequency_depreciated = function(genreTuple,user){
 
+						console.log("setting genres_frequency for ", user.display_name);
 
-						//get the tracks that belong to this genre
-						// var qry_tracks = "select a.id as artist_id, a.name as name, t.name as track_name, g.name as genre_name from "
-						// 	+ " playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+						//trying to select unique playlist->track->artists, and figure out how many times
+						//a genre appears over all the tracks that belong to a user
+
+						//todo: couldn't figure SQL out for distinct
+						//instead, decided to do simple filtering ot of JS unique tracks
+
+						// let sub_qry = "select a.id as artist_id, a.name as name, t.name as track_name, g.name as genre_name, g.id as genre_id, g.family as family"
+						// 	+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
 						// 	+ " JOIN tracks t on t.id = pt.track_id"
 						// 	+ " JOIN artists_tracks at on at.track_id = t.id"
 						// 	+ " JOIN artists a on a.id = at.artist_id "
 						// 	+ " JOIN artists_genres ag on a.id = ag.artist_id"
 						// 	+ " JOIN genres g on g.id = ag.genre_id"
-						// 	+  " where owner = '" + user.id + "' and g.id = " + genreTuple.genre_id + "";
+						// 	+  " where owner = '" + user.id + "' and g.id = " + genreTuple.genre_id;
 
-
-						//select unique playlist->track->artists, and figure out how many times
-						//a param genre is mentioned for that artist's genres
-						//todo: couldn't figure this one out. instead did JS sorting on simple query
-
-						let sub_qry = "select a.id as artist_id, a.name as name, t.name as track_name, g.name as genre_name, g.id as genre_id, g.family as family"
-							+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							+ " JOIN tracks t on t.id = pt.track_id"
-							+ " JOIN artists_tracks at on at.track_id = t.id"
-							+ " JOIN artists a on a.id = at.artist_id "
-							+ " JOIN artists_genres ag on a.id = ag.artist_id"
-							+ " JOIN genres g on g.id = ag.genre_id"
-							+  " where owner = '" + user.id + "' and g.id = " + genreTuple.genre_id;
-
-						//putting distinct in here and using the sub-select stategy didn't seem to do shit
-						//how is it that I'm already getting distinct artists w/out saying 'distinct' ?
-
+						//putting distinct in here or in the sub_query and using the sub_query strategy didn't seem to do shit
 						//also, although its not completely ignoring my sub_qry, its certainly not returning
 						//artist results that are ONLY related to that genre_id
-						var qry = "select artists.id as artist_id, artists.name as name"
-							+ " from artists where ( " + sub_qry + " )";
-						//if(genreTuple.genre_id === 1){console.log(qry);console.log(alasql(qry));}
+						// var qry = "select artists.id as artist_id, artists.name as name"
+						// 	+ " from artists where ( " + sub_qry + " )";
 
+						//todo: this starting having other issues after a major change to get_all_events and i just ditched it
 
 						let used_artists = [];
 						let results = alasql(sub_qry);
 
-						//console.log("$r" ,results);
-
 						results.forEach(function(rec){
 							if(!$scope.genre_freq_map[user.id][rec.genre_id]){$scope.genre_freq_map[user.id][rec.genre_id] = 0;}
+
+							//so we're getting recs which are minmally
 							if(used_artists.indexOf(rec.artist_id) === -1){
 								$scope.genre_freq_map[user.id][rec.genre_id]++;
 								used_artists.push(rec.artist_id)
@@ -1643,18 +1634,75 @@
 							}
 
 						});
-
-						//console.log("$ffm" ,$scope.family_freq_map[user.id]);
-
-
-
-						// console.log(genre_freq_map);
-						// console.log(used_artists);
-
-						//return genre_freq_map[genreTuple.genre_id ];
-
 					};
 
+					//todo
+					$scope.genres_frequency = function(genreTuple,user){
+
+						console.error("hey do something with these calls!");
+					};
+
+
+					//todo: redo
+					//changing this to not care about genre frequency in TRACKS
+					//instead lets just say 'how often do these genres appear in the ARTISTS associated with you"
+
+					//issue is I have no linkage from a USER to their artists/genres without PLAYLISTS
+					//therefore I HAVE to go from playlists->tracks->artists
+
+					$scope.genres_frequency_fetch = function(genreTuple,user){
+
+						console.log("genres_frequency_fetch", genreTuple);
+
+						//trying to select unique playlist->track->artists, and figure out how many times
+						//a genre appears over all the tracks that belong to a user
+
+						//todo: couldn't figure SQL out for distinct
+						//instead, decided to do simple filtering ot of JS unique tracks
+
+						// let sub_qry = "select a.id as artist_id, a.name as name, t.name as track_name, g.name as genre_name, g.id as genre_id, g.family as family"
+						// 	+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+						// 	+ " JOIN tracks t on t.id = pt.track_id"
+						// 	+ " JOIN artists_tracks at on at.track_id = t.id"
+						// 	+ " JOIN artists a on a.id = at.artist_id "
+						// 	+ " JOIN artists_genres ag on a.id = ag.artist_id"
+						// 	+ " JOIN genres g on g.id = ag.genre_id"
+						// 	+  " where owner = '" + user.id + "' and g.id = " + genreTuple.genre_id;
+
+
+						//todo: was thinking about getting artists, tracks then just figuring out artist frequency from smaller queries
+						let q_tracks = "select a.id as artist_id, a.name as name, t.name as track_name"
+							+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+							+ " JOIN tracks t on t.id = pt.track_id"
+							+ " JOIN artists_tracks at on at.track_id = t.id"
+							+ " JOIN artists a on a.id = at.artist_id "
+							+  " where owner = '" + user.id + "'";
+
+						let tracks = alasql(q_tracks);
+						console.log("$artists",artists);
+
+
+						let artistTrack_map = {};
+						tracks.forEach(function(artTrack){
+							if(!artistTrack_map[artistTrack_map.artist_id]){artistTrack_map[artistTrack_map.artist_id] = []}
+							artistTrack_map[artistTrack_map.artist_id].push(artTrack)
+
+						});
+
+						console.log("$artistTrack_map",artistTrack_map);
+
+						let artistGenre_map = {};
+						Object.keys(artistTrack_map).forEach(function(key){
+							let q_artistGenre = "select g.name as genre_name, g.id as genre_id, g.family as family" +
+								" from genres g join artists_genres ag on g.id = ag.genre_id where ag.artist_id = '" +  key + "'"
+							// let genres =
+							if(!artistGenre_map[key]){artistGenre_map[key] = []}
+							artistGenre_map[key] = alasql(q_artistGenre);
+						});
+
+
+						console.log("$artistGenre_map",artistGenre_map);
+					};
 
 					//todo: deprecated - I now provide registration on  #map family_freq_map
 					$scope.descendFreq = true;
@@ -1879,19 +1927,22 @@
 							// console.log($scope.listing.genres);
 							// console.log($scope.metro_cache[$scope.global_metro.id].artist_genres);
 
-							$scope.listing.genres.forEach(function(gstr){
+							$scope.listing.genres.forEach(function(g){
 								artist_genres_OT.forEach(function (ag) {
 									// console.log(qry1_res[0].artist_id);
 									// console.log(ag);
 									// console.log(gstr);
 									if(ag.artist_id === qry1_res[0].artist_id){
-										if(ag.name === gstr.name){
-											output.push(gstr);
+										if(ag.name === g.name){
+											if(output.indexOf(g) === -1){
+												output.push(g);
+											}
 										}
 									}
 								});
 							});
 						}
+
 						return output;
 					};
 
@@ -2374,6 +2425,7 @@
 							console.log(qry_distinct_genres);
 							$scope.user_cache[user.id]['genres'] = alasql(qry_distinct_genres);
 							console.log("setting genre_freq map...");
+
 							$scope.user_cache[user.id]['genres'].forEach(function(genre){
 								$scope.genres_frequency(genre,user);
 							});
@@ -2537,9 +2589,6 @@
 					$scope.process_artists = function(results){
 
 						return new Promise(function(done, fail) {
-
-
-
 
 							console.log("$process_artists");
 							console.log(JSON.parse(JSON.stringify(results)));

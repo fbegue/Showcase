@@ -75,6 +75,26 @@
 ...
 
 
+//other
+
+BUG?:
+
+seems that the totals are inflated if metro_results => get_all_tracks
+BUT the reverse order get_all_tracks => metro_results doesn't produce that issue.
+
+$scope.genres_frequency
+//forms: $scope.genre_freq_map[user.id][rec.genre_id]
+//which lets you see, for a user and their taste profile, how prevalant a genre is
+
+ - called after processing artists in setIt
+ - called after playlist_tracks in get_all_tracks
+
+
+
+
+
+process
+
 //datamap
 
 global_metro
