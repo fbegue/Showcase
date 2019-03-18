@@ -126,146 +126,125 @@ var $ = require("jquery");
 // })
 
 
-module.exports.googleQuery  = function(req,res) {
+
+//todo:
+let all_genres = require('./public/all_genres2');
+
+let genresMap = {};
+//console.log("$all_genres",all_genres.all_genres);
+
+all_genres.all_genres.forEach(function(t){
+	genresMap[t.name] = "dum"
+});
+
+
+//todo: little weird b/c when we update genre info client side,
+//we can't make decisions with that updated info here
+
+module.exports.getExternalInfo  = function(req,res) {
 	console.log("googleQuery",req.body.query);
 
-	google.resultsPerPage = 1;
-	google(req.body.query, function (err, result){
-		if (err) console.error(err);
+	module.exports.getWikiPage.then(function(wikiRes){
 
-		res.send(result.body)
+		let knownGenres = [];
+
+		//need to dermtine if facts are good
+		//for now, if you're not a genre, we're throwing you out
+		if(wikiRes.facts.length === 0){
+			wikiRes.facts.forEach(function(f){
+				if(genresMap[f]){
+					knownGenres.push(f);
+				}
+			});
+
+			//todo: could decide on a threshold where we do more research if we only find x many genres
+			if(knownGenres.length === 0) {
+
+				//todo: parsing this is much harder over here
+				//not really, just couldn't get jquery acting right b/c im lazy
+
+				//haven't done any testing
+				//module.exports.googleQuery
+
+			}
+		}else{
+
+			//...
+		}
 	})
 };
 
-
-
 module.exports.getWikiPage = function(req,res) {
 
-	let expression = req.body.expression.name;
-	let expression_save = JSON.parse(JSON.stringify(req.body.expression));
+	return new Promise(function(done, fail) {
 
-	//no content fields specified
-	//https://en.wikipedia.org/w/api.php?action=query&format=jsonfm&formatversion=2&titles=Wynchester
+		let expression = req.body.expression.name;
+		let expression_save = JSON.parse(JSON.stringify(req.body.expression));
 
-	//i'm feeling lucky? just go to whatever page has that title
-	expression = expression.replace();
+		//no content fields specified
+		//https://en.wikipedia.org/w/api.php?action=query&format=jsonfm&formatversion=2&titles=Wynchester
 
-	let code_prefix = function (exp) {
-		//let exp = "Guns N' Roses";
-		//result: Guns_N%27_Roses
+		//i'm feeling lucky? just go to whatever page has that title
+		expression = expression.replace();
 
-		//wiki likes _ for spaces
-		exp = exp.replace(/\s/g, '_');
+		let code_prefix = function (exp) {
+			//let exp = "Guns N' Roses";
+			//result: Guns_N%27_Roses
 
-		//https://www.w3schools.com/tags/ref_urlencode.asp
-		exp = encodeURI(exp);
+			//wiki likes _ for spaces
+			exp = exp.replace(/\s/g, '_');
 
-		//not handling apostrophes/single quotes?
-		exp = exp.replace("'", "%27");
-		return exp;
-	};
+			//https://www.w3schools.com/tags/ref_urlencode.asp
+			exp = encodeURI(exp);
 
-	//todo: can I get any smaller than this?
-	// its just getting content, don't think I can go lower than that
-	//https://www.mediawiki.org/wiki/API:Revisions
+			//not handling apostrophes/single quotes?
+			exp = exp.replace("'", "%27");
+			return exp;
+		};
 
-	let url = "https://en.wikipedia.org/w/api.php?action=query" +
-		"&prop=revisions" +
-		"&rvprop=content" +
-		"&format=jsonfm" +
-		"&formatversion=2" +
-		"&titles=" + code_prefix(expression) + "&format=json";
-	console.log("URI encode exp:",code_prefix(expression));
-	console.log("URL:",url);
+		//todo: can I get any smaller than this?
+		// its just getting content, don't think I can go lower than that
+		//https://www.mediawiki.org/wiki/API:Revisions
 
-	let options = {
-		method: "POST",
-		uri: url,
-		headers: {
-			'User-Agent': 'Request-Promise',
-			"Content-Type": "jsonp"
-		},
-		//json: true
-	};
+		let url = "https://en.wikipedia.org/w/api.php?action=query" +
+			"&prop=revisions" +
+			"&rvprop=content" +
+			"&format=jsonfm" +
+			"&formatversion=2" +
+			"&titles=" + code_prefix(expression) + "&format=json";
+		console.log("URI encode exp:",code_prefix(expression));
+		console.log("URL:",url);
 
-	rp(options).then(function (result) {
-		result = JSON.parse(result);
-		//console.log("res", JSON.stringify(result,null,4));
-		let facts = [];
+		let options = {
+			method: "POST",
+			uri: url,
+			headers: {
+				'User-Agent': 'Request-Promise',
+				"Content-Type": "jsonp"
+			},
+			//json: true
+		};
+
+		rp(options).then(function (result) {
+			result = JSON.parse(result);
+			//console.log("res", JSON.stringify(result,null,4));
+			let facts = [];
 
 
-		if(!result.query['pages'][0].missing){
-			//don't know what n pages or n revisions means as of yet
-			let content = result.query['pages'][0]['revisions'][0]['content'].toString();
-
-			//what is the prevelance of people actually using the correct template?
-			//I'm putting my money on pretty high
-			let infoStr = "Infobox musical artist"
-			let pat = /\[\[([A-Za-z\s\|]*)\]\]/gs
-
-			if(content.indexOf(infoStr) !== -1){
-				let matches = content.match(pat);
-				//console.log(matches);
-
-				let pat2 = /[^\w\s]/g;
-				matches.forEach(function(m){
-					if(m.indexOf("|") !== -1){
-						let split = m.split("|")
-						//console.log("$",split);
-						let a = split[0].replace(pat2," ").toLowerCase().trim();
-						let b = split[1].replace(pat2," ").toLowerCase().trim();
-						//console.log(a);console.log(b);
-						facts.push(b);facts.push(a);
-					}
-					else{
-						let y = m.replace(pat2," ").toLowerCase().trim()
-						//console.log("#",y);
-						facts.push(y)
-					}
-				});
-			}
-		}
-
-		//console.log(JSON.stringify(facts));
-		let response = {};
-		response.expression = expression_save;
-
-		function removeDups(records) {
-			let unique = {};
-			records.forEach(function(i) {
-				if(!unique[i]) {	unique[i] = true;}});
-			return Object.keys(unique);
-		}
-
-		response.facts = removeDups(facts);
-		res.send(response)
-
-	}).catch(function (err) {
-		console.log(err);
-	})
-
-	let aj = function(){
-		$.ajax({
-			url: url,
-			dataType: "jsonp",
-			success: function(response) {
-				//console.log("response",response);
-
+			if(!result.query['pages'][0].missing){
 				//don't know what n pages or n revisions means as of yet
-				let content = response.query['pages'][0]['revisions'][0]['content'].toString();
+				let content = result.query['pages'][0]['revisions'][0]['content'].toString();
 
+				//what is the prevelance of people actually using the correct template?
+				//I'm putting my money on pretty high
 				let infoStr = "Infobox musical artist"
 				let pat = /\[\[([A-Za-z\s\|]*)\]\]/gs
 
 				if(content.indexOf(infoStr) !== -1){
-					//console.log("matched infobox",content);
-
 					let matches = content.match(pat);
 					//console.log(matches);
 
-					let facts = [];
 					let pat2 = /[^\w\s]/g;
-
 					matches.forEach(function(m){
 						if(m.indexOf("|") !== -1){
 							let split = m.split("|")
@@ -277,28 +256,109 @@ module.exports.getWikiPage = function(req,res) {
 						}
 						else{
 							let y = m.replace(pat2," ").toLowerCase().trim()
-							console.log("#",y);
+							//console.log("#",y);
 							facts.push(y)
 						}
 					});
-
-					facts.forEach(function(f){
-						if($scope.genreFam_map[f]){
-							console.log("true",f);
-						}
-					});
-					// console.log($scope.genreFam_map);
-					// console.log(facts);
 				}
-			},
-			error: function () {
-				alert("Error retrieving search results, please refresh the page");
 			}
 
-		});
-	}
+			//console.log(JSON.stringify(facts));
+			let response = {};
+			response.expression = expression_save;
 
+			function removeDups(records) {
+				let unique = {};
+				records.forEach(function(i) {
+					if(!unique[i]) {	unique[i] = true;}});
+				return Object.keys(unique);
+			}
+
+			response.facts = removeDups(facts);
+
+
+			//todo:
+			done(response)
+			//res.send(response)
+
+		}).catch(function (err) {
+			console.log(err);
+		})
+
+		let aj = function(){
+			$.ajax({
+				url: url,
+				dataType: "jsonp",
+				success: function(response) {
+					//console.log("response",response);
+
+					//don't know what n pages or n revisions means as of yet
+					let content = response.query['pages'][0]['revisions'][0]['content'].toString();
+
+					let infoStr = "Infobox musical artist"
+					let pat = /\[\[([A-Za-z\s\|]*)\]\]/gs
+
+					if(content.indexOf(infoStr) !== -1){
+						//console.log("matched infobox",content);
+
+						let matches = content.match(pat);
+						//console.log(matches);
+
+						let facts = [];
+						let pat2 = /[^\w\s]/g;
+
+						matches.forEach(function(m){
+							if(m.indexOf("|") !== -1){
+								let split = m.split("|")
+								//console.log("$",split);
+								let a = split[0].replace(pat2," ").toLowerCase().trim();
+								let b = split[1].replace(pat2," ").toLowerCase().trim();
+								//console.log(a);console.log(b);
+								facts.push(b);facts.push(a);
+							}
+							else{
+								let y = m.replace(pat2," ").toLowerCase().trim()
+								console.log("#",y);
+								facts.push(y)
+							}
+						});
+
+						facts.forEach(function(f){
+							if($scope.genreFam_map[f]){
+								console.log("true",f);
+							}
+						});
+						// console.log($scope.genreFam_map);
+						// console.log(facts);
+					}
+				},
+				error: function () {
+					alert("Error retrieving search results, please refresh the page");
+				}
+
+			});
+		}
+
+	})//promise
 };
+
+module.exports.googleQuery  = function(req,res) {
+	console.log("googleQuery",req.body.query);
+
+	return new Promise(function(done, fail) {
+
+		google.resultsPerPage = 1;
+		google(req.body.query, function (err, result){
+			if (err) console.error(err);
+
+			//res.send(result.body)
+			done(result.body)
+		})
+
+	})//promise
+};
+
+
 
 //https://www.mediawiki.org/wiki/API:Query
 //for searching

@@ -1440,64 +1440,66 @@
 						});
 
 						// alasql("INSERT INTO genres, artists_genres, artists")
-						$scope.process_artists($scope.user_cache[user.id].artists_results,user);
+						$scope.process_artists($scope.user_cache[user.id].artists_results,user).then(function(){
 
-						//------------------------------------------------------------------------------------------
-						//everything below is just a clone of the binding we would do at the end of get_all_tracks()
+							//------------------------------------------------------------------------------------------
+							//everything below is just a clone of the binding we would do at the end of get_all_tracks()
 
-						let qry_distinct_artists = "select distinct artists.id as artist_id, artists.name as name"
-							+ " from artists where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							+ " JOIN tracks t on t.id = pt.track_id"
-							+ " JOIN artists_tracks at on at.track_id = t.id"
-							+ " JOIN artists a on a.id = at.artist_id "
-							// + " JOIN artists_genres ag on a.id = ag.artist_id"
-							// + " JOIN genres g on g.id = ag.genre_id"
-							+  " where owner = '" + user.id + "')";
+							let qry_distinct_artists = "select distinct artists.id as artist_id, artists.name as name"
+								+ " from artists where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+								//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+								+ " JOIN tracks t on t.id = pt.track_id"
+								+ " JOIN artists_tracks at on at.track_id = t.id"
+								+ " JOIN artists a on a.id = at.artist_id "
+								// + " JOIN artists_genres ag on a.id = ag.artist_id"
+								// + " JOIN genres g on g.id = ag.genre_id"
+								+  " where owner = '" + user.id + "')";
 
-						//console.log(qry_distinct_artists);
-						//console.log(alasql("select * from artists"));
-						$scope.user_cache[user.id]['artists'] =  alasql(qry_distinct_artists);
+							//console.log(qry_distinct_artists);
+							//console.log(alasql("select * from artists"));
+							$scope.user_cache[user.id]['artists'] =  alasql(qry_distinct_artists);
 
-						//todo: order by similar genres? sounds hard
-						let qry_distinct_genres = "select distinct genres.id as genre_id, genres.name as name, genres.family as family"
-							+ " from genres where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							+ " JOIN tracks t on t.id = pt.track_id"
-							+ " JOIN artists_tracks at on at.track_id = t.id"
-							+ " JOIN artists a on a.id = at.artist_id "
-							+ " JOIN artists_genres ag on a.id = ag.artist_id"
-							+ " JOIN genres g on g.id = ag.genre_id"
-							+  " where owner = '" + user.id + "')";
+							//todo: order by similar genres? sounds hard
+							let qry_distinct_genres = "select distinct genres.id as genre_id, genres.name as name, genres.family as family"
+								+ " from genres where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+								//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+								+ " JOIN tracks t on t.id = pt.track_id"
+								+ " JOIN artists_tracks at on at.track_id = t.id"
+								+ " JOIN artists a on a.id = at.artist_id "
+								+ " JOIN artists_genres ag on a.id = ag.artist_id"
+								+ " JOIN genres g on g.id = ag.genre_id"
+								+  " where owner = '" + user.id + "')";
 
-						//console.log(qry_distinct_genres);
-						$scope.user_cache[user.id]['genres'] = alasql(qry_distinct_genres);
+							//console.log(qry_distinct_genres);
+							$scope.user_cache[user.id]['genres'] = alasql(qry_distinct_genres);
 
-						let qry_distinct_tracks = "select distinct tracks.id as track_id, tracks.name as track_name"
-							+ " from tracks where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							+ " JOIN tracks t on t.id = pt.track_id"
-							+ " JOIN artists_tracks at on at.track_id = t.id"
-							+ " JOIN artists a on a.id = at.artist_id "
-							// + " JOIN artists_genres ag on a.id = ag.artist_id"
-							// + " JOIN genres g on g.id = ag.genre_id"
-							+  " where owner = '" + user.id + "')";
+							let qry_distinct_tracks = "select distinct tracks.id as track_id, tracks.name as track_name"
+								+ " from tracks where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+								//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+								+ " JOIN tracks t on t.id = pt.track_id"
+								+ " JOIN artists_tracks at on at.track_id = t.id"
+								+ " JOIN artists a on a.id = at.artist_id "
+								// + " JOIN artists_genres ag on a.id = ag.artist_id"
+								// + " JOIN genres g on g.id = ag.genre_id"
+								+  " where owner = '" + user.id + "')";
 
-						//console.log(qry_distinct_tracks);
-						$scope.user_cache[user.id].tracks =  alasql(qry_distinct_tracks);
+							//console.log(qry_distinct_tracks);
+							$scope.user_cache[user.id].tracks =  alasql(qry_distinct_tracks);
 
-						console.log("setting genre_freq map...");
-						$scope.user_cache[user.id]['genres'].forEach(function(genre){
-							$scope.genres_frequency(genre,user);
-						});
+							console.log("setting genre_freq map...");
+							$scope.user_cache[user.id]['genres'].forEach(function(genre){
+								$scope.genres_frequency(genre,user);
+							});
 
-						console.log("setting artist_freq map...");
-						$scope.user_cache[user.id]['artists'].forEach(function(artist){
-							$scope.artists_frequency(artist,user);
-						});
+							console.log("setting artist_freq map...");
+							$scope.user_cache[user.id]['artists'].forEach(function(artist){
+								$scope.artists_frequency(artist,user);
+							});
 
-						console.log("setIt results",$scope.user_cache[user.id]);
-						$scope.digestIt()
+							console.log("setIt results",$scope.user_cache[user.id]);
+							$scope.digestIt()
+
+						})//process_artists
 					};
 
 					$scope.testPost = function(){
@@ -1775,7 +1777,7 @@
 									let qry2 = "select distinct g.id, g.name " +
 										" from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id" +
 										" where a.id = '"  + q1[0].artist_id + "'";
-									 genres = alasql(qry2);
+									genres = alasql(qry2);
 									//console.log("$genres",genres);
 								}
 
@@ -2086,51 +2088,51 @@
 
 								//process_artists has weird params
 								payloads.push(payload);
-								$scope.process_artists(payloads);
+								$scope.process_artists(payloads).then(function(){
 
 
-								console.log("unresolved_artists",$scope.unresolved_artists);
+									console.log("unresolved_artists",$scope.unresolved_artists);
 
-								//todo: modify for multiple metro calls
+									//todo: modify for multiple metro calls
 
-								// $scope.metro_cache[events[0].metro_id] = events;
-								// $scope.metro_cache[events[0].metro_id] = alasql("select * from events;");
+									// $scope.metro_cache[events[0].metro_id] = events;
+									// $scope.metro_cache[events[0].metro_id] = alasql("select * from events;");
 
-								console.log("metro_cache",$scope.metro_cache);
-								// console.log('events:',alasql("select * from events;"));
-								// console.log('performances:',alasql("select * from performances;"));
-								// console.log('events_performances:',alasql("select * from events_performances;"));
-								// console.log('artist_artistSongkick:',alasql("select * from artist_artistSongkick;"));
+									console.log("metro_cache",$scope.metro_cache);
+									// console.log('events:',alasql("select * from events;"));
+									// console.log('performances:',alasql("select * from performances;"));
+									// console.log('events_performances:',alasql("select * from events_performances;"));
+									// console.log('artist_artistSongkick:',alasql("select * from artist_artistSongkick;"));
 
-								// let qry = "select p.displayName as perf_displayName, " +
-								// 	"from events e JOIN events_performances ep on e.id = ep.event_id JOIN performances p on p.id = ep.performance_id";
-								//
-								// $scope.metro_cache[events[0].metro_id] = alasql(qry);
+									// let qry = "select p.displayName as perf_displayName, " +
+									// 	"from events e JOIN events_performances ep on e.id = ep.event_id JOIN performances p on p.id = ep.performance_id";
+									//
+									// $scope.metro_cache[events[0].metro_id] = alasql(qry);
 
-								//todo: (process_artists)
-								!$scope.metro_cache[events[0].metro_id] ? $scope.metro_cache[events[0].metro_id] = {} : {};
+									//todo: (process_artists)
+									!$scope.metro_cache[events[0].metro_id] ? $scope.metro_cache[events[0].metro_id] = {} : {};
 
-								$scope.metro_cache[events[0].metro_id].events = alasql("select * from events;")
-								// $scope.metro_cache[events[0].metro_id].performances = alasql("select * from performances;")
+									$scope.metro_cache[events[0].metro_id].events = alasql("select * from events;")
+									// $scope.metro_cache[events[0].metro_id].performances = alasql("select * from performances;")
 
-								// p.artistSongkick_id
-								// p.billing
-								// p.billingIndex
-								// p.displayName
-								// p.id
+									// p.artistSongkick_id
+									// p.billing
+									// p.billingIndex
+									// p.displayName
+									// p.id
 
-								let qperf = "select * from performances;"
+									let qperf = "select * from performances;"
 
-								$scope.metro_cache[events[0].metro_id].performances = alasql(qperf)
+									$scope.metro_cache[events[0].metro_id].performances = alasql(qperf)
 
-								console.log($scope.metro_cache[events[0].metro_id]);
+									console.log($scope.metro_cache[events[0].metro_id]);
 
-								$scope.digestIt();
+									$scope.digestIt();
+								})
 
-							});//all
+							});//search_artists post
 
-
-						})//$http
+						})//get_metro_events post
 					};
 
 					var write_schedule = function(results){
@@ -2534,284 +2536,277 @@
 					 **/
 					$scope.process_artists = function(results){
 
-						console.log("$process_artists");
-						console.log(JSON.parse(JSON.stringify(results)));
+						return new Promise(function(done, fail) {
 
-						//use this to print batches of resolved artists out to console
-						//in order to use as set_user_cache data
-						//console.log(JSON.stringify(results,null,4));
 
-						let all_artists = [];
-						results.forEach((r)=>{all_artists = all_artists.concat(r.artists)});
 
-						console.log(all_artists.length);
 
-						//create a map of unique genres and their artists
+							console.log("$process_artists");
+							console.log(JSON.parse(JSON.stringify(results)));
 
-						let unique_genre_artist_map = {};
-						let no_genre_artists = [];
+							//use this to print batches of resolved artists out to console
+							//in order to use as set_user_cache data
+							//console.log(JSON.stringify(results,null,4));
 
-						all_artists.forEach(function(ar){
+							let all_artists = [];
+							results.forEach((r)=>{all_artists = all_artists.concat(r.artists)});
 
-							//todo: null sometimes? hows that happen exactly..?
-							if(ar){
+							console.log(all_artists.length);
 
-								if(ar.genres.length > 0){
-									ar.genres.forEach((g)=>{
-										if(!unique_genre_artist_map[g]){
-											unique_genre_artist_map[g] = {artists:[]}
-										}
-										if(unique_genre_artist_map[g].artists.indexOf(ar) === -1){
-											unique_genre_artist_map[g].artists.push(ar);
-										}
+							//create a map of unique genres and their artists
+
+							let unique_genre_artist_map = {};
+							let no_genre_artists = [];
+
+							all_artists.forEach(function(ar){
+
+								//todo: null sometimes? hows that happen exactly..?
+								if(ar){
+
+									if(ar.genres.length > 0){
+										ar.genres.forEach((g)=>{
+											if(!unique_genre_artist_map[g]){
+												unique_genre_artist_map[g] = {artists:[]}
+											}
+											if(unique_genre_artist_map[g].artists.indexOf(ar) === -1){
+												unique_genre_artist_map[g].artists.push(ar);
+											}
+										});
+									}
+									else{
+										no_genre_artists.push(ar);
+									}
+
+									//we only needs keys included in the def in the next loop
+									//so destructing ar is OK
+
+									reduce(artistDef, ar);
+									let varchar_keys = ["name"];
+									varchar_keys.forEach(function (key) {
+										ar[key] = ar[key].replace(/'/g, "''");
 									});
+									alasql("INSERT INTO artists VALUES ( " + vlister(ar) + " )");
+
+								}//non null artist
+								else{
+									console.log("error",ar);
+								}
+							});//all_artists
+
+							let artist_genre = {};
+							let genre = {};
+							let genreInd = 0;
+							let no_family = [];
+
+							//insert each genre, artist_genre and UNIQUE artist into their respective tables
+							for(let key in unique_genre_artist_map){
+								//console.log("here");
+								genre = {};
+								genre.id = ++genreInd;
+								genre.name = key;
+								if($scope.genreFam_map[genre.name] !== undefined){
+									genre.family = $scope.genreFam_map[genre.name];
 								}
 								else{
-									no_genre_artists.push(ar);
+									genre.family = [];
+									no_family.push(genre)
 								}
 
-								//we only needs keys included in the def in the next loop
-								//so destructing ar is OK
 
-								reduce(artistDef, ar);
-								let varchar_keys = ["name"];
-								varchar_keys.forEach(function (key) {
-									ar[key] = ar[key].replace(/'/g, "''");
+								$scope.lookup['genres'][genre.id] = key;
+								$scope.listing['genres'].push(genre);
+
+								alasql("INSERT INTO genres VALUES ( " + vlister(genre)  + " )");
+
+								//console.log(alasql("select * from  genres"));
+
+								unique_genre_artist_map[key].artists.forEach(function(ar){
+									artist_genre = {};
+									artist_genre.artist_id = ar.id;
+									artist_genre.genre_id = genreInd;
+									alasql("INSERT INTO artists_genres VALUES ( " + vlister(artist_genre)  + " )");
+
+									// //there will 100% be duplicate artists over genres,
+									// //so don't insert them twice
+									// if(inserted_artists.indexOf(ar.id) === -1) {
+									// 	reduce(artistDef, ar);
+									// 	let varchar_keys = ["name"];
+									// 	varchar_keys.forEach(function (key) {
+									// 		ar[key] = ar[key].replace(/'/g, "''");
+									// 	});
+									// 	alasql("INSERT INTO artists VALUES ( " + vlister(ar) + " )");
+									// 	inserted_artists.push(ar.id)
+									// }
 								});
-								alasql("INSERT INTO artists VALUES ( " + vlister(ar) + " )");
 
-							}//non null artist
-							else{
-								console.log("error",ar);
-							}
-						});//all_artists
+							}// key in unique_genre_artist_map
 
-						let artist_genre = {};
-						let genre = {};
-						let genreInd = 0;
-						let no_family = [];
+							//registering genres that I don't recognize in my master genreFam_map
+							// into families by taking my best guess given the words in the genre
 
+							//todo: shouldn't this also modify the genre db entry?
 
+							let registerGenre = function(genre){
+								//if(!$scope.genreFam_map[genre.name]){
+								//console.log("$here",genre.name);
+								let pat = /(\w+)/g;
+								let words = genre.name.match(pat);
+								//console.log(words);
+								for(var x=0; x < words.length; x++){
 
-						//insert each genre, artist_genre and UNIQUE artist into their respective tables
-						for(let key in unique_genre_artist_map){
-							//console.log("here");
-							genre = {};
-							genre.id = ++genreInd;
-							genre.name = key;
-							if($scope.genreFam_map[genre.name] !== undefined){
-								genre.family = $scope.genreFam_map[genre.name];
-							}
-							else{
-								genre.family = [];
-								no_family.push(genre)
-							}
+									// if the first word of the genre is the name of a family, put it in there
+									// ex: 'folk pop'
+									if(globalFamilies.indexOf(words[0]) !== -1){
+										//	console.log("true0");
+										$scope.genreFam_map[genre.name] = [words[0]];
+										$scope.familyGenre_map[words[0]].push(genre.name);
+										return true;
+										//console.log($scope.genreFam_map);
+										//console.log($scope.familyGenre_map);
+									}
+									else if(globalFamilies.indexOf(words[1]) !== -1){
+										$scope.genreFam_map[genre.name] = [words[1]];
+										$scope.familyGenre_map[words[1]].push(genre.name);
+										return true;
+										//console.log($scope.genreFam_map);
+										//console.log($scope.familyGenre_map);
+									}
+									else if(globalFamilies.indexOf(words[2]) !== -1){
+										//console.log("true2");
+										$scope.genreFam_map[genre.name] = [words[2]];
+										$scope.familyGenre_map[words[2]].push(genre.name);
+										return true;
+										//console.log($scope.genreFam_map);
+										//console.log($scope.familyGenre_map);
+									}
+									else{
+										return false;
+									}
+								}
+								//}
+							};
 
-
-							$scope.lookup['genres'][genre.id] = key;
-							$scope.listing['genres'].push(genre);
-
-							alasql("INSERT INTO genres VALUES ( " + vlister(genre)  + " )");
-
-							//console.log(alasql("select * from  genres"));
-
-							unique_genre_artist_map[key].artists.forEach(function(ar){
-								artist_genre = {};
-								artist_genre.artist_id = ar.id;
-								artist_genre.genre_id = genreInd;
-								alasql("INSERT INTO artists_genres VALUES ( " + vlister(artist_genre)  + " )");
-
-								// //there will 100% be duplicate artists over genres,
-								// //so don't insert them twice
-								// if(inserted_artists.indexOf(ar.id) === -1) {
-								// 	reduce(artistDef, ar);
-								// 	let varchar_keys = ["name"];
-								// 	varchar_keys.forEach(function (key) {
-								// 		ar[key] = ar[key].replace(/'/g, "''");
-								// 	});
-								// 	alasql("INSERT INTO artists VALUES ( " + vlister(ar) + " )");
-								// 	inserted_artists.push(ar.id)
-								// }
+							//unique_genre_artist_map (genres to their artists that came back from spotify)
+							//but the genre that came back wasn't in our master list genre->family map
+							no_family.forEach(function(genre){
+								registerGenre(genre);
 							});
 
-						}// key in unique_genre_artist_map
 
-						//registering genres that I don't recognize in my master genreFam_map
-						// into families by taking my best guess given the words in the genre
+							//all_artists who didn't has a spotify result of genres:[]
+							//have been inserted into the artist table, but don't have they're
+							//newly facted genres or artist-genre associations yet
 
-						//todo: shouldn't this also modify the genre db entry?
+							let extQueries = [];
+							no_genre_artists.forEach(function(ar){
+								//todo:
+								// extQueries.push($scope.getExternalInfo(ar))
+								//extQueries.push($scope.getWikiPage(ar))
+							});
 
-						let registerGenre = function(genre){
-							//if(!$scope.genreFam_map[genre.name]){
-							//console.log("$here",genre.name);
-							let pat = /(\w+)/g;
-							let words = genre.name.match(pat);
-							//console.log(words);
-							for(var x=0; x < words.length; x++){
+							Promise.all(extQueries).then(function(results){
+								console.log("$externalInfo results",results);
+								let tuples = []
+								results.forEach(function(r){tuples.push(r.data)});
 
-								// if the first word of the genre is the name of a family, put it in there
-								// ex: 'folk pop'
-								if(globalFamilies.indexOf(words[0]) !== -1){
-									//	console.log("true0");
-									$scope.genreFam_map[genre.name] = [words[0]];
-									$scope.familyGenre_map[words[0]].push(genre.name);
-									return true;
-									//console.log($scope.genreFam_map);
-									//console.log($scope.familyGenre_map);
-								}
-								else if(globalFamilies.indexOf(words[1]) !== -1){
-									$scope.genreFam_map[genre.name] = [words[1]];
-									$scope.familyGenre_map[words[1]].push(genre.name);
-									return true;
-									//console.log($scope.genreFam_map);
-									//console.log($scope.familyGenre_map);
-								}
-								else if(globalFamilies.indexOf(words[2]) !== -1){
-									//console.log("true2");
-									$scope.genreFam_map[genre.name] = [words[2]];
-									$scope.familyGenre_map[words[2]].push(genre.name);
-									return true;
-									//console.log($scope.genreFam_map);
-									//console.log($scope.familyGenre_map);
-								}
-								else{
-									return false;
-								}
-							}
-							//}
-						};
+								tuples.forEach(function(t){
+									if(!(t.facts.length === 0)){
+										t.facts.forEach(function(f){
+											//f = "flamenco"
 
-						//unique_genre_artist_map (genres to their artists that came back from spotify)
-						//but the genre that came back wasn't in our master list genre->family map
-						no_family.forEach(function(genre){
-							registerGenre(genre);
-						});
+											//a fact that came back matches a genre we have
+											if($scope.genreFam_map[f]){
 
+												//we've already inserted these genres above, right?
 
-						//all_artists who didn't has a spotify result of genres:[]
-						//have been inserted into the artist table, but don't have they're
-						//newly facted genres or artist-genre associations yet
+												let genres = alasql("select * from genres");
+												console.log(genres);
 
-						let wikiQueries = [];
-						no_genre_artists.forEach(function(ar){
-							wikiQueries.push($scope.getWikiPage(ar))
-						});
+												let qry = "select id from genres where name = '" + f +  "'";
+												console.log(qry);
+												let genre_id = alasql(qry);
+												console.log("$f",f);
+												console.log(genre_id);
 
-						Promise.all(wikiQueries).then(function(results){
-							console.log("$results",results);
-							let tuples = []
-							results.forEach(function(r){tuples.push(r.data)});
+												//if we couldn't find that genre, assign new artist_genre a new ind and insert
+												//that genre. otherwise, just create the new record in artist_genre with the ind we found
+												artist_genre = {};
+												artist_genre.artist_id = t.expression.id;
 
-							tuples.forEach(function(t){
-								if(!(t.facts.length === 0)){
-									t.facts.forEach(function(f){
-										//f = "flamenco"
+												if(genre_id.length ===0 ){
+													++genreInd;
 
-										//a fact that came back matches a genre we have
-										if($scope.genreFam_map[f]){
+													genre = {};
+													genre.id = genreInd;
+													genre.name = f;
+													genre.family = $scope.genreFam_map[f];
+													alasql("INSERT INTO genres VALUES ( " + vlister(genre)  + " )");
 
-											//we've already inserted these genres above, right?
+													artist_genre.genre_id = genreInd;
+													console.log("$artist_genre",artist_genre);
+													alasql("INSERT INTO artists_genres VALUES ( " + vlister(artist_genre)  + " )");
 
-
-											let genres = alasql("select * from genres");
-											console.log(genres);
-
-											let qry = "select id from genres where name = '" + f +  "'";
-											console.log(qry);
-											let genre_id = alasql(qry);
-											console.log("$f",f);
-											console.log(genre_id);
-
-											//if we couldn't find that genre, assign new artist_genre a new ind and insert
-											//that genre. otherwise, just create the new record in artist_genre with the ind we found
-											artist_genre = {};
-											artist_genre.artist_id = t.expression.id;
-
-											if(genre_id.length ===0 ){
-												++genreInd;
-
-												genre = {};
-												genre.id = genreInd;
-												genre.name = f;
-												genre.family = $scope.genreFam_map[f];
-												alasql("INSERT INTO genres VALUES ( " + vlister(genre)  + " )");
-
-												artist_genre.genre_id = genreInd;
-												console.log("$artist_genre",artist_genre);
-												alasql("INSERT INTO artists_genres VALUES ( " + vlister(artist_genre)  + " )");
-
-											}else{
-												artist_genre.genre_id = genre_id[0].id;
-												console.log("$artist_genre",artist_genre);
-												alasql("INSERT INTO artists_genres VALUES ( " + vlister(artist_genre)  + " )");
+												}else{
+													artist_genre.genre_id = genre_id[0].id;
+													console.log("$artist_genre",artist_genre);
+													alasql("INSERT INTO artists_genres VALUES ( " + vlister(artist_genre)  + " )");
+												}
 											}
-										}
-									});
-								}
-							})
+										});
+									}
+								})
 
-							//todo: used to be at very bottom of process artists
-							//.................................
+								console.log("inserted_artists",inserted_artists.length);
+								console.warn("couldn't find a family for these genres",no_family);
 
+								//console.log("select * from artists_genres;",alasql("select * from artists_genres;"));
 
-						});//promise.all
-
-
-						console.log("inserted_artists",inserted_artists.length);
-
-						//todo:
-						console.warn("couldn't find a family for these genres",no_family);
-
-						//console.log("select * from artists_genres;",alasql("select * from artists_genres;"));
-
-						// let qry = "select a.id AS artist_id, a.name AS artist_name, g.id AS genre_id, g.name AS genre_name " +
-						// 	"from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id";
-						// console.log("join artists with their genres",alasql(qry));
+								// let qry = "select a.id AS artist_id, a.name AS artist_name, g.id AS genre_id, g.name AS genre_name " +
+								// 	"from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id";
+								// console.log("join artists with their genres",alasql(qry));
 
 
-						//deprecated: trying to get out of the business of generating a map for every little thing
-						let register_artistSongkick_genres = function(){
-							console.log("register_artistSongkick_genres");
+								done();
 
-							let qry1 = "select artistSongkick_id ,artist_id from artist_artistSongkick";
-							let artist_artistSongkick = alasql(qry1);
+							});//promise.all
 
-							//console.log("artist_artistSongkick",artist_artistSongkick);
+							//deprecated: trying to get out of the business of generating a map for every little thing
+							let register_artistSongkick_genres = function(){
+								console.log("register_artistSongkick_genres");
 
-							//todo:
-							$scope.metro_cache[$scope.global_metro.id] = {};
-							$scope.metro_cache[$scope.global_metro.id].artistSongkick_genres = {};
-							$scope.metro_cache[$scope.global_metro.id].artistSongkick_artist = {};
-							artist_artistSongkick.forEach(function(tuple){
+								let qry1 = "select artistSongkick_id ,artist_id from artist_artistSongkick";
+								let artist_artistSongkick = alasql(qry1);
 
-								//broke this into smaller pieces
-								// let qry2 = "select g.id AS genre_id, g.name AS genre_name " +
-								// 	"from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id JOIN " +
-								// 	"artist_artistSongkick aas on a.id = aas.artist_id where aas.artistSongkick_id = " + artistSongkick_id;
-
-								let qry2 = "select distinct g.id, g.name " +
-									" from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id" +
-									" where a.id = '"  + tuple.artist_id + "'";
-
-								let qry3 = "select * from artists a where id = '"  + tuple.artist_id + "'";
+								//console.log("artist_artistSongkick",artist_artistSongkick);
 
 								//todo:
-								$scope.metro_cache[$scope.global_metro.id].artistSongkick_genres[tuple.artistSongkick_id] = alasql(qry2);
-								$scope.metro_cache[$scope.global_metro.id].artistSongkick_artist[tuple.artistSongkick_id] = alasql(qry3);
+								$scope.metro_cache[$scope.global_metro.id] = {};
+								$scope.metro_cache[$scope.global_metro.id].artistSongkick_genres = {};
+								$scope.metro_cache[$scope.global_metro.id].artistSongkick_artist = {};
+								artist_artistSongkick.forEach(function(tuple){
 
-							})
-						};
+									//broke this into smaller pieces
+									// let qry2 = "select g.id AS genre_id, g.name AS genre_name " +
+									// 	"from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id JOIN " +
+									// 	"artist_artistSongkick aas on a.id = aas.artist_id where aas.artistSongkick_id = " + artistSongkick_id;
 
-						//register_artistSongkick_genres();
+									let qry2 = "select distinct g.id, g.name " +
+										" from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id" +
+										" where a.id = '"  + tuple.artist_id + "'";
 
-						//todo: we've introduced an async component into process_artists
-						//so until we wait for that to finish, this binding here won't include that
+									let qry3 = "select * from artists a where id = '"  + tuple.artist_id + "'";
 
-						//let bigList=  "select * from artists_genres ag JOIN genres g on ag.genre_id = g.id";
-						//$scope.metro_cache[$scope.global_metro.id].artist_genres =  alasql(bigList);
-						///console.log("$biglist",$scope.metro_cache[$scope.global_metro.id].artist_genres);
+									//todo:
+									$scope.metro_cache[$scope.global_metro.id].artistSongkick_genres[tuple.artistSongkick_id] = alasql(qry2);
+									$scope.metro_cache[$scope.global_metro.id].artistSongkick_artist[tuple.artistSongkick_id] = alasql(qry3);
 
-					};
+								})
+							};
+							//register_artistSongkick_genres();
+
+						})//promise
+
+					};//process_artists
 
 					/**Get tracks for every playlist you throw at it {playlist_tracks_map}
 					 * While processing the playlist track entries, it also fills out artistsInfoMap, artistsInfoMap_simple
@@ -2918,7 +2913,9 @@
 								$http.post(url_local + req_all.url_postfix,req_all.body).then(function(results){
 									console.log("$get_artists");
 									console.log(results.data);
-									$scope.process_artists(results.data);
+									$scope.process_artists(results.data).then(function(){
+										done();
+									})
 
 									// console.log("select * from genres;",alasql("select * from genres;"));
 									// console.log("select * from artists;",alasql("select * from artists;"));
@@ -2928,7 +2925,7 @@
 									// 	"from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id";
 									// console.log("join artists with their genres",alasql(qry));
 
-									done();
+
 								})//promise all
 							})//post then
 						})};//playlist_tracks
@@ -2936,6 +2933,33 @@
 
 					//section: searching utilities
 					//===========================================================================================
+
+
+					//this will go to the MS and first try to get more info from wiki, then a google search
+					$scope.getExternalInfo = function(expression){
+						return new Promise(function(done, fail) {
+							var req = {};
+							req.type = "POST";
+							req.url_postfix = "getExternalInfo";
+							let params = getHashParams();
+							req.body = {
+								expression:expression,
+								token:params.access_token
+							}
+
+							$http.post(url_local + req.url_postfix,req.body).then(function(res){
+
+								console.log(res);
+								done(res);
+
+							}).catch(function(err){
+								console.log(err);
+								fail(err)
+
+							})
+						})
+
+					};
 
 					//takes from page param $scope.wikiQry
 					$scope.getWikiPage = function(expression){

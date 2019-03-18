@@ -46,6 +46,8 @@ app.post("/googleQuery",spotify["googleQuery"]);
 
 app.post("/getWikiPage",spotify["getWikiPage"]);
 
+app.post("/getExternalInfo",spotify["getExternalInfo"]);
+
 //spotify
 
 app.post("/search_artists",spotify["search_artists"]);
