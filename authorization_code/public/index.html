@@ -258,7 +258,7 @@
                 <span class="familyItem" ng-class="{'contained':familySelected(u,f)}" ng-click="toggleFamily(u,f)">
                   <span style="font-size:2em"> {{f}} </span>
                   <!-- -->
-                  <span> ({{family_frequency_fetch(f,u)}})
+                  <span> ({{family_frequency_fetch(f,u)}} tracks)
                     <!--todo: how to properly float this-->
                     <!--<span ng-mouseover="info[f] = true" ng-mouseleave="info[f] = false" class="fa fa-info-circle">-->
                     <!--<span style="border:1px solid lightgrey;z-index:5;position:relative;top:-10px" ng-if="info[f]"> Of the artists inputted, the genres belonging to this family hit this many times</span>-->
@@ -283,12 +283,18 @@
                 <!-- old complicated way-->
                 <!--ng-repeat="g in user_cache[u.id]['genres'] | orderByGenre:genreSort:genre_freq_map[u.id]:familyColor_map[g.family[0]]" >-->
 
+                <!--todo: causes everything to come to a halt - after awhile fam_freq finishes but then when I try to -->
+                <!--actually use the filter, shits  fucked for eternity, then gets a $digest() error. posssibly releated to thisFamily filter?
+                in the eman time, trying instead to make it not have to call db-->
+
+                <!--| byGenreFreq:u:genre_frequency_fetch:user_cache[u.id].genres-->
+
                 <div ng-if="user_cache_ctrl[u.id][f]"
-                     ng-repeat="g in user_cache[u.id]['genres'] | thisFamily:f:familyGenre_map | byGenreFreq:u:genre_freq_map"
+                     ng-repeat="g in user_cache[u.id]['genres'] | thisFamily:f:familyGenre_map "
                      ng-style="{color:familyColor_map[g.family[f]]}">
 
                   <!--&nbsp &nbsp &nbsp &nbsp {{g.name}} ({{genre_freq_map[u.id][g.genre_id]}})-->
-                  &nbsp &nbsp &nbsp &nbsp {{g.name}} ({{genres_frequency_fetch(g,u)}} tracks)
+                  &nbsp &nbsp &nbsp &nbsp {{g.name}} ({{genre_frequency_fetch(g,u)}} tracks)
                   <span ng-if="g.family.length >1">
 
                     <button ng-click="user_cache_ctrl[u.id][g.name] = !user_cache_ctrl[u.id][g.name]"
