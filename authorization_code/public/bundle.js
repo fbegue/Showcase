@@ -434,18 +434,36 @@
 					}
 				});
 
+
 				module.filter('byFamilyFreq', function () {
-					return function (input,user,usersGenres,family_freq_map) {
-						console.log("byFamilyFreq",usersGenres.length);
+					return function (input,user,family_frequency_fetch,ucachegenres) {
+						//console.log("byFamilyFreq",input);
+
+						if(!ucachegenres.length === 0){
+
+
 						let output = JSON.parse(JSON.stringify(input));
-						if(usersGenres.length !== 0) {
-							output.sort(function (a, b) {
-								return (family_freq_map[user.id][a] < family_freq_map[user.id][b]) ? 1 : -1
-							})
-						}
+						output.sort(function (a, b) {
+							return (family_frequency_fetch(user,a) < family_frequency_fetch(user,b)) ? 1 : -1
+						})
+
 						return output
+						}else{return input}
 					}
 				});
+
+				// module.filter('byFamilyFreq', function () {
+				// 	return function (input,user,usersGenres,family_freq_map) {
+				// 		console.log("byFamilyFreq",usersGenres.length);
+				// 		let output = JSON.parse(JSON.stringify(input));
+				// 		if(usersGenres.length !== 0) {
+				// 			output.sort(function (a, b) {
+				// 				return (family_freq_map[user.id][a] < family_freq_map[user.id][b]) ? 1 : -1
+				// 			})
+				// 		}
+				// 		return output
+				// 	}
+				// });
 
 				module.filter('byGenreFreq', function () {
 					return function (input,user,genre_freq_map) {
@@ -1650,6 +1668,90 @@
 					//issue is I have no linkage from a USER to their artists/genres without PLAYLISTS
 					//therefore I HAVE to go from playlists->tracks->artists
 
+
+					$scope.family_frequency_fetch = function(famName,user){
+						//console.log("family_frequency_fetch", famName);
+
+						//todo: this will become an issue over update cycles
+						if($scope.user_cache[user.id]['genres'].length !== 0){
+
+							//need to determine how many tracks belong to a family for a user.
+							//select playlist->track->artists, and figure out how many times
+							//the genres that belong to that family appear
+
+							let inGenres = $scope.familyGenre_map[famName];
+							//console.log(inGenres);
+
+							let genreTrack_map = {};
+							let no_reg = [];
+							inGenres.forEach(function(g){
+
+								let g_san = g.replace(/'/g, "''");
+								let gId_qry = "select id from genres where name = '" + g_san + "'";
+								let gId = alasql(gId_qry)
+
+								if(gId.length !== 0){
+									let sub_qry = "select a.id as artist_id, a.name as name, t.name as track_name, g.name as genre_name, g.id as genre_id, g.family as family"
+										+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+										+ " JOIN tracks t on t.id = pt.track_id"
+										+ " JOIN artists_tracks at on at.track_id = t.id"
+										+ " JOIN artists a on a.id = at.artist_id "
+										+ " JOIN artists_genres ag on a.id = ag.artist_id"
+										+ " JOIN genres g on g.id = ag.genre_id"
+										+  " where owner = '" + user.id + "' and g.id = " + gId[0].id;
+									genreTrack_map[g] = alasql(sub_qry)
+								}
+								else{
+									no_reg.push(g);
+								}
+							});
+
+							//console.log("no_reg",no_reg);
+							console.log("$",genreTrack_map);
+
+							// let track_count = 0;
+							// for(var gTrack in genreTrack_map){
+							// 	track_count+= genreTrack_map[gTrack].length
+							// }
+							// return track_count
+
+							let uniqueTracks = [];
+							for(var gTrack in genreTrack_map){
+								genreTrack_map[gTrack].forEach(function(gt){
+									if(uniqueTracks.indexOf(gt) === -1){
+										uniqueTracks.push(gt);
+									}
+								})
+							}
+							return uniqueTracks.length;
+
+							// output.sort(function (a, b) {
+							// 	let famTracks_a = famFreqFunc(a, user);
+							// 	console.log("a", famTracks_a);
+							//
+							// 	let famTracks_b = famFreqFunc(b, user);
+							// 	console.log("b", famTracks_b);
+							// 	let unique_a = [];
+							// 	let unique_b = [];
+							//
+							// 	famTracks_a.forEach(function (a) {
+							// 		if (unique_a.indexOf(a) !== 1) {
+							// 			unique_a.push(a)
+							// 		}
+							// 	});
+							// 	famTracks_b.forEach(function (b) {
+							// 		if (unique_b.indexOf(b) !== 1) {
+							// 			unique_b.push(b)
+							// 		}
+							// 	});
+							//
+							// 	return (unique_a.length < unique_b.length) ? 1 : -1
+							// });
+
+						}else{
+							console.log("calc blocked");
+						}
+					};
 					$scope.genres_frequency_fetch = function(genreTuple,user){
 
 						console.log("genres_frequency_fetch", genreTuple);
@@ -1658,50 +1760,32 @@
 						//a genre appears over all the tracks that belong to a user
 
 						//todo: couldn't figure SQL out for distinct
-						//instead, decided to do simple filtering ot of JS unique tracks
+						//instead, decided to do simple filtering out of JS unique tracks
 
-						// let sub_qry = "select a.id as artist_id, a.name as name, t.name as track_name, g.name as genre_name, g.id as genre_id, g.family as family"
-						// 	+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-						// 	+ " JOIN tracks t on t.id = pt.track_id"
-						// 	+ " JOIN artists_tracks at on at.track_id = t.id"
-						// 	+ " JOIN artists a on a.id = at.artist_id "
-						// 	+ " JOIN artists_genres ag on a.id = ag.artist_id"
-						// 	+ " JOIN genres g on g.id = ag.genre_id"
-						// 	+  " where owner = '" + user.id + "' and g.id = " + genreTuple.genre_id;
-
-
-						//todo: was thinking about getting artists, tracks then just figuring out artist frequency from smaller queries
-						let q_tracks = "select a.id as artist_id, a.name as name, t.name as track_name"
+						let sub_qry = "select a.id as artist_id, a.name as name, t.name as track_name, g.name as genre_name, g.id as genre_id, g.family as family"
 							+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
 							+ " JOIN tracks t on t.id = pt.track_id"
 							+ " JOIN artists_tracks at on at.track_id = t.id"
 							+ " JOIN artists a on a.id = at.artist_id "
-							+  " where owner = '" + user.id + "'";
-
-						let tracks = alasql(q_tracks);
-						console.log("$artists",artists);
-
-
-						let artistTrack_map = {};
-						tracks.forEach(function(artTrack){
-							if(!artistTrack_map[artistTrack_map.artist_id]){artistTrack_map[artistTrack_map.artist_id] = []}
-							artistTrack_map[artistTrack_map.artist_id].push(artTrack)
-
-						});
-
-						console.log("$artistTrack_map",artistTrack_map);
-
-						let artistGenre_map = {};
-						Object.keys(artistTrack_map).forEach(function(key){
-							let q_artistGenre = "select g.name as genre_name, g.id as genre_id, g.family as family" +
-								" from genres g join artists_genres ag on g.id = ag.genre_id where ag.artist_id = '" +  key + "'"
-							// let genres =
-							if(!artistGenre_map[key]){artistGenre_map[key] = []}
-							artistGenre_map[key] = alasql(q_artistGenre);
-						});
+							+ " JOIN artists_genres ag on a.id = ag.artist_id"
+							+ " JOIN genres g on g.id = ag.genre_id"
+							+  " where owner = '" + user.id + "' and g.id = " + genreTuple.genre_id;
 
 
-						console.log("$artistGenre_map",artistGenre_map);
+						let tracks = alasql(sub_qry);
+						//console.log("$q_tracks",sub_qry);
+						console.log("$tracks",tracks);
+
+						//todo: just genres and artists, don't care about track frequency
+
+						// let genreArtist_map = {};
+						// tracks.forEach(function(artTrackGenre){
+						// 	if(!genreArtist_map[artTrackGenre.genre_name]){genreArtist_map[artTrackGenre.genre_name] = []}
+						// 	genreArtist_map[artTrackGenre.genre_name].push(artTrackGenre)
+						// });
+
+						return tracks.length
+
 					};
 
 					//todo: deprecated - I now provide registration on  #map family_freq_map

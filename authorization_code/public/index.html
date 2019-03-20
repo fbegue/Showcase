@@ -242,7 +242,7 @@
               <!--| orderBy:genreFreq(u):descendFreq | sharedFilter:'genres':shared"-->
 
               <div id="familyList" ng-if="user_cache_ctrl[u.id].show.families" style="font-style:italic;" ng-style="{color:familyColor_map[f]}"
-                   ng-repeat="f in globalFamilies | byFamilyFreq:u:user_cache[u.id]['genres']:family_freq_map" >
+                   ng-repeat="f in globalFamilies | byFamilyFreq:u:family_frequency_fetch:user_cache[u.id].genres" >
 
                 <!--todo:-->
                 <!--<showcase-checkbox ng-model="user_cache_ctrl[u.id]['family-event'][f]"  type="checkbox" field="family-event" key="Id"></showcase-checkbox>-->
@@ -258,7 +258,7 @@
                 <span class="familyItem" ng-class="{'contained':familySelected(u,f)}" ng-click="toggleFamily(u,f)">
                   <span style="font-size:2em"> {{f}} </span>
                   <!-- -->
-                  <span> ({{family_freq_map[u.id][f]}})
+                  <span> ({{family_frequency_fetch(f,u)}})
                     <!--todo: how to properly float this-->
                     <!--<span ng-mouseover="info[f] = true" ng-mouseleave="info[f] = false" class="fa fa-info-circle">-->
                     <!--<span style="border:1px solid lightgrey;z-index:5;position:relative;top:-10px" ng-if="info[f]"> Of the artists inputted, the genres belonging to this family hit this many times</span>-->
@@ -288,7 +288,7 @@
                      ng-style="{color:familyColor_map[g.family[f]]}">
 
                   <!--&nbsp &nbsp &nbsp &nbsp {{g.name}} ({{genre_freq_map[u.id][g.genre_id]}})-->
-                  &nbsp &nbsp &nbsp &nbsp {{g.name}} ({{genres_frequency_fetch(g,u)}})
+                  &nbsp &nbsp &nbsp &nbsp {{g.name}} ({{genres_frequency_fetch(g,u)}} tracks)
                   <span ng-if="g.family.length >1">
 
                     <button ng-click="user_cache_ctrl[u.id][g.name] = !user_cache_ctrl[u.id][g.name]"
