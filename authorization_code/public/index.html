@@ -234,7 +234,7 @@
                 ({{user_cache_ctrl[u.id]['families'].length}} of 15) ||
 
                 <!--todo: no individual genre selection for now-->
-                <span style="" >GENRES ({{getSelectedGenres(u)}} of {{user_cache[u.id]["genres"].length}})</span>
+                <span style="" >GENRES ({{getSelectedGenres(u)}} of {{user_cache[u.id]["distinct_genres"].length}})</span>
                 <!--<span class="pointer" ng-click="user_cache_ctrl[u.id].show.genres = !user_cache_ctrl[u.id].show.genres">GENRES+</span>-->
               </div>
 
@@ -242,7 +242,7 @@
               <!--| orderBy:genreFreq(u):descendFreq | sharedFilter:'genres':shared"-->
 
               <div id="familyList" ng-if="user_cache_ctrl[u.id].show.families" style="font-style:italic;" ng-style="{color:familyColor_map[f]}"
-                   ng-repeat="f in globalFamilies | byFamilyFreq:u:family_frequency_fetch:user_cache[u.id].genres" >
+                   ng-repeat="f in globalFamilies | byFamilyFreq:u:family_frequency_fetch:user_cache[u.id].distinct_genres" >
 
                 <!--todo:-->
                 <!--<showcase-checkbox ng-model="user_cache_ctrl[u.id]['family-event'][f]"  type="checkbox" field="family-event" key="Id"></showcase-checkbox>-->
@@ -288,13 +288,26 @@
                 in the eman time, trying instead to make it not have to call db-->
 
                 <!--| byGenreFreq:u:genre_frequency_fetch:user_cache[u.id].genres-->
-
+                <!--| byGenreFreq:u:genre_frequency_fetch:user_cache[u.id].distinct_genres-->
                 <div ng-if="user_cache_ctrl[u.id][f]"
-                     ng-repeat="g in user_cache[u.id]['genres'] | thisFamily:f:familyGenre_map "
+                     ng-repeat="g in user_cache[u.id]['distinct_genres'] | thisFamily:f:familyGenre_map | byGenreFreq:u:genre_frequency_fetch:user_cache[u.id].distinct_genres"
                      ng-style="{color:familyColor_map[g.family[f]]}">
 
                   <!--&nbsp &nbsp &nbsp &nbsp {{g.name}} ({{genre_freq_map[u.id][g.genre_id]}})-->
-                  &nbsp &nbsp &nbsp &nbsp {{g.name}} ({{genre_frequency_fetch(g,u)}} tracks)
+                  &nbsp &nbsp &nbsp &nbsp {{g.name}} ({{genre_frequency_fetch(g,u).length}} tracks)
+
+                  <button ng-click="user_cache_ctrl[u.id]['genres'][g.name] = !user_cache_ctrl[u.id]['genres'][g.name]"
+                          style="transform: scale(.5);margin-left: -.5em;">+</button>
+                  <span ng-if="user_cache_ctrl[u.id]['genres'][g.name]">
+                    (<div ng-repeat="gt in genre_frequency_fetch(g,u)">
+                     <span ng-style="{color:familyColor_map[g.family[f]]}">{{gt.track_name}}</span>
+                    by <span style="font-weight:bold">{{gt.artist_name}}</span>
+                    </div>)
+                      </span>
+
+
+
+                  <!--{{g.name}}-->
                   <span ng-if="g.family.length >1">
 
                     <button ng-click="user_cache_ctrl[u.id][g.name] = !user_cache_ctrl[u.id][g.name]"

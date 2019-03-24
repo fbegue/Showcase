@@ -1,6 +1,7 @@
 //var request = require('request'); // "Request" library
 var PromiseThrottle = require("promise-throttle");
 var rp = require('request-promise');
+var google = require('google');
 
 //https://github.com/request/request#requestoptions-callback
 var _request = function(req){
@@ -79,19 +80,6 @@ var searchReq =  function(options){
 // });
 
 
-
-
-//take the query, format it for wikipedia, and try to hit the exact page on the wiki
-
-//todo:
-//if we don't hit that exact right page OR hit one that isn't music, we're fucked
-//todo:
-
-
-var google = require('google')
-var $ = require("jquery");
-
-
 //ideas and attempts at getting google results for artist searches
 
 //google used to have a search api that was pretty open and good, but no more
@@ -138,38 +126,64 @@ all_genres.all_genres.forEach(function(t){
 });
 
 
+
+const { JSDOM } = require( 'jsdom' );
+
+
+// console.log("$here");
+// console.log($('#test'));
+
 //todo: little weird b/c when we update genre info client side,
 //we can't make decisions with that updated info here
 
 module.exports.getExternalInfo  = function(req,res) {
-	console.log("googleQuery",req.body.query);
+	console.log("getExternalInfo",req.body.expression);
 
-	module.exports.getWikiPage.then(function(wikiRes){
+	let wReq = {};
+	wReq.body = {};
+	wReq.body.expression = req.body.expression;
+
+	module.exports.getWikiPage(wReq).then(function(wikiRes){
+
+		console.log("wikiRes",wikiRes);
 
 		let knownGenres = [];
 
+		//todo: force googleQry
+		//wikiRes.facts = [];
+
+
+		let googleQry = function(){
+			let gReq = {};
+			gReq.body = {query:req.body.expression.name};
+
+			module.exports.googleQuery(gReq).then(function(gRes){
+				//console.log("gRes",gRes);
+				let resp = {html:gRes,expression:req.body.expression};
+				res.send(resp);
+			});
+		};
+
 		//need to dermtine if facts are good
 		//for now, if you're not a genre, we're throwing you out
-		if(wikiRes.facts.length === 0){
-			wikiRes.facts.forEach(function(f){
-				if(genresMap[f]){
+
+		if(wikiRes.facts.length !== 0) {
+			wikiRes.facts.forEach(function (f) {
+				if (genresMap[f]) {
 					knownGenres.push(f);
 				}
 			});
 
-			//todo: could decide on a threshold where we do more research if we only find x many genres
-			if(knownGenres.length === 0) {
-
-				//todo: parsing this is much harder over here
-				//not really, just couldn't get jquery acting right b/c im lazy
-
-				//haven't done any testing
-				//module.exports.googleQuery
-
+			//todo: could decide on theshold # of genres
+			if(knownGenres.length !== 0) {
+				let resp = {genres:knownGenres,expression:req.body.expression}
+				res.send(resp);
+			}else{
+				googleQry();
 			}
 		}else{
-
-			//...
+			//no facts
+			googleQry();
 		}
 	})
 };
@@ -178,16 +192,18 @@ module.exports.getWikiPage = function(req,res) {
 
 	return new Promise(function(done, fail) {
 
-		let expression = req.body.expression.name;
+		console.log("getWikiPage",req.body.expression);
+
+		let expression = req.body.expression;
 		let expression_save = JSON.parse(JSON.stringify(req.body.expression));
 
 		//no content fields specified
 		//https://en.wikipedia.org/w/api.php?action=query&format=jsonfm&formatversion=2&titles=Wynchester
 
 		//i'm feeling lucky? just go to whatever page has that title
-		expression = expression.replace();
 
 		let code_prefix = function (exp) {
+
 			//let exp = "Guns N' Roses";
 			//result: Guns_N%27_Roses
 
@@ -211,8 +227,8 @@ module.exports.getWikiPage = function(req,res) {
 			"&rvprop=content" +
 			"&format=jsonfm" +
 			"&formatversion=2" +
-			"&titles=" + code_prefix(expression) + "&format=json";
-		console.log("URI encode exp:",code_prefix(expression));
+			"&titles=" + code_prefix(expression.name) + "&format=json";
+		console.log("URI encode exp:",code_prefix(expression.name));
 		console.log("URL:",url);
 
 		let options = {
@@ -229,7 +245,6 @@ module.exports.getWikiPage = function(req,res) {
 			result = JSON.parse(result);
 			//console.log("res", JSON.stringify(result,null,4));
 			let facts = [];
-
 
 			if(!result.query['pages'][0].missing){
 				//don't know what n pages or n revisions means as of yet
@@ -275,7 +290,6 @@ module.exports.getWikiPage = function(req,res) {
 			}
 
 			response.facts = removeDups(facts);
-
 
 			//todo:
 			done(response)
@@ -347,10 +361,22 @@ module.exports.googleQuery  = function(req,res) {
 
 	return new Promise(function(done, fail) {
 
+		//todo:force best rock band of all time
+		//req.body.query = "led zeppelin"
+		// req.body.query = "Trying Times"
+		//req.body.query = "Trying Times music group San Diego CA"
 		google.resultsPerPage = 1;
-		google(req.body.query, function (err, result){
+
+		//todo: also might be useful to put name in quotes
+		//ex: '"SongWrita" music artist' versus 'SongWrita music artist'
+
+		let query = "'" + req.body.query + "' music group";
+		//let query = req.body.query;
+		console.log("querying google...",query);
+		google(query, function (err, result){
 			if (err) console.error(err);
 
+			//console.log(result);
 			//res.send(result.body)
 			done(result.body)
 		})

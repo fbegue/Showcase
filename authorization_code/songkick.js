@@ -436,7 +436,7 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 			//b/c I'm doing one metro?
 
 			results = results[0];
-			//console.log(results);
+			console.log(JSON.stringify(results,null,4));
 			let events = [];
 
 		   let metro_id = results[0].id;

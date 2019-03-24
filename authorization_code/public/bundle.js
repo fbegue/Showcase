@@ -476,16 +476,17 @@
 
 				module.filter('byGenreFreq', function () {
 					return function (input,user,genre_frequency_fetch,ucachegenres) {
-						//console.log("byFamilyFreq",ucachegenres.length);
+						//console.log("byGenreFreq",ucachegenres.length);
 
 						if(ucachegenres && ucachegenres.length !== 0){
-							let output = JSON.parse(JSON.stringify(input));
-							output.sort(function (a, b) {
+							//console.log("sorted");
+							//let output = JSON.parse(JSON.stringify(input));
+							input.sort(function (a, b) {
 								let freq_a = genre_frequency_fetch(a,user)
 								let freq_b = genre_frequency_fetch(b,user)
-								return freq_a < freq_b ? 1 : -1
+								return freq_a.length < freq_b.length ? 1 : -1
 							});
-							return output
+							return input
 						}else{
 							return input}
 					}
@@ -923,9 +924,9 @@
 					//$scope.dateFilter.start = "";
 					// $scope.dateFilter.end =  '2019-04-04';
 					// $scope.dateFilter.start = '2019-03-04';
-					$scope.dateFilter.start =  '2019-03-18';
+					$scope.dateFilter.start =  '2019-03-23';
 					// $scope.dateFilter.end =  '2019-04-18';
-					$scope.dateFilter.end =  '2019-03-19';
+					$scope.dateFilter.end =  '2019-03-24';
 					//$scope.dateFilter.end = '2019-04-11';
 					// $scope.raw_filename = "";
 					// $scope.areaDatesArtists_filename= "";
@@ -1395,6 +1396,9 @@
 							$scope.user_cache[u.id].tracks = [];
 							$scope.user_cache[u.id].artists = [];
 							$scope.user_cache[u.id].genres = [];
+							$scope.user_cache[u.id].distinct_tracks_genres = [];
+							$scope.user_cache[u.id].distinct_artists = [];
+							$scope.user_cache[u.id].distinct_genres = [];
 							$scope.genre_freq_map[u.id] = {};
 							$scope.artist_freq_map[u.id] = {};
 
@@ -1403,6 +1407,7 @@
 							//selected
 							$scope.user_cache_ctrl[u.id]['playlists'] = []
 							$scope.user_cache_ctrl[u.id]['families'] = [];
+							$scope.user_cache_ctrl[u.id]['genres'] = [];
 
 							//todo: a special user called 'metro' since we don't allow for searching of more than one metro (like, per user)
 							//at a time, but this is still a user control function
@@ -1566,13 +1571,44 @@
 
 					//section: provide stats, shortcut functions and sorting for genre-analysis
 
-					//display # of genres selected determined by families selected
+
+					//todo: still seems a little off
+
+					/**
+					 * display # of genres selected determined by families selected
+					 *
+					 * @method getSelectedGenres
+					 * @param u
+					 * @returns {number}
+					 */
 					$scope.getSelectedGenres = function(u){
-						let total = 0;
+
+						//console.log("getSelectedGenres");
+
+						//console.log($scope.user_cache[u.id]['distinct_genres'])
+						//console.log($scope.user_cache[u.id]['distinct_genres'])
+
+						let genreCounted = [];
+						//get all families selected
 						$scope.user_cache_ctrl[u.id]['families'].forEach(function(f){
-							total+= $scope.familyGenre_map[f].length
-						})
-						return total;
+
+							//get all the genres in the family selected
+							$scope.familyGenre_map[f].forEach(function(gInMap){
+
+								// console.log(gInMap);
+								// console.log($scope.user_cache[u.id]['distinct_genres'][0].name);
+
+								//if the user has that genre and we didn't already / count it
+								$scope.user_cache[u.id]['distinct_genres'].forEach(function(dg){
+									if(dg.name === gInMap && genreCounted.indexOf(dg.name) === -1){
+										//total++;
+										genreCounted.push(dg.name)
+									}
+								})
+
+							});
+						});
+						return genreCounted.length;
 					};
 
 
@@ -1618,10 +1654,10 @@
 					};
 
 					$scope.family_frequency_fetch = function(famName,user){
-						console.log("family_frequency_fetch", famName);
+						//console.log("family_frequency_fetch", famName);
 
 						//todo: this will become an issue over update cycles
-						if($scope.user_cache[user.id]['genres'].length !== 0){
+						if($scope.user_cache[user.id]['distinct_tracks_genres'].length !== 0){
 
 							//need to determine how many tracks belong to a family for a user.
 							//select playlist->track->artists, and figure out how many times
@@ -1631,16 +1667,23 @@
 
 							let inGenres = $scope.familyGenre_map[famName];
 
-							let tracks = $scope.alasql(user,'get','tracks');
-							console.log(tracks);
+							let tracks = $scope.alasql(user,'get','distinct_tracks_genres');
+							//console.log(tracks);
 
 							let famTrack_map = {};
+							let used_tracks = [];
 
 							let c = 0;
 							tracks.forEach(function(atg) {
 
-								if (inGenres.indexOf(atg.genre_name) !== -1) {
-									c++
+								//the track_genre is one of the genres the family describes
+								let ing = inGenres.indexOf(atg.genre_name) !== -1;
+								//if a track has two genres belonging to the same family, don't track it twice
+								let nused = used_tracks.indexOf(atg.track_id) === -1;
+
+								if (ing && nused) {
+									c++;
+									used_tracks.push(atg.track_id);
 									// let fam = $scope.genreFam_map[atg.genre_name];
 									// console.log(fam);
 									//
@@ -1655,7 +1698,7 @@
 								}
 							});
 
-							console.log(c);
+							//console.log(c);
 							return c;
 
 						}else{
@@ -1669,15 +1712,22 @@
 						//trying to select unique playlist->track->artists, and figure out how many times
 						//a genre appears over all the tracks that belong to a user
 
-						let tracks = $scope.alasql(user,'get','tracks')
+						let tracks = $scope.alasql(user,'get','distinct_tracks_genres')
+						let used_tracks = [];
+
 						let c = 0;
-						tracks.forEach(function(artTrackGenre){
-							if(artTrackGenre.genre_id === genreTuple.genre_id) {
+
+						tracks.forEach(function(trackGenre){
+							let eq = trackGenre.genre_id === genreTuple.genre_id
+							let nused = used_tracks.indexOf(trackGenre) === -1;
+							if(eq && nused) {
+								used_tracks.push(trackGenre);
 								c++
 							}
 						});
 
-						return c;
+						//return c;
+						return used_tracks;
 
 						//todo: just genres and artists, don't care about track frequency
 
@@ -2354,32 +2404,45 @@
 						// 	+  " where owner = '" + user.id + "'";
 						// // +  " where owner = '" + user.id + "' and g.id = " + genreTuple.genre_id;
 
-						//todo: need to get genres onto this, either witha good query or combining two
-						const qry_distinct_tracks = "select distinct tracks.id as track_id, tracks.name as track_name"
-							+ " from tracks where ( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							//+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
-							+ " JOIN tracks t on t.id = pt.track_id"
-							+ " JOIN artists_tracks at on at.track_id = t.id"
-							+ " JOIN artists a on a.id = at.artist_id "
-							// + " JOIN artists_genres ag on a.id = ag.artist_id"
-							// + " JOIN genres g on g.id = ag.genre_id"
-							+  " where owner = '" + user.id + "')";
+
+
+						// let sub_query = "( select a.id as artist_id, a.name as name, t.name as track_name from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+						// //+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+						// + " JOIN tracks t on t.id = pt.track_id"
+						// + " JOIN artists_tracks at on at.track_id = t.id"
+						// + " JOIN artists a on a.id = at.artist_id "
+						// + " JOIN artists_genres ag on a.id = ag.artist_id"
+						// + " JOIN genres g on g.id = ag.genre_id"
+						// +  " where owner = '" + user.id + "')";
+
+
+						//todo: I might still be confused about exactly what distinct does here
+						const qry_distinct_tracks_genres = "select distinct t.id as track_id, t.name as track_name, g.id as genre_id,g.name as genre_name, a.name as artist_name, a.id  as artist_id"
+						+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
+						+ " JOIN tracks t on t.id = pt.track_id"
+						+ " JOIN artists_tracks at on at.track_id = t.id"
+						+ " JOIN artists a on a.id = at.artist_id "
+						+ " JOIN artists_genres ag on a.id = ag.artist_id"
+						+ " JOIN genres g on g.id = ag.genre_id"
+						+  " where owner = '" + user.id + "'";
+						//+ " where " + sub_query;
 
 						let queryMap = {
 							//todo:
 							playlists:"",
 
-							artists:qry_distinct_artists,
-							tracks:qry_distinct_tracks,
-							genres:qry_distinct_genres
+							distinct_artists:qry_distinct_artists,
+							distinct_tracks_genres:qry_distinct_tracks_genres,
+							distinct_genres:qry_distinct_genres
 						};
 
 						if(verb === 'get'){
 							return $scope.user_cache[user.id][queryName];
 						}
 						else if(verb === 'set'){
-							$scope.user_cache[user.id][queryName] = alasql(queryMap[queryName])
-							console.log(queryName + "was set to:",$scope.user_cache[user.id][queryName]);
+							 $scope.user_cache[user.id][queryName] = alasql(queryMap[queryName])
+							//$scope.user_cache[user.id][queryName] = alasql(queryName);
+							console.log(queryName + " was set to: ",$scope.user_cache[user.id][queryName]);
 						}
 					};
 
@@ -2426,7 +2489,7 @@
 							// 	$scope.artists_frequency(artist,user);
 							// });
 
-							$scope.alasql(user,'set','artists')
+							$scope.alasql(user,'set','distinct_artists')
 
 							// //todo: order by similar genres? sounds hard
 							// let qry_distinct_genres = "select distinct genres.id as genre_id, genres.name as name, genres.family as family"
@@ -2447,7 +2510,7 @@
 							// 	$scope.genres_frequency(genre,user);
 							// });
 
-							$scope.alasql(user,'set','genres')
+							$scope.alasql(user,'set','distinct_genres')
 
 							//console.log(alasql("select * from genres"));
 							// console.log("select distinct_genres for user_id = " + user.id + "",$scope.user_cache[user.id]['genres']);
@@ -2470,7 +2533,7 @@
 							// $scope.user_cache[user.id].tracks =  alasql(qry_distinct_tracks);
 							// console.log($scope.user_cache[user.id].tracks);
 
-							$scope.alasql(user,'set','tracks');
+							$scope.alasql(user,'set','distinct_tracks_genres');
 
 
 
@@ -2770,15 +2833,20 @@
 							//newly facted genres or artist-genre associations yet
 
 							let extQueries = [];
+
+							console.log("# of artists without any genre info:",no_genre_artists.length);
 							no_genre_artists.forEach(function(ar){
-								//todo:
-								// extQueries.push($scope.getExternalInfo(ar))
+								 extQueries.push($scope.getExternalInfo(ar))
 								//extQueries.push($scope.getWikiPage(ar))
 							});
 
 							Promise.all(extQueries).then(function(results){
 								console.log("$externalInfo results",results);
 								let tuples = []
+
+								//todo: stuff under here needs reworked for tuple pre-processing
+
+
 								results.forEach(function(r){tuples.push(r.data)});
 
 								tuples.forEach(function(t){
@@ -3017,12 +3085,97 @@
 							req.body = {
 								expression:expression,
 								token:params.access_token
-							}
+							};
+
+
+							//todo: it would seem that I cannot replicate the results from when i google here
+							//sometimes my queries are specific enough/band popular or not confusing enough?
+							//to consistently give me the same results, other times not so much.
+
+							//don't really know what the solution is there.
+							let parseGoogleHTML = function(html,artist){
+								let doc = $(html);
+								let str = "";
+
+								//check each top level element (in case page redesign)
+								for(var x = 0; x < 15; x++){
+									let tbody = $(doc)[x];
+
+									//todo: should always find genre but concerned about relying on next span
+									let g = $(tbody).find("span:contains('Genre')").next()
+
+									//this is the one we're looking for
+									if(g[0]){
+										str = g[0].innerText
+									}
+									// else{
+									// 	g = $(tbody).find("span:contains('Genres')").next()
+									// 	console.log("2");
+									// 	if(g[0]){
+									// 		str = g[0].innerText
+									// 	}
+									// }
+								}
+								//console.log(str);
+
+								let genres = [];
+								if(str) {
+									if (str.indexOf(",") !== -1) {
+										genres = str.split(",")
+									} else if (str.indexOf("/") !== -1) {
+										genres = str.split("/")
+									}
+									else{
+										console.warn("had an issue splitting this string result",str);
+									}
+								}
+
+								for(var x = 0; x < genres.length; x++){
+									genres[x] = genres[x].trim();
+								}
+
+								//console.log("genres",genres);
+								console.log("parseGoogleHTML genres:",artist.name,genres);
+								let tuple = {genres:genres,artist:artist}
+								return tuple;
+							};
+
+							//todo: idk, one day just couldn't parse the whole page
+							let parseGoogleHTML_deprecated = function(html){
+
+								// console.log(res.data);
+								let doc = $(html);
+								//console.log(doc);
+								let g = doc.find("span:contains('Genres')")
+								let y = $(g).next()
+								let z = y.text();
+
+								//todo: catch
+								let genres = z.split(",")
+
+								for(var x = 0; x < genres.length; x++){
+									genres[x] = genres[x].trim();
+								}
+
+								console.log("parseGoogleHTML2 genres:",genres);
+								return genres
+							};
 
 							$http.post(url_local + req.url_postfix,req.body).then(function(res){
+								//console.log(res.data);
 
-								console.log(res);
-								done(res);
+								//either we got genres from wiki
+								// or we got an html page to parse from google
+								let tuple = {};
+
+								if(res.data.genres){
+									tuple = {genres:res.data.genres,artist:res.data.expression};
+								}
+								else{
+									tuple = parseGoogleHTML(res.data.html,res.data.expression);
+								}
+
+								done(tuple);
 
 							}).catch(function(err){
 								console.log(err);
@@ -3033,7 +3186,7 @@
 
 					};
 
-					//takes from page param $scope.wikiQry
+					//todo: depreciated
 					$scope.getWikiPage = function(expression){
 						return new Promise(function(done, fail) {
 							var req = {};
@@ -3059,7 +3212,7 @@
 
 					};
 
-					//takes from page param $scope.googleQry
+					//todo: depreciated
 					$scope.googleQuery = function(query){
 						var req = {};
 						req.type = "POST";
