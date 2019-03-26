@@ -137,7 +137,7 @@ const { JSDOM } = require( 'jsdom' );
 //we can't make decisions with that updated info here
 
 module.exports.getExternalInfo  = function(req,res) {
-	console.log("getExternalInfo",req.body.expression);
+	//console.log("getExternalInfo",req.body.expression);
 
 	let wReq = {};
 	wReq.body = {};
@@ -145,7 +145,7 @@ module.exports.getExternalInfo  = function(req,res) {
 
 	module.exports.getWikiPage(wReq).then(function(wikiRes){
 
-		console.log("wikiRes",wikiRes);
+		//console.log("wikiRes",wikiRes);
 
 		let knownGenres = [];
 
@@ -165,6 +165,8 @@ module.exports.getExternalInfo  = function(req,res) {
 		};
 
 		//need to dermtine if facts are good
+
+		//todo: this is esentially disallowing us to 'discover' new genres thru wiki
 		//for now, if you're not a genre, we're throwing you out
 
 		if(wikiRes.facts.length !== 0) {
@@ -192,7 +194,7 @@ module.exports.getWikiPage = function(req,res) {
 
 	return new Promise(function(done, fail) {
 
-		console.log("getWikiPage",req.body.expression);
+		//console.log("getWikiPage",req.body.expression);
 
 		let expression = req.body.expression;
 		let expression_save = JSON.parse(JSON.stringify(req.body.expression));
@@ -228,7 +230,7 @@ module.exports.getWikiPage = function(req,res) {
 			"&format=jsonfm" +
 			"&formatversion=2" +
 			"&titles=" + code_prefix(expression.name) + "&format=json";
-		console.log("URI encode exp:",code_prefix(expression.name));
+		//console.log("URI encode exp:",code_prefix(expression.name));
 		console.log("URL:",url);
 
 		let options = {
@@ -357,7 +359,7 @@ module.exports.getWikiPage = function(req,res) {
 };
 
 module.exports.googleQuery  = function(req,res) {
-	console.log("googleQuery",req.body.query);
+	//console.log("googleQuery",req.body.query);
 
 	return new Promise(function(done, fail) {
 

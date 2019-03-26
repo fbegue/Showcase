@@ -924,9 +924,10 @@
 					//$scope.dateFilter.start = "";
 					// $scope.dateFilter.end =  '2019-04-04';
 					// $scope.dateFilter.start = '2019-03-04';
-					$scope.dateFilter.start =  '2019-03-23';
+					$scope.dateFilter.start =  '2019-03-26';
 					// $scope.dateFilter.end =  '2019-04-18';
-					$scope.dateFilter.end =  '2019-03-24';
+					// $scope.dateFilter.end =  '2019-04-26';
+					$scope.dateFilter.end =  '2019-04-06';
 					//$scope.dateFilter.end = '2019-04-11';
 					// $scope.raw_filename = "";
 					// $scope.areaDatesArtists_filename= "";
@@ -2104,10 +2105,10 @@
 							req.body.token = params.access_token;
 
 							//TODO: this doesn't seem right...too many repeats, seems to obviously be missing some
-							console.log("artist_search_payload",JSON.parse(JSON.stringify(artist_search_payload)));
+							console.log("artist_search_payload for Spotify submission...",JSON.parse(JSON.stringify(artist_search_payload)));
 
 							$http.post(url_local + req.url_postfix,req.body).then(function(res){
-								console.log("$results",JSON.parse(JSON.stringify(res.data)));
+								console.log("artist_search_payload results:",JSON.parse(JSON.stringify(res.data)));
 
 								let artist_artistSongkick = {};
 								let payloads = [];
@@ -2143,7 +2144,7 @@
 								$scope.process_artists(payloads).then(function(){
 
 
-									console.log("unresolved_artists",$scope.unresolved_artists);
+									console.log("Spotify couldn't reolve these artists:",$scope.unresolved_artists);
 
 									//todo: modify for multiple metro calls
 
@@ -2667,6 +2668,53 @@
 						return artist_list;
 					};
 
+
+					//registering genres that I don't recognize in my master genreFam_map
+					// into families by taking my best guess given the words in the genre
+
+					//todo: shouldn't this also modify the genre db entry?
+
+					$scope.registerGenre = function(genre){
+						genre = JSON.parse(JSON.stringify(genre));
+						//if(!$scope.genreFam_map[genre.name]){
+						//console.log("$here",genre.name);
+						let pat = /(\w+)/g;
+						let words = genre.name.match(pat);
+						//console.log(words);
+						for(var x=0; x < words.length; x++){
+
+							// if the first word of the genre is the name of a family, put it in there
+							// ex: 'folk pop'
+							if(globalFamilies.indexOf(words[0]) !== -1){
+								//	console.log("true0");
+								$scope.genreFam_map[genre.name] = [words[0]];
+								$scope.familyGenre_map[words[0]].push(genre.name);
+								return true;
+								//console.log($scope.genreFam_map);
+								//console.log($scope.familyGenre_map);
+							}
+							else if(globalFamilies.indexOf(words[1]) !== -1){
+								$scope.genreFam_map[genre.name] = [words[1]];
+								$scope.familyGenre_map[words[1]].push(genre.name);
+								return true;
+								//console.log($scope.genreFam_map);
+								//console.log($scope.familyGenre_map);
+							}
+							else if(globalFamilies.indexOf(words[2]) !== -1){
+								//console.log("true2");
+								$scope.genreFam_map[genre.name] = [words[2]];
+								$scope.familyGenre_map[words[2]].push(genre.name);
+								return true;
+								//console.log($scope.genreFam_map);
+								//console.log($scope.familyGenre_map);
+							}
+							else{
+								return false;
+							}
+						}
+						//}
+					};
+
 					/**Process all the 50 artist promise payloads we submitted.
 					 * alasql("INSERT INTO genres, artists_genres, artists")
 					 *
@@ -2697,7 +2745,6 @@
 
 								//todo: null sometimes? hows that happen exactly..?
 								if(ar){
-
 									if(ar.genres.length > 0){
 										ar.genres.forEach((g)=>{
 											if(!unique_genre_artist_map[g]){
@@ -2709,6 +2756,7 @@
 										});
 									}
 									else{
+										//Spotify didn't have any genres information
 										no_genre_artists.push(ar);
 									}
 
@@ -2731,9 +2779,10 @@
 							let artist_genre = {};
 							let genre = {};
 							let genreInd = 0;
-							let no_family = [];
+							let no_family_genres = [];
 
 							//insert each genre, artist_genre and UNIQUE artist into their respective tables
+
 							for(let key in unique_genre_artist_map){
 								//console.log("here");
 								genre = {};
@@ -2743,8 +2792,21 @@
 									genre.family = $scope.genreFam_map[genre.name];
 								}
 								else{
-									genre.family = [];
-									no_family.push(genre)
+
+									//we have genres for these artists, but it wasn't obvious what
+									//family they belonged in because the genre wasn't registered in our dictionary
+
+									let gat = $scope.registerGenre(genre);
+
+									//if true, we successfully registered and can reference that registration to submit it to DB
+									if(!gat){
+
+										//we couldn't figure out what family to put this genre in for this artist
+										no_family_genres.push({genre:genre,artist:key})
+
+									}else{
+										//genre.family = $scope.genreFam_map[genre.name]
+									}
 								}
 
 
@@ -2776,82 +2838,32 @@
 
 							}// key in unique_genre_artist_map
 
-							//registering genres that I don't recognize in my master genreFam_map
-							// into families by taking my best guess given the words in the genre
-
-							//todo: shouldn't this also modify the genre db entry?
-
-							let registerGenre = function(genre){
-								//if(!$scope.genreFam_map[genre.name]){
-								//console.log("$here",genre.name);
-								let pat = /(\w+)/g;
-								let words = genre.name.match(pat);
-								//console.log(words);
-								for(var x=0; x < words.length; x++){
-
-									// if the first word of the genre is the name of a family, put it in there
-									// ex: 'folk pop'
-									if(globalFamilies.indexOf(words[0]) !== -1){
-										//	console.log("true0");
-										$scope.genreFam_map[genre.name] = [words[0]];
-										$scope.familyGenre_map[words[0]].push(genre.name);
-										return true;
-										//console.log($scope.genreFam_map);
-										//console.log($scope.familyGenre_map);
-									}
-									else if(globalFamilies.indexOf(words[1]) !== -1){
-										$scope.genreFam_map[genre.name] = [words[1]];
-										$scope.familyGenre_map[words[1]].push(genre.name);
-										return true;
-										//console.log($scope.genreFam_map);
-										//console.log($scope.familyGenre_map);
-									}
-									else if(globalFamilies.indexOf(words[2]) !== -1){
-										//console.log("true2");
-										$scope.genreFam_map[genre.name] = [words[2]];
-										$scope.familyGenre_map[words[2]].push(genre.name);
-										return true;
-										//console.log($scope.genreFam_map);
-										//console.log($scope.familyGenre_map);
-									}
-									else{
-										return false;
-									}
-								}
-								//}
-							};
-
-							//unique_genre_artist_map (genres to their artists that came back from spotify)
-							//but the genre that came back wasn't in our master list genre->family map
-							no_family.forEach(function(genre){
-								registerGenre(genre);
-							});
-
 
 							//all_artists who didn't has a spotify result of genres:[]
 							//have been inserted into the artist table, but don't have they're
 							//newly facted genres or artist-genre associations yet
 
+
 							let extQueries = [];
 
-							console.log("# of artists without any genre info:",no_genre_artists.length);
+
+							console.log("Spotify artists without any genre info:",no_genre_artists);
+							console.log("these will be submitted to getExternalInfo....");
+
 							no_genre_artists.forEach(function(ar){
 								 extQueries.push($scope.getExternalInfo(ar))
 								//extQueries.push($scope.getWikiPage(ar))
 							});
 
-							Promise.all(extQueries).then(function(results){
-								console.log("$externalInfo results",results);
-								let tuples = []
+							Promise.all(extQueries).then(function(tuples){
+								console.log("$externalInfo results",tuples);
+								let noGenreMatches = [];
 
-								//todo: stuff under here needs reworked for tuple pre-processing
-
-
-								results.forEach(function(r){tuples.push(r.data)});
+								//results.forEach(function(r){tuples.push(r.data)});
 
 								tuples.forEach(function(t){
-									if(!(t.facts.length === 0)){
-										t.facts.forEach(function(f){
+									if(!(t.genres.length === 0)){
+										t.genres.forEach(function(f){
 											//f = "flamenco"
 
 											//a fact that came back matches a genre we have
@@ -2871,7 +2883,7 @@
 												//if we couldn't find that genre, assign new artist_genre a new ind and insert
 												//that genre. otherwise, just create the new record in artist_genre with the ind we found
 												artist_genre = {};
-												artist_genre.artist_id = t.expression.id;
+												artist_genre.artist_id = t.artist.id;
 
 												if(genre_id.length ===0 ){
 													++genreInd;
@@ -2892,19 +2904,31 @@
 													alasql("INSERT INTO artists_genres VALUES ( " + vlister(artist_genre)  + " )");
 												}
 											}
+											//we need to try and determine if we can use this fact or not
+											else{
+												genre = {name:f};
+												let attempt = $scope.registerGenre(genre);
+												if(!attempt){
+													noGenreMatches.push({
+														genre:f,
+														tuple:t
+													})
+												}
+											}
 										});
 									}
 								})
 
 								console.log("inserted_artists",inserted_artists.length);
-								console.warn("couldn't find a family for these genres",no_family);
+
+								console.log("Spotify genre-artist without family info for this genre:",no_family_genres);
+								console.log("ExternalInfo genre-artist without family info for this genre:",noGenreMatches);
 
 								//console.log("select * from artists_genres;",alasql("select * from artists_genres;"));
 
 								// let qry = "select a.id AS artist_id, a.name AS artist_name, g.id AS genre_id, g.name AS genre_name " +
 								// 	"from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id";
 								// console.log("join artists with their genres",alasql(qry));
-
 
 								done();
 
