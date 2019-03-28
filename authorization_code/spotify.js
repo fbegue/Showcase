@@ -372,7 +372,14 @@ module.exports.googleQuery  = function(req,res) {
 		//todo: also might be useful to put name in quotes
 		//ex: '"SongWrita" music artist' versus 'SongWrita music artist'
 
-		let query = "'" + req.body.query + "' music group";
+		//this is a way to signal google to use the 'knowledge panel' regarding musical artists
+		//ex: google query 'Funk Worthy musical artist' versus 'Funk Worthy musical group'
+
+		//let query = "\"" + req.body.query + "\" musical artist";
+
+		let query = "" + req.body.query + " musical artist";
+
+
 		//let query = req.body.query;
 		console.log("querying google...",query);
 		google(query, function (err, result){
@@ -659,7 +666,7 @@ module.exports.get_artists = function(req, res){
 			//console.log(results);
 			console.log("FINISHED");
 			res.send(results);
-		});
+		})
 };
 
 module.exports.search_artists = function(req, res){
@@ -725,7 +732,10 @@ module.exports.search_artists = function(req, res){
 					tuple.artistSearch = op.displayName_clean;
 				}
 				done(tuple)
-			})
+			}).catch(function(e){
+				console.log("searchReq failure",e);
+				fail(e)
+			});
 		})
 	};
 
