@@ -152,7 +152,22 @@
 
 				let globalFamilies =  ["pop", "electro house", "rock", "hip hop", "r&b", "latin", "folk", "country", "metal", "punk", "blues", "reggae", "world", "jazz", "classical"]
 
-
+				let global_familyImageMap = {}
+				global_familyImageMap["pop"] =  "images/002-karaoke.svg";
+				global_familyImageMap["electro house"] =  "images/001-speaker.svg";
+				global_familyImageMap["rock"] =  "images/025-band-1.svg";
+				global_familyImageMap["hip hop"] =  "images/005-dj-mixer.svg";
+				global_familyImageMap["r&b"] = "images/006-quavers-pair.svg";
+				global_familyImageMap["latin"] = "images/008-maracas.svg";
+				global_familyImageMap["folk"] = "images/009-banjo.svg";
+				global_familyImageMap["country"] =  "images/010-guitar.svg";
+				global_familyImageMap["metal"] = "images/011-electric-guitar-for-heavy-metal.svg";
+				global_familyImageMap["punk"] =  "images/015-face-with-hair-and-eyeglasses.svg";
+				global_familyImageMap["blues"] =  "images/003-electric-guitar.svg";
+				global_familyImageMap["reggae"] = "images/018-bongo.svg";
+				global_familyImageMap["world"] = "images/020-worldwide.svg";
+				global_familyImageMap["jazz"] =  "images/017-saxophone.svg";
+				global_familyImageMap["classical"] =  "images/022-grand-piano.svg";
 
 
 				//todo: only designed for two people
@@ -886,6 +901,7 @@
 					$scope.genreFam_map = {};
 					$scope.familyColor_map = global_familyColor_map;
 					$scope.globalFamilies = globalFamilies;
+					$scope.global_familyImageMap = global_familyImageMap;
 
 					all_genres.forEach(function(t){
 						t.family.forEach(function(f){
@@ -924,10 +940,10 @@
 					//$scope.dateFilter.start = "";
 					// $scope.dateFilter.end =  '2019-04-04';
 					// $scope.dateFilter.start = '2019-03-04';
-					$scope.dateFilter.start =  '2019-03-29';
+					$scope.dateFilter.start =  '2019-03-30';
 					// $scope.dateFilter.end =  '2019-04-18';
 					// $scope.dateFilter.end =  '2019-04-26';
-					$scope.dateFilter.end =  '2019-04-02';
+					$scope.dateFilter.end =  '2019-04-06';
 					//$scope.dateFilter.end = '2019-04-11';
 					// $scope.raw_filename = "";
 					// $scope.areaDatesArtists_filename= "";
@@ -1565,6 +1581,9 @@
 					//section: UI UTILITIES
 					//===========================================================================================
 
+
+					
+
 					//todo: what is purpose of this again?
 					$scope.shared = {};
 					$scope.shared['genres'] = false;
@@ -1901,13 +1920,13 @@
 						//console.log("$getGenres",p);
 						let output = [];
 
-						// let print = p.artistSongkick_id === 9891504;
+						let print = p.artistSongkick_id === 5380963;
 
 
 						let qry1 = "select aas.artist_id,  aas.artistSongkick_id from artist_artistSongkick aas where aas.artistSongkick_id =" + p.artistSongkick_id;
 						let qry1_res = alasql(qry1);
 
-						// print ? console.log(qry1_res) : {}
+						 print ? console.log(qry1_res) : {}
 
 						if(qry1_res[0]){
 
@@ -1932,13 +1951,18 @@
 							let bigList=  "select * from artists_genres ag JOIN genres g on ag.genre_id = g.id";
 							let artist_genres_OT = alasql(bigList);
 
-							// print ? console.log(artist_genres_OT) : {}
+							print ? console.log(artist_genres_OT) : {}
+							let all_genres = $scope.alasql(false,"get","distinct_genres_all")
+							print ?  console.log(all_genres) : {};
 
 
 							// console.log($scope.listing.genres);
 							// console.log($scope.metro_cache[$scope.global_metro.id].artist_genres);
 
-							$scope.listing.genres.forEach(function(g){
+							//let distinctGenres = $scope.alasql()
+
+							let names = [];
+							all_genres.forEach(function(g){
 								artist_genres_OT.forEach(function (ag) {
 									// console.log(qry1_res[0].artist_id);
 									// console.log(ag);
@@ -1946,9 +1970,13 @@
 									if(ag.artist_id === qry1_res[0].artist_id){
 										// print ? console.log("here") : {}
 										if(ag.name === g.name){
-											// print ? console.log("here2") : {}
-											if(output.indexOf(g) === -1){
+
+										//	output.push(g);
+
+											print ? console.log("$",g.name) : {}
+											if(names.indexOf(g.name) === -1){
 												output.push(g);
+												names.push(g.name)
 											}
 										}
 									}
@@ -1956,6 +1984,7 @@
 							});
 						}
 
+						print? console.log(output):{};
 						return output;
 					};
 
@@ -2123,39 +2152,46 @@
 
 								let artist_artistSongkick = {};
 								let payloads = [];
-								let payload = {artists:[]}
+								let payload = {artists:[]};
+								let genId = 0;
+								let genSpotifyIdBase = "xxx"
 
 								res.data.forEach(function(tuple){
 
-									if(tuple.error){$scope.unresolved_artists.push(tuple)}
-									else{
+									//so we couldn't find the artist in spotify, but we still need an artist record for them
+									//so create a shell of an aritst object to be submitted to process_artists
+									//that looks the same as the Spotify artists, but with most fields null and a made up id
 
-										//todo: somethings a little fucked here, don't know what though
-										tuple.artist.name === "Consider the Source" ? console.log(tuple):{};
+									if(tuple.error){
+										tuple.artist = {};
+										tuple.artist.id = genSpotifyIdBase + genId++;
+										tuple.artist.name = tuple.artistName;
+										tuple.artist.uri = null;
+										tuple.artist.popularity = null;
+										tuple.artist.genres = [];
+										//tuple.artistSongkick_id = tuple.artistSongkick_id;
 
-										artist_artistSongkick.artist_id = tuple.artist.id;
-										artist_artistSongkick.artistSongkick_id = tuple.artistSongkick_id;
-										alasql("INSERT INTO artist_artistSongkick VALUES ( " + vlister(artist_artistSongkick)  + " )");
+										$scope.unresolved_artists.push(tuple);
 
-
-										payload.artists.push(tuple.artist)
-										//console.log("$len",payload.artists.length);
-										// tuple = reduce(artistDef,tuple.spotify_artist);
-										// let varchar_keys = ["name"];
-										// varchar_keys.forEach(function (key) {
-										// 	tuple[key] = tuple[key].replace(/'/g, "''");
-										// });
-										//
-										// alasql("INSERT INTO artists VALUES ( " + vlister(tuple)  + " )");
 									}
+
+									//todo: somethings a little fucked here, don't know what though
+									//tuple.artist.name === "Consider the Source" ? console.log(tuple):{};
+
+									artist_artistSongkick.artist_id = tuple.artist.id;
+									artist_artistSongkick.artistSongkick_id = tuple.artistSongkick_id;
+									alasql("INSERT INTO artist_artistSongkick VALUES ( " + vlister(artist_artistSongkick)  + " )");
+
+									payload.artists.push(tuple.artist)
+
 								});
 
 								//process_artists has weird params
 								payloads.push(payload);
+
+								console.log("Spotify unresolved artists, still submitted to process_artists",$scope.unresolved_artists);
+
 								$scope.process_artists(payloads).then(function(){
-
-
-									console.log("Spotify couldn't resolve these artists:",$scope.unresolved_artists);
 
 									//todo: modify for multiple metro calls
 
@@ -2190,6 +2226,8 @@
 									$scope.metro_cache[events[0].metro_id].performances = alasql(qperf)
 
 									console.log($scope.metro_cache[events[0].metro_id]);
+
+									$scope.alasql(false,"set","distinct_genres_all")
 
 									$scope.digestIt();
 								})
@@ -2406,6 +2444,9 @@
 							+ " JOIN genres g on g.id = ag.genre_id"
 							+  " where owner = '" + user.id + "')";
 
+						const qry_distinct_genres_all = "select distinct genres.id as genre_id, genres.name as name, genres.family as family"
+							+ " from genres";
+
 						// const qry_distinct_tracks = "select a.id as artist_id, a.name as name, t.name as track_name, t.id as track_id, g.name as genre_name, g.id as genre_id, g.family as family"
 						// 	+ " from playlists p JOIN playlists_tracks pt on p.id = pt.playlist_id "
 						// 	+ " JOIN tracks t on t.id = pt.track_id"
@@ -2445,16 +2486,29 @@
 
 							distinct_artists:qry_distinct_artists,
 							distinct_tracks_genres:qry_distinct_tracks_genres,
-							distinct_genres:qry_distinct_genres
+							distinct_genres:qry_distinct_genres,
+							distinct_genres_all:qry_distinct_genres_all
 						};
 
+						//todo: testing non-user listing storage here
+
 						if(verb === 'get'){
-							return $scope.user_cache[user.id][queryName];
+							if(user){
+								return $scope.user_cache[user.id][queryName];
+							}else{
+								return $scope.listing.genres;
+							}
+
 						}
 						else if(verb === 'set'){
-							 $scope.user_cache[user.id][queryName] = alasql(queryMap[queryName])
-							//$scope.user_cache[user.id][queryName] = alasql(queryName);
-							console.log(queryName + " was set to: ",$scope.user_cache[user.id][queryName]);
+							if(user){
+								$scope.user_cache[user.id][queryName] = alasql(queryMap[queryName])
+								//$scope.user_cache[user.id][queryName] = alasql(queryName);
+								console.log(queryName + " was set to: ",$scope.user_cache[user.id][queryName]);
+							}else{
+								$scope.listing.genres = alasql(queryMap[queryName])
+							}
+
 						}
 					};
 
@@ -2711,8 +2765,9 @@
 							$scope.familyGenre_map[word].push(genre.name);
 
 							genre.family = $scope.genreFam_map[genre.name];
-							$scope.lookup['genres'][genre.id] = genre;
-							$scope.listing['genres'].push(genre);
+
+							//$scope.lookup['genres'][genre.id] = genre;
+							//$scope.listing['genres'].push(genre);
 
 							return $scope.genreFam_map[genre.name];
 						};
@@ -2759,6 +2814,8 @@
 					 *
 					 * @function $scope.process_artists
 					 **/
+
+					let genreInd = 0;
 					$scope.process_artists = function(results){
 
 						return new Promise(function(done, fail) {
@@ -2775,10 +2832,16 @@
 
 							console.log(all_artists.length);
 
-							//create a map of unique genres and their artists
+
 
 							let unique_genre_artist_map = {};
 							let no_genre_artists = [];
+
+							//insert artists objects = either real spotify ones or
+							//failed spotify resolved ones that we made up shell artist objects for
+							//when either of those two types of artists have no genres, save them for later
+
+							//create a map of unique genres and their artists to process in a sec
 
 							all_artists.forEach(function(ar){
 
@@ -2795,7 +2858,8 @@
 										});
 									}
 									else{
-										//Spotify didn't have any genres information
+										//either spotify didn't have an genres info or we couldn't resolve in spotify,
+										//hence a purposefully created shell 'artist' object with no genres
 										no_genre_artists.push(ar);
 									}
 
@@ -2817,7 +2881,7 @@
 
 							let artist_genre = {};
 							let genre = {};
-							let genreInd = 0;
+
 							let no_family_genres_tuples = [];
 							let registered_genres_tuples = [];
 
@@ -2826,7 +2890,8 @@
 							for(let key in unique_genre_artist_map){
 								//console.log("here");
 								genre = {};
-								genre.id = ++genreInd;
+								genreInd++
+								genre.id = genreInd;
 								genre.name = key;
 								genre.family = [];
 								if($scope.genreFam_map[genre.name] !== undefined){
@@ -2841,25 +2906,23 @@
 
 									//if true, we successfully registered and can reference that registration to submit it to DB
 									if(!gat){
+
 										//we couldn't figure out what family to put this genre in for this artist
-										no_family_genres_tuples.push({genre:genre.name,artist:unique_genre_artist_map[key].artists[0]})
+										no_family_genres_tuples.push({artist:unique_genre_artist_map[key].artists[0],genre:genre.name})
 
 									}else{
-										//todo:
-										//genre.family = gat
 										genre.family = $scope.genreFam_map[genre.name]
-										registered_genres_tuples.push({genre:genre.name,artist:unique_genre_artist_map[key].artists[0]})
+										registered_genres_tuples.push({artist:unique_genre_artist_map[key].artists[0],genre:genre.name})
 									}
 								}
 
 
-								$scope.lookup['genres'][genre.id] = key;
-								$scope.listing['genres'].push(genre);
+								//todo: move to $scope.alasql()
+								//$scope.lookup['genres'][genre.id] = key;
+								//$scope.listing['genres'].push(genre);
 
-								//console.log("$g",genre);
 
 								alasql("INSERT INTO genres VALUES ( " + vlister(genre)  + " )");
-
 								//console.log(alasql("select * from  genres"));
 
 								unique_genre_artist_map[key].artists.forEach(function(ar){
@@ -2868,17 +2931,6 @@
 									artist_genre.genre_id = genreInd;
 									alasql("INSERT INTO artists_genres VALUES ( " + vlister(artist_genre)  + " )");
 
-									// //there will 100% be duplicate artists over genres,
-									// //so don't insert them twice
-									// if(inserted_artists.indexOf(ar.id) === -1) {
-									// 	reduce(artistDef, ar);
-									// 	let varchar_keys = ["name"];
-									// 	varchar_keys.forEach(function (key) {
-									// 		ar[key] = ar[key].replace(/'/g, "''");
-									// 	});
-									// 	alasql("INSERT INTO artists VALUES ( " + vlister(ar) + " )");
-									// 	inserted_artists.push(ar.id)
-									// }
 								});
 
 							}// key in unique_genre_artist_map
@@ -2892,7 +2944,8 @@
 							let extQueries = [];
 
 							console.log("Spotify artists whose genre we had to register",registered_genres_tuples);
-							console.log("Spotify artists without any genre info:",no_genre_artists);
+
+							console.log("Artists without any genre info:",no_genre_artists);
 							console.log("these will be submitted to getExternalInfo....");
 
 							no_genre_artists.forEach(function(ar){
@@ -2905,10 +2958,14 @@
 								let noGenreMatches = [];
 								let noExternalInfoTuples = [];
 								let registeredTuples = [];
+								let noExternalInfoArtists = []
 
 								//results.forEach(function(r){tuples.push(r.data)});
 
 								let insertGenre_ArtistGenre = function(genreName, artist){
+
+									let print = genreName === "christian relaxative";
+									print ? console.log(genreName,artist):{}
 
 									//we've already inserted these genres above, right?
 
@@ -2928,10 +2985,12 @@
 
 									if(genre_id.length ===0 ){
 
+										// print ? console.log("here"):{}
+
 										//todo: not an appropriate method to index genreInd
-										++genreInd;
 
 										genre = {};
+										genreInd++;
 										genre.id = genreInd;
 										genre.name = genreName;
 										genre.family = $scope.genreFam_map[genreName];
@@ -2941,14 +3000,16 @@
 										//console.log("$artist_genre",artist_genre);
 										alasql("INSERT INTO artists_genres VALUES ( " + vlister(artist_genre)  + " )");
 
+										//$scope.listing.genres.push(genre);
+
 									}else{
+										//print ? console.log("here2"):{}
 										artist_genre.genre_id = genre_id[0].id;
 										//console.log("$artist_genre",artist_genre);
 										alasql("INSERT INTO artists_genres VALUES ( " + vlister(artist_genre)  + " )");
 									}
 
 								}//insertGenre_ArtistGenre
-
 
 								tuples.forEach(function(t){
 									if(!(t.genres.length === 0)){
@@ -2967,28 +3028,29 @@
 
 											//a fact that came back matches a genre we have
 											if($scope.genreFam_map[gName]){
+
 												insertGenre_ArtistGenre(gName,t.artist)
 											}
 											//we need to try and determine if we can use this 'genre' or not
 											else{
 
 												//todo: not an appropriate method to index genreInd
-												++genreInd;
+												genreInd++;
 
 												genre = {name:gName,id:genreInd};
 												let familyForGenre = $scope.registerGenre(genre);
 
 												if(!familyForGenre){
 													noGenreMatches.push({
-														genre:gName,
-														tuple:t
+														tuple:t,
+														genre:gName
 													})
 												}else{
 													//we were able to say that this genre belongs to a family
 													//go ahead and register the genre and tuple
 													insertGenre_ArtistGenre(gName,t.artist)
 
-													registeredTuples.push({genre:gName,tuple:t})
+													registeredTuples.push({tuple:t,genre:gName})
 
 												}
 											}
@@ -2996,7 +3058,8 @@
 									}
 									else{
 										//external info didn't return anything interesting for this artist
-										noExternalInfoTuples.push(t)
+										noExternalInfoTuples.push(t);
+										noExternalInfoArtists.push(t.artist)
 									}
 								})
 
@@ -3005,8 +3068,9 @@
 								console.log("Spotify genre-artist without family info for this genre:",no_family_genres_tuples);
 
 								console.log("ExternalInfo genre-artist which we were able to register tuples for",registeredTuples);
-								console.log("ExternalInfo genre-artist which we were NOT able to register tuples for",noExternalInfoTuples);
 								console.log("ExternalInfo genre-artist couldn't use this genre b/c we couldn't determine a family",noGenreMatches);
+								console.log("ExternalInfo genre-artist which we were NOT able to register tuples for",noExternalInfoTuples);
+								console.log("artists from those tuples:",noExternalInfoArtists);
 
 								//console.log("select * from artists_genres;",alasql("select * from artists_genres;"));
 
@@ -3084,31 +3148,41 @@
 								console.log(qry,plays);
 							}
 
-							let promises = [];
-							plays.forEach(function(play){
-								let payload = {};
-								payload.url_postfix = "playlist_tracks";
-								payload.type = "POST";
-								payload.body = {};
-								payload.body.playlist = play;
+							//let promises = [];
+							// plays.forEach(function(play){
+							// 	let payload = {};
+							// 	payload.url_postfix = "playlist_tracks";
+							// 	payload.type = "POST";
+							// 	payload.body = {};
+							// 	payload.body.playlist = play;
+							//
+							// 	let params = getHashParams();
+							// 	payload.body.token = params.access_token;
+							//
+							//
+							// 	//console.log(payload);
+							// 	promises.push($http.post(url_local + payload.url_postfix,payload.body));
+							// });
 
-								let params = getHashParams();
-								payload.body.token = params.access_token;
+							let payload = {};
+							payload.url_postfix = "playlist_tracks";
+							payload.type = "POST";
+							payload.body = {};
+							payload.body.playlists = plays;
 
+							let params = getHashParams();
+							payload.body.token = params.access_token;
 
-								//console.log(payload);
-								promises.push($http.post(url_local + payload.url_postfix,payload.body));
-							});
 
 							//console.log("sending request : " + payload.type + " :: " + payload.url_postfix);
-
-							Promise.all(promises).then(function(res){
+							$http.post(url_local + payload.url_postfix,payload.body).then(function(res){
+							// Promise.all(promises).then(function(res){
 
 								console.log("$playlistTrackMap",res);
 
 								let artist_list = [];
-								res.forEach(function(resp){
-									artist_list = artist_list.concat($scope.process_tracks(resp.data.tracks,{id:resp.data.playlist_id}))
+								res.data.forEach(function(payload){
+									artist_list = artist_list.concat($scope.process_tracks(payload.tracks,{id:payload.playlist_id}))
 								});
 
 								let payloads = [];

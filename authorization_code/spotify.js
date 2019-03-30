@@ -377,6 +377,9 @@ module.exports.googleQuery  = function(req,res) {
 
 		//let query = "\"" + req.body.query + "\" musical artist";
 
+		//todo: list just increased no-info artists from 42 to 54 :(
+		let locationParm = "loc:" + "Columbus"
+		//locationParm +
 		let query = "" + req.body.query + " musical artist";
 
 
@@ -561,40 +564,70 @@ module.exports.playlist_create =  function(req,res){
 module.exports.playlist_tracks = function(req,res){
 
 	return new Promise(function(done, fail) {
-		console.log("playlist_tracks",JSON.stringify(req.body,null,4));
+		//console.log("playlist_tracks",JSON.stringify(req.body,null,4));
+		console.log("playlist_tracks # to process:",req.body.playlists.length);
+		let startDate = new Date();
+		console.log("start time:",startDate);
 
-		let options = {
-			uri: "",
-			headers: {
-				// 'User-Agent': 'Request-Promise',
-				"Authorization":'Bearer ' + req.body.token
-			},
-			json: true
-		};
+
 
 		let url1 = "https://api.spotify.com/v1/playlists/";
 		let url2 = "/tracks";
 		let offset_base = 50;
 
+		// var searchReq =  function(options){
+		// 	return new Promise(function(done, fail) {
+		// 		let op = JSON.parse(JSON.stringify(options));
+		// 		rp(options).then(function(res){
+		// 			//  console.log(res);
+		// 			// console.log(op);
+		// 			//todo: in the future, probably need better checking on this
+		// 			//maybe some kind of memory system where, if there's an ambiguous artist name
+		// 			//and I make a correct link, I can save that knowledge to lean on later
+		// 			tuple = {};
+		// 			tuple = {artistSongkick_id:op.artistSongkick_id};
+		// 			if(res.artists.items.length > 0){
+		// 				tuple.artist = res.artists.items[0]
+		// 			}
+		// 			else{
+		// 				tuple.artistName = op.displayName;
+		// 				tuple.error = true;
+		// 				tuple.artistSearch = op.displayName_clean;
+		// 			}
+		// 			done(tuple)
+		// 		}).catch(function(e){
+		// 			console.log("searchReq failure",e);
+		// 			fail(e)
+		// 		});
+		// 	})
+		// };
+
 		function getPages(options) {
-			console.log(options.uri);
+			//console.log(options.uri);
 			return rp(options).then(data => {
-				console.log("data",data.items.length);
+				//console.log("data",data.items.length);
 				options.store = options.store.concat(data.items);
 				//console.log("cacheIT",cacheIT[options.playlist_id].length);
 				if (!(data.items.length === 50)){
 					// let tuple = {};tuple.tracks = options.store;
 					// tuple.playlist_id = options.playlist_id;
 					// return tuple;
-					return options.store;
+					return options;
 				}
 				else{
 					options.offset = options.offset + offset_base ;
 					options.uri =  options.url + "?fields=items.track(id,name,artists)&limit="+ options.limit + "&offset=" + options.offset;
+
+					// console.log("block");
+					// let seconds = .5;
+					// var waitTill = new Date(new Date().getTime() + seconds * 1000);
+					// while(waitTill > new Date()){}
+					// console.log("unblock")
 					return getPages(options);
 				}
 			});
 		}
+
 		//todo: test one
 		//let t = JSON.parse(JSON.stringify(req.body.playlist));
 		//req.body.playlist = {};
@@ -606,18 +639,61 @@ module.exports.playlist_tracks = function(req,res){
 		//req.body.playlist = {id:"0fEQxXtJS7aTK4qrxznjAJ"}
 		//console.log(JSON.stringify(req.body,null,4));
 
-		options.url =  url1 + req.body.playlist.id + url2;
-		options.offset = 0;
-		options.limit = 50;
-		options.uri = options.url + "?fields=items.track(id,name,artists)&limit=" + options.limit + "&offset=" + options.offset;
-		options.playlist_id = req.body.playlist.id;
-		options.store = [];
+		let options = {
+			uri: "",
+			headers: {
+				// 'User-Agent': 'Request-Promise',
+				"Authorization":'Bearer ' + req.body.token
+			},
+			json: true
+		};
 
-		getPages(options).then(function(results){
+		var promiseThrottle_playlists = new PromiseThrottle({
+			requestsPerSecond: 5,
+			//362
+			// requestsPerSecond: 20,
+			//124
+			promiseImplementation: Promise  // the Promise library you are using
+		});
+
+		let promises = [];
+
+		req.body.playlists.forEach(function(play){
+			options = {
+				uri: "",
+				headers: {
+					// 'User-Agent': 'Request-Promise',
+					"Authorization":'Bearer ' + req.body.token
+				},
+				json: true,
+			};
+
+			options.url =  url1 + play.id + url2;
+			options.offset = 0;
+			options.limit = 50;
+			options.uri = options.url + "?fields=items.track(id,name,artists)&limit=" + options.limit + "&offset=" + options.offset;
+			options.playlist_id = play.id;
+			options.store = [];
+			promises.push(promiseThrottle_playlists.add(getPages.bind(this,options)));
+
+		})
+
+
+		Promise.all(promises).then(function(results){
+			console.log("playlist_tracks finished execution:",Math.abs(new Date() - startDate) / 600);
 			console.log("results ",results.length);
-			let payload = {}; payload.tracks = results;payload.playlist_id = options.playlist_id;
+			//console.log("results ",results);
+
+			let payloads = [];
+			let payload = {};
+			results.forEach(function(op){
+				payload = {};
+				payload.tracks = op.store;
+				payload.playlist_id = op.playlist_id;
+				payloads.push(payload)
+			});
 			console.log("FINISHED");
-			res.send(payload);
+			res.send(payloads);
 		})
 	})//promise
 
