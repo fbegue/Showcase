@@ -699,6 +699,8 @@ module.exports.playlist_tracks = function(req,res){
 
 };//playlist_tracks
 
+//todo: ADD THROTTLE
+
 module.exports.get_artists = function(req, res){
 
 	// console.log("search_artists",JSON.stringify(req.body,null,4));
