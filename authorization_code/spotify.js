@@ -136,57 +136,239 @@ const { JSDOM } = require( 'jsdom' );
 //todo: little weird b/c when we update genre info client side,
 //we can't make decisions with that updated info here
 
-module.exports.getExternalInfo  = function(req,res) {
-	//console.log("getExternalInfo",req.body.expression);
+module.exports.getExternalInfos  = function(req,res) {
+	console.log("getExternalInfos",req.body.artists.length);
 
+	//todo: subset
+	// let set = JSON.parse(JSON.stringify(req.body.artists))
+	// req.body.artists = [set[0]]
+	// console.log("SUBSET!",req.body.artists);
+
+
+	
+	let doBrainz = function(){
+		//ex: getArtistById
+		//http://musicbrainz.org/ws/2/artist/e9787dd2-5857-4b51-8e59-a190a54820fc?inc=genres&fmt=json
+
+		//ex: query artist
+		//https://musicbrainz.org/ws/2/artist/?query=The%20Polish%20Ambassador&fmt=json
+
+		//desired format for queries (full Lucene Search syntax)
+		//https://lucene.apache.org/core/4_3_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description
+
+		let queryCode = function (exp) {
+
+			//let exp = "Guns N' Roses";
+			//result: Guns_N%27_Roses
+
+			//wiki likes _ for spaces
+			//exp = exp.replace(/\s/g, '_');
+
+			//https://www.w3schools.com/tags/ref_urlencode.asp
+			exp = encodeURI(exp);
+
+			//not handling apostrophes/single quotes?
+			//exp = exp.replace("'", "%27");
+
+			console.log(exp);
+			return exp;
+		};
+
+		let musicBrainzLookup =  function(artistId){
+			return new Promise(function(done, fail) {
+				let lookArtist_pre = "http://musicbrainz.org/ws/2/artist/"
+				let lookArtist_post = "?inc=genres&fmt=json";
+
+				//artistId = "e9787dd2-5857-4b51-8e59-a190a54820fc"
+
+				let url = lookArtist_pre + artistId + lookArtist_post;
+				let options = {
+					method: "GET",
+					uri: url,
+					headers: {
+						'User-Agent': 'Request-Promise',
+					},
+				};
+				console.log(url);
+				rp(options).then(function (result) {
+					//console.log("#####",JSON.stringify(JSON.parse(result),null,4));
+					let resultP = JSON.parse(result);
+					done(resultP.genres)
+				})
+			})
+		};
+
+		let musicBrainzQry =  function(artist){
+			return new Promise(function(done, fail) {
+				let queryArtist_pre = "https://musicbrainz.org/ws/2/artist/?query=";
+				let queryArtist_post = "&fmt=json";
+
+				//artist.name = "Muse"
+				let url = queryArtist_pre + queryCode(artist.name) + queryArtist_post;
+				let options = {
+					method: "GET",
+					uri: url,
+					headers: {
+						// 'User-Agent': 'Request-Promise',
+						'User-Agent': 'Showcase/alpha (dacandyman0@gmail.com)',
+					},
+					//json: true
+				};
+				console.log(url);
+				rp(options).then(function (result) {
+					//console.log("$$$$$$",JSON.stringify(JSON.parse(result),null,4));
+					let resultP = JSON.parse(result);
+
+					//todo: always assume first artist is what who we want
+					//in the future, how can we tell how many results are useful?
+					//many ids for the same entity, but who has the genres info?
+					//is it ever useful to tranverse past the first (score = 100?)
+
+
+					if(resultP.artists.length === 0){
+						console.log("$$$no musicbrainz match found for",artist.name);
+						done([])
+					}
+					else{
+
+						done(resultP.artists[0])
+						//todo: managing the API rate while having a request in a request is hard
+
+						// var wait =  function(ms){
+						// 	return new Promise(function(done, fail) {
+						// 		console.log("waiting...");
+						// 		setTimeout(function(){
+						// 			console.log("done!");
+						// 			done()
+						// 		},ms);
+						// 	})
+						// }
+						//
+						// wait(2000).then(function(){
+						//
+						// 	musicBrainzLookup(resultP.artists[0].id).then(function(genres){
+						// 		if(genres.length === 0){
+						// 			console.log("$no musicbrainz genres found for",resultP.artists[0].name);
+						// 		}
+						// 		done(genres);
+						// 	})
+						// })
+					}
+				})
+			})
+		};
+
+		var promiseThrottle_brainz = new PromiseThrottle({
+
+			//https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#Provide_meaningful_User-Agent_strings
+			//am i missing something here? whats the point of having limit of 50/sec/user when the IP limit is 1/sec/ip
+
+			//therefore, even 2 begins the fuckoff sequence :(
+			requestsPerSecond: 1,
+			promiseImplementation: Promise  // the Promise library you are using
+		});
+
+		let brainPromises = [];
+		req.body.artists.forEach(function(ar){
+			// brainPromises.push(musicBrainzQry(ar))
+			brainPromises.push(promiseThrottle_brainz.add(musicBrainzQry.bind(this,ar)));
+
+		});
+
+		Promise.all(brainPromises).then(function(brainResults){
+			console.log("brainResults",brainResults);
+			//genres? store them
+			//otherwise go to wiki? does wiki always have same info?
+		});
+	}
+
+	//todo: readup on possibly combining some of these searches?
+	//https://www.mediawiki.org/wiki/API:Etiquette
+
+	var promiseThrottle_Wiki = new PromiseThrottle({
+
+		//todo: okay wtf is going on here?  i broke it at 2000 lmfao WOW!
+		requestsPerSecond: 1000,
+		promiseImplementation: Promise
+	});
+
+	let wikiPromises = [];
 	let wReq = {};
-	wReq.body = {};
-	wReq.body.expression = req.body.expression;
-
-	module.exports.getWikiPage(wReq).then(function(wikiRes){
-
-		//console.log("wikiRes",wikiRes);
+	req.body.artists.forEach(function(ar){
+		wReq = {};
+		wReq.body = {};
+		wReq.body.artist = ar;
+		wikiPromises.push(promiseThrottle_Wiki.add(module.exports.getWikiPage.bind(this,wReq)));
+	});
+	
+	Promise.all(wikiPromises).then(function(wikiResults){
+		//console.log("wikiResults",wikiResults);
 
 		let knownGenres = [];
+		let googlePromises = [];
 
 		//todo: force googleQry
 		//wikiRes.facts = [];
 
+		var promiseThrottle_Google = new PromiseThrottle({
 
-		let googleQry = function(){
-			let gReq = {};
-			gReq.body = {query:req.body.expression.name};
+			//todo:hmmmmmm
+			requestsPerSecond: 1,
+			promiseImplementation: Promise
+		});
 
-			module.exports.googleQuery(gReq).then(function(gRes){
-				//console.log("gRes",gRes);
-				let resp = {html:gRes,expression:req.body.expression};
-				res.send(resp);
-			});
-		};
+		// let googleQry = function(){
+		// 	let gReq = {};
+		// 	gReq.body = {query:req.body.artist.name};
+		//
+		// 	module.exports.googleQuery(gReq).then(function(gRes){
+		// 		//console.log("gRes",gRes);
+		// 		let resp = {html:gRes,artist:req.body.artist};
+		// 		res.send(resp);
+		// 	});
+		// };
 
 		//need to dermtine if facts are good
 
 		//todo: this is esentially disallowing us to 'discover' new genres thru wiki
 		//for now, if you're not a genre, we're throwing you out
 
-		if(wikiRes.facts.length !== 0) {
-			wikiRes.facts.forEach(function (f) {
-				if (genresMap[f]) {
-					knownGenres.push(f);
-				}
-			});
+		wikiResults.forEach(function(wikiRes){
+			let gReq = {};
+			gReq.body = {query:wikiRes.artist.name};
 
-			//todo: could decide on theshold # of genres
-			if(knownGenres.length !== 0) {
-				let resp = {genres:knownGenres,expression:req.body.expression}
-				res.send(resp);
+			if(wikiRes.facts.length !== 0) {
+				wikiRes.facts.forEach(function (f) {
+					if (genresMap[f]) {
+						knownGenres.push(f);
+					}
+				});
+
+				//todo: could decide on theshold # of genres
+				if(knownGenres.length !== 0) {
+					let resp = {genres:knownGenres,expression:req.body.expression}
+
+					//todo: put aside and return with google results
+					// res.send(resp);
+
+				}else{
+					googlePromises.push(promiseThrottle_Google.add(module.exports.googleQuery.bind(this,gReq)));
+				}
+
 			}else{
-				googleQry();
+				//no facts
+				googlePromises.push(promiseThrottle_Google.add(module.exports.googleQuery.bind(this,gReq)));
 			}
-		}else{
-			//no facts
-			googleQry();
-		}
+		});
+
+		console.log(googlePromises.length + " googlePromises....");
+
+		Promise.all(googlePromises).then(function(googleResults){
+
+			console.log("googleResults",googleResults);
+
+		})
+
 	})
 };
 
@@ -194,10 +376,10 @@ module.exports.getWikiPage = function(req,res) {
 
 	return new Promise(function(done, fail) {
 
-		//console.log("getWikiPage",req.body.expression);
+		//console.log("getWikiPage",req.body.artist);
 
-		let expression = req.body.expression;
-		let expression_save = JSON.parse(JSON.stringify(req.body.expression));
+		let artist = req.body.artist;
+		let artist_save = JSON.parse(JSON.stringify(req.body.artist));
 
 		//no content fields specified
 		//https://en.wikipedia.org/w/api.php?action=query&format=jsonfm&formatversion=2&titles=Wynchester
@@ -229,9 +411,9 @@ module.exports.getWikiPage = function(req,res) {
 			"&rvprop=content" +
 			"&format=jsonfm" +
 			"&formatversion=2" +
-			"&titles=" + code_prefix(expression.name) + "&format=json";
-		//console.log("URI encode exp:",code_prefix(expression.name));
-		console.log("URL:",url);
+			"&titles=" + code_prefix(artist.name) + "&format=json";
+		//console.log("URI encode exp:",code_prefix(artist.name));
+		//console.log("URL:",url);
 
 		let options = {
 			method: "POST",
@@ -282,7 +464,7 @@ module.exports.getWikiPage = function(req,res) {
 
 			//console.log(JSON.stringify(facts));
 			let response = {};
-			response.expression = expression_save;
+			response.artist = artist_save;
 
 			function removeDups(records) {
 				let unique = {};
@@ -293,68 +475,13 @@ module.exports.getWikiPage = function(req,res) {
 
 			response.facts = removeDups(facts);
 
-			//todo:
 			done(response)
 			//res.send(response)
 
 		}).catch(function (err) {
 			console.log(err);
 		})
-
-		let aj = function(){
-			$.ajax({
-				url: url,
-				dataType: "jsonp",
-				success: function(response) {
-					//console.log("response",response);
-
-					//don't know what n pages or n revisions means as of yet
-					let content = response.query['pages'][0]['revisions'][0]['content'].toString();
-
-					let infoStr = "Infobox musical artist"
-					let pat = /\[\[([A-Za-z\s\|]*)\]\]/gs
-
-					if(content.indexOf(infoStr) !== -1){
-						//console.log("matched infobox",content);
-
-						let matches = content.match(pat);
-						//console.log(matches);
-
-						let facts = [];
-						let pat2 = /[^\w\s]/g;
-
-						matches.forEach(function(m){
-							if(m.indexOf("|") !== -1){
-								let split = m.split("|")
-								//console.log("$",split);
-								let a = split[0].replace(pat2," ").toLowerCase().trim();
-								let b = split[1].replace(pat2," ").toLowerCase().trim();
-								//console.log(a);console.log(b);
-								facts.push(b);facts.push(a);
-							}
-							else{
-								let y = m.replace(pat2," ").toLowerCase().trim()
-								console.log("#",y);
-								facts.push(y)
-							}
-						});
-
-						facts.forEach(function(f){
-							if($scope.genreFam_map[f]){
-								console.log("true",f);
-							}
-						});
-						// console.log($scope.genreFam_map);
-						// console.log(facts);
-					}
-				},
-				error: function () {
-					alert("Error retrieving search results, please refresh the page");
-				}
-
-			});
-		}
-
+		
 	})//promise
 };
 
@@ -565,42 +692,14 @@ module.exports.playlist_tracks = function(req,res){
 
 	return new Promise(function(done, fail) {
 		//console.log("playlist_tracks",JSON.stringify(req.body,null,4));
-		console.log("playlist_tracks # to process:",req.body.playlists.length);
+		console.log("playlist_tracks # of playlists to process:",req.body.playlists.length);
 		let startDate = new Date();
 		console.log("start time:",startDate);
-
-
 
 		let url1 = "https://api.spotify.com/v1/playlists/";
 		let url2 = "/tracks";
 		let offset_base = 50;
 
-		// var searchReq =  function(options){
-		// 	return new Promise(function(done, fail) {
-		// 		let op = JSON.parse(JSON.stringify(options));
-		// 		rp(options).then(function(res){
-		// 			//  console.log(res);
-		// 			// console.log(op);
-		// 			//todo: in the future, probably need better checking on this
-		// 			//maybe some kind of memory system where, if there's an ambiguous artist name
-		// 			//and I make a correct link, I can save that knowledge to lean on later
-		// 			tuple = {};
-		// 			tuple = {artistSongkick_id:op.artistSongkick_id};
-		// 			if(res.artists.items.length > 0){
-		// 				tuple.artist = res.artists.items[0]
-		// 			}
-		// 			else{
-		// 				tuple.artistName = op.displayName;
-		// 				tuple.error = true;
-		// 				tuple.artistSearch = op.displayName_clean;
-		// 			}
-		// 			done(tuple)
-		// 		}).catch(function(e){
-		// 			console.log("searchReq failure",e);
-		// 			fail(e)
-		// 		});
-		// 	})
-		// };
 
 		function getPages(options) {
 			//console.log(options.uri);
@@ -609,21 +708,39 @@ module.exports.playlist_tracks = function(req,res){
 				options.store = options.store.concat(data.items);
 				//console.log("cacheIT",cacheIT[options.playlist_id].length);
 				if (!(data.items.length === 50)){
-					// let tuple = {};tuple.tracks = options.store;
-					// tuple.playlist_id = options.playlist_id;
-					// return tuple;
+
+					//todo: was thinking about working in creating my get_artists (for genres)
+					//payloads as I go along here, but that will be a little complicated.
+
 					return options;
 				}
 				else{
 					options.offset = options.offset + offset_base ;
 					options.uri =  options.url + "?fields=items.track(id,name,artists)&limit="+ options.limit + "&offset=" + options.offset;
 
-					// console.log("block");
-					// let seconds = .5;
-					// var waitTill = new Date(new Date().getTime() + seconds * 1000);
-					// while(waitTill > new Date()){}
-					// console.log("unblock")
-					return getPages(options);
+
+					//todo: ideally I think it would be better if I knew how many total requests I was going to have to make
+					//3x for this playlist, 24x for this, etc.
+					//and then put those all in a promises array that I could manage the throttle more efficiently on
+					//because right now my 'throttle' doesn't really know about these recursive getPages calls?
+					//im guessing IDK really how that would work but it seems that would provide a performance advantage
+
+					var wait =  function(ms){
+					    return new Promise(function(done, fail) {
+							//console.log("waiting...");
+							setTimeout(function(){
+								//console.log("done!");
+								done()
+							},ms);
+					    })
+					}
+
+					return wait(300).then(function(){
+						return getPages(options)
+					})
+
+					 // return x();
+
 				}
 			});
 		}
@@ -699,17 +816,22 @@ module.exports.playlist_tracks = function(req,res){
 
 };//playlist_tracks
 
-//todo: ADD THROTTLE
-
 module.exports.get_artists = function(req, res){
+	console.log("get_artists payload size:",req.body.queries.length * 50);
+	console.log("# of requests to resolve:",req.body.queries.length);
 
-	// console.log("search_artists",JSON.stringify(req.body,null,4));
-	console.log("get_artists",req.body.queries.length);
+	let startDate = new Date();
+	console.log("start time:",startDate);
 
-	// var promiseThrottle = new PromiseThrottle({
-	// 	requestsPerSecond: 5,           // up to 1 request per second
-	// 	promiseImplementation: Promise  // the Promise library you are using
-	// });
+	//todo: why the fuck is this so fast lol :) ????
+
+	var promiseThrottle = new PromiseThrottle({
+
+		//35 mostly works, but occasional failure for a 1 second reduction seems silly
+
+		requestsPerSecond: 15,           // up to 1 request per second
+		promiseImplementation: Promise  // the Promise library you are using
+	});
 
 	let options = {
 		uri: "",
@@ -723,26 +845,32 @@ module.exports.get_artists = function(req, res){
 	let url_pre = "https://api.spotify.com/v1/artists?ids=";
 	let promises = [];
 
+	//todo:
+	// console.log("TESTING WITH SUBSET!");
+	// let subset = JSON.parse(JSON.stringify(req.body.queries))
+	// req.body.queries = [];
+	// req.body.queries.push(subset[0])
+	// req.body.queries.push(subset[1])
+	// req.body.queries.push(subset[2])
+
 	req.body.queries.forEach(function(multiArtistStr){
+		options = {
+			uri: "",
+			headers: {
+				'User-Agent': 'Request-Promise',
+				"Authorization":'Bearer ' + req.body.token
+			},
+			json: true
+		};
+
 		options.uri = url_pre + multiArtistStr;
-		//console.log(options.uri);
-
-		//todo: for some reason the results that come back using throttle
-		//are different then those in just a rp call. not the timing, the literal results
-		// promises.push(promiseThrottle.add(rp.bind(this,options)))
-
-		promises.push(rp(options))
-		// .then(function(res) {
-		// 	console.log("completed:",options.uri);
-		// 	console.log("#",res.length);
-		// }))
-
+		promises.push(promiseThrottle.add(rp.bind(this,options)))
 	});
 
 	Promise.all(promises)
 		.then(function(results) {
 			//console.log(results);
-			console.log("FINISHED");
+			console.log("get_artists finished execution:",Math.abs(new Date() - startDate) / 600);
 			res.send(results);
 		})
 };

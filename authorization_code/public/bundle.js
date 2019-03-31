@@ -2921,6 +2921,8 @@
 								//$scope.lookup['genres'][genre.id] = key;
 								//$scope.listing['genres'].push(genre);
 
+								let varchar_keys = ["name"];
+								varchar_keys.forEach(function(key) {	genre[key] = genre[key].replace(/'/g, "''");});
 
 								alasql("INSERT INTO genres VALUES ( " + vlister(genre)  + " )");
 								//console.log(alasql("select * from  genres"));
@@ -2941,19 +2943,34 @@
 							//newly facted genres or artist-genre associations yet
 
 
-							let extQueries = [];
+							// let extQueries = [];
 
 							console.log("Spotify artists whose genre we had to register",registered_genres_tuples);
 
-							console.log("Artists without any genre info:",no_genre_artists);
-							console.log("these will be submitted to getExternalInfo....");
+							//todo: pretty sure nothing bad will happen if I do this?
+							//not exactly sure how this effects calls from get_metro_events
 
-							no_genre_artists.forEach(function(ar){
-								 extQueries.push($scope.getExternalInfo(ar))
-								//extQueries.push($scope.getWikiPage(ar))
+							//only unique artists
+							let exists =  {};
+							let u_no_genre_artists = [];
+							no_genre_artists.forEach(function(a,i){
+								if(!(exists[a.name])){
+									exists[a.name] = 1
+									u_no_genre_artists.push(a);
+								}
 							});
 
-							Promise.all(extQueries).then(function(tuples){
+							console.log("Artists without any genre info:",u_no_genre_artists);
+							console.log("these will be submitted to getExternalInfos....");
+
+							// no_genre_artists.forEach(function(ar){
+							// 	 extQueries.push($scope.getExternalInfos(ar))
+							// 	//extQueries.push($scope.getWikiPage(ar))
+							// });
+
+							// Promise.all(extQueries).then(function(tuples){
+
+							$scope.getExternalInfos(no_genre_artists).then(function(tuples){
 								console.log("$externalInfo results",tuples);
 								let noGenreMatches = [];
 								let noExternalInfoTuples = [];
@@ -3164,6 +3181,19 @@
 							// 	promises.push($http.post(url_local + payload.url_postfix,payload.body));
 							// });
 
+							//todo: #getArtist -  force short-query for playlists
+							let p1 = {
+								$$hashKey: "object:169",
+								id: "1y46VdA4uPVTSaKUGlXAOR",
+								name: "Hellblade OST",
+								owner: "dacandyman01",
+								public: "true",
+								uri: "spotify:playlist:1y46VdA4uPVTSaKUGlXAOR",
+								_cmo_checked: true
+							}
+							plays = [p1]
+
+
 							let payload = {};
 							payload.url_postfix = "playlist_tracks";
 							payload.type = "POST";
@@ -3203,7 +3233,12 @@
 								//leftover
 								if(payload.length){payloads.push(payload)}
 
+
+								//todo: #getArtist -  force cached request
+								console.warn("imported locally:","franky's playlist artist payload");
+								payloads = get_artists_payload_franky;
 								console.log("$payloads",payloads);
+
 
 								let promises = [];
 								let payload_strs = [];
@@ -3233,8 +3268,9 @@
 								console.log("# of payload strings:",payload_strs.length);
 								console.log("req_all.body.queries",req_all.body.queries);
 								$http.post(url_local + req_all.url_postfix,req_all.body).then(function(results){
-									console.log("$get_artists");
-									console.log(results.data);
+									console.log("$get_artists",results);
+									//console.log(JSON.stringify(results.data,null,4));
+
 									$scope.process_artists(results.data).then(function(){
 										done();
 									})
@@ -3258,14 +3294,14 @@
 
 
 					//this will go to the MS and first try to get more info from wiki, then a google search
-					$scope.getExternalInfo = function(expression){
+					$scope.getExternalInfos = function(artists){
 						return new Promise(function(done, fail) {
 							var req = {};
 							req.type = "POST";
-							req.url_postfix = "getExternalInfo";
+							req.url_postfix = "getExternalInfos";
 							let params = getHashParams();
 							req.body = {
-								expression:expression,
+								artists:artists,
 								token:params.access_token
 							};
 
@@ -3344,20 +3380,24 @@
 							};
 
 							$http.post(url_local + req.url_postfix,req.body).then(function(res){
-								//console.log(res.data);
+
+								console.log("$getExternalInfos finished:",res.data);
+
+
+								//todo:
 
 								//either we got genres from wiki
 								// or we got an html page to parse from google
-								let tuple = {};
+								// let tuple = {};
+								//
+								// if(res.data.genres){
+								// 	tuple = {genres:res.data.genres,artist:res.data.expression};
+								// }
+								// else{
+								// 	tuple = parseGoogleHTML(res.data.html,res.data.expression);
+								// }
 
-								if(res.data.genres){
-									tuple = {genres:res.data.genres,artist:res.data.expression};
-								}
-								else{
-									tuple = parseGoogleHTML(res.data.html,res.data.expression);
-								}
-
-								done(tuple);
+								//done(tuple);
 
 							}).catch(function(err){
 								console.log(err);
