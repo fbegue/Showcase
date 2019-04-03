@@ -3181,7 +3181,7 @@
 							// 	promises.push($http.post(url_local + payload.url_postfix,payload.body));
 							// });
 
-							//todo: #getArtist -  force short-query for playlists
+							//fixme: #getArtist -  force short-query for playlists
 							let p1 = {
 								$$hashKey: "object:169",
 								id: "1y46VdA4uPVTSaKUGlXAOR",
@@ -3234,10 +3234,10 @@
 								if(payload.length){payloads.push(payload)}
 
 
-								//todo: #getArtist -  force cached request
-								console.warn("imported locally:","franky's playlist artist payload");
-								payloads = get_artists_payload_franky;
-								console.log("$payloads",payloads);
+								//fixme: #getArtist -  force cached request
+								// console.warn("imported locally:","franky's playlist artist payload");
+								// payloads = get_artists_payload_franky;
+								// console.log("$payloads",payloads);
 
 
 								let promises = [];
@@ -3260,7 +3260,7 @@
 								req_all.body.token = params.access_token;
 								req_all.body.queries = payload_strs;
 
-								//TODO:
+								//fixme:
 								// let test = [];
 								// test.push(req_all.body.queries[1])
 								// req_all.body.queries = test;
@@ -3270,6 +3270,9 @@
 								$http.post(url_local + req_all.url_postfix,req_all.body).then(function(results){
 									console.log("$get_artists",results);
 									//console.log(JSON.stringify(results.data,null,4));
+
+									//fixme:
+									//results = get_artists_results_franky;
 
 									$scope.process_artists(results.data).then(function(){
 										done();

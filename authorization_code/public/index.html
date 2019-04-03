@@ -17,6 +17,7 @@
   <script src="directives/dirPagination.js"></script>
   <script src="all_genres2.js"></script>
   <script src="get_artists_payload_franky.js"></script>
+  <script src="get_artists_results_franky.js"></script>
 
   <script src="directives/x-directive.multiobject.js"></script>
   <link rel = "stylesheet" type = "text/css" href = "directives/x-directive.multiobject.css" />
@@ -29,7 +30,7 @@
 <body>
 
 <!--todo-->
-<!--<image src="images/groups_bar.JPG"></image>-->
+<image src="images/groups_bar.JPG"></image>
 
 <div class="container"  ng-app="showcase">
 
@@ -110,15 +111,15 @@
           <div class="" > [YYYY-MM-DD] start date <input ng-model="dateFilter.start">  & end date <input ng-model="dateFilter.end"></div>
           <div class="" >raw_filename <input ng-model="raw_filename"></div>
           <div class="" >areaDatesArtists_filename <input ng-model="areaDatesArtists_filename"></div>
-
-          <div class="" >select metro: <button style="color:red" ng-click="get_metro_events(global_metro)">get_metro_events</button> </div>
+          <!--color:red-->
+          <div class="" >select metro: <button style="" ng-click="get_metro_events(global_metro)">get_metro_events</button> </div>
 
           <div style="display:flex;flex-direction:row;">
             <select ng-options="metro as metro.displayName for metro in metros" ng-model="global_metro"></select>
           </div>
 
-          <div> <button ng-click="searchWiki(wikiQry)">searchWiki</button><input ng-model="wikiQry"></div>
-          <div> <button ng-click="googleQuery(googleQry)">testGoogle</button><input ng-model="googleQry"></div>
+          <!--<div> <button ng-click="searchWiki(wikiQry)">searchWiki</button><input ng-model="wikiQry"></div>-->
+          <!--<div> <button ng-click="googleQuery(googleQry)">testGoogle</button><input ng-model="googleQry"></div>-->
 
         </div>
 
@@ -130,10 +131,10 @@
         <button ng-click="get_all_tracks(global_user,user_cache_ctrl[global_user.id]['playlists'])">getAllTracks</button>
         <button ng-click="get_user_playlists(global_user)">get_user_playlists</button>
         <button ng-click="set_user_cache()">set_user_cache</button>
-        <button ng-click="playlist_create()">playlist_create</button>
-        <button ng-click="artist_topTracks()">artist_topTracks</button>
-        <button ng-click="playlist_add_tracks()">playlist_add_tracks</button>
-        <button ng-click="playlist_add_artist_tracks()">playlist_add_artist_tracks</button>
+        <!--<button ng-click="playlist_create()">playlist_create</button>-->
+        <!--<button ng-click="artist_topTracks()">artist_topTracks</button>-->
+        <!--<button ng-click="playlist_add_tracks()">playlist_add_tracks</button>-->
+        <!--<button ng-click="playlist_add_artist_tracks()">playlist_add_artist_tracks</button>-->
         <button ng-click ="applyIt()">applyIt</button>
         <!--<button ng-click ="clearStore()">clearStore</button>-->
 
@@ -142,25 +143,26 @@
         <!--<button class="btn btn-default" ng-click="testEndpoint()">testEndpoint</button>-->
       </div>
 
-      <div style="display:flex;flex-direction:row;" >
-        <!--<div> {{f}}</div>-->
-        <div ng-repeat="f in globalFamilies" style="display:flex;flex-direction: row"
-             class="famButton"ng-style="{background:familyColor_map[f]}"
-             ng-class="{famSelect:inEventFam(f), famUnSelect:!inEventFam(f)}"
-             ng-click="toggleEventFamily(f)">
-          <div>
-            {{f}}
-          </div>
-          <img style="width:2em;height: 2em;margin-left:1em" src="{{global_familyImageMap[f]}}" />
+      <!--todo:hidden-->
+      <!--<div style="display:flex;flex-direction:row;" >-->
+        <!--&lt;!&ndash;<div> {{f}}</div>&ndash;&gt;-->
+        <!--<div ng-repeat="f in globalFamilies" style="display:flex;flex-direction: row"-->
+             <!--class="famButton"ng-style="{background:familyColor_map[f]}"-->
+             <!--ng-class="{famSelect:inEventFam(f), famUnSelect:!inEventFam(f)}"-->
+             <!--ng-click="toggleEventFamily(f)">-->
+          <!--<div>-->
+            <!--{{f}}-->
+          <!--</div>-->
+          <!--<img style="width:2em;height: 2em;margin-left:1em" src="{{global_familyImageMap[f]}}" />-->
 
-        </div>
+        <!--</div>-->
 
-        <div class="famButton noEventFamily" ng-click="noEventFamily = !noEventFamily"
-             ng-class="{famSelect:noEventFamily, famUnSelect:!noEventFamily}">
-          noEventFamily
-        </div>
+        <!--<div class="famButton noEventFamily" ng-click="noEventFamily = !noEventFamily"-->
+             <!--ng-class="{famSelect:noEventFamily, famUnSelect:!noEventFamily}">-->
+          <!--noEventFamily-->
+        <!--</div>-->
 
-      </div>
+      <!--</div>-->
 
       <div>selected user: {{global_user.display_name}}</div>
       <div>select user:</div>
@@ -169,24 +171,30 @@
 
         <div style="display:flex;flex-direction:column;">
 
-          <select ng-options="user as user.display_name for user in users" ng-model="global_user"></select>
-          filter
-          <button ng-click="shared['artists'] = !shared['artists']">shared artists</button>
-          <button ng-click="shared['genres'] = !shared['genres']">shared genres</button>
-          <button ng-click="testdb()">testdb</button>
-          <button ng-click="genreSort === 'genreFreq' ? genreSort = 'genreGroup':{}">genreSort {{genreSort}}</button>
 
-          SELECT
+          <select ng-options="user as user.display_name for user in users" ng-model="global_user"></select>
+
+          <!--todo:hidden-->
+
+          <!--filter-->
+          <!--<button ng-click="shared['artists'] = !shared['artists']">shared artists</button>-->
+          <!--<button ng-click="shared['genres'] = !shared['genres']">shared genres</button>-->
+          <!--<button ng-click="testdb()">testdb</button>-->
+          <!--<button ng-click="genreSort === 'genreFreq' ? genreSort = 'genreGroup':{}">genreSort {{genreSort}}</button>-->
+
+          <!--SELECT-->
+
+
           <!--<button ng-click="setSelected(user_cache[global_user.id].selected,'all')">all</button>-->
           <!--<button  ng-click="setSelected(user_cache[global_user.id].selected,'none')">none</button>-->
 
 
 
-          <!--<cfaes-multiobject ng-model="selected['playlists']"-->
-          <!--selection="testPlaylists"-->
-          <!--lookup="playlistLookup" display="name" type="checkboxes"-->
-          <!--filterable="false">-->
-          <!--</cfaes-multiobject>-->
+          <cfaes-multiobject ng-model="selected['playlists']"
+          selection="testPlaylists"
+          lookup="playlistLookup" display="name" type="checkboxes"
+          filterable="false">
+          </cfaes-multiobject>
 
         </div>
 

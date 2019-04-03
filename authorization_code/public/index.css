@@ -9,6 +9,13 @@
     white-space: nowrap;
     width: 500px;
 }
+
+
+
+body {
+    background:white !important;
+}
+
 .pointer:hover{
     cursor:pointer;
 }

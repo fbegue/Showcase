@@ -136,13 +136,15 @@ const { JSDOM } = require( 'jsdom' );
 //todo: little weird b/c when we update genre info client side,
 //we can't make decisions with that updated info here
 
+
+
 module.exports.getExternalInfos  = function(req,res) {
 	console.log("getExternalInfos",req.body.artists.length);
 
-	//todo: subset
+	//fixme: subset
 	// let set = JSON.parse(JSON.stringify(req.body.artists))
-	// req.body.artists = [set[0]]
-	// console.log("SUBSET!",req.body.artists);
+	// 	// req.body.artists = [set[0],set[111],set[222],set[333]]
+
 
 
 	
@@ -292,91 +294,154 @@ module.exports.getExternalInfos  = function(req,res) {
 		promiseImplementation: Promise
 	});
 
+	let Bottleneck = require("bottleneck");
+
+	const limiter = new Bottleneck({
+		maxConcurrent: 1, //prevent more than 1 request running
+		minTime: 3000, //every 3 seconds, execute a job,
+		trackDoneStatus: true
+	});
+
 	let wikiPromises = [];
 	let wReq = {};
+	let wikiResults = [];
+
 	req.body.artists.forEach(function(ar){
 		wReq = {};
 		wReq.body = {};
 		wReq.body.artist = ar;
-		wikiPromises.push(promiseThrottle_Wiki.add(module.exports.getWikiPage.bind(this,wReq)));
+		// wikiPromises.push(promiseThrottle_Wiki.add(module.exports.getWikiPage.bind(this,wReq)));
+		// wikiPromises.push(module.exports.getWikiPage.bind(this,wReq));
+		//wikiPromises.push(module.exports.getWikiPage(wReq));
+		// wikiPromises.push(limiter.schedule(() => module.exports.getWikiPage(wReq)))
+
+		//same wReq over and over
+		// limiter.schedule(() =>
+		// 	module.exports.getWikiPage(wReq).then(function(res){wikiResults.push(res)})
+		// )
+
+		//better but still fucky
+		//limiter.schedule(module.exports.getWikiPage(wReq).then(function(res){wikiResults.push(res)}),wReq);
+
+		limiter.schedule(module.exports.getWikiPage,wReq,{}).then((res) => {
+			wikiResults.push(res)
+		});
+
 	});
-	
-	Promise.all(wikiPromises).then(function(wikiResults){
-		//console.log("wikiResults",wikiResults);
 
-		let knownGenres = [];
-		let googlePromises = [];
 
-		//todo: force googleQry
-		//wikiRes.facts = [];
 
-		var promiseThrottle_Google = new PromiseThrottle({
+	// limiter.schedule(() => {
+	// 	// const allTasks = tasksArray.map(x => processTask(x));
+	// 	// GOOD, we wait until all tasks are done.
+	// 	return Promise.all(wikiPromises);
+	// }).then(function(wikiResults){
 
-			//todo:hmmmmmm
-			requestsPerSecond: 1,
-			promiseImplementation: Promise
-		});
-
-		// let googleQry = function(){
-		// 	let gReq = {};
-		// 	gReq.body = {query:req.body.artist.name};
-		//
-		// 	module.exports.googleQuery(gReq).then(function(gRes){
-		// 		//console.log("gRes",gRes);
-		// 		let resp = {html:gRes,artist:req.body.artist};
-		// 		res.send(resp);
-		// 	});
-		// };
-
-		//need to dermtine if facts are good
-
-		//todo: this is esentially disallowing us to 'discover' new genres thru wiki
-		//for now, if you're not a genre, we're throwing you out
-
-		wikiResults.forEach(function(wikiRes){
-			let gReq = {};
-			gReq.body = {query:wikiRes.artist.name};
-
-			if(wikiRes.facts.length !== 0) {
-				wikiRes.facts.forEach(function (f) {
-					if (genresMap[f]) {
-						knownGenres.push(f);
-					}
-				});
-
-				//todo: could decide on theshold # of genres
-				if(knownGenres.length !== 0) {
-					let resp = {genres:knownGenres,expression:req.body.expression}
-
-					//todo: put aside and return with google results
-					// res.send(resp);
-
-				}else{
-					googlePromises.push(promiseThrottle_Google.add(module.exports.googleQuery.bind(this,gReq)));
-				}
-
-			}else{
-				//no facts
-				googlePromises.push(promiseThrottle_Google.add(module.exports.googleQuery.bind(this,gReq)));
-			}
-		});
-
-		console.log(googlePromises.length + " googlePromises....");
-
-		Promise.all(googlePromises).then(function(googleResults){
-
-			console.log("googleResults",googleResults);
-
+	var wait =  function(ms){
+		return new Promise(function(done, fail) {
+			//console.log("waiting...");
+			setTimeout(function(){
+				//console.log("done!");
+				done()
+			},ms);
 		})
+	};
 
-	})
+	//console.log("$here",req.body.artists);
+
+	let done = {};
+	let checkCount = function() {
+		wait(500).then(function () {
+			//done = limiter.jobs("RUNNING")
+			//done.length
+			if(wikiResults.length !== req.body.artists.length){
+				console.log("wR",wikiResults.length);
+				checkCount()
+			}else{
+				console.log("wikiResults",JSON.stringify(wikiResults,null,4));
+			}
+		})
+	};
+	checkCount();
+
+	//  Promise.all(wikiPromises).then(function(wikiResults){
+	// 	console.log("wikiResults",JSON.stringify(wikiResults,null,4));
+	// 	console.log("wikiResults #",wikiResults.length);
+	//
+	// 	let knownGenres = [];
+	// 	let googlePromises = [];
+	//
+	// 	var promiseThrottle_Google = new PromiseThrottle({
+	//
+	// 		//todo:hmmmmmm
+	// 		requestsPerSecond: 1,
+	// 		promiseImplementation: Promise
+	// 	});
+	//
+	// 	// let googleQry = function(){
+	// 	// 	let gReq = {};
+	// 	// 	gReq.body = {query:req.body.artist.name};
+	// 	//
+	// 	// 	module.exports.googleQuery(gReq).then(function(gRes){
+	// 	// 		//console.log("gRes",gRes);
+	// 	// 		let resp = {html:gRes,artist:req.body.artist};
+	// 	// 		res.send(resp);
+	// 	// 	});
+	// 	// };
+	//
+	// 	//need to dermtine if facts are good
+	//
+	// 	//todo: this is esentially disallowing us to 'discover' new genres thru wiki
+	// 	//for now, if you're not a genre, we're throwing you out
+	//
+	// 	wikiResults.forEach(function(wikiRes){
+	// 		let gReq = {};
+	// 		gReq.body = {query:wikiRes.artist.name};
+	//
+	//
+	// 		//fixme:
+	// 		wikiRes.facts = [];
+	//
+	// 		if(wikiRes.facts.length !== 0) {
+	// 			wikiRes.facts.forEach(function (f) {
+	// 				if (genresMap[f]) {
+	// 					knownGenres.push(f);
+	// 				}
+	// 			});
+	//
+	// 			//todo: could decide on theshold # of genres
+	// 			if(knownGenres.length !== 0) {
+	// 				let resp = {genres:knownGenres,expression:req.body.expression}
+	//
+	// 				//todo: put aside and return with google results
+	// 				// res.send(resp);
+	//
+	// 			}else{
+	// 				googlePromises.push(promiseThrottle_Google.add(module.exports.googleQuery.bind(this,gReq)));
+	// 			}
+	//
+	// 		}else{
+	// 			//no facts
+	// 			googlePromises.push(promiseThrottle_Google.add(module.exports.googleQuery.bind(this,gReq)));
+	// 		}
+	// 	});
+	//
+	// 	console.log(googlePromises.length + " googlePromises....");
+	//
+	// 	Promise.all(googlePromises).then(function(googleResults){
+	//
+	// 		console.log("googleResults",googleResults);
+	//
+	// 	})
+	//
+	// })
 };
 
 module.exports.getWikiPage = function(req,res) {
 
 	return new Promise(function(done, fail) {
 
-		//console.log("getWikiPage",req.body.artist);
+		console.log("getWikiPage",req.body.artist);
 
 		let artist = req.body.artist;
 		let artist_save = JSON.parse(JSON.stringify(req.body.artist));
@@ -413,7 +478,7 @@ module.exports.getWikiPage = function(req,res) {
 			"&formatversion=2" +
 			"&titles=" + code_prefix(artist.name) + "&format=json";
 		//console.log("URI encode exp:",code_prefix(artist.name));
-		//console.log("URL:",url);
+		console.log("URL:",url);
 
 		let options = {
 			method: "POST",
