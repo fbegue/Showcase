@@ -2,6 +2,7 @@
 var PromiseThrottle = require("promise-throttle");
 var rp = require('request-promise');
 var google = require('google');
+var Bottleneck = require("bottleneck")
 
 //https://github.com/request/request#requestoptions-callback
 var _request = function(req){
@@ -113,6 +114,14 @@ var searchReq =  function(options){
 // 	console.log("$res",res);
 // })
 
+//const { JSDOM } = require( 'jsdom' );
+
+// var promiseThrottle_Wiki = new PromiseThrottle({
+//
+//  okay wtf is going on here?  i broke it at 2000 lmfao WOW!
+// 	requestsPerSecond: 1000,
+// 	promiseImplementation: Promise
+// });
 
 
 //todo:
@@ -126,17 +135,8 @@ all_genres.all_genres.forEach(function(t){
 });
 
 
-
-const { JSDOM } = require( 'jsdom' );
-
-
-// console.log("$here");
-// console.log($('#test'));
-
 //todo: little weird b/c when we update genre info client side,
 //we can't make decisions with that updated info here
-
-
 
 module.exports.getExternalInfos  = function(req,res) {
 	console.log("getExternalInfos",req.body.artists.length);
@@ -147,7 +147,7 @@ module.exports.getExternalInfos  = function(req,res) {
 
 
 
-	
+
 	let doBrainz = function(){
 		//ex: getArtistById
 		//http://musicbrainz.org/ws/2/artist/e9787dd2-5857-4b51-8e59-a190a54820fc?inc=genres&fmt=json
@@ -287,16 +287,14 @@ module.exports.getExternalInfos  = function(req,res) {
 	//todo: readup on possibly combining some of these searches?
 	//https://www.mediawiki.org/wiki/API:Etiquette
 
-	var promiseThrottle_Wiki = new PromiseThrottle({
 
-		//todo: okay wtf is going on here?  i broke it at 2000 lmfao WOW!
-		requestsPerSecond: 1000,
-		promiseImplementation: Promise
+	const limiterWiki = new Bottleneck({
+		maxConcurrent: 1, //prevent more than 1 request running
+		minTime: 3000, //every 3 seconds, execute a job,
+		trackDoneStatus: true
 	});
 
-	let Bottleneck = require("bottleneck");
-
-	const limiter = new Bottleneck({
+	const limiterGoogle = new Bottleneck({
 		maxConcurrent: 1, //prevent more than 1 request running
 		minTime: 3000, //every 3 seconds, execute a job,
 		trackDoneStatus: true
@@ -305,37 +303,66 @@ module.exports.getExternalInfos  = function(req,res) {
 	let wikiPromises = [];
 	let wReq = {};
 	let wikiResults = [];
+	let wikiResultsKeep = [];
+	let googleResults = [];
 
 	req.body.artists.forEach(function(ar){
 		wReq = {};
 		wReq.body = {};
 		wReq.body.artist = ar;
 		// wikiPromises.push(promiseThrottle_Wiki.add(module.exports.getWikiPage.bind(this,wReq)));
-		// wikiPromises.push(module.exports.getWikiPage.bind(this,wReq));
-		//wikiPromises.push(module.exports.getWikiPage(wReq));
-		// wikiPromises.push(limiter.schedule(() => module.exports.getWikiPage(wReq)))
+		limiterWiki.schedule(module.exports.getWikiPage,wReq,{}).then((resWiki) => {
 
-		//same wReq over and over
-		// limiter.schedule(() =>
-		// 	module.exports.getWikiPage(wReq).then(function(res){wikiResults.push(res)})
-		// )
+			let gReq = {};
+			gReq.body = {query:resWiki.artist.name};
 
-		//better but still fucky
-		//limiter.schedule(module.exports.getWikiPage(wReq).then(function(res){wikiResults.push(res)}),wReq);
+			wikiResults.push(resWiki);
+			let knownGenres = [];
 
-		limiter.schedule(module.exports.getWikiPage,wReq,{}).then((res) => {
-			wikiResults.push(res)
-		});
+			//fixme:
+			//wikiRes.facts = [];
 
+			if(resWiki.facts.length !== 0) {
+				resWiki.facts.forEach(function (f) {
+					if (genresMap[f]) {
+						knownGenres.push(f);
+					}
+				});
+
+				//todo: could decide on theshold # of genres
+				if(knownGenres.length !== 0) {
+					let resp = {genres:knownGenres,expression:req.body.expression};
+					wikiResultsKeep.push(resp);
+
+				}else{
+					//no known genres came from the facts
+
+					//googlePromises.push(promiseThrottle_Google.add(module.exports.googleQuery.bind(this,gReq)));
+
+					limiterGoogle.schedule(module.exports.googleQuery,gReq,{}).then((gRes) => {
+						let resp = {html:gRes,artist:wReq.body.artist};
+						googleResults.push(resp);
+					});
+				}
+			}else{
+				//no facts
+				limiterGoogle.schedule(module.exports.googleQuery,gReq,{}).then((gRes) => {
+					let resp = {html:gRes,artist:wReq.body.artist};
+					googleResults.push(resp);
+				});
+			}
+
+			// if(resWiki.facts.length !== 0){
+			// 	wikiResults.push(resWiki);
+			// }
+			// else {
+			// 	limiterWiki.schedule(module.exports.getWikiPage,wReq,{}).then((resGoogle) => {
+			// 		googleResults.push(resGoogle);
+			// 	});
+			// }
+
+		});//schedule wiki promise return
 	});
-
-
-
-	// limiter.schedule(() => {
-	// 	// const allTasks = tasksArray.map(x => processTask(x));
-	// 	// GOOD, we wait until all tasks are done.
-	// 	return Promise.all(wikiPromises);
-	// }).then(function(wikiResults){
 
 	var wait =  function(ms){
 		return new Promise(function(done, fail) {
@@ -347,24 +374,25 @@ module.exports.getExternalInfos  = function(req,res) {
 		})
 	};
 
-	//console.log("$here",req.body.artists);
-
-	let done = {};
 	let checkCount = function() {
 		wait(500).then(function () {
-			//done = limiter.jobs("RUNNING")
-			//done.length
-			if(wikiResults.length !== req.body.artists.length){
-				console.log("wR",wikiResults.length);
+			//done = limiter.jobs("RUNNING");done.length
+
+			console.log("wRK:" + wikiResultsKeep.length + " || " + googleResults.length + " === " + req.body.artists.length);
+			if((wikiResultsKeep.length + googleResults.length) !== req.body.artists.length){
 				checkCount()
 			}else{
-				console.log("wikiResults",JSON.stringify(wikiResults,null,4));
+				console.log("FINISHED!",JSON.stringify(wikiResults,null,4));
+				console.log("FINISHED!",JSON.stringify(googleResults,null,4));
+
+				let ret = wikiResults.concat(googleResults);
+				res.send(ret);
 			}
 		})
 	};
 	checkCount();
 
-	//  Promise.all(wikiPromises).then(function(wikiResults){
+	// Promise.all(wikiPromises).then(function(wikiResults){
 	// 	console.log("wikiResults",JSON.stringify(wikiResults,null,4));
 	// 	console.log("wikiResults #",wikiResults.length);
 	//
@@ -441,7 +469,7 @@ module.exports.getWikiPage = function(req,res) {
 
 	return new Promise(function(done, fail) {
 
-		console.log("getWikiPage",req.body.artist);
+		//console.log("getWikiPage",req.body.artist);
 
 		let artist = req.body.artist;
 		let artist_save = JSON.parse(JSON.stringify(req.body.artist));
@@ -546,7 +574,7 @@ module.exports.getWikiPage = function(req,res) {
 		}).catch(function (err) {
 			console.log(err);
 		})
-		
+
 	})//promise
 };
 
@@ -791,20 +819,20 @@ module.exports.playlist_tracks = function(req,res){
 					//im guessing IDK really how that would work but it seems that would provide a performance advantage
 
 					var wait =  function(ms){
-					    return new Promise(function(done, fail) {
+						return new Promise(function(done, fail) {
 							//console.log("waiting...");
 							setTimeout(function(){
 								//console.log("done!");
 								done()
 							},ms);
-					    })
+						})
 					}
 
 					return wait(300).then(function(){
 						return getPages(options)
 					})
 
-					 // return x();
+					// return x();
 
 				}
 			});
