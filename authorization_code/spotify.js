@@ -141,6 +141,10 @@ all_genres.all_genres.forEach(function(t){
 module.exports.getExternalInfos  = function(req,res) {
 	console.log("getExternalInfos",req.body.artists.length);
 
+	let startDate = new Date();
+	console.log("start time:",startDate);
+
+
 	//fixme: subset
 	// let set = JSON.parse(JSON.stringify(req.body.artists))
 	// 	// req.body.artists = [set[0],set[111],set[222],set[333]]
@@ -289,14 +293,14 @@ module.exports.getExternalInfos  = function(req,res) {
 
 
 	const limiterWiki = new Bottleneck({
-		maxConcurrent: 1, //prevent more than 1 request running
-		minTime: 3000, //every 3 seconds, execute a job,
+		maxConcurrent: 10, //prevent more than 1 request running
+		minTime: 100, //every 3 seconds, execute a job,
 		trackDoneStatus: true
 	});
 
 	const limiterGoogle = new Bottleneck({
-		maxConcurrent: 1, //prevent more than 1 request running
-		minTime: 3000, //every 3 seconds, execute a job,
+		maxConcurrent: 5, //prevent more than 1 request running
+		minTime: 500, //every 3 seconds, execute a job,
 		trackDoneStatus: true
 	});
 
@@ -314,7 +318,7 @@ module.exports.getExternalInfos  = function(req,res) {
 		limiterWiki.schedule(module.exports.getWikiPage,wReq,{}).then((resWiki) => {
 
 			let gReq = {};
-			gReq.body = {query:resWiki.artist.name};
+			gReq.body = {artist:resWiki.artist};
 
 			wikiResults.push(resWiki);
 			let knownGenres = [];
@@ -331,7 +335,7 @@ module.exports.getExternalInfos  = function(req,res) {
 
 				//todo: could decide on theshold # of genres
 				if(knownGenres.length !== 0) {
-					let resp = {genres:knownGenres,expression:req.body.expression};
+					let resp = {genres:knownGenres,artist:wReq.body.artist};
 					wikiResultsKeep.push(resp);
 
 				}else{
@@ -340,15 +344,15 @@ module.exports.getExternalInfos  = function(req,res) {
 					//googlePromises.push(promiseThrottle_Google.add(module.exports.googleQuery.bind(this,gReq)));
 
 					limiterGoogle.schedule(module.exports.googleQuery,gReq,{}).then((gRes) => {
-						let resp = {html:gRes,artist:wReq.body.artist};
-						googleResults.push(resp);
+						//let resp = {html:gRes,artist:wReq.body.artist};
+						googleResults.push(gRes);
 					});
 				}
 			}else{
 				//no facts
 				limiterGoogle.schedule(module.exports.googleQuery,gReq,{}).then((gRes) => {
-					let resp = {html:gRes,artist:wReq.body.artist};
-					googleResults.push(resp);
+					//let resp = {html:gRes,artist:wReq.body.artist};
+					googleResults.push(gRes);
 				});
 			}
 
@@ -374,18 +378,30 @@ module.exports.getExternalInfos  = function(req,res) {
 		})
 	};
 
+	let totalTime = 0;
 	let checkCount = function() {
-		wait(500).then(function () {
-			//done = limiter.jobs("RUNNING");done.length
 
-			console.log("wRK:" + wikiResultsKeep.length + " || " + googleResults.length + " === " + req.body.artists.length);
+		wait(100).then(function () {
+			//done = limiter.jobs("RUNNING");done.length
+			totalTime = totalTime + 100;
+			//console.log("wRK:" + wikiResultsKeep.length + " || " + googleResults.length + " === " + req.body.artists.length);
 			if((wikiResultsKeep.length + googleResults.length) !== req.body.artists.length){
+
+				if(totalTime % 5000 === 0){
+					console.log("wiki...",limiterWiki.counts());
+					console.log("google...",limiterGoogle.counts());
+				}
+
 				checkCount()
 			}else{
-				console.log("FINISHED!",JSON.stringify(wikiResults,null,4));
-				console.log("FINISHED!",JSON.stringify(googleResults,null,4));
+				console.log("getExternalInfos finished execution:",Math.abs(new Date() - startDate) / 600);
 
-				let ret = wikiResults.concat(googleResults);
+				console.log(wikiResultsKeep.length + " wiki results were successful");
+				console.log(googleResults.length + " google results were returned");
+				// console.log("FINISHED!",JSON.stringify(wikiResults,null,4));
+				// console.log("FINISHED!",JSON.stringify(googleResults,null,4));
+
+				let ret = wikiResultsKeep.concat(googleResults);
 				res.send(ret);
 			}
 		})
@@ -506,7 +522,7 @@ module.exports.getWikiPage = function(req,res) {
 			"&formatversion=2" +
 			"&titles=" + code_prefix(artist.name) + "&format=json";
 		//console.log("URI encode exp:",code_prefix(artist.name));
-		console.log("URL:",url);
+		//console.log("URL:",url);
 
 		let options = {
 			method: "POST",
@@ -600,17 +616,17 @@ module.exports.googleQuery  = function(req,res) {
 		//todo: list just increased no-info artists from 42 to 54 :(
 		let locationParm = "loc:" + "Columbus"
 		//locationParm +
-		let query = "" + req.body.query + " musical artist";
+		let query = "" + req.body.artist.name + " musical artist";
 
 
 		//let query = req.body.query;
-		console.log("querying google...",query);
+		//console.log("querying google...",query);
 		google(query, function (err, result){
 			if (err) console.error(err);
 
 			//console.log(result);
 			//res.send(result.body)
-			done(result.body)
+			done({html:result.body,artist:req.body.artist})
 		})
 
 	})//promise

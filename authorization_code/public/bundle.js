@@ -789,7 +789,7 @@
 						//https://github.com/agershun/alasql/wiki/JSON
 						//alasql("INSERT INTO genres VALUES (null,'country rock',@['country','rock'])");
 
-						alasql("INSERT INTO genres VALUES ( " + vlister(genre_ex)  + " )");
+						//alasql("INSERT INTO genres VALUES ( " + vlister(genre_ex)  + " )");
 
 						console.log("select * from genres;",JSON.stringify(alasql("select * from genres;"),null,4));
 
@@ -3182,16 +3182,37 @@
 							// });
 
 							//fixme: #getArtist -  force short-query for playlists
-							let p1 = {
-								$$hashKey: "object:169",
-								id: "1y46VdA4uPVTSaKUGlXAOR",
-								name: "Hellblade OST",
-								owner: "dacandyman01",
-								public: "true",
-								uri: "spotify:playlist:1y46VdA4uPVTSaKUGlXAOR",
-								_cmo_checked: true
+							let p1 =
+								{
+									$$hashKey: "object:240",
+									id: "6Y5pMXlTVVo1y0idN42O6g",
+									name: "Alternative (party)",
+									owner: "dacandyman01",
+									public: "true",
+									uri: "spotify:playlist:6Y5pMXlTVVo1y0idN42O6g",
+									_cmo_checked: true}
+
+
+							let p2 = {
+								"id": "578eYeachMr2J9WUoXm5vp",
+								"name": "REDDIT BEAUTIFUL",
+								"owner": "dacandyman01",
+								"public": "true",
+								"uri": "spotify:playlist:578eYeachMr2J9WUoXm5vp",
+								"$$hashKey": "object:106",
+								"_cmo_checked": true
 							}
-							plays = [p1]
+							let p3 ={
+								"id": "35tDrtRWRZzipC2yo4CZI4",
+								"name": "Discover Archive",
+								"owner": "dacandyman01",
+								"public": "false",
+								"uri": "spotify:playlist:35tDrtRWRZzipC2yo4CZI4",
+								"$$hashKey": "object:192",
+								"_cmo_checked": true
+							}
+							// plays = [p1];
+							plays = [p2];
 
 
 							let payload = {};
@@ -3385,20 +3406,27 @@
 							$http.post(url_local + req.url_postfix,req.body).then(function(res){
 
 								console.log("$getExternalInfos finished:",res.data);
+								let parsed_infos = [];
 
+								res.data.forEach(function(info){
 
-								//todo:
+									let tuple = {};
+									tuple.artist = info.artist;
 
-								//either we got genres from wiki
-								// or we got an html page to parse from google
-								// let tuple = {};
-								//
-								// if(res.data.genres){
-								// 	tuple = {genres:res.data.genres,artist:res.data.expression};
-								// }
-								// else{
-								// 	tuple = parseGoogleHTML(res.data.html,res.data.expression);
-								// }
+									//either we got genres from wiki
+									// or we got an html page to parse from google
+
+									if(info.genres){
+										tuple.genres = info.genres;
+									}
+									else{
+										tuple = parseGoogleHTML(info.html,info.artist);
+									}
+									parsed_infos.push(tuple)
+
+								});
+
+								done(parsed_infos)
 
 								//done(tuple);
 
