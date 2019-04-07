@@ -2,7 +2,10 @@
 var PromiseThrottle = require("promise-throttle");
 var rp = require('request-promise');
 var google = require('google');
+var scraper = require('google-search-scraper');
 var Bottleneck = require("bottleneck")
+
+var $ = require('cheerio');
 
 //https://github.com/request/request#requestoptions-callback
 var _request = function(req){
@@ -133,6 +136,78 @@ let genresMap = {};
 all_genres.all_genres.forEach(function(t){
 	genresMap[t.name] = "dum"
 });
+
+
+module.exports.test = function(res,req){
+
+	let code_prefix = function (exp) {
+
+		//https://www.w3schools.com/tags/ref_urlencode.asp
+		exp = encodeURI(exp);
+
+		//not handling apostrophes/single quotes?
+		//exp = exp.replace("'", "%27");
+		return exp;
+	};
+
+	let query = "Lily Kerbey";
+
+		let options = {
+			method: "GET",
+			uri: "https://bandcamp.com/search?q=" + code_prefix(query),
+			headers: {
+				'User-Agent': 'Request-Promise',
+			},
+			//json: true
+		};
+
+	    console.log(options.uri);
+		rp(options).then(function (result) {
+			//console.log("$CAMP",result);
+
+			//https://cheerio.js.org/
+
+			let info = $(result).find('.result-info');
+			console.log(info.length);
+			let first = false;
+
+			info.each(function(i,elem){
+
+				//each info has 5 children. we're looking for one of them to contain artist
+				//if the info child has 'artist' then we need to examine the info
+				let ren = $(this).children()
+
+				ren.each(function(k,elem){
+					let t = $(this).text();
+					t = t.trim();
+
+					if(t === "ARTIST"){
+						console.log(t,i);
+						first === false ? first = i:{};
+					}
+				})
+			})
+			console.log("first",first);
+			//console.log($(info[first]));
+			let ttext = $(info[first]).find('.tags').text().replace('tags:',"")
+
+			//todo: remove whitespace (but preservice 'pop jazz')
+
+			//gets rid of newlines?
+
+			// let pat = /\r?\n|\r/g
+			// ttext = ttext.replace(pat,"")
+
+
+
+			//note: seems like genre is always just one (well Hip-Hop/Rap is an exception)
+			let gtext = $(info[first]).find('.genre').text().replace('genre:',"").trim()
+			console.log(ttext);
+			console.log(gtext);
+
+		})
+}
+
 
 
 //todo: little weird b/c when we update genre info client side,
@@ -293,14 +368,14 @@ module.exports.getExternalInfos  = function(req,res) {
 
 
 	const limiterWiki = new Bottleneck({
-		maxConcurrent: 10, //prevent more than 1 request running
-		minTime: 100, //every 3 seconds, execute a job,
+		maxConcurrent: 15,
+		minTime: 100,
 		trackDoneStatus: true
 	});
 
 	const limiterGoogle = new Bottleneck({
-		maxConcurrent: 5, //prevent more than 1 request running
-		minTime: 500, //every 3 seconds, execute a job,
+		maxConcurrent: 10,
+		minTime: 400,
 		trackDoneStatus: true
 	});
 
@@ -309,6 +384,7 @@ module.exports.getExternalInfos  = function(req,res) {
 	let wikiResults = [];
 	let wikiResultsKeep = [];
 	let googleResults = [];
+	let googleFailures = [];
 
 	req.body.artists.forEach(function(ar){
 		wReq = {};
@@ -343,17 +419,70 @@ module.exports.getExternalInfos  = function(req,res) {
 
 					//googlePromises.push(promiseThrottle_Google.add(module.exports.googleQuery.bind(this,gReq)));
 
-					limiterGoogle.schedule(module.exports.googleQuery,gReq,{}).then((gRes) => {
+					limiterGoogle.schedule({expiration:2000,id:gReq.body.artist.name},module.exports.googleQueryBands,gReq).then((gRes) => {
 						//let resp = {html:gRes,artist:wReq.body.artist};
 						googleResults.push(gRes);
+					}).catch(function(err){
+
+						//getting rReq's artist name seems to work, but i don't trust it?
+						let error = {artist:gReq.body.artist.name,error:err};
+						googleFailures.push(error);
+
 					});
+
+					//todo: disabled scraping for now
+
+					// limiterGoogle.schedule(module.exports.googleQueryScrape,gReq,{}).then((gRes) => {
+					// 	//let resp = {html:gRes,artist:wReq.body.artist};
+					// 	googleResults.push(gRes);
+					// });
 				}
 			}else{
 				//no facts
-				limiterGoogle.schedule(module.exports.googleQuery,gReq,{}).then((gRes) => {
+
+
+				//todo: not sure about experiation timeout length
+
+				limiterGoogle.schedule({expiration:4000,id:gReq.body.artist.name},module.exports.googleQueryBands,gReq,{}).then((gRes) => {
 					//let resp = {html:gRes,artist:wReq.body.artist};
+
 					googleResults.push(gRes);
+
+					//todo: meeehhh
+					// if(gRes.htmlBand.indexOf('Genres') === -1){
+					// 	console.log("$gbandfail==================");
+					//
+					// 	limiterGoogle.schedule(module.exports.googleQueryScrape,gReq,{}).then((gRes) => {
+					// 		//let resp = {html:gRes,artist:wReq.body.artist};
+					//
+					// 		googleResults.push(gRes);
+					//
+					// 		//todo: scrape gres is more compilcated then just indexOf
+					//
+					// 		// if(gRes.indexOf('Genres') === -1){
+					// 		// 	// console.log("$gscrapefail==================");
+					// 		// 	googleFailures.push(gRes);
+					// 		// }
+					// 		// else{
+					// 		// 	googleResults.push(gRes);
+					// 		// }
+					//
+					// 	});
+					// }
+					// else{
+					// 	googleResults.push(gRes);
+					// }
+
+
+				}).catch(function(err){
+					let error = {artist:gReq.body.artist.name,error:err};
+					googleFailures.push(error);
+
 				});
+
+				//todo: disabled scraping for now
+
+
 			}
 
 			// if(resWiki.facts.length !== 0){
@@ -385,11 +514,14 @@ module.exports.getExternalInfos  = function(req,res) {
 			//done = limiter.jobs("RUNNING");done.length
 			totalTime = totalTime + 100;
 			//console.log("wRK:" + wikiResultsKeep.length + " || " + googleResults.length + " === " + req.body.artists.length);
-			if((wikiResultsKeep.length + googleResults.length) !== req.body.artists.length){
+			if((wikiResultsKeep.length + googleResults.length + googleFailures.length) !== req.body.artists.length){
 
 				if(totalTime % 5000 === 0){
 					console.log("wiki...",limiterWiki.counts());
 					console.log("google...",limiterGoogle.counts());
+
+					console.log(limiterGoogle.jobs("EXECUTING"));
+
 				}
 
 				checkCount()
@@ -594,18 +726,73 @@ module.exports.getWikiPage = function(req,res) {
 	})//promise
 };
 
-module.exports.googleQuery  = function(req,res) {
-	//console.log("googleQuery",req.body.query);
+var DeathByCaptcha = require('deathbycaptcha');
+var dbc = new DeathByCaptcha('dacandyman0', 'Segasega4$');
+
+
+let simple_google = function(req){
+
+	let options = {
+		method: "GET",
+		uri: "https://www.google.com/#q=" + req.body.query,
+		// headers: {
+		// 	'User-Agent': 'Request-Promise',
+		// },
+		//json: true
+	};
+	rp(options).then(function (result) {
+		console.log(result);
+	})
+
+};
+
+module.exports.googleQueryBands = function(req,res) {
+	console.log("googleQuery",req.body.artist.name);
 
 	return new Promise(function(done, fail) {
 
-		//todo:force best rock band of all time
-		//req.body.query = "led zeppelin"
-		// req.body.query = "Trying Times"
-		//req.body.query = "Trying Times music group San Diego CA"
-		google.resultsPerPage = 1;
+		var optionsBands = {
+			query: req.body.artist.name + "bandsintown",
+			host: 'www.google.com',
+			// lang: 'fr',
+			// age: 'd1', // last 24 hours ([hdwmy]\d? as in google URL)
+			limit: 2,
+			solver:dbc,
+			params: {} // params will be copied as-is in the search URL query string
+		};
 
-		//todo: also might be useful to put name in quotes
+		let urls = [];
+
+		//todo: this callback is called 10 times? why?
+		scraper.search(optionsBands, function(err, url,meta) {
+			// This is called for each result
+			if(err) throw err;
+			urls.push(meta.url);
+
+			urls.length === 10 ? console.log(urls[0]) : {};
+
+			let options = {
+				method: "GET",
+				uri: urls[0],
+				headers: {
+					'User-Agent': 'Request-Promise',
+				},
+				//json: true
+			};
+			rp(options).then(function (result) {
+				let payload = ({htmlBand:result,artist:req.body.artist})
+				done(payload)
+			}).catch(function(err){
+				throw err;
+			})
+
+		});
+
+
+		//todo: attempts to get consistent google results
+
+		//google.resultsPerPage = 1;
+		//quotes useful?
 		//ex: '"SongWrita" music artist' versus 'SongWrita music artist'
 
 		//this is a way to signal google to use the 'knowledge panel' regarding musical artists
@@ -613,24 +800,72 @@ module.exports.googleQuery  = function(req,res) {
 
 		//let query = "\"" + req.body.query + "\" musical artist";
 
-		//todo: list just increased no-info artists from 42 to 54 :(
-		let locationParm = "loc:" + "Columbus"
-		//locationParm +
-		let query = "" + req.body.artist.name + " musical artist";
+		//didn't seem to help
+		//let locationParm = "loc:" + "Columbus"
 
+
+
+		//todo: old google query, trying to get at knowledge panels
 
 		//let query = req.body.query;
+		// let query = "" + req.body.artist.name + " musical artist";
 		//console.log("querying google...",query);
-		google(query, function (err, result){
-			if (err) console.error(err);
-
-			//console.log(result);
-			//res.send(result.body)
-			done({html:result.body,artist:req.body.artist})
-		})
+		// google(query, function (err, result){
+		// 	if (err) console.error(err);
+		//
+		// 	console.log(result);
+		// 	res.send(result.body)
+		// 	//done({html:result.body,artist:req.body.artist})
+		//
+		// })
 
 	})//promise
 };
+
+module.exports.googleQueryScrape  = function(req,res) {
+	//console.log("googleQuery",req.body.query);
+
+	return new Promise(function(done, fail) {
+
+
+
+		var optionsScrape = {
+			query: req.body.query,
+			host: 'www.google.com',
+			// lang: 'fr',
+			// age: 'd1', // last 24 hours ([hdwmy]\d? as in google URL)
+			limit: 10,
+			solver: dbc,
+			params: {} // params will be copied as-is in the search URL query string
+		};
+
+		let titles = [];
+		let descs = [];
+
+		scraper.search(optionsScrape, function(err, url,meta) {
+			// This is called for each result
+			if(err) throw err;
+			//console.log(url)
+			titles.push(meta.title);
+			descs.push(meta.desc);
+
+			if(titles.length === 10){
+				//console.log("$SCRAPE");
+				// console.log(titles);
+				// console.log(descs);
+				let payload = ({titles:titles,descs:descs,artist:req.body.artist})
+				done(payload)
+			}
+		});
+
+	})//promise
+};
+
+
+
+
+
+
 
 
 
@@ -988,6 +1223,10 @@ module.exports.search_artists = function(req, res){
 	// console.log("search_artists",JSON.stringify(req.body,null,4));
 	console.log("search_artists",req.body.perfTuples.length);
 
+	let startDate = new Date();
+	console.log("start time:",startDate);
+
+
 	//his.type = "POST"
 	//todo:
 	//req.body = JSON.parse(req.headers['content-type']);
@@ -1088,6 +1327,7 @@ module.exports.search_artists = function(req, res){
 	Promise.all(promises)
 		.then(function(results) {
 			//console.log(JSON.stringify(results,null,4));
+			console.log("search_artists finished execution:",Math.abs(new Date() - startDate) / 600);
 			console.log("FINISHED");
 			res.send(results);
 		}).catch(function(err){

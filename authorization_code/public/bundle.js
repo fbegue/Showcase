@@ -298,7 +298,7 @@
 				//to update the contents of these containers. but I don't want to have to dynamically declare
 				//these when the app grows, I want to be able change things in the database and call
 				//one master function that says 'everyone that data changed, re-run your queries.
-				module.filter('getPerfs', function(linker) {
+				module.filter('getPerfs', function() {
 					return function(perfs,e) {
 
 						//console.log("@change");
@@ -318,6 +318,8 @@
 								//console.log(item.performances);
 								return item;
 							});
+
+							console.log("getPerfs",array);
 							return array
 						}
 						else{return perfs;}
@@ -508,6 +510,94 @@
 				});
 
 				let controller = module.controller("myCtrl", function($scope,$http,linker) {
+
+
+
+				   $scope.vmapSelection = [];
+
+				   $scope.selectMetro = function(metroId){
+					   $scope.metros.forEach(function(m){
+						   if( m.id === metroId){$scope.global_metro = m}
+					   });
+					   console.log("set global_metro",$scope.global_metro);
+					   $scope.digestIt();
+				   };
+
+					$(document).ready(function () {
+						$('#vmap').vectorMap({
+							map: 'usa_en',
+							backgroundColor: null,
+							borderColor: 'black',
+							color: 'lightgrey',
+							selectedColor:  'darkgrey',
+							hoverColor: 'darkgrey',
+							enableZoom: false,
+							showTooltip: false,
+							multiSelectRegion:true,
+							colors: {
+								oh: 'lightblue',
+								ut: 'lightblue',
+								ca: 'lightblue'
+							},
+							onRegionClick: function(event, code, region){
+								//the event comes from vmap silly :)
+								//event.preventDefault();
+
+								console.log("hey!",code + "|" + region);
+							},
+							onRegionSelect: function(event, code, region){
+								console.log("onRegionSelect!",code);
+								$scope.vmapSelection.push(code)
+								console.log($scope.vmapSelection);
+								$scope.digestIt();
+							},
+							onRegionDeselect: function(event, code, region){
+								console.log("onRegionDeselect!",code );
+								let i = $scope.vmapSelection.indexOf(code)
+								$scope.vmapSelection.splice(i,1);
+								console.log($scope.vmapSelection);
+								$scope.digestIt();
+							}
+							// showLabels:true,
+
+							// hoverColor: 'lightgrey',
+							// multiSelectRegion:true,
+							// selectedRegions: ['CA','NY'],
+
+						});
+					});
+
+
+					// setTimeout(function(){
+					//
+					// 	 console.log("$time!");
+					// 	var pins = $('#vmap').vectorMap('getPins');
+					// 	console.log(pins);
+					//
+					// 	// let hi = $("#jqvmap1_hi")
+					// 	// console.log(hi);
+					// 	// hi.attr("fill", "#374659");
+					//
+					//
+					// 	// $('#vmap').vectorMap({
+					// 	// 	map: 'usa_en',
+					// 	// 	enableZoom: true,
+					// 	// 	showTooltip: true,
+					// 	// 	selectedColor: null,
+					// 	// 	hoverColor: null,
+					// 	// 	colors: {
+					// 	// 		mo: '#C9DFAF',
+					// 	// 		fl: '#C9DFAF',
+					// 	// 		or: '#C9DFAF'
+					// 	// 	},
+					// 	// 	onRegionClick: function(event, code, region){
+					// 	// 		event.preventDefault();
+					// 	// 	}
+					// 	// });
+					//
+					// },2000);
+
+
 
 					//section: DB SETUP AND TESTING
 					//creation,object definitions tests for table inserts
@@ -940,14 +1030,21 @@
 					//$scope.dateFilter.start = "";
 					// $scope.dateFilter.end =  '2019-04-04';
 					// $scope.dateFilter.start = '2019-03-04';
-					$scope.dateFilter.start =  '2019-03-30';
+					$scope.dateFilter.start =  '2019-04-10';
 					// $scope.dateFilter.end =  '2019-04-18';
 					// $scope.dateFilter.end =  '2019-04-26';
-					$scope.dateFilter.end =  '2019-04-06';
+					$scope.dateFilter.end =  '2019-04-17';
 					//$scope.dateFilter.end = '2019-04-11';
 					// $scope.raw_filename = "";
 					// $scope.areaDatesArtists_filename= "";
 
+
+					$scope.testG = function(){
+						$http.get("google.com").then(function(res){
+
+
+						});//search_artists post
+					}
 
 
 					//for managing my own pagination on events
@@ -1955,11 +2052,6 @@
 							let all_genres = $scope.alasql(false,"get","distinct_genres_all")
 							print ?  console.log(all_genres) : {};
 
-
-							// console.log($scope.listing.genres);
-							// console.log($scope.metro_cache[$scope.global_metro.id].artist_genres);
-
-							//let distinctGenres = $scope.alasql()
 
 							let names = [];
 							all_genres.forEach(function(g){
@@ -3047,6 +3139,7 @@
 											if($scope.genreFam_map[gName]){
 
 												insertGenre_ArtistGenre(gName,t.artist)
+												registeredTuples.push({tuple:t,genre:gName})
 											}
 											//we need to try and determine if we can use this 'genre' or not
 											else{
@@ -3157,7 +3250,6 @@
 									p._cmo_checked ? plays_checked.push(p):{};
 								});
 								plays = plays_checked;
-								console.log("subset ",plays);
 							}
 							else{
 								let qry = "select * from playlists where owner = '" + user.id + "' ";
@@ -3212,7 +3304,7 @@
 								"_cmo_checked": true
 							}
 							// plays = [p1];
-							plays = [p2];
+							//plays = [p2];
 
 
 							let payload = {};
@@ -3330,11 +3422,7 @@
 							};
 
 
-							//todo: it would seem that I cannot replicate the results from when i google here
-							//sometimes my queries are specific enough/band popular or not confusing enough?
-							//to consistently give me the same results, other times not so much.
-
-							//don't really know what the solution is there.
+						    //attempting to parse out knowledge panels
 							let parseGoogleHTML = function(html,artist){
 								let doc = $(html);
 								let str = "";
@@ -3382,6 +3470,62 @@
 								return tuple;
 							};
 
+							//get genres from a bandsintown page
+							let parseBandHTML = function(html,artist){
+								let doc = $(html);
+								let str = "";
+
+								//check each top level element (in case page redesign)
+								for(var x = 0; x < doc.length; x++){
+									let tbody = $(doc)[x];
+									let g = $(tbody).find("div:contains('Genres: ')")
+
+									if(g[0]){
+										for(var y = 0; y < g.length; y++) {
+											//console.log($(g[y]));
+											//console.log($(g[y]).text());
+											// console.log($(g[y])[0].innerText)
+											let justG = $(g[y]).text() === "Genres: ";
+											if (justG) {
+												let n = $(g[y]).next();
+												//console.log("n",n);
+												str = $(n)[0].innerText
+											}
+										}
+									}
+									// else{
+									// 	g = $(tbody).find("span:contains('Genres')").next()
+									// 	console.log("2");
+									// 	if(g[0]){
+									// 		str = g[0].innerText
+									// 	}
+									// }
+								}
+								//console.log(str);
+
+								let genres = [];
+								if(str) {
+									if (str.indexOf(",") !== -1) {
+										genres = str.split(",")
+									} else if (str.indexOf("/") !== -1) {
+										genres = str.split("/")
+									}
+									else{
+										console.warn("if this is >1 genre, there was an issue on split:",str);
+										genres.push(str);
+									}
+								}
+
+								for(var x = 0; x < genres.length; x++){
+									genres[x] = genres[x].trim();
+								}
+
+								//console.log("genres",genres);
+								console.log("parseBandHTML genres:",artist.name,genres);
+								let tuple = {genres:genres,artist:artist}
+								return tuple;
+							};
+
 							//todo: idk, one day just couldn't parse the whole page
 							let parseGoogleHTML_deprecated = function(html){
 
@@ -3410,19 +3554,30 @@
 
 								res.data.forEach(function(info){
 
-									let tuple = {};
-									tuple.artist = info.artist;
+									//fixme:
 
-									//either we got genres from wiki
-									// or we got an html page to parse from google
+									// if(info.artist.name === "Funk Worthy"){
 
-									if(info.genres){
-										tuple.genres = info.genres;
-									}
-									else{
-										tuple = parseGoogleHTML(info.html,info.artist);
-									}
-									parsed_infos.push(tuple)
+										let tuple = {};
+										tuple.artist = info.artist;
+
+										//either we got genres from wiki
+										// or we got an html page to parse from google
+
+										if(info.genres){
+											tuple.genres = info.genres;
+										}
+										else if(info.htmlBand){
+											tuple = parseBandHTML(info.htmlBand,info.artist);
+										}
+										else{
+											tuple = parseGoogleHTML(info.html,info.artist);
+										}
+										parsed_infos.push(tuple)
+
+									// }
+
+
 
 								});
 

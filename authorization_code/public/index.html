@@ -104,6 +104,37 @@
 
     <div ng-controller="myCtrl">
 
+      <!-- Example Map Above  -->
+      <link href="jqvmap/jqvmap.css" media="screen" rel="stylesheet" type="text/css">
+
+      <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+      <script src="jqvmap/jquery.vmap.js"></script>
+      <script src="jqvmap/maps/jquery.vmap.usa.js"></script>
+
+
+      <script>
+
+
+        // var current_code = "ca";
+
+      </script>
+
+      <div id="maps" style="display:flex;flex-direction: row;">
+
+        <div id="vmap" style="width: 600px; height: 400px;"></div>
+
+        <div ng-if="vmapSelection.indexOf('oh') !== -1">
+          <button style="transform:scale(.5);position: relative; top: 230px; left: 120px;"
+          ng-click="selectMetro(9480)">Columbus</button>
+          <img style="height:30em" src="images/ohio.gif">
+        </div>
+
+      </div>
+
+
+
+
+
       <div style="display:flex;flex-direction:row;">
         <div>
 
@@ -144,25 +175,25 @@
       </div>
 
       <!--todo:hidden-->
-      <!--<div style="display:flex;flex-direction:row;" >-->
-        <!--&lt;!&ndash;<div> {{f}}</div>&ndash;&gt;-->
-        <!--<div ng-repeat="f in globalFamilies" style="display:flex;flex-direction: row"-->
-             <!--class="famButton"ng-style="{background:familyColor_map[f]}"-->
-             <!--ng-class="{famSelect:inEventFam(f), famUnSelect:!inEventFam(f)}"-->
-             <!--ng-click="toggleEventFamily(f)">-->
-          <!--<div>-->
-            <!--{{f}}-->
-          <!--</div>-->
-          <!--<img style="width:2em;height: 2em;margin-left:1em" src="{{global_familyImageMap[f]}}" />-->
+      <div style="display:flex;flex-direction:row;" >
+        <!--<div> {{f}}</div>-->
+        <div ng-repeat="f in globalFamilies" style="display:flex;flex-direction: row"
+             class="famButton"ng-style="{background:familyColor_map[f]}"
+             ng-class="{famSelect:inEventFam(f), famUnSelect:!inEventFam(f)}"
+             ng-click="toggleEventFamily(f)">
+          <div>
+            {{f}}
+          </div>
+          <img style="width:2em;height: 2em;margin-left:1em" src="{{global_familyImageMap[f]}}" />
 
-        <!--</div>-->
+        </div>
 
-        <!--<div class="famButton noEventFamily" ng-click="noEventFamily = !noEventFamily"-->
-             <!--ng-class="{famSelect:noEventFamily, famUnSelect:!noEventFamily}">-->
-          <!--noEventFamily-->
-        <!--</div>-->
+        <div class="famButton noEventFamily" ng-click="noEventFamily = !noEventFamily"
+             ng-class="{famSelect:noEventFamily, famUnSelect:!noEventFamily}">
+          noEventFamily
+        </div>
 
-      <!--</div>-->
+      </div>
 
       <div>selected user: {{global_user.display_name}}</div>
       <div>select user:</div>
@@ -490,7 +521,7 @@
 </script>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
-<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+<!--<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>-->
 
 <!---->
 <!-- I use this to perform intial log in with Spotify, but not after-->
