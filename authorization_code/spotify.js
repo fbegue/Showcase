@@ -138,75 +138,7 @@ all_genres.all_genres.forEach(function(t){
 });
 
 
-module.exports.test = function(res,req){
 
-	let code_prefix = function (exp) {
-
-		//https://www.w3schools.com/tags/ref_urlencode.asp
-		exp = encodeURI(exp);
-
-		//not handling apostrophes/single quotes?
-		//exp = exp.replace("'", "%27");
-		return exp;
-	};
-
-	let query = "Lily Kerbey";
-
-		let options = {
-			method: "GET",
-			uri: "https://bandcamp.com/search?q=" + code_prefix(query),
-			headers: {
-				'User-Agent': 'Request-Promise',
-			},
-			//json: true
-		};
-
-	    console.log(options.uri);
-		rp(options).then(function (result) {
-			//console.log("$CAMP",result);
-
-			//https://cheerio.js.org/
-
-			let info = $(result).find('.result-info');
-			console.log(info.length);
-			let first = false;
-
-			info.each(function(i,elem){
-
-				//each info has 5 children. we're looking for one of them to contain artist
-				//if the info child has 'artist' then we need to examine the info
-				let ren = $(this).children()
-
-				ren.each(function(k,elem){
-					let t = $(this).text();
-					t = t.trim();
-
-					if(t === "ARTIST"){
-						console.log(t,i);
-						first === false ? first = i:{};
-					}
-				})
-			})
-			console.log("first",first);
-			//console.log($(info[first]));
-			let ttext = $(info[first]).find('.tags').text().replace('tags:',"")
-
-			//todo: remove whitespace (but preservice 'pop jazz')
-
-			//gets rid of newlines?
-
-			// let pat = /\r?\n|\r/g
-			// ttext = ttext.replace(pat,"")
-
-
-
-			//note: seems like genre is always just one (well Hip-Hop/Rap is an exception)
-			let gtext = $(info[first]).find('.genre').text().replace('genre:',"").trim()
-			console.log(ttext);
-			console.log(gtext);
-
-		})
-}
 
 
 
@@ -612,6 +544,78 @@ module.exports.getExternalInfos  = function(req,res) {
 	//
 	// })
 };
+
+
+//todo: test in workflow above
+
+module.exports.getCampPage = function(res,req){
+
+	req.body = {};req.body.artist = {};
+	req.body.artist.name = "Lily Kerbey";
+
+	let options = {
+		method: "GET",
+		uri: "https://bandcamp.com/search?q=" + encodeURI(req.body.artist.name),
+		headers: {
+			'User-Agent': 'Request-Promise',
+		}
+	};
+	console.log(options.uri);
+	rp(options).then(function (result) {
+		//console.log("$CAMP",result);
+
+		//https://cheerio.js.org/
+
+		let info = $(result).find('.result-info');
+		console.log(info.length);
+		let first = false;
+
+		info.each(function(i,elem){
+
+			//each info has 5 children. we're looking for one of them to contain artist
+			//if the info child has 'artist' then we need to examine the info
+			let ren = $(this).children()
+
+			ren.each(function(k,elem){
+				let t = $(this).text();
+				t = t.trim();
+
+				if(t === "ARTIST"){
+					console.log(t,i);
+					first === false ? first = i:{};
+				}
+			})
+		});
+
+		//note: seems like GENRE is always just one (well Hip-Hop/Rap is an exception)
+		let gtext = $(info[first]).find('.genre').text().replace('genre:',"").trim().toLowerCase();
+		//console.log("genre:",gtext);
+
+		//tags
+		let spaces = /\s{2}/g;
+		let lead_trail = /^\s|\s$/g;
+		let ttext = $(info[first]).find('.tags').text().replace('tags:',"").replace(spaces,"").replace(lead_trail,"").toLowerCase()
+		//console.log("tags:",ttext);
+
+		let genres = [];
+
+		if(ttext.indexOf(",") !== -1){
+			genres = ttext.split(",");
+		}else{
+			genres.push(ttext);
+		}
+
+		//often the genre is repeated in the tags
+		if(genres.indexOf(gtext) ===  -1){
+			genres.push(gtext);
+		}
+
+		let tup = {artist:req.body.artist,genres:genres};
+		console.log(tup.artist.name + " :" + genres);
+		return tup
+
+	})
+}
 
 module.exports.getWikiPage = function(req,res) {
 
