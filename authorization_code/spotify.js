@@ -750,6 +750,7 @@ let simple_google = function(req){
 
 };
 
+
 module.exports.googleQueryBands = function(req,res) {
 	console.log("googleQuery",req.body.artist.name);
 
@@ -768,6 +769,9 @@ module.exports.googleQueryBands = function(req,res) {
 		let urls = [];
 
 		//todo: this callback is called 10 times? why?
+
+		let doOne = true;
+
 		scraper.search(optionsBands, function(err, url,meta) {
 			// This is called for each result
 			if(err) throw err;
@@ -784,8 +788,77 @@ module.exports.googleQueryBands = function(req,res) {
 				//json: true
 			};
 			rp(options).then(function (result) {
+
+				//todo: was in the middle of trying to get this to work with cheerio instead of jquery
+
+				let parseBandHTML = function(html,artist){
+					let doc = $(html);
+					let str = "";
+
+					//check each top level element (in case page redesign)
+					for(var x = 0; x < doc.length; x++){
+						let tbody = $(doc)[x];
+						let g = $(tbody).find("div:contains('Genres: ')")
+						//console.log("g");
+
+						if(g[0]){
+							for(var y = 0; y < g.length; y++) {
+								//console.log($(g[y]));
+								//console.log($(g[y]).text());
+								// console.log($(g[y])[0].innerText)
+								let justG = $(g[y]).text() === "Genres: ";
+								if (justG) {
+									let n = $(g[y]).next();
+									//console.log("n",n);
+									str = $(n)[0].innerText
+								}
+							}
+						}
+						// else{
+						// 	g = $(tbody).find("span:contains('Genres')").next()
+						// 	console.log("2");
+						// 	if(g[0]){
+						// 		str = g[0].innerText
+						// 	}
+						// }
+					}
+					//console.log(str);
+
+					let genres = [];
+					if(str) {
+						if (str.indexOf(",") !== -1) {
+							genres = str.split(",")
+						} else if (str.indexOf("/") !== -1) {
+							genres = str.split("/")
+						}
+						else{
+							console.warn("if this is >1 genre, there was an issue on split:",str);
+							genres.push(str);
+						}
+					}
+
+					for(var x = 0; x < genres.length; x++){
+						genres[x] = genres[x].trim();
+					}
+
+					//console.log("genres",genres);
+					console.log("parseBandHTML genres:",artist.name,genres);
+					let tuple = {genres:genres,artist:artist}
+					return tuple;
+				};
+
+				let tuple = {};
+
+
+				doOne ? tuple = parseBandHTML(result,req.body.artist): {};
+				doOne ? doOne = false:{};
+
+				console.log(tuple);
+
+				//todo:
 				let payload = ({htmlBand:result,artist:req.body.artist})
-				done(payload)
+				//done(payload)
+
 			}).catch(function(err){
 				throw err;
 			})

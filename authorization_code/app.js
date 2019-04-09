@@ -43,8 +43,11 @@ app.use(bodyParser.urlencoded({
 
 //other
 
-app.post("/test",spotify["test"]);
+//app.post("/test",spotify["test"]);
 
+//info
+
+app.post("/googleQueryBands",spotify["googleQueryBands"]);
 
 app.post("/getWikiPage",spotify["getWikiPage"]);
 
