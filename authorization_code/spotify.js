@@ -617,7 +617,118 @@ module.exports.getCampPage = function(res,req){
 	})
 }
 
-module.exports.getWikiPage = function(req,res) {
+module.exports.getWikiPage= function(req,res) {
+
+	return new Promise(function(done, fail) {
+		//console.log("getWikiPage",req.body.artist);
+
+		let artist = req.body.artist;
+		let artist_save = JSON.parse(JSON.stringify(req.body.artist));
+
+		let code_prefix = function (exp) {
+
+			//let exp = "Guns N' Roses";
+			//result: Guns_N%27_Roses
+
+			//wiki likes _ for spaces
+			exp = exp.replace(/\s/g, '_');
+
+			//https://www.w3schools.com/tags/ref_urlencode.asp
+			exp = encodeURI(exp);
+
+			//not handling apostrophes/single quotes?
+			exp = exp.replace("'", "%27");
+			return exp;
+		};
+
+		//search for an artist
+		//https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=Kiss%20Musical%20Artist&utf8=&format=json
+
+		let url_pre = "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=";
+		let url_post = "&utf8=&format=json";
+		let q = "Kiss%20Musical%20Artist";
+
+		//todo:
+		let url = url_pre + q + url_post;
+		//let url = url_pre + artist.name + "musical artist" + url_post;
+
+		console.log("URL:",url);
+		let options = {
+			method: "POST",
+			uri: url,
+			headers: {
+				'User-Agent': 'Request-Promise',
+				"Content-Type": "jsonp"
+			},
+			//json: true
+		};
+
+		rp(options).then(function (result) {
+			result = JSON.parse(result);
+			//console.log("res", JSON.stringify(result,null,4));
+
+			let pageid = false;
+			result.query.search.length > 0 ? pageid = result.query.search[0].pageid:{};
+			console.log("pageid",pageid);
+
+			if(pageid){
+
+				//get page id of first search result
+				//https://en.wikipedia.org/w/api.php?action=parse&pageid=142238
+
+				let pre = "https://en.wikipedia.org/w/api.php?action=parse&pageid="
+				let post = "&format=json&prop=text"
+				let url = pre + pageid + post;
+
+				let options = {
+					method: "POST",
+					uri: url,
+					headers: {
+						'User-Agent': 'Request-Promise',
+						// "Content-Type": "jsonp"
+					},
+					//json: true
+				};
+
+				console.log("URL",url);
+				rp(options).then(function (result) {
+					result = JSON.parse(result);
+					//console.log("res", JSON.stringify(result,null,4));
+
+					let page = result.parse.text["*"];
+					let genres = $(page).find("th:contains('Genres')").next().text();
+
+
+					//todo: finish processing these
+					console.log("genres",genres);
+
+					//console.log(JSON.stringify(facts));
+					let response = {};
+					response.artist = artist_save;
+
+					function removeDups(records) {
+						let unique = {};
+						records.forEach(function(i) {
+							if(!unique[i]) {	unique[i] = true;}});
+						return Object.keys(unique);
+					}
+
+
+					//response.facts = removeDups(facts);
+					//done(response)
+					//res.send(response)
+
+				})
+			}
+
+		}).catch(function (err) {
+			console.log(err);
+		})
+
+	})//promise
+};
+
+module.exports.getWikiPage_deprecated = function(req,res) {
 
 	return new Promise(function(done, fail) {
 
@@ -658,7 +769,7 @@ module.exports.getWikiPage = function(req,res) {
 			"&formatversion=2" +
 			"&titles=" + code_prefix(artist.name) + "&format=json";
 		//console.log("URI encode exp:",code_prefix(artist.name));
-		//console.log("URL:",url);
+		console.log("URL:",url);
 
 		let options = {
 			method: "POST",
@@ -682,7 +793,7 @@ module.exports.getWikiPage = function(req,res) {
 				//what is the prevelance of people actually using the correct template?
 				//I'm putting my money on pretty high
 				let infoStr = "Infobox musical artist"
-				let pat = /\[\[([A-Za-z\s\|]*)\]\]/gs
+				let pat = /\[\[([A-Za-z\s\|]*)\]\]/gs;
 
 				if(content.indexOf(infoStr) !== -1){
 					let matches = content.match(pat);
@@ -718,7 +829,9 @@ module.exports.getWikiPage = function(req,res) {
 				return Object.keys(unique);
 			}
 
+
 			response.facts = removeDups(facts);
+
 
 			done(response)
 			//res.send(response)
@@ -729,6 +842,8 @@ module.exports.getWikiPage = function(req,res) {
 
 	})//promise
 };
+
+
 
 var DeathByCaptcha = require('deathbycaptcha');
 var dbc = new DeathByCaptcha('dacandyman0', 'Segasega4$');
@@ -750,6 +865,7 @@ let simple_google = function(req){
 
 };
 
+let doOne = true;
 
 module.exports.googleQueryBands = function(req,res) {
 	console.log("googleQuery",req.body.artist.name);
@@ -767,17 +883,23 @@ module.exports.googleQueryBands = function(req,res) {
 		};
 
 		let urls = [];
+		var scrape =  function(){
+			return new Promise(function(done, fail) {
+				//this SHOULD be called once per result, but my 'limit' on scrape isn't working sooo
+				scraper.search(optionsBands, function(err, url,meta) {
+					if(err){fail(err)}
 
-		//todo: this callback is called 10 times? why?
+					urls.push(meta.url);
+					if(urls.length === 10){
+						console.log(urls[0]);
+						done(urls[0])
+					}
+					// else{console.log(urls.length);}
 
-		let doOne = true;
+				})
+			})};
 
-		scraper.search(optionsBands, function(err, url,meta) {
-			// This is called for each result
-			if(err) throw err;
-			urls.push(meta.url);
-
-			urls.length === 10 ? console.log(urls[0]) : {};
+		scrape().then(function(){
 
 			let options = {
 				method: "GET",
@@ -787,59 +909,52 @@ module.exports.googleQueryBands = function(req,res) {
 				},
 				//json: true
 			};
+
 			rp(options).then(function (result) {
 
-				//todo: was in the middle of trying to get this to work with cheerio instead of jquery
-
 				let parseBandHTML = function(html,artist){
+
+					//console.log("parseBandHTML",html);
 					let doc = $(html);
 					let str = "";
 
-					//check each top level element (in case page redesign)
-					for(var x = 0; x < doc.length; x++){
-						let tbody = $(doc)[x];
-						let g = $(tbody).find("div:contains('Genres: ')")
-						//console.log("g");
+					var gs = doc.find("[class^='artistBio']")
+					$(gs).each(function(k,elem){
 
-						if(g[0]){
-							for(var y = 0; y < g.length; y++) {
-								//console.log($(g[y]));
-								//console.log($(g[y]).text());
-								// console.log($(g[y])[0].innerText)
-								let justG = $(g[y]).text() === "Genres: ";
-								if (justG) {
-									let n = $(g[y]).next();
-									//console.log("n",n);
-									str = $(n)[0].innerText
-								}
-							}
+						//console.log($(this).text())
+						let getN = $(this).text() == 'Genres: '
+						if(getN){
+							//console.log("str",$(this).next().text())
+							str = $(this).next().text();
 						}
-						// else{
-						// 	g = $(tbody).find("span:contains('Genres')").next()
-						// 	console.log("2");
-						// 	if(g[0]){
-						// 		str = g[0].innerText
-						// 	}
-						// }
-					}
-					//console.log(str);
+					})
 
 					let genres = [];
 					if(str) {
 						if (str.indexOf(",") !== -1) {
 							genres = str.split(",")
-						} else if (str.indexOf("/") !== -1) {
-							genres = str.split("/")
-						}
-						else{
-							console.warn("if this is >1 genre, there was an issue on split:",str);
+						}else{
+							//console.warn("if this is >1 genre, there was an issue on split:",str);
 							genres.push(str);
 						}
 					}
 
-					for(var x = 0; x < genres.length; x++){
-						genres[x] = genres[x].trim();
-					}
+					//todo: split funny genres
+
+					//examples from https://www.bandsintown.com/en/a/12732676-funk-worthy
+					// R&b/soul, R&b, Rock, Soul, Rnb-soul, Fusion, Funk
+
+					let sGenres = [];
+					genres.forEach(function(g){
+						g = g.trim();
+
+						if(g.indexOf("/") !== -1){
+							let sp = g.split("/");
+							sp.forEach(function(s){
+								sGenres.push(s)
+							})
+						}
+					});
 
 					//console.log("genres",genres);
 					console.log("parseBandHTML genres:",artist.name,genres);
@@ -847,56 +962,45 @@ module.exports.googleQueryBands = function(req,res) {
 					return tuple;
 				};
 
-				let tuple = {};
-
-
-				doOne ? tuple = parseBandHTML(result,req.body.artist): {};
-				doOne ? doOne = false:{};
-
-				console.log(tuple);
-
-				//todo:
-				let payload = ({htmlBand:result,artist:req.body.artist})
-				//done(payload)
+				done(parseBandHTML(result,req.body.artist))
 
 			}).catch(function(err){
 				throw err;
 			})
 
-		});
+		})
+	});
 
 
-		//todo: attempts to get consistent google results
+	//todo: attempts to get consistent google results
 
-		//google.resultsPerPage = 1;
-		//quotes useful?
-		//ex: '"SongWrita" music artist' versus 'SongWrita music artist'
+	//google.resultsPerPage = 1;
+	//quotes useful?
+	//ex: '"SongWrita" music artist' versus 'SongWrita music artist'
 
-		//this is a way to signal google to use the 'knowledge panel' regarding musical artists
-		//ex: google query 'Funk Worthy musical artist' versus 'Funk Worthy musical group'
+	//this is a way to signal google to use the 'knowledge panel' regarding musical artists
+	//ex: google query 'Funk Worthy musical artist' versus 'Funk Worthy musical group'
 
-		//let query = "\"" + req.body.query + "\" musical artist";
+	//let query = "\"" + req.body.query + "\" musical artist";
 
-		//didn't seem to help
-		//let locationParm = "loc:" + "Columbus"
+	//didn't seem to help
+	//let locationParm = "loc:" + "Columbus"
 
 
 
-		//todo: old google query, trying to get at knowledge panels
+	//todo: old google query, trying to get at knowledge panels
 
-		//let query = req.body.query;
-		// let query = "" + req.body.artist.name + " musical artist";
-		//console.log("querying google...",query);
-		// google(query, function (err, result){
-		// 	if (err) console.error(err);
-		//
-		// 	console.log(result);
-		// 	res.send(result.body)
-		// 	//done({html:result.body,artist:req.body.artist})
-		//
-		// })
-
-	})//promise
+	//let query = req.body.query;
+	// let query = "" + req.body.artist.name + " musical artist";
+	//console.log("querying google...",query);
+	// google(query, function (err, result){
+	// 	if (err) console.error(err);
+	//
+	// 	console.log(result);
+	// 	res.send(result.body)
+	// 	//done({html:result.body,artist:req.body.artist})
+	//
+	// })
 };
 
 module.exports.googleQueryScrape  = function(req,res) {

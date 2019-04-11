@@ -3470,62 +3470,6 @@
 								return tuple;
 							};
 
-							//get genres from a bandsintown page
-							let parseBandHTML = function(html,artist){
-								let doc = $(html);
-								let str = "";
-
-								//check each top level element (in case page redesign)
-								for(var x = 0; x < doc.length; x++){
-									let tbody = $(doc)[x];
-									let g = $(tbody).find("div:contains('Genres: ')")
-
-									if(g[0]){
-										for(var y = 0; y < g.length; y++) {
-											//console.log($(g[y]));
-											//console.log($(g[y]).text());
-											// console.log($(g[y])[0].innerText)
-											let justG = $(g[y]).text() === "Genres: ";
-											if (justG) {
-												let n = $(g[y]).next();
-												//console.log("n",n);
-												str = $(n)[0].innerText
-											}
-										}
-									}
-									// else{
-									// 	g = $(tbody).find("span:contains('Genres')").next()
-									// 	console.log("2");
-									// 	if(g[0]){
-									// 		str = g[0].innerText
-									// 	}
-									// }
-								}
-								//console.log(str);
-
-								let genres = [];
-								if(str) {
-									if (str.indexOf(",") !== -1) {
-										genres = str.split(",")
-									} else if (str.indexOf("/") !== -1) {
-										genres = str.split("/")
-									}
-									else{
-										console.warn("if this is >1 genre, there was an issue on split:",str);
-										genres.push(str);
-									}
-								}
-
-								for(var x = 0; x < genres.length; x++){
-									genres[x] = genres[x].trim();
-								}
-
-								//console.log("genres",genres);
-								console.log("parseBandHTML genres:",artist.name,genres);
-								let tuple = {genres:genres,artist:artist}
-								return tuple;
-							};
-
 							//todo: idk, one day just couldn't parse the whole page
 							let parseGoogleHTML_deprecated = function(html){
 
