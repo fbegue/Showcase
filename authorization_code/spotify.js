@@ -305,128 +305,191 @@ module.exports.getExternalInfos  = function(req,res) {
 		trackDoneStatus: true
 	});
 
+	const limiterCamp = new Bottleneck({
+		maxConcurrent: 15,
+		minTime: 100,
+		trackDoneStatus: true
+	});
+
 	const limiterGoogle = new Bottleneck({
-		maxConcurrent: 10,
-		minTime: 400,
+		maxConcurrent: 5,
+		minTime: 500,
 		trackDoneStatus: true
 	});
 
 	let wikiPromises = [];
 	let wReq = {};
+
 	let wikiResults = [];
-	let wikiResultsKeep = [];
-	let googleResults = [];
-	let googleFailures = [];
+	let wikiFailures = [];
+	let campResults = [];
+	let campFailures = [];
+	let bandResults = [];
+	let bandFailures = [];
+	let scrapeResults = [];
+	let scrapeFailures = [];
+
+
+
+	//all of these shims have the same signatures and purpose:
+	//push the result to its appropriate storage array, and test the result on a threshold.
+	// set 'continue' on the fReq  (forward request) which will tell the next and all other
+	//promises in the chain to execute or not (yes so far we've gotten good enough results, no if not)
+
+	var wiki =  function(wReq){
+		return new Promise(function(done, fail) {
+			//console.log("wiki...");
+
+			limiterWiki.schedule(module.exports.getWikiPage,wReq,{})
+				.then((resWiki) => {
+
+					//todo: decide on threshold
+					let wikiThreshold = 1;
+					let cont = resWiki.genres.length < wikiThreshold;
+
+					let fReq = {};
+					fReq.body = {artist: resWiki.artist};
+					fReq.continue =  cont;
+
+					//console.log("wiki cont",cont);
+					cont ? wikiFailures.push(resWiki):wikiResults.push(resWiki);
+					done(fReq)
+
+
+				}).catch(function(err){
+				let error = {artist:wReq.body.artist.name,error:err};
+				wikiFailures.push(error);
+
+				//todo: should recover from these not just fail out
+				fail(error)
+			});
+		})
+	};
+
+	var camp =  function(cReq){
+		return new Promise(function(done, fail) {
+			//console.log("camp...",cReq.continue);
+
+			if(cReq.continue){
+				limiterCamp.schedule(module.exports.getCampPage,cReq,{})
+					.then((cRes) => {
+
+						//todo: decide on threshold
+						let campThreshold = 1;
+						let cont =  cRes.genres.length < campThreshold;
+
+						let fReq = {};
+						fReq.body = {artist: cRes.artist};
+						fReq.continue = cont;
+
+						//console.log("camp cont",cont);
+						cont ? campFailures.push(cRes):campResults.push(cRes);
+						done(fReq)
+
+					}).catch(function(err){
+					let error = {artist:wReq.body.artist.name,error:err};
+					campFailures.push(error);
+
+					//todo: should recover from these not just fail out
+					fail(error)
+				});
+			}
+			else{
+				done({continue:false})
+			}
+		})
+	};
+
+	var band =  function(bReq){
+		return new Promise(function(done, fail) {
+			//console.log("band...",bReq.continue);
+
+			if(bReq.continue){
+
+				//todo: extremely annoying that there is no way to get #1 band result without google'ing
+
+				limiterWiki.schedule(module.exports.googleQueryBands,bReq,{})
+					.then((bRes) => {
+
+						//todo: decide on threshold
+						let bandThreshold = 1;
+						let cont = bRes.genres.length < bandThreshold;
+
+						let fReq = {};
+						fReq.body = {artist: bRes.artist};
+						fReq.continue =  cont;
+
+						//console.log("band cont",cont);
+						cont ? bandFailures.push(bRes):bandResults.push(bRes);
+						done(fReq)
+
+					}).catch(function(err){
+					let error = {artist:wReq.body.artist.name,error:err};
+					bandFailures.push(error);
+
+					//todo: should recover from these not just fail out
+					fail(error)
+
+				});
+			}
+			else{
+				done({continue:false})
+			}
+		})
+	};
+
+	var scrape =  function(sReq){
+		return new Promise(function(done, fail) {
+			//console.log("band...",bReq.continue);
+
+			if(sReq.continue){
+
+				//todo: extremely annoying that there is no way to get #1 band result without google'ing
+
+				limiterWiki.schedule(module.exports.googleQueryBands,sReq,{})
+					.then((bRes) => {
+
+						//todo: decide on threshold
+						let bandThreshold = 1;
+						let cont = bRes.genres.length < bandThreshold;
+
+						let fReq = {};
+						fReq.body = {artist: bRes.artist};
+						fReq.continue =  cont;
+
+						//console.log("band cont",cont);
+						cont ? bandFailures.push(bRes):bandResults.push(bRes);
+						done(fReq)
+
+					}).catch(function(err){
+					let error = {artist:wReq.body.artist.name,error:err};
+					bandFailures.push(error);
+
+					//todo: should recover from these not just fail out
+					fail(error)
+
+				});
+			}
+			else{
+				done({continue:false})
+			}
+		})
+	};
 
 	req.body.artists.forEach(function(ar){
 		wReq = {};
 		wReq.body = {};
 		wReq.body.artist = ar;
-		// wikiPromises.push(promiseThrottle_Wiki.add(module.exports.getWikiPage.bind(this,wReq)));
-		limiterWiki.schedule(module.exports.getWikiPage,wReq,{}).then((resWiki) => {
 
-			let gReq = {};
-			gReq.body = {artist:resWiki.artist};
+		wiki(wReq)
+			.then(camp)
+			.then(band)
+			.then(function(finalResult){
 
-			wikiResults.push(resWiki);
-			let knownGenres = [];
+				//console.log("chain finished");
+				//console.log(finalResult);
 
-			//fixme:
-			//wikiRes.facts = [];
-
-			if(resWiki.facts.length !== 0) {
-				resWiki.facts.forEach(function (f) {
-					if (genresMap[f]) {
-						knownGenres.push(f);
-					}
-				});
-
-				//todo: could decide on theshold # of genres
-				if(knownGenres.length !== 0) {
-					let resp = {genres:knownGenres,artist:wReq.body.artist};
-					wikiResultsKeep.push(resp);
-
-				}else{
-					//no known genres came from the facts
-
-					//googlePromises.push(promiseThrottle_Google.add(module.exports.googleQuery.bind(this,gReq)));
-
-					limiterGoogle.schedule({expiration:2000,id:gReq.body.artist.name},module.exports.googleQueryBands,gReq).then((gRes) => {
-						//let resp = {html:gRes,artist:wReq.body.artist};
-						googleResults.push(gRes);
-					}).catch(function(err){
-
-						//getting rReq's artist name seems to work, but i don't trust it?
-						let error = {artist:gReq.body.artist.name,error:err};
-						googleFailures.push(error);
-
-					});
-
-					//todo: disabled scraping for now
-
-					// limiterGoogle.schedule(module.exports.googleQueryScrape,gReq,{}).then((gRes) => {
-					// 	//let resp = {html:gRes,artist:wReq.body.artist};
-					// 	googleResults.push(gRes);
-					// });
-				}
-			}else{
-				//no facts
-
-
-				//todo: not sure about experiation timeout length
-
-				limiterGoogle.schedule({expiration:4000,id:gReq.body.artist.name},module.exports.googleQueryBands,gReq,{}).then((gRes) => {
-					//let resp = {html:gRes,artist:wReq.body.artist};
-
-					googleResults.push(gRes);
-
-					//todo: meeehhh
-					// if(gRes.htmlBand.indexOf('Genres') === -1){
-					// 	console.log("$gbandfail==================");
-					//
-					// 	limiterGoogle.schedule(module.exports.googleQueryScrape,gReq,{}).then((gRes) => {
-					// 		//let resp = {html:gRes,artist:wReq.body.artist};
-					//
-					// 		googleResults.push(gRes);
-					//
-					// 		//todo: scrape gres is more compilcated then just indexOf
-					//
-					// 		// if(gRes.indexOf('Genres') === -1){
-					// 		// 	// console.log("$gscrapefail==================");
-					// 		// 	googleFailures.push(gRes);
-					// 		// }
-					// 		// else{
-					// 		// 	googleResults.push(gRes);
-					// 		// }
-					//
-					// 	});
-					// }
-					// else{
-					// 	googleResults.push(gRes);
-					// }
-
-
-				}).catch(function(err){
-					let error = {artist:gReq.body.artist.name,error:err};
-					googleFailures.push(error);
-
-				});
-
-				//todo: disabled scraping for now
-
-
-			}
-
-			// if(resWiki.facts.length !== 0){
-			// 	wikiResults.push(resWiki);
-			// }
-			// else {
-			// 	limiterWiki.schedule(module.exports.getWikiPage,wReq,{}).then((resGoogle) => {
-			// 		googleResults.push(resGoogle);
-			// 	});
-			// }
-
-		});//schedule wiki promise return
+			});
 	});
 
 	var wait =  function(ms){
@@ -443,34 +506,83 @@ module.exports.getExternalInfos  = function(req,res) {
 	let checkCount = function() {
 
 		wait(100).then(function () {
-			//done = limiter.jobs("RUNNING");done.length
 			totalTime = totalTime + 100;
-			//console.log("wRK:" + wikiResultsKeep.length + " || " + googleResults.length + " === " + req.body.artists.length);
-			if((wikiResultsKeep.length + googleResults.length + googleFailures.length) !== req.body.artists.length){
+
+			// let totalResultsFailures = wikiResults.length +wikiFailures.length +
+			// 	campResults.length + campFailures.length +
+			// 	bandResults.length + bandFailures.length +
+			// 	scrapeResults.length +	scrapeFailures.length;
+
+			let totalFailures = wikiFailures.length +
+				campFailures.length +
+				bandFailures.length +
+				scrapeFailures.length;
+
+			let totalResults = wikiResults.length +
+				campResults.length +
+				bandResults.length +
+				scrapeResults.length;
+
+			let notDone = function(limiter){
+
+				//I guess don't do this? it works sometimes????
+				//let cs = JSON.parse(JSON.stringify(limiterWiki.counts()))
+
+				let nots = ["RECEIVED","QUEUED","RUNNING","EXECUTING"]
+				let counts = 0;
+
+				nots.forEach(function(t){
+					counts = counts  + limiter.jobs(t).length
+				});
+
+				return counts > 0;
+			};
+
+			//if any of the bottlenecks are not done, continue checking
+			let checkIt = notDone(limiterWiki) || notDone(limiterCamp) || notDone(limiterGoogle);
+
+			if(checkIt){
 
 				if(totalTime % 5000 === 0){
-					console.log("wiki...",limiterWiki.counts());
-					console.log("google...",limiterGoogle.counts());
 
-					console.log(limiterGoogle.jobs("EXECUTING"));
+					console.log("totalResults/artists",totalResults + "/" + req.body.artists.length);
+					console.log("totalFailures",totalFailures);
 
+					console.log("w",wikiResults.length);
+					console.log("c",campResults.length);
+					console.log("b",bandResults.length);
+					console.log("s",scrapeResults.length);
 				}
 
 				checkCount()
 			}else{
 				console.log("getExternalInfos finished execution:",Math.abs(new Date() - startDate) / 600);
 
-				console.log(wikiResultsKeep.length + " wiki results were successful");
-				console.log(googleResults.length + " google results were returned");
+				console.log("totalResults/artists",totalResults + "/" + req.body.artists.length);
+				console.log("totalFailures",totalFailures);
+
+				console.log("w",wikiResults.length);
+				console.log("c",campResults.length);
+				console.log("b",bandResults.length);
+				console.log("s",scrapeResults.length);
+
+				//todo:
+
+				// console.log(wikiResultsKeep.length + " wiki results were successful");
+				// console.log(googleResults.length + " google results were returned");
 				// console.log("FINISHED!",JSON.stringify(wikiResults,null,4));
 				// console.log("FINISHED!",JSON.stringify(googleResults,null,4));
 
-				let ret = wikiResultsKeep.concat(googleResults);
+				let ret = wikiResults.concat(campResults).concat(bandResults);
 				res.send(ret);
 			}
 		})
 	};
-	checkCount();
+
+	setTimeout(function(){
+		checkCount();
+	},2000)
+
 
 	// Promise.all(wikiPromises).then(function(wikiResults){
 	// 	console.log("wikiResults",JSON.stringify(wikiResults,null,4));
@@ -545,77 +657,138 @@ module.exports.getExternalInfos  = function(req,res) {
 	// })
 };
 
+//given an artist name and a list of every word in the best-search result,
+//can we determine whether the result was what we were actaully looking for?
+//if we find that the normalized search result has all of the words in the query
+//in it, we say that it is like the query and mark it okay
 
-//todo: test in workflow above
+let getLikeQuery = function(a,s){
 
-module.exports.getCampPage = function(res,req){
+	//let print = a === "The Blues Brothers";
 
-	req.body = {};req.body.artist = {};
-	req.body.artist.name = "Lily Kerbey";
+	if(a === s){
+		return {like: true}
+	}
+	else {
+		let artistName = JSON.parse(JSON.stringify(a));
+		let search = JSON.parse(JSON.stringify(s));
 
-	let options = {
-		method: "GET",
-		uri: "https://bandcamp.com/search?q=" + encodeURI(req.body.artist.name),
-		headers: {
-			'User-Agent': 'Request-Promise',
-		}
-	};
-	console.log(options.uri);
-	rp(options).then(function (result) {
-		//console.log("$CAMP",result);
+		search = search.toLowerCase();
 
-		//https://cheerio.js.org/
+		artistName = artistName.toLowerCase();
+		let queryRay = artistName.split(" ");
 
-		let info = $(result).find('.result-info');
-		console.log(info.length);
-		let first = false;
 
-		info.each(function(i,elem){
+		// print ? console.log("$$$$",queryRay):{}
+		// print ? console.log(search):{}
 
-			//each info has 5 children. we're looking for one of them to contain artist
-			//if the info child has 'artist' then we need to examine the info
-			let ren = $(this).children()
-
-			ren.each(function(k,elem){
-				let t = $(this).text();
-				t = t.trim();
-
-				if(t === "ARTIST"){
-					console.log(t,i);
-					first === false ? first = i:{};
-				}
-			})
+		let likeQuery = 0;
+		queryRay.forEach(function (q) {
+			if (search.indexOf(q) !== -1) {
+				likeQuery++;
+			}
 		});
 
-		//note: seems like GENRE is always just one (well Hip-Hop/Rap is an exception)
-		let gtext = $(info[first]).find('.genre').text().replace('genre:',"").trim().toLowerCase();
-		//console.log("genre:",gtext);
+		return {like: likeQuery === queryRay.length, likeQuery: likeQuery, queryRay: queryRay.length};
+	}
+};
 
-		//tags
-		let spaces = /\s{2}/g;
-		let lead_trail = /^\s|\s$/g;
-		let ttext = $(info[first]).find('.tags').text().replace('tags:',"").replace(spaces,"").replace(lead_trail,"").toLowerCase()
-		//console.log("tags:",ttext);
+module.exports.getCampPage =  function(req,res){
+	return new Promise(function(done, fail) {
 
-		let genres = [];
+		//testing: force artist
+		// req.body = {};req.body.artist = {};
+		// req.body.artist.name = "Lily Kerbey";
 
-		if(ttext.indexOf(",") !== -1){
-			genres = ttext.split(",");
-		}else{
-			genres.push(ttext);
-		}
+		//console.log("getCampPage",req);
 
-		//often the genre is repeated in the tags
-		if(genres.indexOf(gtext) ===  -1){
-			genres.push(gtext);
-		}
+		let options = {
+			method: "GET",
+			uri: "https://bandcamp.com/search?q=" + encodeURI(req.body.artist.name),
+			headers: {
+				'User-Agent': 'Request-Promise',
+			}
+		};
+		console.log(options.uri);
 
-		let tup = {artist:req.body.artist,genres:genres};
-		console.log(tup.artist.name + " :" + genres);
-		return tup
+		rp(options).then(function (result) {
+			//console.log("$CAMP",result);
+			//https://cheerio.js.org/
 
+			let info = $(result).find('.result-info');
+			let first = false;
+
+			info.each(function(i,elem){
+
+				//each info has 5 children. we're looking for one of them to contain artist
+				//if the info child has 'artist' then we need to examine the info
+				let ren = $(this).children()
+
+				ren.each(function(k,elem){
+					let t = $(this).text();
+					t = t.trim();
+
+					if(t === "ARTIST"){
+						//console.log(t,i);
+						first === false ? first = i:{};
+					}
+				})
+			});
+
+			//determine whether #1 camp result was what we were actaully looking for
+
+			let spaces = /\s{2}/g;
+			let lead_trail = /^\s|\s$/g;
+
+			let htext = $(info[first]).find('.heading').text().replace(spaces,"").replace(lead_trail,"")
+			//console.log("$htext",htext);
+
+			let likeQ = getLikeQuery(req.body.artist.name,htext);
+
+			let response = {};
+			response.artist = req.body.artist;
+			response.genres = [];
+
+			if(!likeQ.like){
+				console.log("CAMP: closest result wasn't like our query:",likeQ.likeQuery + "/" +likeQ.queryRay);
+				console.log(req.body.artist.name + " !like " + htext);
+
+			}else{
+
+				// console.log("like our query:",likeQuery + "/" + queryRay.length);
+				// console.log(req.body.artist.name + " like " + t);
+
+				//note: seems like GENRE is always just one (well Hip-Hop/Rap is an exception)
+				let gtext = $(info[first]).find('.genre').text().replace('genre:',"").trim().toLowerCase();
+				//console.log("genre:",gtext);
+
+				//tags
+				let spaces = /\s{2}/g;
+				let lead_trail = /^\s|\s$/g;
+				let ttext = $(info[first]).find('.tags').text().replace('tags:',"").replace(spaces,"").replace(lead_trail,"").toLowerCase()
+				//console.log("tags:",ttext);
+
+				let genres = [];
+
+				if(ttext.indexOf(",") !== -1){
+					genres = ttext.split(",");
+				}else{
+					genres.push(ttext);
+				}
+
+				//often the genre is repeated in the tags
+				if(genres.indexOf(gtext) ===  -1){genres.push(gtext);}
+
+				response.genres = genres;
+				//console.log(tup.artist.name + " :" + genres);
+			}
+
+			response.genres.length > 0  ? console.log("CAMP: ",req.body.artist.name + " "  +response.genres):{};
+			done(response);
+
+		})
 	})
-}
+};
 
 module.exports.getWikiPage= function(req,res) {
 
@@ -629,9 +802,8 @@ module.exports.getWikiPage= function(req,res) {
 
 			//let exp = "Guns N' Roses";
 			//result: Guns_N%27_Roses
-
 			//wiki likes _ for spaces
-			exp = exp.replace(/\s/g, '_');
+			//exp = exp.replace(/\s/g, '_');
 
 			//https://www.w3schools.com/tags/ref_urlencode.asp
 			exp = encodeURI(exp);
@@ -642,15 +814,17 @@ module.exports.getWikiPage= function(req,res) {
 		};
 
 		//search for an artist
+		//https://www.mediawiki.org/wiki/API:Search
 		//https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=Kiss%20Musical%20Artist&utf8=&format=json
 
 		let url_pre = "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=";
 		let url_post = "&utf8=&format=json";
-		let q = "Kiss%20Musical%20Artist";
 
-		//todo:
-		let url = url_pre + q + url_post;
-		//let url = url_pre + artist.name + "musical artist" + url_post;
+		//testing: force artist
+		//let q = "Kiss%20Musical%20Artist";
+		//let url = url_pre + q + url_post;
+
+		let url = url_pre + code_prefix(artist.name + " music") + url_post;
 
 		console.log("URL:",url);
 		let options = {
@@ -667,17 +841,41 @@ module.exports.getWikiPage= function(req,res) {
 			result = JSON.parse(result);
 			//console.log("res", JSON.stringify(result,null,4));
 
+			//wikipedia will most likely return some kind of musical entity (probably with some genres)
+			//when I search like I'm doing. need to make sure the #1 result is somewhere close to where
+			//I was trying to get
+
+
 			let pageid = false;
-			result.query.search.length > 0 ? pageid = result.query.search[0].pageid:{};
+
+			if(result.query.search.length > 0){
+
+				//no parsing needed for wikipedia's titles
+				let title = result.query.search[0].title;
+				let likeQ = getLikeQuery(req.body.artist.name,title);
+
+				if(!likeQ.like){
+					console.log("WIKI: closest result wasn't like our query:",likeQ.likeQuery + "/" +likeQ.queryRay);
+					console.log(req.body.artist.name + " !like " + title);
+				}else{
+					pageid = result.query.search[0].pageid
+					// console.log("like our query:",likeQuery + "/" + queryRay.length);
+					// console.log(req.body.artist.name + " like " + t);
+				}
+			}
 			console.log("pageid",pageid);
+
+			let response = {};
+			response.artist = artist_save;
 
 			if(pageid){
 
 				//get page id of first search result
+				//https://www.mediawiki.org/wiki/API:Parsing_wikitext#Example_1:_Parse_content_of_a_page
 				//https://en.wikipedia.org/w/api.php?action=parse&pageid=142238
 
-				let pre = "https://en.wikipedia.org/w/api.php?action=parse&pageid="
-				let post = "&format=json&prop=text"
+				let pre = "https://en.wikipedia.org/w/api.php?action=parse&pageid=";
+				let post = "&format=json&prop=text";
 				let url = pre + pageid + post;
 
 				let options = {
@@ -690,7 +888,8 @@ module.exports.getWikiPage= function(req,res) {
 					//json: true
 				};
 
-				console.log("URL",url);
+				//console.log("URL",url);
+
 				rp(options).then(function (result) {
 					result = JSON.parse(result);
 					//console.log("res", JSON.stringify(result,null,4));
@@ -698,29 +897,43 @@ module.exports.getWikiPage= function(req,res) {
 					let page = result.parse.text["*"];
 					let genres = $(page).find("th:contains('Genres')").next().text();
 
+					let pat = /\n/g;
+					genres = genres.replace(pat,",");
 
-					//todo: finish processing these
-					console.log("genres",genres);
+					if(genres.indexOf(",") !== -1){
+						genres = genres.split(",");
+					}
+					//assuming no split means single-item list
+					else{genres = [genres]}
 
-					//console.log(JSON.stringify(facts));
-					let response = {};
-					response.artist = artist_save;
+					//split from above will produce some "" b/c of newlines and such
 
-					function removeDups(records) {
+					function removeDupsCaps(records) {
 						let unique = {};
 						records.forEach(function(i) {
-							if(!unique[i]) {	unique[i] = true;}});
+							i = i.toLowerCase();
+							if(!unique[i]) {
+								if(i !== ""){
+									unique[i] = true;
+								}
+							}
+
+						});
 						return Object.keys(unique);
 					}
 
+					response.genres = removeDupsCaps(genres);
+					response.genres.length > 0  ? console.log("WIKI:",req.body.artist.name + " " + response.genres):{};
+					done(response)
 
-					//response.facts = removeDups(facts);
-					//done(response)
 					//res.send(response)
-
 				})
 			}
+			else{
+				response.genres = []
+				done(response)
 
+			}
 		}).catch(function (err) {
 			console.log(err);
 		})
@@ -868,7 +1081,7 @@ let simple_google = function(req){
 let doOne = true;
 
 module.exports.googleQueryBands = function(req,res) {
-	console.log("googleQuery",req.body.artist.name);
+	//console.log("googleQuery",req.body.artist.name);
 
 	return new Promise(function(done, fail) {
 
@@ -878,7 +1091,9 @@ module.exports.googleQueryBands = function(req,res) {
 			// lang: 'fr',
 			// age: 'd1', // last 24 hours ([hdwmy]\d? as in google URL)
 			limit: 2,
-			solver:dbc,
+
+			//testing: anytime captcha is failing, enable this temporarily
+			//solver:dbc,
 			params: {} // params will be copied as-is in the search URL query string
 		};
 
@@ -912,53 +1127,100 @@ module.exports.googleQueryBands = function(req,res) {
 
 			rp(options).then(function (result) {
 
+				let tuple = {};
+				tuple.artist = req.body.artist
+				tuple.genres = [];
+
 				let parseBandHTML = function(html,artist){
 
 					//console.log("parseBandHTML",html);
 					let doc = $(html);
+
+					//determine whether or not the result is what we're looking for
+
+					var hs = doc.find("[class^='artistInfo']")
 					let str = "";
+					let headers = [];
 
-					var gs = doc.find("[class^='artistBio']")
-					$(gs).each(function(k,elem){
+					$(hs).each(function(k,elem){
 
-						//console.log($(this).text())
-						let getN = $(this).text() == 'Genres: '
-						if(getN){
-							//console.log("str",$(this).next().text())
-							str = $(this).next().text();
-						}
-					})
-
-					let genres = [];
-					if(str) {
-						if (str.indexOf(",") !== -1) {
-							genres = str.split(",")
-						}else{
-							//console.warn("if this is >1 genre, there was an issue on split:",str);
-							genres.push(str);
-						}
-					}
-
-					//todo: split funny genres
-
-					//examples from https://www.bandsintown.com/en/a/12732676-funk-worthy
-					// R&b/soul, R&b, Rock, Soul, Rnb-soul, Fusion, Funk
-
-					let sGenres = [];
-					genres.forEach(function(g){
-						g = g.trim();
-
-						if(g.indexOf("/") !== -1){
-							let sp = g.split("/");
-							sp.forEach(function(s){
-								sGenres.push(s)
-							})
+						let h2 = $(this).find("h1")
+						let t = $(h2).text();
+						if(t !== "" && headers.indexOf(t) === -1){
+							headers.push(t)
 						}
 					});
 
-					//console.log("genres",genres);
-					console.log("parseBandHTML genres:",artist.name,genres);
-					let tuple = {genres:genres,artist:artist}
+					//console.log("headers:",headers);
+
+					if(headers.length > 0){
+
+						//todo: need this?
+
+						// let spaces = /\s{2}/g;
+						// let lead_trail = /^\s|\s$/g;
+						// let htext = $(info[first]).find('.heading').text().replace(spaces,"").replace(lead_trail,"")
+
+						//todo: not sure header behavior, whether I can just trust the one unique? that is present
+
+						let htext = headers[0];
+						let likeQ = getLikeQuery(req.body.artist.name,htext);
+
+						if(!likeQ.like) {
+							console.log("BAND: closest result wasn't like our query:", likeQ.likeQuery + "/" + likeQ.queryRay);
+							console.log(req.body.artist.name + " !like " + htext);
+
+						}else{
+
+							var gs = doc.find("[class^='artistBio']")
+							$(gs).each(function(k,elem){
+
+								//console.log($(this).text())
+								let getN = $(this).text() == 'Genres: '
+								if(getN){
+									//console.log("str",$(this).next().text())
+									str = $(this).next().text();
+								}
+							})
+
+							let genres = [];
+							if(str) {
+								if (str.indexOf(",") !== -1) {
+									genres = str.split(",")
+								}else{
+									//console.warn("if this is >1 genre, there was an issue on split:",str);
+									genres.push(str);
+								}
+							}
+
+							//todo: split funny genres
+
+							//examples from https://www.bandsintown.com/en/a/12732676-funk-worthy
+							// R&b/soul, R&b, Rock, Soul, Rnb-soul, Fusion, Funk
+
+							let sGenres = [];
+							genres.forEach(function(g){
+								g = g.trim().toLowerCase();
+
+								if(g.indexOf("/") !== -1){
+									let sp = g.split("/");
+									sp.forEach(function(s){
+										sGenres.push(s)
+									})
+								}
+								else{
+									sGenres.push(g)
+								}
+							});
+
+							tuple.genres = sGenres;
+						}
+
+					}else{
+						console.log("no results? on bandcamp for ",req.body.artist.name);
+					}
+
+					tuple.genres.length >0 ? console.log("BAND:", req.body.artist.name + " " + tuple.genres):{};
 					return tuple;
 				};
 
