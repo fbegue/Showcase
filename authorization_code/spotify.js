@@ -408,7 +408,7 @@ module.exports.getExternalInfos  = function(req,res) {
 
 				//todo: extremely annoying that there is no way to get #1 band result without google'ing
 
-				limiterWiki.schedule(module.exports.googleQueryBands,bReq,{})
+				limiterGoogle.schedule(module.exports.googleQueryBands,bReq,{})
 					.then((bRes) => {
 
 						//todo: decide on threshold
@@ -440,30 +440,93 @@ module.exports.getExternalInfos  = function(req,res) {
 
 	var scrape =  function(sReq){
 		return new Promise(function(done, fail) {
-			//console.log("band...",bReq.continue);
+			//thingsfddsfasdfds
+			//console.log("scrape...",bReq.continue);
 
 			if(sReq.continue){
+				limiterGoogle.schedule(module.exports.googleQueryScrape,sReq,{})
+					.then((sRes) => {
 
-				//todo: extremely annoying that there is no way to get #1 band result without google'ing
 
-				limiterWiki.schedule(module.exports.googleQueryBands,sReq,{})
-					.then((bRes) => {
+						//started by keeping all the results seperated
+						//so that I could do rank-choice later if I wanted to
+						//doesn't seem like that will come in too handy atm tho...
+
+
+						let parsed = [];
+						//x is the same cursor b/c titles.length always = descs.length
+						for(var x = 0; x < sRes.titles.length; x++){
+
+							let parseLoad = {};
+							//parseLoad.artist = payload.artist;
+							parseLoad.titles = [];
+							parseLoad.descs = [];
+
+							let words = sRes.titles[x].split(" ");
+							let words2 = sRes.descs[x].split(" ");
+
+							words.forEach(function(w){
+								if(genresMap[w]){
+									parseLoad.titles.indexOf(w) === -1 ? parseLoad.titles.push(w):{}
+								}
+							});
+
+							words2.forEach(function(w){
+								if(genresMap[w]){
+									parseLoad.descs.indexOf(w) === -1 ? parseLoad.descs.push(w):{}
+								}
+							});
+
+							//todo: little bit exclusionary
+
+							if(parseLoad.descs.length > 0 || parseLoad.titles.length > 0){
+								parsed.push(parseLoad)
+							}
+
+						}
+
+						//console.log("$$$PARSED",sRes.artist.name);
+						//console.log(JSON.stringify(parsed,null,4));
+
+						let parsedGenres = [];
+
+						parsed.forEach(function(p){
+							p.descs.forEach(function(d){
+								parsedGenres.indexOf(d) === -1 ? parsedGenres.push(d):{};
+							})
+							p.titles.forEach(function(t){
+								parsedGenres.indexOf(t) === -1 ? parsedGenres.push(t):{};
+							})
+						})
 
 						//todo: decide on threshold
-						let bandThreshold = 1;
-						let cont = bRes.genres.length < bandThreshold;
+
+
+						//todo:
+
+						let scrapeThreshold = 1;
+						let cont = parsedGenres.length < scrapeThreshold;
 
 						let fReq = {};
-						fReq.body = {artist: bRes.artist};
+						fReq.body = {artist: sRes.artist};
 						fReq.continue =  cont;
 
-						//console.log("band cont",cont);
-						cont ? bandFailures.push(bRes):bandResults.push(bRes);
+						let payload = {artist: sRes.artist,genres:parsedGenres};
+
+						//console.log("scrape cont",cont);
+						cont ? scrapeFailures.push(payload):scrapeResults.push(payload);
+
+
+						//todo: just checking out failures
+						if(cont){
+							console.log("$$$",JSON.stringify(sRes,null,4))
+						}
+
 						done(fReq)
 
 					}).catch(function(err){
 					let error = {artist:wReq.body.artist.name,error:err};
-					bandFailures.push(error);
+					scrapeFailures.push(error);
 
 					//todo: should recover from these not just fail out
 					fail(error)
@@ -481,15 +544,24 @@ module.exports.getExternalInfos  = function(req,res) {
 		wReq.body = {};
 		wReq.body.artist = ar;
 
+
+		//testing: force scrape
+		// wReq.continue = true;
+		// scrape(wReq)
+
 		wiki(wReq)
 			.then(camp)
 			.then(band)
+			.then(scrape)
 			.then(function(finalResult){
 
 				//console.log("chain finished");
 				//console.log(finalResult);
 
-			});
+			}).catch(function(err){
+			console.log("launching chain failed for: ",ar.name);
+			console.log(err);
+		})
 	});
 
 	var wait =  function(ms){
@@ -551,7 +623,7 @@ module.exports.getExternalInfos  = function(req,res) {
 					console.log("w",wikiResults.length);
 					console.log("c",campResults.length);
 					console.log("b",bandResults.length);
-					console.log("s",scrapeResults.length);
+					console.log("s",scrapeResults.length)
 				}
 
 				checkCount()
@@ -564,7 +636,7 @@ module.exports.getExternalInfos  = function(req,res) {
 				console.log("w",wikiResults.length);
 				console.log("c",campResults.length);
 				console.log("b",bandResults.length);
-				console.log("s",scrapeResults.length);
+				console.log("s",scrapeResults.length + " / " + 	scrapeFailures.length);
 
 				//todo:
 
@@ -573,88 +645,18 @@ module.exports.getExternalInfos  = function(req,res) {
 				// console.log("FINISHED!",JSON.stringify(wikiResults,null,4));
 				// console.log("FINISHED!",JSON.stringify(googleResults,null,4));
 
-				let ret = wikiResults.concat(campResults).concat(bandResults);
+				let ret = wikiResults.concat(campResults).concat(bandResults).concat(scrapeResults);
 				res.send(ret);
 			}
 		})
 	};
 
-	setTimeout(function(){
-		checkCount();
-	},2000)
+	// setTimeout(function(){
+	// 	checkCount();
+	// },2000)
 
+	checkCount();
 
-	// Promise.all(wikiPromises).then(function(wikiResults){
-	// 	console.log("wikiResults",JSON.stringify(wikiResults,null,4));
-	// 	console.log("wikiResults #",wikiResults.length);
-	//
-	// 	let knownGenres = [];
-	// 	let googlePromises = [];
-	//
-	// 	var promiseThrottle_Google = new PromiseThrottle({
-	//
-	// 		//todo:hmmmmmm
-	// 		requestsPerSecond: 1,
-	// 		promiseImplementation: Promise
-	// 	});
-	//
-	// 	// let googleQry = function(){
-	// 	// 	let gReq = {};
-	// 	// 	gReq.body = {query:req.body.artist.name};
-	// 	//
-	// 	// 	module.exports.googleQuery(gReq).then(function(gRes){
-	// 	// 		//console.log("gRes",gRes);
-	// 	// 		let resp = {html:gRes,artist:req.body.artist};
-	// 	// 		res.send(resp);
-	// 	// 	});
-	// 	// };
-	//
-	// 	//need to dermtine if facts are good
-	//
-	// 	//todo: this is esentially disallowing us to 'discover' new genres thru wiki
-	// 	//for now, if you're not a genre, we're throwing you out
-	//
-	// 	wikiResults.forEach(function(wikiRes){
-	// 		let gReq = {};
-	// 		gReq.body = {query:wikiRes.artist.name};
-	//
-	//
-	// 		//fixme:
-	// 		wikiRes.facts = [];
-	//
-	// 		if(wikiRes.facts.length !== 0) {
-	// 			wikiRes.facts.forEach(function (f) {
-	// 				if (genresMap[f]) {
-	// 					knownGenres.push(f);
-	// 				}
-	// 			});
-	//
-	// 			//todo: could decide on theshold # of genres
-	// 			if(knownGenres.length !== 0) {
-	// 				let resp = {genres:knownGenres,expression:req.body.expression}
-	//
-	// 				//todo: put aside and return with google results
-	// 				// res.send(resp);
-	//
-	// 			}else{
-	// 				googlePromises.push(promiseThrottle_Google.add(module.exports.googleQuery.bind(this,gReq)));
-	// 			}
-	//
-	// 		}else{
-	// 			//no facts
-	// 			googlePromises.push(promiseThrottle_Google.add(module.exports.googleQuery.bind(this,gReq)));
-	// 		}
-	// 	});
-	//
-	// 	console.log(googlePromises.length + " googlePromises....");
-	//
-	// 	Promise.all(googlePromises).then(function(googleResults){
-	//
-	// 		console.log("googleResults",googleResults);
-	//
-	// 	})
-	//
-	// })
 };
 
 //given an artist name and a list of every word in the best-search result,
@@ -869,7 +871,6 @@ module.exports.getWikiPage= function(req,res) {
 			response.artist = artist_save;
 
 			if(pageid){
-
 				//get page id of first search result
 				//https://www.mediawiki.org/wiki/API:Parsing_wikitext#Example_1:_Parse_content_of_a_page
 				//https://en.wikipedia.org/w/api.php?action=parse&pageid=142238
@@ -1270,10 +1271,11 @@ module.exports.googleQueryScrape  = function(req,res) {
 
 	return new Promise(function(done, fail) {
 
-
-
 		var optionsScrape = {
-			query: req.body.query,
+
+			//todo: not sure exactly what to do with query here
+
+			query: req.body.artist.name + "music",
 			host: 'www.google.com',
 			// lang: 'fr',
 			// age: 'd1', // last 24 hours ([hdwmy]\d? as in google URL)
@@ -1286,8 +1288,12 @@ module.exports.googleQueryScrape  = function(req,res) {
 		let descs = [];
 
 		scraper.search(optionsScrape, function(err, url,meta) {
+
 			// This is called for each result
-			if(err) throw err;
+
+			//todo: handle  these callbacks as promises on failure
+			if(err){fail(err)}
+
 			//console.log(url)
 			titles.push(meta.title);
 			descs.push(meta.desc);
@@ -1296,7 +1302,7 @@ module.exports.googleQueryScrape  = function(req,res) {
 				//console.log("$SCRAPE");
 				// console.log(titles);
 				// console.log(descs);
-				let payload = ({titles:titles,descs:descs,artist:req.body.artist})
+				let payload = {titles:titles,descs:descs,artist:req.body.artist};
 				done(payload)
 			}
 		});
