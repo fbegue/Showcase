@@ -53,7 +53,9 @@ app.post("/googleQueryBands",spotify["googleQueryBands"]);
 
 app.post("/getWikiPage",spotify["getWikiPage"]);
 
-app.post("/getExternalInfos",spotify["getExternalInfos"]);
+app.post("/getInfos",spotify["getInfos"]);
+
+// app.post("/search",spotify["search"]);
 
 //spotify
 

@@ -143,16 +143,14 @@ all_genres.all_genres.forEach(function(t){
 	genresMap[t.name] = "dum"
 });
 
-
-
-
-
-
 //todo: little weird b/c when we update genre info client side,
 //we can't make decisions with that updated info here
 
-module.exports.getExternalInfos  = function(req,res) {
-	console.log("getExternalInfos",req.body.artists.length);
+let resultCache = {};
+
+module.exports.getInfos  = function(req,res) {
+	console.log("getInfo input artists length:",req.body.artists.length);
+	//console.log("getInfo",req.body.token);
 
 	let startDate = new Date();
 	console.log("start time:",startDate);
@@ -161,9 +159,6 @@ module.exports.getExternalInfos  = function(req,res) {
 	//fixme: subset
 	// let set = JSON.parse(JSON.stringify(req.body.artists))
 	// 	// req.body.artists = [set[0],set[111],set[222],set[333]]
-
-
-
 
 	let doBrainz = function(){
 		//ex: getArtistById
@@ -305,6 +300,13 @@ module.exports.getExternalInfos  = function(req,res) {
 	//https://www.mediawiki.org/wiki/API:Etiquette
 
 
+	//todo: 10 per second
+	const limiterSpotify = new Bottleneck({
+		maxConcurrent: 10,
+		minTime: 100,
+		trackDoneStatus: true
+	});
+
 	const limiterWiki = new Bottleneck({
 		maxConcurrent: 15,
 		minTime: 100,
@@ -372,8 +374,10 @@ module.exports.getExternalInfos  = function(req,res) {
 	});
 
 	let wikiPromises = [];
-	let wReq = {};
+	let fReq = {};
 
+	let spotResults = [];
+	let spotFailures = [];
 	let wikiResults = [];
 	let wikiFailures = [];
 	let campResults = [];
@@ -383,90 +387,129 @@ module.exports.getExternalInfos  = function(req,res) {
 	let scrapeResults = [];
 	let scrapeFailures = [];
 
-	let resultCache = {};
 
+	//all of these function in a similar manner have the same purpose: get genre info about an artist
+	//they are designed to (later) be hit seperately, and therefore expect paramters on body
+	//the value that they are passing forward is always just the original fReq that gets passed to search
 
+	//they all (besides search) also check if they need to be ran by asserting existence of a record
+	//for that artist in resultCache[wRes.artist.name])
 
-	//all of these shims have the same signatures and purpose:
-	//push the result to its appropriate storage array, and test the result on a threshold.
-	// set 'continue' on the fReq  (forward request) which will tell the next and all other
-	//promises in the chain to execute or not (yes so far we've gotten good enough results, no if not)
+	//they also have the responsibility of deciding the quality of the return value, which if
+	//positive will set the value in resultCache
 
-	var wiki =  function(wReq){
-		return new Promise(function(done, fail) {
-			//console.log("wiki...");
+	//todo: searchSpotify currently outputs error flags, search should be detecting quality not searchSpotify
 
-			limiterWiki.schedule(module.exports.getWikiPage,wReq,{})
-				.then((resWiki) => {
+	var search =  function(sReq){
+	    return new Promise(function(done, fail) {
+			limiterSpotify.schedule(module.exports.searchSpotify,sReq,{})
+				.then((sRes) => {
+					//success:
+					// {	artistSongkick_id: 1111111,artist:<spotifyArtistObject> }
 
-					//todo: decide on threshold
-					let wikiThreshold = 1;
-					let cont = resWiki.genres.length < wikiThreshold;
+					//couldn't locate
+					// "error":true,
 
-					let fReq = {};
-					fReq.body = {artist: resWiki.artist};
-					fReq.continue =  cont;
+					//located but no genres:
+					//"error":true, "noGenresFound":true
 
-					//console.log("wiki cont",cont);
-					cont ? wikiFailures.push(resWiki):wikiResults.push(resWiki);
-					done(fReq)
+					//rebind songkickId
+					sRes.artist.artistSongkick_id = sReq.body.artist.artistSongkick_id;
 
+					if(!sRes.error){
+						resultCache[sRes.artist.name] = sRes;
+						spotResults.push(sRes);
+					}else{
+						spotFailures.push(sRes);
+					}
+
+					//note we're always just passing the original query along
+					done(sReq)
 
 				}).catch(function(err){
 				let error = {artist:wReq.body.artist.name,error:err};
-				wikiFailures.push(error);
-
-				//todo: should recover from these not just fail out
+				spotFailures.push(error);
+				//console.error(error);
 				fail(error)
 			});
+	    })
+	}
+
+	var wiki =  function(wReq){
+		return new Promise(function(done, fail) {
+			//console.log("wiki...",wReq);
+
+			if(!resultCache[wReq.body.artist.name]){
+				limiterWiki.schedule(module.exports.getWikiPage,wReq,{})
+					.then((resWiki) => {
+
+						console.log("$wiki",resWiki);
+						//todo: decide on threshold
+						let wikiThreshold = 1;
+
+						// console.log(resWiki.artist.genres);
+						// console.log(resWiki.artist.genres.length > wikiThreshold);
+						if(resWiki.artist.genres && resWiki.artist.genres.length > wikiThreshold){
+							console.log("WIKI:",wReq.body.artist.name + " " + resWiki.artist.genres);
+							resultCache[wReq.body.artist.name] = resWiki;
+							wikiResults.push(resWiki);
+						}else{
+							wikiFailures.push(resWiki)
+						}
+
+						done(wReq)
+
+					}).catch(function(err){
+					let error = {artist:wReq.body.artist.name,error:err};
+					wikiFailures.push(error);
+
+					//todo: should recover from these not just fail out
+					fail(error)
+				});
+			}else{
+				done(wReq)
+			}
 		})
 	};
 
 	let campgood = 0;
 	var camp =  function(cReq){
 		return new Promise(function(done, fail) {
-			//console.log("camp...",cReq.continue);
+			console.log("camp...",cReq);
 
-			if(cReq.continue){
 				limiterCamp.schedule(module.exports.getCampPage,cReq,{})
 					.then((cRes) => {
 
-						console.warn(++campgood + "==========================");
-
+						console.log("$camp",cRes);
+						//console.warn(++campgood + "==========================");
 
 						//todo: decide on threshold
 						let campThreshold = 1;
-						let cont =  cRes.genres.length < campThreshold;
 
-						let fReq = {};
-						fReq.body = {artist: cRes.artist};
-						fReq.continue = cont;
-
-						//console.log("camp cont",cont);
-						cont ? campFailures.push(cRes):campResults.push(cRes);
-						done(fReq)
+						if(cRes.artist.genres.length > campThreshold){
+							console.log("CAMP:",cReq.body.artist.name + " " + cRes.artist.genres);
+							resultCache[cReq.body.artist.name] = cRes;
+							campResults.push(cRes);
+						}else{
+							campFailures.push(cRes)
+						}
+						done(cReq)
 
 					}).catch(function(err){
-					let error = {artist:wReq.body.artist.name,error:err};
+					let error = {artist:cReq.body.artist.name,error:err};
 					console.error(error);
 					campFailures.push(error);
 
 					//todo: should recover from these not just fail out
 					fail(error)
 				});
-			}
-			else{
-				done({continue:false})
-			}
+
 		})
 	};
 
 	var band =  function(bReq){
 		return new Promise(function(done, fail) {
-			//console.log("band...",bReq.continue);
-
-			if(bReq.continue){
-
+			
 				//todo: extremely annoying that there is no way to get #1 band result without google'ing
 
 				limiterGoogle.schedule(module.exports.googleQueryBands,bReq,{})
@@ -474,15 +517,16 @@ module.exports.getExternalInfos  = function(req,res) {
 
 						//todo: decide on threshold
 						let bandThreshold = 1;
-						let cont = bRes.genres.length < bandThreshold;
 
-						let fReq = {};
-						fReq.body = {artist: bRes.artist};
-						fReq.continue =  cont;
+						if(bRes.artist.genres.length > bandThreshold){
+							console.log("BAND:",bReq.body.artist.name + " " + bRes.artist.genres);
+							resultCache[bReq.body.artist.name] = bRes;
+							bandResults.push(bRes);
+						}else{
+							bandFailures.push(bRes)
+						}
 
-						//console.log("band cont",cont);
-						cont ? bandFailures.push(bRes):bandResults.push(bRes);
-						done(fReq)
+						done(bReq)
 
 					}).catch(function(err){
 					let error = {artist:wReq.body.artist.name,error:err};
@@ -493,10 +537,6 @@ module.exports.getExternalInfos  = function(req,res) {
 					fail(error)
 
 				});
-			}
-			else{
-				done({continue:false})
-			}
 		})
 	};
 
@@ -601,30 +641,50 @@ module.exports.getExternalInfos  = function(req,res) {
 		})
 	};
 
+
+	let finish = function(res){
+
+		console.log("finish!");
+		//console.log(res);
+		console.log(JSON.stringify(resultCache,null,4));
+	}
+
+	let mod = 0;
 	req.body.artists.forEach(function(ar){
-		wReq = {};
-		wReq.body = {};
-		wReq.body.artist = ar;
+		fReq = {};
+		fReq.body = {token:req.body.token};
+		fReq.body.artist = ar;
 
+		search(fReq)
+			.then(wiki)
+			.then(function(wRes){
+				//just doll them out equally for now
+				let check = mod % 2 ===0;
+				mod++;
 
-		//testing: force continue
-		wReq.continue = true;
+				if(!resultCache[wRes.body.artist.name]){
+					if(check){
 
-		// scrape(wReq)
+						//todo: checks result and if non-acceptable, rotates to other one?
+						camp(wRes).then(finish)
+					}
+					else{
+						band(wRes).then(finish)
+					}
 
-		// wiki(wReq)
-		band(wReq)
-			// .then(camp)
-			// .then(band)
-			// .then(scrape)
-			.then(function(finalResult){
+					//todo: maybe scrape fits here?
+					// .then(scrape)
+				}
+				else{
+					finish(wRes)
+				}
 
-				//console.log("chain finished");
-				//console.log(finalResult);
-
-			}).catch(function(err){
-			console.log("launching chain failed for: ",ar.name);
+			})
+			.then(finish)
+		    .catch(function(err){
+			console.error("chain failed for: ",ar.name);
 			console.log(err);
+
 		})
 	});
 
@@ -760,6 +820,90 @@ let getLikeQuery = function(a,s){
 };
 
 
+module.exports.searchSpotify = function(req, res){
+	return new Promise(function(done, fail) {
+		// console.log("search_artists",JSON.stringify(req.body,null,4));
+		// console.log("search",req.body.artist.name);
+		// console.log("search",req.body.artistSongkick_id);
+		let artist = req.body.artist;
+
+		let options = {
+			uri: "",
+			headers: {
+				'User-Agent': 'Request-Promise',
+				"Authorization":'Bearer ' + req.body.token
+			},
+			json: true
+		};
+
+		let url_pre = "https://api.spotify.com/v1/search?q=";
+		let url_suf = "&type=artist";
+		let tuple = {};
+
+		var searchReq =  function(options){
+			return new Promise(function(done, fail) {
+				let op = JSON.parse(JSON.stringify(options));
+				rp(options).then(function(res){
+					//  console.log(res);
+					// console.log(op);
+					//todo: in the future, probably need better checking on this
+					//maybe some kind of memory system where, if there's an ambiguous artist name
+					//and I make a correct link, I can save that knowledge to lean on later
+					tuple = {};
+					tuple = {artistSongkick_id:op.artistSongkick_id};
+					tuple.artist = {};
+					tuple.artist.name = op.displayName;
+
+					if(res.artists.items.length > 0){
+						tuple.artist = res.artists.items[0]
+						if(tuple.artist.genres.length ===0){
+							tuple.error = true;
+							tuple.noGenresFound = true;
+						}
+					}
+					else{
+						tuple.error = true;
+						tuple.artistSearch = op.displayName_clean;
+					}
+					done(tuple)
+				}).catch(function(e){
+					console.log("searchReq failure",e);
+					fail(e)
+				});
+			})
+		};
+
+		//todo: where does the US thing come into play again?
+		let nameClean = artist.name.replace(/\(US\)/g, ""); //%20
+
+		//cleaning out non-alphabeticals
+		//ex: 'Zoso – the Ultimate Led Zeppelin Experience'
+		//that's not a hyphen
+
+		nameClean = nameClean.replace(/[^a-zA-Z\s]/g, ""); //%20
+
+		//todo: clean up input to searchReq
+		options.uri = url_pre + nameClean  + url_suf;
+		options.artistSongkick_id = req.body.artistSongkick_id;
+		options.displayName = artist.name;
+		options.displayName_clean = nameClean;
+
+		console.log(options.uri);
+
+		searchReq(options)
+			.then(function(result) {
+				//console.log(JSON.stringify(result));
+				done(result)
+				// res.send(result);
+
+			}).catch(function(err){
+			let msg = "spotify search artist failure";
+			let error = {msg:msg,artist:req.body.artist.name,error:err};
+			//console.error(error);
+			fail(error)
+		})
+	})
+};
 
 module.exports.getCampPage =  function(req,res){
 	return new Promise(function(done, fail) {
@@ -815,7 +959,7 @@ module.exports.getCampPage =  function(req,res){
 
 			let response = {};
 			response.artist = req.body.artist;
-			response.genres = [];
+			response.artist.genres = []
 
 			if(!likeQ.like){
 				console.log("CAMP: closest result wasn't like our query:",likeQ.likeQuery + "/" +likeQ.queryRay);
@@ -846,12 +990,10 @@ module.exports.getCampPage =  function(req,res){
 
 				//often the genre is repeated in the tags
 				if(genres.indexOf(gtext) ===  -1){genres.push(gtext);}
-
-				response.genres = genres;
+				response.artist.genres = genres;
 				//console.log(tup.artist.name + " :" + genres);
 			}
 
-			response.genres.length > 0  ? console.log("CAMP: ",req.body.artist.name + " "  +response.genres):{};
 			done(response);
 
 		}).catch(function(err){
@@ -936,10 +1078,12 @@ module.exports.getWikiPage= function(req,res) {
 					// console.log(req.body.artist.name + " like " + t);
 				}
 			}
-			console.log("pageid",pageid);
+			//console.log("pageid",pageid);
 
 			let response = {};
 			response.artist = artist_save;
+			//response.artist.genres = [];
+			//response.artistSongkick_id = req.body.artistSongkick_id;
 
 			if(pageid){
 				//get page id of first search result
@@ -994,11 +1138,10 @@ module.exports.getWikiPage= function(req,res) {
 						return Object.keys(unique);
 					}
 
-					response.genres = removeDupsCaps(genres);
-					response.genres.length > 0  ? console.log("WIKI:",req.body.artist.name + " " + response.genres):{};
+					response.artist.genres = removeDupsCaps(genres);
 					done(response)
-
 					//res.send(response)
+
 				}).catch(function (err) {
 					console.log("secondary wiki request failure");
 					console.log(err);
@@ -1006,8 +1149,8 @@ module.exports.getWikiPage= function(req,res) {
 				})
 			}
 			else{
-				response.genres = []
 				done(response)
+				//res.send(response)
 
 			}
 		}).catch(function (err) {
@@ -1199,125 +1342,122 @@ module.exports.googleQueryBands = function(req,res) {
 		scrape()
 			.then(function(){
 
-			let options = {
-				method: "GET",
-				uri: urls[0],
-				headers: {
-					'User-Agent': 'Request-Promise',
-				},
-				//json: true
-			};
+				let options = {
+					method: "GET",
+					uri: urls[0],
+					headers: {
+						'User-Agent': 'Request-Promise',
+					},
+					//json: true
+				};
 
-			rp(options)
-				.then(function (result) {
+				rp(options)
+					.then(function (result) {
 
-				let tuple = {};
-				tuple.artist = req.body.artist
-				tuple.genres = [];
+						let tuple = {};
+						tuple.artist = req.body.artist;
+						tuple.artist.genres = [];
 
-				let parseBandHTML = function(html,artist){
+						let parseBandHTML = function(html,artist){
 
-					//console.log("parseBandHTML",html);
-					let doc = $(html);
+							//console.log("parseBandHTML",html);
+							let doc = $(html);
 
-					//determine whether or not the result is what we're looking for
+							//determine whether or not the result is what we're looking for
 
-					var hs = doc.find("[class^='artistInfo']")
-					let str = "";
-					let headers = [];
+							var hs = doc.find("[class^='artistInfo']")
+							let str = "";
+							let headers = [];
 
-					$(hs).each(function(k,elem){
+							$(hs).each(function(k,elem){
 
-						let h2 = $(this).find("h1")
-						let t = $(h2).text();
-						if(t !== "" && headers.indexOf(t) === -1){
-							headers.push(t)
-						}
-					});
-
-					//console.log("headers:",headers);
-
-					if(headers.length > 0){
-
-						//todo: need this?
-
-						// let spaces = /\s{2}/g;
-						// let lead_trail = /^\s|\s$/g;
-						// let htext = $(info[first]).find('.heading').text().replace(spaces,"").replace(lead_trail,"")
-
-						//todo: not sure header behavior, whether I can just trust the one unique? that is present
-
-						let htext = headers[0];
-						let likeQ = getLikeQuery(req.body.artist.name,htext);
-
-						if(!likeQ.like) {
-							console.log("BAND: closest result wasn't like our query:", likeQ.likeQuery + "/" + likeQ.queryRay);
-							console.log(req.body.artist.name + " !like " + htext);
-
-						}else{
-
-							var gs = doc.find("[class^='artistBio']")
-							$(gs).each(function(k,elem){
-
-								//console.log($(this).text())
-								let getN = $(this).text() == 'Genres: '
-								if(getN){
-									//console.log("str",$(this).next().text())
-									str = $(this).next().text();
-								}
-							})
-
-							let genres = [];
-							if(str) {
-								if (str.indexOf(",") !== -1) {
-									genres = str.split(",")
-								}else{
-									//console.warn("if this is >1 genre, there was an issue on split:",str);
-									genres.push(str);
-								}
-							}
-
-							//todo: split funny genres
-
-							//examples from https://www.bandsintown.com/en/a/12732676-funk-worthy
-							// R&b/soul, R&b, Rock, Soul, Rnb-soul, Fusion, Funk
-
-							let sGenres = [];
-							genres.forEach(function(g){
-								g = g.trim().toLowerCase();
-
-								if(g.indexOf("/") !== -1){
-									let sp = g.split("/");
-									sp.forEach(function(s){
-										sGenres.push(s)
-									})
-								}
-								else{
-									sGenres.push(g)
+								let h2 = $(this).find("h1")
+								let t = $(h2).text();
+								if(t !== "" && headers.indexOf(t) === -1){
+									headers.push(t)
 								}
 							});
 
-							tuple.genres = sGenres;
-						}
+							//console.log("headers:",headers);
 
-					}else{
-						console.log("no results? on bandcamp for ",req.body.artist.name);
-					}
+							if(headers.length > 0){
 
-					tuple.genres.length >0 ? console.log("BAND:", req.body.artist.name + " " + tuple.genres):{};
-					return tuple;
-				};
+								//todo: need this?
 
-				done(parseBandHTML(result,req.body.artist))
+								// let spaces = /\s{2}/g;
+								// let lead_trail = /^\s|\s$/g;
+								// let htext = $(info[first]).find('.heading').text().replace(spaces,"").replace(lead_trail,"")
+
+								//todo: not sure header behavior, whether I can just trust the one unique? that is present
+
+								let htext = headers[0];
+								let likeQ = getLikeQuery(req.body.artist.name,htext);
+
+								if(!likeQ.like) {
+									console.log("BAND: closest result wasn't like our query:", likeQ.likeQuery + "/" + likeQ.queryRay);
+									console.log(req.body.artist.name + " !like " + htext);
+
+								}else{
+
+									var gs = doc.find("[class^='artistBio']")
+									$(gs).each(function(k,elem){
+
+										//console.log($(this).text())
+										let getN = $(this).text() == 'Genres: '
+										if(getN){
+											//console.log("str",$(this).next().text())
+											str = $(this).next().text();
+										}
+									})
+
+									let genres = [];
+									if(str) {
+										if (str.indexOf(",") !== -1) {
+											genres = str.split(",")
+										}else{
+											//console.warn("if this is >1 genre, there was an issue on split:",str);
+											genres.push(str);
+										}
+									}
+
+									//todo: split funny genres
+
+									//examples from https://www.bandsintown.com/en/a/12732676-funk-worthy
+									// R&b/soul, R&b, Rock, Soul, Rnb-soul, Fusion, Funk
+
+									let sGenres = [];
+									genres.forEach(function(g){
+										g = g.trim().toLowerCase();
+
+										if(g.indexOf("/") !== -1){
+											let sp = g.split("/");
+											sp.forEach(function(s){
+												sGenres.push(s)
+											})
+										}
+										else{
+											sGenres.push(g)
+										}
+									});
+									tuple.artist.genres = sGenres;
+								}
+
+							}else{
+								console.log("no results? on bandcamp for ",req.body.artist.name);
+							}
+							return tuple;
+						};
+
+						done(parseBandHTML(result,req.body.artist))
+
+					}).catch(function(err){
+					let msg = "band FETCH failure"
+					let error = {msg:msg,artist:req.body.artist.name,error:err};
+					console.error(error);
+					fail(error)
+				})
 
 			}).catch(function(err){
-				let msg = "band FETCH failure"
-				let error = {msg:msg,artist:req.body.artist.name,error:err};
-				console.error(error);
-				fail(error)
-			})
-
-		}).catch(function(err){
 			let msg = "band SCRAPE failure"
 			let error = {msg:msg,artist:req.body.artist.name,error:err};
 			console.error(error);
@@ -1874,15 +2014,16 @@ module.exports.search_artists = function(req, res){
 			console.log("FINISHED");
 
 			//testing: skip actual calls
-			console.warn("skipped actual calls, results are all errors");
-			results = [];
-			req.body.perfTuples.forEach(function(tup){
-				let r = {};
-				r.artistName = tup.displayName;
-				r.artistSongkick_id = tup.artistSongkick_id;
-				r.error = true;
-				results.push(r)
-			});
+
+			// console.warn("skipped actual calls, results are all errors");
+			// results = [];
+			// req.body.perfTuples.forEach(function(tup){
+			// 	let r = {};
+			// 	r.artistName = tup.displayName;
+			// 	r.artistSongkick_id = tup.artistSongkick_id;
+			// 	r.error = true;
+			// 	results.push(r)
+			// });
 
 			res.send(results);
 		}).catch(function(err){
