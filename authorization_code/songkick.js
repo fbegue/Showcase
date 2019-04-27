@@ -403,8 +403,6 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 							if(events.length < 50 || (result.events.length === 0 && all_results.length !== 0)){
 
 								console.log("invariant tripped. stopping.");
-								console.log(result.events.length === 0);
-								console.log();
 								done1(all_results)
 							}
 							else{
@@ -436,7 +434,7 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 			//b/c I'm doing one metro?
 
 			results = results[0];
-			console.log(JSON.stringify(results,null,4));
+			//console.log(JSON.stringify(results,null,4));
 			let events = [];
 
 		   let metro_id = results[0].id;
@@ -445,7 +443,7 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 			results.forEach(function(result){
 				result.events.forEach(function(event){
 
-					console.log(JSON.parse(JSON.stringify(event)));
+					//console.log(JSON.parse(JSON.stringify(event)));
 					if(ids[event.id]){
 
 					}else{
@@ -457,7 +455,7 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
 				})
 			});
-			console.log("finished: ");
+
 
 			/**
 			 * populate performance_dates array for writing later to songkick_performances

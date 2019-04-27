@@ -1030,10 +1030,10 @@
 					//$scope.dateFilter.start = "";
 					// $scope.dateFilter.end =  '2019-04-04';
 					// $scope.dateFilter.start = '2019-03-04';
-					$scope.dateFilter.start =  '2019-04-10';
+					$scope.dateFilter.start =  '2019-04-27';
 					// $scope.dateFilter.end =  '2019-04-18';
 					// $scope.dateFilter.end =  '2019-04-26';
-					$scope.dateFilter.end =  '2019-04-17';
+					$scope.dateFilter.end =  '2019-05-27';
 					//$scope.dateFilter.end = '2019-04-11';
 					// $scope.raw_filename = "";
 					// $scope.areaDatesArtists_filename= "";

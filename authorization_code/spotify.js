@@ -7,6 +7,12 @@ var Bottleneck = require("bottleneck")
 
 var $ = require('cheerio');
 
+const colors = require('colors/safe');
+console.error = function(msg){console.log(colors.red(msg))};
+console.warn = function(msg){console.log(colors.yellow(msg))};
+console.good = function(msg){console.log(colors.green(msg))};
+
+
 //https://github.com/request/request#requestoptions-callback
 var _request = function(req){
 	return new Promise(function(done, fail) {
@@ -306,14 +312,62 @@ module.exports.getExternalInfos  = function(req,res) {
 	});
 
 	const limiterCamp = new Bottleneck({
-		maxConcurrent: 15,
-		minTime: 100,
-		trackDoneStatus: true
+		maxConcurrent: 10, //15
+		minTime: 500, //100
+		trackDoneStatus: true,
+
+		//todo: never got this working
+
+		// reservoir: 25, // initial value
+		// reservoirIncreaseAmount: 100,
+		// reservoirIncreaseInterval: 1000, // must be divisible by 250
+		// reservoirIncreaseMaximum: 10000,
+
+		//todo: worked but didn't solve issue
+
+		// 60 requests every 60 seconds:
+		// reservoir: 60,
+		// reservoirRefreshAmount: 60,
+		// reservoirRefreshInterval: 60 * 1000,
+
+
+		// reservoir: 30,
+		// reservoirRefreshAmount: 30,
+		// reservoirRefreshInterval: 30 * 1000,
+	});
+
+	limiterCamp.on("failed", async (error, jobInfo) => {
+		const id = jobInfo.options.id;
+		console.warn(`Job ${id} failed: ${error}`);
+
+		console.warn("updating settings");
+
+		//doesn't affect scheduled jobs, so there's always a wait period of continual
+		//failures before this kicks in to stop it
+
+		//todo: sort-of worked, still pretty consistent failures
+		limiterCamp.updateSettings({
+			maxConcurrent: 1, //15
+			minTime: 1200, //100
+			trackDoneStatus: true,
+
+			reservoir: null,
+			reservoirRefreshAmount: null,
+			reservoirRefreshInterval: null,
+		});
+
+		//retries are NOT re-queued, which makes this wait sort of fucky
+		//todo: can I just re-queue?
+
+		if (jobInfo.retryCount === 0) { // Here we only retry once
+			console.warn(`Retrying job ${id} in 3000ms!`);
+			return 3000;
+		}
 	});
 
 	const limiterGoogle = new Bottleneck({
 		maxConcurrent: 5,
-		minTime: 500,
+		minTime: 700,
 		trackDoneStatus: true
 	});
 
@@ -328,6 +382,8 @@ module.exports.getExternalInfos  = function(req,res) {
 	let bandFailures = [];
 	let scrapeResults = [];
 	let scrapeFailures = [];
+
+	let resultCache = {};
 
 
 
@@ -366,6 +422,7 @@ module.exports.getExternalInfos  = function(req,res) {
 		})
 	};
 
+	let campgood = 0;
 	var camp =  function(cReq){
 		return new Promise(function(done, fail) {
 			//console.log("camp...",cReq.continue);
@@ -373,6 +430,9 @@ module.exports.getExternalInfos  = function(req,res) {
 			if(cReq.continue){
 				limiterCamp.schedule(module.exports.getCampPage,cReq,{})
 					.then((cRes) => {
+
+						console.warn(++campgood + "==========================");
+
 
 						//todo: decide on threshold
 						let campThreshold = 1;
@@ -388,6 +448,7 @@ module.exports.getExternalInfos  = function(req,res) {
 
 					}).catch(function(err){
 					let error = {artist:wReq.body.artist.name,error:err};
+					console.error(error);
 					campFailures.push(error);
 
 					//todo: should recover from these not just fail out
@@ -425,6 +486,7 @@ module.exports.getExternalInfos  = function(req,res) {
 
 					}).catch(function(err){
 					let error = {artist:wReq.body.artist.name,error:err};
+					console.error(error);
 					bandFailures.push(error);
 
 					//todo: should recover from these not just fail out
@@ -545,14 +607,16 @@ module.exports.getExternalInfos  = function(req,res) {
 		wReq.body.artist = ar;
 
 
-		//testing: force scrape
-		// wReq.continue = true;
+		//testing: force continue
+		wReq.continue = true;
+
 		// scrape(wReq)
 
-		wiki(wReq)
-			.then(camp)
-			.then(band)
-			.then(scrape)
+		// wiki(wReq)
+		band(wReq)
+			// .then(camp)
+			// .then(band)
+			// .then(scrape)
 			.then(function(finalResult){
 
 				//console.log("chain finished");
@@ -695,6 +759,8 @@ let getLikeQuery = function(a,s){
 	}
 };
 
+
+
 module.exports.getCampPage =  function(req,res){
 	return new Promise(function(done, fail) {
 
@@ -788,6 +854,11 @@ module.exports.getCampPage =  function(req,res){
 			response.genres.length > 0  ? console.log("CAMP: ",req.body.artist.name + " "  +response.genres):{};
 			done(response);
 
+		}).catch(function(err){
+			let msg = "camp fetch failure";
+			let error = {msg:msg,artist:req.body.artist.name,error:err};
+			console.error(error);
+			fail(error)
 		})
 	})
 };
@@ -928,6 +999,10 @@ module.exports.getWikiPage= function(req,res) {
 					done(response)
 
 					//res.send(response)
+				}).catch(function (err) {
+					console.log("secondary wiki request failure");
+					console.log(err);
+					fail(err)
 				})
 			}
 			else{
@@ -936,7 +1011,9 @@ module.exports.getWikiPage= function(req,res) {
 
 			}
 		}).catch(function (err) {
+			console.log("primary wiki request failure");
 			console.log(err);
+			fail(err)
 		})
 
 	})//promise
@@ -1103,7 +1180,11 @@ module.exports.googleQueryBands = function(req,res) {
 			return new Promise(function(done, fail) {
 				//this SHOULD be called once per result, but my 'limit' on scrape isn't working sooo
 				scraper.search(optionsBands, function(err, url,meta) {
-					if(err){fail(err)}
+					if(err){
+						console.log("HERE!");
+						console.log(err);
+						//fail(err)
+					}
 
 					urls.push(meta.url);
 					if(urls.length === 10){
@@ -1115,7 +1196,8 @@ module.exports.googleQueryBands = function(req,res) {
 				})
 			})};
 
-		scrape().then(function(){
+		scrape()
+			.then(function(){
 
 			let options = {
 				method: "GET",
@@ -1126,7 +1208,8 @@ module.exports.googleQueryBands = function(req,res) {
 				//json: true
 			};
 
-			rp(options).then(function (result) {
+			rp(options)
+				.then(function (result) {
 
 				let tuple = {};
 				tuple.artist = req.body.artist
@@ -1228,9 +1311,17 @@ module.exports.googleQueryBands = function(req,res) {
 				done(parseBandHTML(result,req.body.artist))
 
 			}).catch(function(err){
-				throw err;
+				let msg = "band FETCH failure"
+				let error = {msg:msg,artist:req.body.artist.name,error:err};
+				console.error(error);
+				fail(error)
 			})
 
+		}).catch(function(err){
+			let msg = "band SCRAPE failure"
+			let error = {msg:msg,artist:req.body.artist.name,error:err};
+			console.error(error);
+			fail(error)
 		})
 	});
 
@@ -1767,7 +1858,10 @@ module.exports.search_artists = function(req, res){
 		//console.log(options.uri);
 		//promises.push(searchReq(options))
 		//promises.push(rp(options))
-		promises.push(promiseThrottle.add(searchReq.bind(this,options)));
+
+		//testing: skip actual calls
+		//promises.push(promiseThrottle.add(searchReq.bind(this,options)));
+
 		// .then(function(res) {
 		// 	console.log("done",res);
 		// })
@@ -1778,6 +1872,18 @@ module.exports.search_artists = function(req, res){
 			//console.log(JSON.stringify(results,null,4));
 			console.log("search_artists finished execution:",Math.abs(new Date() - startDate) / 600);
 			console.log("FINISHED");
+
+			//testing: skip actual calls
+			console.warn("skipped actual calls, results are all errors");
+			results = [];
+			req.body.perfTuples.forEach(function(tup){
+				let r = {};
+				r.artistName = tup.displayName;
+				r.artistSongkick_id = tup.artistSongkick_id;
+				r.error = true;
+				results.push(r)
+			});
+
 			res.send(results);
 		}).catch(function(err){
 		console.log(err);
