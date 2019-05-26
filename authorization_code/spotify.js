@@ -148,6 +148,71 @@ all_genres.all_genres.forEach(function(t){
 
 let resultCache = {};
 
+const MusicbrainzApi = require('musicbrainz-api').MusicBrainzApi;
+
+const mbApi = new MusicbrainzApi({
+	appName: 'Showcase',
+	appVersion: '0.1.0',
+	appMail: 'eugene.f.begue@gmail.com',
+
+	//added
+
+	// MusicBrainz bot account username & password (optional)
+	// botAccount: {
+	// 	username: 'myUserName_bot',
+	// 	password: 'myPassword'
+	// },
+
+	botAccount: {
+		username: 'vagrant',
+		password: 'vagrant'
+	},
+
+	// API base URL, default: 'https://musicbrainz.org' (optional)
+	//aseUrl: 'https://musicbrainz.org',
+	baseUrl: 'http://localhost:8080',
+
+	// Optional, default: no proxy server
+	// proxy: {
+	// 	host: 'localhost',
+	// 	port: 8080
+	// },
+});
+
+//query=artist:queen%20AND%20type:group&fmt=json
+
+let pErr = function(err){console.error(err)};
+
+mbApi.searchArtist('Queen')
+	.then(function(result){
+		console.log("$searchArtist",JSON.stringify(result,null,4));
+	}).catch(pErr)
+
+mbApi.search('artist', 'Queen')
+	.then(function(result){
+		console.log("$artist",JSON.stringify(result,null,4));
+	}).catch(pErr)
+
+
+let artist = "Queen";
+
+const query = 'query="Queen" AND type:group';
+
+mbApi.search('artist', query)
+	.then(function(result){
+		console.log("$artistType",JSON.stringify(result,null,4));
+	}).catch(pErr)
+
+//test of strength
+
+let ps = []
+for(var x = 0; x < 1000;x++){
+	ps.push(mbApi.search('artist', query))
+}
+
+Promise.all()
+
+
 module.exports.getInfos  = function(req,res) {
 	console.log("getInfo input artists length:",req.body.artists.length);
 	//console.log("getInfo",req.body.token);
