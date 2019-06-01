@@ -11,7 +11,7 @@
 //repo for playlist creator
 
 //https://github.com/possan/playlistcreator-example/blob/master/app.js
-//https://github.com/possan/playlistcreator-example/blob/master/index.html
+//https://github.com/possan/playlistcreator-example/blob/master/index.html___g
 
 // handled by browserify
 		var FuzzyMatching = require('fuzzy-matching');

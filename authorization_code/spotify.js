@@ -181,36 +181,122 @@ const mbApi = new MusicbrainzApi({
 
 //query=artist:queen%20AND%20type:group&fmt=json
 
-let pErr = function(err){console.error(err)};
-
-mbApi.searchArtist('Queen')
-	.then(function(result){
-		console.log("$searchArtist",JSON.stringify(result,null,4));
-	}).catch(pErr)
-
-mbApi.search('artist', 'Queen')
-	.then(function(result){
-		console.log("$artist",JSON.stringify(result,null,4));
-	}).catch(pErr)
-
-
-let artist = "Queen";
-
-const query = 'query="Queen" AND type:group';
-
-mbApi.search('artist', query)
-	.then(function(result){
-		console.log("$artistType",JSON.stringify(result,null,4));
-	}).catch(pErr)
+// let pErr = function(err){console.error(err)};
+//
+// mbApi.searchArtist('Queen')
+// 	.then(function(result){
+// 		console.log("$searchArtist",JSON.stringify(result,null,4));
+// 	}).catch(pErr)
+//
+// mbApi.search('artist', 'Queen')
+// 	.then(function(result){
+// 		console.log("$artist",JSON.stringify(result,null,4));
+// 	}).catch(pErr)
+//
+//
+// let artist = "Queen";
+//
+// const query = 'query="Queen" AND type:group';
+//
+// mbApi.search('artist', query)
+// 	.then(function(result){
+// 		console.log("$artistType",JSON.stringify(result,null,4));
+// 	}).catch(pErr)
 
 //test of strength
 
 let ps = []
 for(var x = 0; x < 1000;x++){
-	ps.push(mbApi.search('artist', query))
+	//ps.push(mbApi.search('artist', query))
 }
 
-Promise.all()
+// Promise.all()
+
+
+let sql = require("mssql")
+
+//troubleshooting connection to localhost
+//https://stackoverflow.com/questions/25577248/node-js-mssql-tedius-connectionerror-failed-to-connect-to-localhost1433-conn
+
+var config = {
+	"user": 'test',
+	"password": 'test',
+	"server": 'DESKTOP-TMB4Q31\\SQLEXPRESS',
+	"database": 'master',
+	"port": '61427',
+	"dialect": "mssql",
+};
+
+let conn = {};
+let poolGlobal = {};
+
+sql.connect(config).then(pool => {
+	poolGlobal = pool;
+	conn = pool.request();
+	return conn.query("select getdate();")
+}).then(result => {
+	console.log("connected @ ",result)
+
+
+	let tDate = new Date();
+	let strDate = tDate.toISOString();
+
+	let as = {
+		id:1,
+		displayName:"testName",
+		identifier:"mbei-233r-asfsdf-dfdsasfd",
+		//onTourUntil:strDate
+	};
+
+	var keys = Object.keys(as);
+
+	var klist = keys.map(function(value){
+		return "" + value + ""
+	}).join(",");
+
+	var kparams = keys.map(function(value){
+		return "@" + value + ""
+	}).join(",");
+
+// var vlist = Object.values(update).map(function(value){
+// 	if(value === null){
+// 		return null
+// 	}else{
+// 		return "'" + value + "'"
+// 	}
+//
+// }).join(",");
+
+	var sreq = new sql.Request(poolGlobal);
+	sreq.input("id", sql.Int, as.id);
+	sreq.input("displayName", sql.VarChar(100), as.displayName)
+	sreq.input("identifier", sql.VarChar(150), as.identifier)
+	//sreq.input("onTourUntil", sql.DateTimeOffset(7), as.onTourUntil)
+
+	var qry = "insert into artistsSongkick ( " + klist + " ) values ( "  + kparams + " )";
+
+	sreq.query(qry).then(function(res){
+		console.log(res);
+	}).catch(function(err){
+		console.log(err);
+	})
+
+}).catch(err => {console.log(err)})
+
+
+
+// sreq.input("ProgramId",sql.Int,req.body.program["Id"])
+// sreq.input("ProgramStageId",sql.Int,stage["Id"])
+// sreq.input("Start",sql.DateTimeOffset,stage["Start"])
+// sreq.input("Approved",sql.DateTimeOffset,stage["Approved"])
+// var qry = "insert into ProgramLogs ( " + klist + " ) OUTPUT CURRENT_TIMESTAMP as updatedAt values ( "  + kparams + " )"
+// let update;
+// update = {};
+// update["ProgramId"] = req.body.program["Id"];
+// update["ProgramStageId"] = stage["Id"];
+// update["Start"] = stage["Start"];
+// update["Approved"] = stage["Approved"];
+
 
 
 module.exports.getInfos  = function(req,res) {
