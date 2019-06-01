@@ -300,82 +300,88 @@ module.exports.getInfos  = function(req,res) {
 	//https://www.mediawiki.org/wiki/API:Etiquette
 
 
-	//todo: 10 per second
-	const limiterSpotify = new Bottleneck({
-		maxConcurrent: 10,
-		minTime: 100,
-		trackDoneStatus: true
-	});
+	let limiterSpotify;
+	let limiterWiki;
+	let limiterCamp;
+	let limiterGoogle;
 
-	const limiterWiki = new Bottleneck({
-		maxConcurrent: 15,
-		minTime: 100,
-		trackDoneStatus: true
-	});
-
-	const limiterCamp = new Bottleneck({
-		maxConcurrent: 10, //15
-		minTime: 500, //100
-		trackDoneStatus: true,
-
-		//todo: never got this working
-
-		// reservoir: 25, // initial value
-		// reservoirIncreaseAmount: 100,
-		// reservoirIncreaseInterval: 1000, // must be divisible by 250
-		// reservoirIncreaseMaximum: 10000,
-
-		//todo: worked but didn't solve issue
-
-		// 60 requests every 60 seconds:
-		// reservoir: 60,
-		// reservoirRefreshAmount: 60,
-		// reservoirRefreshInterval: 60 * 1000,
-
-
-		// reservoir: 30,
-		// reservoirRefreshAmount: 30,
-		// reservoirRefreshInterval: 30 * 1000,
-	});
-
-	limiterCamp.on("failed", async (error, jobInfo) => {
-		const id = jobInfo.options.id;
-		console.warn(`Job ${id} failed: ${error}`);
-
-		console.warn("updating settings");
-
-		//doesn't affect scheduled jobs, so there's always a wait period of continual
-		//failures before this kicks in to stop it
-
-		//todo: sort-of worked, still pretty consistent failures
-		limiterCamp.updateSettings({
-			maxConcurrent: 1, //15
-			minTime: 1200, //100
-			trackDoneStatus: true,
-
-			reservoir: null,
-			reservoirRefreshAmount: null,
-			reservoirRefreshInterval: null,
+	let limiters = function(){
+		//todo: 10 per second
+		limiterSpotify = new Bottleneck({
+			maxConcurrent: 10,
+			minTime: 100,
+			trackDoneStatus: true
 		});
 
-		//retries are NOT re-queued, which makes this wait sort of fucky
-		//todo: can I just re-queue?
+		limiterWiki = new Bottleneck({
+			maxConcurrent: 15,
+			minTime: 100,
+			trackDoneStatus: true
+		});
 
-		if (jobInfo.retryCount === 0) { // Here we only retry once
-			console.warn(`Retrying job ${id} in 3000ms!`);
-			return 3000;
-		}
-	});
+		limiterCamp = new Bottleneck({
+			maxConcurrent: 10, //15
+			minTime: 500, //100
+			trackDoneStatus: true,
 
-	const limiterGoogle = new Bottleneck({
-		maxConcurrent: 5,
-		minTime: 700,
-		trackDoneStatus: true
-	});
+			//todo: never got this working
 
-	let wikiPromises = [];
+			// reservoir: 25, // initial value
+			// reservoirIncreaseAmount: 100,
+			// reservoirIncreaseInterval: 1000, // must be divisible by 250
+			// reservoirIncreaseMaximum: 10000,
+
+			//todo: worked but didn't solve issue
+
+			// 60 requests every 60 seconds:
+			// reservoir: 60,
+			// reservoirRefreshAmount: 60,
+			// reservoirRefreshInterval: 60 * 1000,
+
+
+			// reservoir: 30,
+			// reservoirRefreshAmount: 30,
+			// reservoirRefreshInterval: 30 * 1000,
+		});
+
+		limiterGoogle = new Bottleneck({
+			maxConcurrent: 5,
+			minTime: 700,
+			trackDoneStatus: true
+		});
+
+		limiterCamp.on("failed", async (error, jobInfo) => {
+			const id = jobInfo.options.id;
+			console.warn(`Job ${id} failed: ${error}`);
+
+			console.warn("updating settings");
+
+			//doesn't affect scheduled jobs, so there's always a wait period of continual
+			//failures before this kicks in to stop it
+
+			//todo: sort-of worked, still pretty consistent failures
+			limiterCamp.updateSettings({
+				maxConcurrent: 1, //15
+				minTime: 1200, //100
+				trackDoneStatus: true,
+
+				reservoir: null,
+				reservoirRefreshAmount: null,
+				reservoirRefreshInterval: null,
+			});
+
+			//retries are NOT re-queued, which makes this wait sort of fucky
+			//todo: can I just re-queue?
+
+			if (jobInfo.retryCount === 0) { // Here we only retry once
+				console.warn(`Retrying job ${id} in 3000ms!`);
+				return 3000;
+			}
+		});
+	}
+	limiters()
+
 	let fReq = {};
-
 	let spotResults = [];
 	let spotFailures = [];
 	let wikiResults = [];
@@ -386,7 +392,6 @@ module.exports.getInfos  = function(req,res) {
 	let bandFailures = [];
 	let scrapeResults = [];
 	let scrapeFailures = [];
-
 
 	//all of these function in a similar manner have the same purpose: get genre info about an artist
 	//they are designed to (later) be hit seperately, and therefore expect paramters on body
@@ -401,7 +406,7 @@ module.exports.getInfos  = function(req,res) {
 	//todo: searchSpotify currently outputs error flags, search should be detecting quality not searchSpotify
 
 	var search =  function(sReq){
-	    return new Promise(function(done, fail) {
+		return new Promise(function(done, fail) {
 			limiterSpotify.schedule(module.exports.searchSpotify,sReq,{})
 				.then((sRes) => {
 					//success:
@@ -432,7 +437,7 @@ module.exports.getInfos  = function(req,res) {
 				//console.error(error);
 				fail(error)
 			});
-	    })
+		})
 	}
 
 	var wiki =  function(wReq){
@@ -475,68 +480,68 @@ module.exports.getInfos  = function(req,res) {
 	let campgood = 0;
 	var camp =  function(cReq){
 		return new Promise(function(done, fail) {
-			console.log("camp...",cReq);
+			//console.log("camp...",cReq);
 
-				limiterCamp.schedule(module.exports.getCampPage,cReq,{})
-					.then((cRes) => {
+			limiterCamp.schedule(module.exports.getCampPage,cReq,{})
+				.then((cRes) => {
 
-						console.log("$camp",cRes);
-						//console.warn(++campgood + "==========================");
+					//console.log("$camp",cRes);
+					//console.warn(++campgood + "==========================");
 
-						//todo: decide on threshold
-						let campThreshold = 1;
+					//todo: decide on threshold
+					let campThreshold = 1;
 
-						if(cRes.artist.genres.length > campThreshold){
-							console.log("CAMP:",cReq.body.artist.name + " " + cRes.artist.genres);
-							resultCache[cReq.body.artist.name] = cRes;
-							campResults.push(cRes);
-						}else{
-							campFailures.push(cRes)
-						}
-						done(cReq)
+					if(cRes.artist.genres.length > campThreshold){
+						console.log("CAMP:",cReq.body.artist.name + " " + cRes.artist.genres);
+						resultCache[cReq.body.artist.name] = cRes;
+						campResults.push(cRes);
+					}else{
+						campFailures.push(cRes)
+					}
+					done(cReq)
 
-					}).catch(function(err){
-					let error = {artist:cReq.body.artist.name,error:err};
-					console.error(error);
-					campFailures.push(error);
+				}).catch(function(err){
+				let error = {artist:cReq.body.artist.name,error:err};
+				console.error(error);
+				campFailures.push(error);
 
-					//todo: should recover from these not just fail out
-					fail(error)
-				});
+				//todo: should recover from these not just fail out
+				fail(error)
+			});
 
 		})
 	};
 
 	var band =  function(bReq){
 		return new Promise(function(done, fail) {
-			
-				//todo: extremely annoying that there is no way to get #1 band result without google'ing
 
-				limiterGoogle.schedule(module.exports.googleQueryBands,bReq,{})
-					.then((bRes) => {
+			//todo: extremely annoying that there is no way to get #1 band result without google'ing
 
-						//todo: decide on threshold
-						let bandThreshold = 1;
+			limiterGoogle.schedule({expiration:3000},module.exports.googleQueryBands,bReq,{})
+				.then((bRes) => {
 
-						if(bRes.artist.genres.length > bandThreshold){
-							console.log("BAND:",bReq.body.artist.name + " " + bRes.artist.genres);
-							resultCache[bReq.body.artist.name] = bRes;
-							bandResults.push(bRes);
-						}else{
-							bandFailures.push(bRes)
-						}
+					//todo: decide on threshold
+					let bandThreshold = 1;
 
-						done(bReq)
+					if(bRes.artist.genres.length > bandThreshold){
+						console.log("BAND:",bReq.body.artist.name + " " + bRes.artist.genres);
+						resultCache[bReq.body.artist.name] = bRes;
+						bandResults.push(bRes);
+					}else{
+						bandFailures.push(bRes)
+					}
 
-					}).catch(function(err){
-					let error = {artist:wReq.body.artist.name,error:err};
-					console.error(error);
-					bandFailures.push(error);
+					done(bReq)
 
-					//todo: should recover from these not just fail out
-					fail(error)
+				}).catch(function(err){
+				let error = {artist:bReq.body.artist.name,error:err};
+				console.error(error);
+				bandFailures.push(error);
 
-				});
+				//todo: should recover from these not just fail out
+				fail(error)
+
+			});
 		})
 	};
 
@@ -643,11 +648,10 @@ module.exports.getInfos  = function(req,res) {
 
 
 	let finish = function(res){
-
-		console.log("finish!");
-		//console.log(res);
-		console.log(JSON.stringify(resultCache,null,4));
-	}
+		// console.log("finish!");
+		// console.log(Object.keys(resultCache));
+		// console.log(JSON.stringify(resultCache,null,4));
+	};
 
 	let mod = 0;
 	req.body.artists.forEach(function(ar){
@@ -658,22 +662,42 @@ module.exports.getInfos  = function(req,res) {
 		search(fReq)
 			.then(wiki)
 			.then(function(wRes){
+
 				//just doll them out equally for now
 				let check = mod % 2 ===0;
 				mod++;
 
+				//todo: add scrape (also, is this pattern sustainable?)
+
 				if(!resultCache[wRes.body.artist.name]){
 					if(check){
-
-						//todo: checks result and if non-acceptable, rotates to other one?
-						camp(wRes).then(finish)
+						camp(wRes).then(function(){
+							if(!resultCache[wRes.body.artist.name]){
+								console.warn("failed camp, trying band for:" + wRes.body.artist.name);
+								band(wRes).then(finish).catch(function(err){
+									let msg = "camp -> band failure";
+									let error = {msg:msg,artist:wRes.body.artist.name,error:err};
+									console.error(error);
+								})
+							}
+							else{finish()}
+						})
 					}
 					else{
-						band(wRes).then(finish)
+						band(wRes).then(function(){
+							if(!resultCache[wRes.body.artist.name]){
+								console.warn("failed band, trying camp for:" + wRes.body.artist.name);
+								camp(wRes).then(finish).catch(function(err){
+									let msg = "band -> camp failure";
+									let error = {msg:msg,artist:wRes.body.artist.name,error:err};
+									console.error(error);
+									//fail(error)
+								})
+							}else{finish()}
+
+						})
 					}
 
-					//todo: maybe scrape fits here?
-					// .then(scrape)
 				}
 				else{
 					finish(wRes)
@@ -681,11 +705,11 @@ module.exports.getInfos  = function(req,res) {
 
 			})
 			.then(finish)
-		    .catch(function(err){
-			console.error("chain failed for: ",ar.name);
-			console.log(err);
+			.catch(function(err){
+				console.error("chain failed for: ",ar.name);
+				console.log(err);
 
-		})
+			})
 	});
 
 	var wait =  function(ms){
@@ -712,14 +736,17 @@ module.exports.getInfos  = function(req,res) {
 			let totalFailures = wikiFailures.length +
 				campFailures.length +
 				bandFailures.length +
-				scrapeFailures.length;
+				scrapeFailures.length +
+				spotFailures.length;
 
 			let totalResults = wikiResults.length +
 				campResults.length +
 				bandResults.length +
-				scrapeResults.length;
+				scrapeResults.length +
+				spotResults.length;
 
-			let notDone = function(limiter){
+			let notDone = function(limiter,name){
+				//console.log(name,limiter.counts());
 
 				//I guess don't do this? it works sometimes????
 				//let cs = JSON.parse(JSON.stringify(limiterWiki.counts()))
@@ -735,7 +762,7 @@ module.exports.getInfos  = function(req,res) {
 			};
 
 			//if any of the bottlenecks are not done, continue checking
-			let checkIt = notDone(limiterWiki) || notDone(limiterCamp) || notDone(limiterGoogle);
+			let checkIt = notDone(limiterSpotify,"spotify") || notDone(limiterWiki,"wiki") || notDone(limiterCamp,"camp") || notDone(limiterGoogle,"google");
 
 			if(checkIt){
 
@@ -744,10 +771,11 @@ module.exports.getInfos  = function(req,res) {
 					console.log("totalResults/artists",totalResults + "/" + req.body.artists.length);
 					console.log("totalFailures",totalFailures);
 
-					console.log("w",wikiResults.length);
-					console.log("c",campResults.length);
-					console.log("b",bandResults.length);
-					console.log("s",scrapeResults.length)
+					// console.log("spot",spotResults.length)
+					// console.log("w",wikiResults.length);
+					// console.log("c",campResults.length);
+					// console.log("b",bandResults.length);
+					// console.log("s",scrapeResults.length)
 				}
 
 				checkCount()
@@ -757,6 +785,7 @@ module.exports.getInfos  = function(req,res) {
 				console.log("totalResults/artists",totalResults + "/" + req.body.artists.length);
 				console.log("totalFailures",totalFailures);
 
+				console.log("spot",spotResults.length)
 				console.log("w",wikiResults.length);
 				console.log("c",campResults.length);
 				console.log("b",bandResults.length);
@@ -769,8 +798,25 @@ module.exports.getInfos  = function(req,res) {
 				// console.log("FINISHED!",JSON.stringify(wikiResults,null,4));
 				// console.log("FINISHED!",JSON.stringify(googleResults,null,4));
 
-				let ret = wikiResults.concat(campResults).concat(bandResults).concat(scrapeResults);
-				res.send(ret);
+				//console.log("resultCache",JSON.stringify(resultCache,null,4))
+
+				let results = [];
+				for(var nameKey in resultCache){
+					results.push(resultCache[nameKey].artist)
+				}
+
+				let missingNo = 0;
+				req.body.artists.forEach(function(a){
+					if(!resultCache[a.name]){
+						missingNo++;
+						results.push({name:a.name,artistSongkick_id:a.artistSongkick_id,error:true})
+					}
+				})
+
+				console.log(missingNo + " padded error results");
+
+				//let ret = wikiResults.concat(campResults).concat(bandResults).concat(scrapeResults);
+				res.send(results);
 			}
 		})
 	};
@@ -1128,11 +1174,13 @@ module.exports.getWikiPage= function(req,res) {
 						let unique = {};
 						records.forEach(function(i) {
 							i = i.toLowerCase();
+							i = i.trim();
 							if(!unique[i]) {
 								if(i !== ""){
 									unique[i] = true;
 								}
 							}
+
 
 						});
 						return Object.keys(unique);
@@ -1307,14 +1355,14 @@ module.exports.googleQueryBands = function(req,res) {
 	return new Promise(function(done, fail) {
 
 		var optionsBands = {
-			query: req.body.artist.name + "bandsintown",
+			query: req.body.artist.name + " bandsintown",
 			host: 'www.google.com',
 			// lang: 'fr',
 			// age: 'd1', // last 24 hours ([hdwmy]\d? as in google URL)
 			limit: 2,
 
 			//testing: anytime captcha is failing, enable this temporarily
-			//solver:dbc,
+			//:dbc,
 			params: {} // params will be copied as-is in the search URL query string
 		};
 
@@ -1322,21 +1370,29 @@ module.exports.googleQueryBands = function(req,res) {
 		var scrape =  function(){
 			return new Promise(function(done, fail) {
 				//this SHOULD be called once per result, but my 'limit' on scrape isn't working sooo
-				scraper.search(optionsBands, function(err, url,meta) {
-					if(err){
-						console.log("HERE!");
-						console.log(err);
-						//fail(err)
-					}
 
-					urls.push(meta.url);
-					if(urls.length === 10){
-						console.log(urls[0]);
-						done(urls[0])
-					}
-					// else{console.log(urls.length);}
+				try {
+					scraper.search(optionsBands, function (err, url, meta) {
+						if (err) {
 
-				})
+							console.log("$fucked");
+							console.log(err);
+							fail(err)
+						}
+
+						urls.push(meta.url);
+						if (urls.length === 10) {
+							console.log(urls[0]);
+							done(urls[0])
+						}
+						// else{console.log(urls.length);}
+
+					})
+				}catch(e){
+					console.log("$fucked");console.log(e);
+
+
+				}
 			})};
 
 		scrape()
@@ -1351,64 +1407,53 @@ module.exports.googleQueryBands = function(req,res) {
 					//json: true
 				};
 
-				rp(options)
-					.then(function (result) {
+				let tuple = {};
+				tuple.artist = req.body.artist;
+				tuple.artist.genres = [];
 
-						let tuple = {};
-						tuple.artist = req.body.artist;
-						tuple.artist.genres = [];
 
-						let parseBandHTML = function(html,artist){
+				//check if url we found is even related to query
 
-							//console.log("parseBandHTML",html);
-							let doc = $(html);
+				let likeQ = getLikeQuery(req.body.artist.name,urls[0]);
+				if(!likeQ){
 
-							//determine whether or not the result is what we're looking for
+					console.log("BAND: closest result wasn't like our query:", likeQ.likeQuery + "/" + likeQ.queryRay);
+					console.log(req.body.artist.name + " !like " + urls[0]);
+					done(tuple)
 
-							var hs = doc.find("[class^='artistInfo']")
-							let str = "";
-							let headers = [];
+				}else{
+					rp(options)
+						.then(function (result) {
 
-							$(hs).each(function(k,elem){
+							//returns the tuple object declared above, except hopefully with tuple.artist.genres = found genres
+							let parseBandHTML = function(html,artist){
+								//console.log("parseBandHTML",html);
+								let doc = $(html);
 
-								let h2 = $(this).find("h1")
-								let t = $(h2).text();
-								if(t !== "" && headers.indexOf(t) === -1){
-									headers.push(t)
-								}
-							});
+								//determine whether or not the result is what we're looking for
+								let hs;let str = "";
 
-							//console.log("headers:",headers);
+								//we hit the bio page (preferred)
+								let info = doc.find("[class^='artistInfo']")
+								//we hit an event page (non-preferred)
+								let bio = doc.find("[class^='artistBio']")
 
-							if(headers.length > 0){
+								//todo: if on bio page, we will still find infos but only 7 of them
 
-								//todo: need this?
+								if(info.length > 7){	hs = info;}
+								else if(bio.length > 7){hs = bio;}
+								//else, headers will be empty which we catch
 
-								// let spaces = /\s{2}/g;
-								// let lead_trail = /^\s|\s$/g;
-								// let htext = $(info[first]).find('.heading').text().replace(spaces,"").replace(lead_trail,"")
+								$(hs).each(function(k,elem){
+									let t = $(this).text();
+									if(t === "Genres: "){
+										//console.log($(this).next().text());
+										str = $(this).next().text()
+									}
+								});
 
-								//todo: not sure header behavior, whether I can just trust the one unique? that is present
-
-								let htext = headers[0];
-								let likeQ = getLikeQuery(req.body.artist.name,htext);
-
-								if(!likeQ.like) {
-									console.log("BAND: closest result wasn't like our query:", likeQ.likeQuery + "/" + likeQ.queryRay);
-									console.log(req.body.artist.name + " !like " + htext);
-
-								}else{
-
-									var gs = doc.find("[class^='artistBio']")
-									$(gs).each(function(k,elem){
-
-										//console.log($(this).text())
-										let getN = $(this).text() == 'Genres: '
-										if(getN){
-											//console.log("str",$(this).next().text())
-											str = $(this).next().text();
-										}
-									})
+								//console.log("genres:",str);
+								if(str.length > 0){
 
 									let genres = [];
 									if(str) {
@@ -1421,7 +1466,6 @@ module.exports.googleQueryBands = function(req,res) {
 									}
 
 									//todo: split funny genres
-
 									//examples from https://www.bandsintown.com/en/a/12732676-funk-worthy
 									// R&b/soul, R&b, Rock, Soul, Rnb-soul, Fusion, Funk
 
@@ -1439,24 +1483,24 @@ module.exports.googleQueryBands = function(req,res) {
 											sGenres.push(g)
 										}
 									});
+
 									tuple.artist.genres = sGenres;
+
+								}else{
+									console.log("bandsintown failed to find genres for",req.body.artist.name);
 								}
+								return tuple;
+							};
 
-							}else{
-								console.log("no results? on bandcamp for ",req.body.artist.name);
-							}
-							return tuple;
-						};
+							done(parseBandHTML(result,req.body.artist))
 
-						done(parseBandHTML(result,req.body.artist))
-
-					}).catch(function(err){
-					let msg = "band FETCH failure"
-					let error = {msg:msg,artist:req.body.artist.name,error:err};
-					console.error(error);
-					fail(error)
-				})
-
+						}).catch(function(err){
+						let msg = "band FETCH failure"
+						let error = {msg:msg,artist:req.body.artist.name,error:err};
+						console.error(error);
+						fail(error)
+					})
+				}
 			}).catch(function(err){
 			let msg = "band SCRAPE failure"
 			let error = {msg:msg,artist:req.body.artist.name,error:err};
@@ -1511,7 +1555,7 @@ module.exports.googleQueryScrape  = function(req,res) {
 			// lang: 'fr',
 			// age: 'd1', // last 24 hours ([hdwmy]\d? as in google URL)
 			limit: 10,
-			solver: dbc,
+			//solver: dbc,
 			params: {} // params will be copied as-is in the search URL query string
 		};
 
