@@ -1030,10 +1030,10 @@
 					//$scope.dateFilter.start = "";
 					// $scope.dateFilter.end =  '2019-04-04';
 					// $scope.dateFilter.start = '2019-03-04';
-					$scope.dateFilter.start =  '2019-05-05';
+					$scope.dateFilter.start =  '2019-06-01';
 					// $scope.dateFilter.end =  '2019-04-18';
 					// $scope.dateFilter.end =  '2019-04-26';
-					$scope.dateFilter.end =  '2019-05-12';
+					$scope.dateFilter.end =  '2019-06-07';
 					//$scope.dateFilter.end = '2019-04-11';
 					// $scope.raw_filename = "";
 					// $scope.areaDatesArtists_filename= "";
@@ -2249,8 +2249,8 @@
 							};
 
 							//todo: replace with handler (already being used by profile resolution)
-							//$http.post(url_local + req.url_postfix,req.body).then(function(res){
-								 fakeInfo().then(function(res){res.data = res;
+							$http.post(url_local + req.url_postfix,req.body).then(function(res){
+								 // fakeInfo().then(function(res){res.data = res;
 
 								console.log("getInfos results:",JSON.parse(JSON.stringify(res.data)));
 

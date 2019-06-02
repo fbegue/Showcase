@@ -299,6 +299,217 @@ sql.connect(config).then(pool => {
 
 
 
+
+module.exports.bandTest = function(req,res) {
+	console.log("bandTest", req.body);
+
+
+
+	var wait =  function(ms){
+		return new Promise(function(done, fail) {
+			//console.log("waiting...");
+			setTimeout(function(){
+				//console.log("done!");
+				done()
+			},ms);
+		})
+	};
+
+	const Browser = require('zombie');
+
+// We're going to make requests to http://example.com/signup
+// Which will be routed to our test server localhost:3000
+//Browser.localhost('example.com', 3000);
+
+
+
+	const browser = new Browser();
+
+
+	let grande = ".event-90b696b7";
+	//let grande = 'a:contains("Ariana Grande")'
+	browser.visit('https://www.bandsintown.com/en',function(res){
+
+		console.log("visited");
+
+
+		//todo: never seems valid
+		// let b = browser.body;
+		// console.log("body",b);
+
+		let finish = function (res) {
+			console.log("finish");
+			console.log(res);
+		};
+
+		//let input = browser.query("input")
+		console.log("inputed");
+
+		browser
+			.fill("input","Funk Worthy")
+			.then(function(){
+
+				wait(1000).then(function(){
+
+					let r = 'a[class^="artistResult"]';
+					browser.click(r)
+						.then(function(){
+							wait(1000).then(function(){
+								console.log("clicked");
+
+								let r = 'div[class^="artistBio"]';
+								let ar = browser.query(r);
+
+								//about funk worthy
+								console.log("ar0",ar["children"]["0"]);
+								let ar1 = ar["children"]["1"]
+								console.log("ar1",ar1);
+
+								let ar1s = browser.query(r,ar1);
+								console.log("ar1s",ar1s);
+
+
+								let ar1s_c1 = ar1s["children"]["1"]
+
+								//todo: really close
+								console.log("ar1s_c1",ar1s_c1);
+
+								//todo: couldn't figure out text here, just being lazy
+								//try inspect: console.log(util.inspect(ar1s))
+
+								// let ar1s_c1t = browser.text('',ar1s_c1);
+								// console.log("ar1s_c1t",ar1s_c1t);
+
+								// let t = browser.text('div[class^="artistBio"]');
+								// console.log("raw",t);
+								//
+								// let t0 = browser.text('div[class^="artistBio"]',ar["children"]["0"]);
+								// console.log("t0",t0);
+								//
+								// let t1 = browser.text('div[class^="artistBio"]',ar["children"]["1"]);
+								// console.log("t1",t1);
+
+								// let e = browser.evaluate('document.querySelector('+r+').innerText');
+								// console.log(e);
+
+
+
+							})
+						})
+				})
+			})
+
+
+		// let g = browser.query(grande)
+		// console.log("g",g);
+		//browser.pressButton(grande, finish)
+
+	})
+
+
+	// .fill('email',    'zombie@underworld.dead')
+	// .fill('password', 'eat-the-living')
+
+
+
+	// let fReq = {};
+	// fReq.body = {token:req.body.token};
+	// fReq.body.artist = req.body.artist;
+	//
+	// // limiterGoogle.schedule({expiration:10000},module.exports.googleQueryBands,fReq,{})
+	// module.exports.googleQueryBands(fReq)
+	// .then(function(result){
+	//
+	// 	console.log("bandTest result: ",result);
+	//
+	//
+	// }).catch(function(err){
+	// 	console.error(err);
+	// });
+
+};
+
+let limiterSpotify;
+let limiterWiki;
+let limiterCamp;
+let limiterGoogle;
+
+let limiters = function(){
+	//todo: 10 per second
+	limiterSpotify = new Bottleneck({
+		maxConcurrent: 10,
+		minTime: 100,
+		trackDoneStatus: true
+	});
+
+	limiterWiki = new Bottleneck({
+		maxConcurrent: 15,
+		minTime: 100,
+		trackDoneStatus: true
+	});
+
+	limiterCamp = new Bottleneck({
+		maxConcurrent: 10, //15
+		minTime: 500, //100
+		trackDoneStatus: true,
+
+		//todo: never got this working
+
+		// reservoir: 25, // initial value
+		// reservoirIncreaseAmount: 100,
+		// reservoirIncreaseInterval: 1000, // must be divisible by 250
+		// reservoirIncreaseMaximum: 10000,
+
+		//todo: worked but didn't solve issue
+
+		// 60 requests every 60 seconds:
+		// reservoir: 60,
+		// reservoirRefreshAmount: 60,
+		// reservoirRefreshInterval: 60 * 1000,
+
+
+		// reservoir: 30,
+		// reservoirRefreshAmount: 30,
+		// reservoirRefreshInterval: 30 * 1000,
+	});
+
+	limiterGoogle = new Bottleneck({
+		maxConcurrent: 5,
+		minTime: 700,
+		trackDoneStatus: true
+	});
+
+	limiterCamp.on("failed", async (error, jobInfo) => {
+		const id = jobInfo.options.id;
+		console.warn(`Job ${id} failed: ${error}`);
+
+		console.warn("updating settings");
+
+		//doesn't affect scheduled jobs, so there's always a wait period of continual
+		//failures before this kicks in to stop it
+
+		//todo: sort-of worked, still pretty consistent failures
+		limiterCamp.updateSettings({
+			maxConcurrent: 1, //15
+			minTime: 1200, //100
+			trackDoneStatus: true,
+
+			reservoir: null,
+			reservoirRefreshAmount: null,
+			reservoirRefreshInterval: null,
+		});
+
+		//retries are NOT re-queued, which makes this wait sort of fucky
+		//todo: can I just re-queue?
+
+		if (jobInfo.retryCount === 0) { // Here we only retry once
+			console.warn(`Retrying job ${id} in 3000ms!`);
+			return 3000;
+		}
+	});
+}
+limiters()
+
 module.exports.getInfos  = function(req,res) {
 	console.log("getInfo input artists length:",req.body.artists.length);
 	//console.log("getInfo",req.body.token);
@@ -450,88 +661,6 @@ module.exports.getInfos  = function(req,res) {
 	//todo: readup on possibly combining some of these searches?
 	//https://www.mediawiki.org/wiki/API:Etiquette
 
-
-	let limiterSpotify;
-	let limiterWiki;
-	let limiterCamp;
-	let limiterGoogle;
-
-	let limiters = function(){
-		//todo: 10 per second
-		limiterSpotify = new Bottleneck({
-			maxConcurrent: 10,
-			minTime: 100,
-			trackDoneStatus: true
-		});
-
-		limiterWiki = new Bottleneck({
-			maxConcurrent: 15,
-			minTime: 100,
-			trackDoneStatus: true
-		});
-
-		limiterCamp = new Bottleneck({
-			maxConcurrent: 10, //15
-			minTime: 500, //100
-			trackDoneStatus: true,
-
-			//todo: never got this working
-
-			// reservoir: 25, // initial value
-			// reservoirIncreaseAmount: 100,
-			// reservoirIncreaseInterval: 1000, // must be divisible by 250
-			// reservoirIncreaseMaximum: 10000,
-
-			//todo: worked but didn't solve issue
-
-			// 60 requests every 60 seconds:
-			// reservoir: 60,
-			// reservoirRefreshAmount: 60,
-			// reservoirRefreshInterval: 60 * 1000,
-
-
-			// reservoir: 30,
-			// reservoirRefreshAmount: 30,
-			// reservoirRefreshInterval: 30 * 1000,
-		});
-
-		limiterGoogle = new Bottleneck({
-			maxConcurrent: 5,
-			minTime: 700,
-			trackDoneStatus: true
-		});
-
-		limiterCamp.on("failed", async (error, jobInfo) => {
-			const id = jobInfo.options.id;
-			console.warn(`Job ${id} failed: ${error}`);
-
-			console.warn("updating settings");
-
-			//doesn't affect scheduled jobs, so there's always a wait period of continual
-			//failures before this kicks in to stop it
-
-			//todo: sort-of worked, still pretty consistent failures
-			limiterCamp.updateSettings({
-				maxConcurrent: 1, //15
-				minTime: 1200, //100
-				trackDoneStatus: true,
-
-				reservoir: null,
-				reservoirRefreshAmount: null,
-				reservoirRefreshInterval: null,
-			});
-
-			//retries are NOT re-queued, which makes this wait sort of fucky
-			//todo: can I just re-queue?
-
-			if (jobInfo.retryCount === 0) { // Here we only retry once
-				console.warn(`Retrying job ${id} in 3000ms!`);
-				return 3000;
-			}
-		});
-	}
-	limiters()
-
 	let fReq = {};
 	let spotResults = [];
 	let spotFailures = [];
@@ -662,6 +791,7 @@ module.exports.getInfos  = function(req,res) {
 
 		})
 	};
+
 
 	var band =  function(bReq){
 		return new Promise(function(done, fail) {
@@ -1513,17 +1643,19 @@ module.exports.googleQueryBands = function(req,res) {
 			limit: 2,
 
 			//testing: anytime captcha is failing, enable this temporarily
-			//:dbc,
+			solver:dbc,
 			params: {} // params will be copied as-is in the search URL query string
 		};
 
 		let urls = [];
 		var scrape =  function(){
 			return new Promise(function(done, fail) {
+				console.log("scrape",optionsBands);
 				//this SHOULD be called once per result, but my 'limit' on scrape isn't working sooo
 
 				try {
 					scraper.search(optionsBands, function (err, url, meta) {
+						console.log("scraper");
 						if (err) {
 
 							console.log("$fucked");

@@ -48,6 +48,9 @@ app.use(bodyParser.urlencoded({
 //info
 
 
+
+app.post("/bandTest",spotify["bandTest"]);
+
 app.post("/getWikiPage",spotify["getWikiPage"]);
 app.post("/googleQueryBands",spotify["googleQueryBands"]);
 
