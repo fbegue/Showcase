@@ -49,10 +49,11 @@ app.use(bodyParser.urlencoded({
 
 
 
-app.post("/bandTest",spotify["bandTest"]);
 
 app.post("/getWikiPage",spotify["getWikiPage"]);
-app.post("/googleQueryBands",spotify["googleQueryBands"]);
+app.post("/getBandPage",spotify["getBandPage"]);
+
+//app.post("/googleQueryBands",spotify["googleQueryBands"]);
 
 app.post("/getWikiPage",spotify["getWikiPage"]);
 

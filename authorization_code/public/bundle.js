@@ -1023,7 +1023,7 @@
 					};
 
 					$scope.metro_cache = {};
-					$scope.metro_cache_performances = {}
+					$scope.metro_cache_performances = {};
 
 					$scope.dateFilter= {};
 					//$scope.dateFilter.end = "";

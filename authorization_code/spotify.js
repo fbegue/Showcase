@@ -7,133 +7,18 @@ var Bottleneck = require("bottleneck")
 
 var $ = require('cheerio');
 
+const Browser = require('zombie');
+//testing:
+Browser.waitDuration = '30s';
+
 const colors = require('colors/safe');
 console.error = function(msg){console.log(colors.red(msg))};
 console.warn = function(msg){console.log(colors.yellow(msg))};
 console.good = function(msg){console.log(colors.green(msg))};
+console.log("colors configured");
 
 
-//https://github.com/request/request#requestoptions-callback
-var _request = function(req){
-	return new Promise(function(done, fail) {
-
-		console.log("--------------------------------------------");
-		console.log("_request",req);
-
-		request.get(req, function (error, response, body) {
-			if (!error) {
-
-				console.log("--------------------------------------------");
-				console.log("error:",error);
-				//console.log(response);
-				console.log("--------------------------------------------");
-				console.log("response:",response);
-
-				// ("Authorization", 'Bearer ' + global_access_token);
-
-				// var access_token = body.access_token;
-				// access_token_global = access_token;
-				// res.send({
-				// 	'access_token': access_token
-				// });
-
-				done(body)
-			}
-			else{
-				console.log("--------------------------------------------");
-				console.log("_request error:",error);
-			}
-		});
-	})
-};
-
-
-// var two = promiseThrottle.add(myFunction.bind(this, 2));
-// var three = promiseThrottle.add(myFunction.bind(this, 3));
-
-//todo:
-//module.exports.get_user_playlists
-
-//todo: try getPages again but check that options is being preserved
-//let op = JSON.parse(JSON.stringify(options));
-
-
-var searchReq =  function(options){
-	return new Promise(function(done, fail) {
-		let op = JSON.parse(JSON.stringify(options));
-		rp(options).then(function(res){
-
-		})
-	})
-};
-
-//todo: for actual searching
-
-//https://www.mediawiki.org/wiki/API:Query
-
-// $.ajax({
-// 	 url: "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=" + keyword + "&prop=info&inprop=url&utf8=&format=json",
-// 	dataType: "jsonp",
-// 	success: function(response) {
-// 		console.log(response.query);
-// 		if (response.query.searchinfo.totalhits === 0) {
-// 			console.error(response);
-// 		}
-// 		else {
-// 			console.log(response);
-// 		}
-// 	},
-// 	error: function () {
-// 		alert("Error retrieving search results, please refresh the page");
-// 	}
-//
-// });
-
-
-//ideas and attempts at getting google results for artist searches
-
-//google used to have a search api that was pretty open and good, but no more
-//apparantly you may be able to hack custom search to search anywhere? idk
-//https://developers.google.com/custom-search/v1/using_rest#search_results
-
-// serpapi - designed specficially for this purpose, costs $$$
-
-//knowledge graph
-//where are the genres?
-//https://developers.google.com/apis-explorer/#p/kgsearch/v1/kgsearch.entities.search?query=moon+hooch&types=MusicGroup&_h=1&
-
-//const GoogleHtmlParser = require('google-html-parser');
-//seemingly useless parsing
-
-// 	let options = {};
-// 	GoogleHtmlParser.parse(options, res.body, function(err, extractedDatas){
-// 		console.log("$e",extractedDatas);
-// 	});
-//
-// 	GoogleHtmlParser.parse(options, res.body)
-// 		.then(parsedDatas => {
-// 			console.log("$p",parsedDatas);
-// 		});
-
-
-// let google = require('google-parser');
-//google.google is not a function (maybe I can only use this with type script?)
-
-// google.google({search: "Moon Hooch"}).then(function(res){
-// 	console.log("$res",res);
-// })
-
-//const { JSDOM } = require( 'jsdom' );
-
-// var promiseThrottle_Wiki = new PromiseThrottle({
-//
-//  okay wtf is going on here?  i broke it at 2000 lmfao WOW!
-// 	requestsPerSecond: 1000,
-// 	promiseImplementation: Promise
-// });
-
-
-//todo:
+//todo: get this from another source
 let all_genres = require('./public/all_genres2');
 
 let genresMap = {};
@@ -150,26 +35,14 @@ let resultCache = {};
 
 const MusicbrainzApi = require('musicbrainz-api').MusicBrainzApi;
 
+//todo: clear out cruft in config
+
 const mbApi = new MusicbrainzApi({
 	appName: 'Showcase',
 	appVersion: '0.1.0',
 	appMail: 'eugene.f.begue@gmail.com',
 
-	//added
-
-	// MusicBrainz bot account username & password (optional)
-	// botAccount: {
-	// 	username: 'myUserName_bot',
-	// 	password: 'myPassword'
-	// },
-
-	botAccount: {
-		username: 'vagrant',
-		password: 'vagrant'
-	},
-
-	// API base URL, default: 'https://musicbrainz.org' (optional)
-	//aseUrl: 'https://musicbrainz.org',
+	//baseUrl: 'https://musicbrainz.org',
 	baseUrl: 'http://localhost:8080',
 
 	// Optional, default: no proxy server
@@ -179,38 +52,49 @@ const mbApi = new MusicbrainzApi({
 	// },
 });
 
+
 //query=artist:queen%20AND%20type:group&fmt=json
 
-// let pErr = function(err){console.error(err)};
-//
-// mbApi.searchArtist('Queen')
-// 	.then(function(result){
-// 		console.log("$searchArtist",JSON.stringify(result,null,4));
-// 	}).catch(pErr)
-//
-// mbApi.search('artist', 'Queen')
-// 	.then(function(result){
-// 		console.log("$artist",JSON.stringify(result,null,4));
-// 	}).catch(pErr)
-//
-//
-// let artist = "Queen";
-//
-// const query = 'query="Queen" AND type:group';
-//
-// mbApi.search('artist', query)
-// 	.then(function(result){
-// 		console.log("$artistType",JSON.stringify(result,null,4));
-// 	}).catch(pErr)
+let testBrainz = function(){
 
-//test of strength
+	let pErr = function(err){console.error(err)};
 
-let ps = []
-for(var x = 0; x < 1000;x++){
+	mbApi.searchArtist('Queen')
+		.then(function(result){
+			console.log("$searchArtist",JSON.stringify(result,null,4));
+		}).catch(pErr);
+
+	mbApi.search('artist', 'Queen')
+		.then(function(result){
+			console.log("$artist",JSON.stringify(result,null,4));
+		}).catch(pErr);
+
+
+	let artist = "Queen";
+
+	const query = 'query="Queen" AND type:group';
+
+	mbApi.search('artist', query)
+		.then(function(result){
+			console.log("$artistType=group",JSON.stringify(result,null,4));
+		}).catch(pErr);
+
+
+	//todo: test of strength
+
+	// let ps = []
+	// for(var x = 0; x < 1000;x++){
 	//ps.push(mbApi.search('artist', query))
-}
+	//}
 
-// Promise.all()
+
+	// Promise.all()
+	//...
+
+};
+
+//testBrainz();
+
 
 
 let sql = require("mssql")
@@ -234,29 +118,30 @@ sql.connect(config).then(pool => {
 	poolGlobal = pool;
 	conn = pool.request();
 	return conn.query("select getdate();")
-}).then(result => {
-	console.log("connected @ ",result)
+})
+	.then(result => {
+		console.log("connected @ ",result)
 
 
-	let tDate = new Date();
-	let strDate = tDate.toISOString();
+		let tDate = new Date();
+		let strDate = tDate.toISOString();
 
-	let as = {
-		id:1,
-		displayName:"testName",
-		identifier:"mbei-233r-asfsdf-dfdsasfd",
-		//onTourUntil:strDate
-	};
+		let as = {
+			id:1,
+			displayName:"testName",
+			identifier:"mbei-233r-asfsdf-dfdsasfd",
+			//onTourUntil:strDate
+		};
 
-	var keys = Object.keys(as);
+		var keys = Object.keys(as);
 
-	var klist = keys.map(function(value){
-		return "" + value + ""
-	}).join(",");
+		var klist = keys.map(function(value){
+			return "" + value + ""
+		}).join(",");
 
-	var kparams = keys.map(function(value){
-		return "@" + value + ""
-	}).join(",");
+		var kparams = keys.map(function(value){
+			return "@" + value + ""
+		}).join(",");
 
 // var vlist = Object.values(update).map(function(value){
 // 	if(value === null){
@@ -267,171 +152,27 @@ sql.connect(config).then(pool => {
 //
 // }).join(",");
 
-	var sreq = new sql.Request(poolGlobal);
-	sreq.input("id", sql.Int, as.id);
-	sreq.input("displayName", sql.VarChar(100), as.displayName)
-	sreq.input("identifier", sql.VarChar(150), as.identifier)
-	//sreq.input("onTourUntil", sql.DateTimeOffset(7), as.onTourUntil)
+		var sreq = new sql.Request(poolGlobal);
+		sreq.input("id", sql.Int, as.id);
+		sreq.input("displayName", sql.VarChar(100), as.displayName);
+		sreq.input("identifier", sql.VarChar(150), as.identifier);
+		//sreq.input("onTourUntil", sql.DateTimeOffset(7), as.onTourUntil)
 
-	var qry = "insert into artistsSongkick ( " + klist + " ) values ( "  + kparams + " )";
+		var qry = "insert into artistsSongkick ( " + klist + " ) values ( "  + kparams + " )";
 
-	sreq.query(qry).then(function(res){
-		console.log(res);
-	}).catch(function(err){
-		console.log(err);
-	})
-
-}).catch(err => {console.log(err)})
-
-
-
-// sreq.input("ProgramId",sql.Int,req.body.program["Id"])
-// sreq.input("ProgramStageId",sql.Int,stage["Id"])
-// sreq.input("Start",sql.DateTimeOffset,stage["Start"])
-// sreq.input("Approved",sql.DateTimeOffset,stage["Approved"])
-// var qry = "insert into ProgramLogs ( " + klist + " ) OUTPUT CURRENT_TIMESTAMP as updatedAt values ( "  + kparams + " )"
-// let update;
-// update = {};
-// update["ProgramId"] = req.body.program["Id"];
-// update["ProgramStageId"] = stage["Id"];
-// update["Start"] = stage["Start"];
-// update["Approved"] = stage["Approved"];
-
-
-
-
-module.exports.bandTest = function(req,res) {
-	console.log("bandTest", req.body);
-
-
-
-	var wait =  function(ms){
-		return new Promise(function(done, fail) {
-			//console.log("waiting...");
-			setTimeout(function(){
-				//console.log("done!");
-				done()
-			},ms);
-		})
-	};
-
-	const Browser = require('zombie');
-
-// We're going to make requests to http://example.com/signup
-// Which will be routed to our test server localhost:3000
-//Browser.localhost('example.com', 3000);
-
-
-
-	const browser = new Browser();
-
-
-	let grande = ".event-90b696b7";
-	//let grande = 'a:contains("Ariana Grande")'
-	browser.visit('https://www.bandsintown.com/en',function(res){
-
-		console.log("visited");
-
-
-		//todo: never seems valid
-		// let b = browser.body;
-		// console.log("body",b);
-
-		let finish = function (res) {
-			console.log("finish");
+		sreq.query(qry).then(function(res){
 			console.log(res);
-		};
+		}).catch(function(err){
+			console.log(err);
+		})
 
-		//let input = browser.query("input")
-		console.log("inputed");
+	}).catch(err => {console.log(err)});
 
-		browser
-			.fill("input","Funk Worthy")
-			.then(function(){
-
-				wait(1000).then(function(){
-
-					let r = 'a[class^="artistResult"]';
-					browser.click(r)
-						.then(function(){
-							wait(1000).then(function(){
-								console.log("clicked");
-
-								let r = 'div[class^="artistBio"]';
-								let ar = browser.query(r);
-
-								//about funk worthy
-								console.log("ar0",ar["children"]["0"]);
-								let ar1 = ar["children"]["1"]
-								console.log("ar1",ar1);
-
-								let ar1s = browser.query(r,ar1);
-								console.log("ar1s",ar1s);
-
-
-								let ar1s_c1 = ar1s["children"]["1"]
-
-								//todo: really close
-								console.log("ar1s_c1",ar1s_c1);
-
-								//todo: couldn't figure out text here, just being lazy
-								//try inspect: console.log(util.inspect(ar1s))
-
-								// let ar1s_c1t = browser.text('',ar1s_c1);
-								// console.log("ar1s_c1t",ar1s_c1t);
-
-								// let t = browser.text('div[class^="artistBio"]');
-								// console.log("raw",t);
-								//
-								// let t0 = browser.text('div[class^="artistBio"]',ar["children"]["0"]);
-								// console.log("t0",t0);
-								//
-								// let t1 = browser.text('div[class^="artistBio"]',ar["children"]["1"]);
-								// console.log("t1",t1);
-
-								// let e = browser.evaluate('document.querySelector('+r+').innerText');
-								// console.log(e);
-
-
-
-							})
-						})
-				})
-			})
-
-
-		// let g = browser.query(grande)
-		// console.log("g",g);
-		//browser.pressButton(grande, finish)
-
-	})
-
-
-	// .fill('email',    'zombie@underworld.dead')
-	// .fill('password', 'eat-the-living')
-
-
-
-	// let fReq = {};
-	// fReq.body = {token:req.body.token};
-	// fReq.body.artist = req.body.artist;
-	//
-	// // limiterGoogle.schedule({expiration:10000},module.exports.googleQueryBands,fReq,{})
-	// module.exports.googleQueryBands(fReq)
-	// .then(function(result){
-	//
-	// 	console.log("bandTest result: ",result);
-	//
-	//
-	// }).catch(function(err){
-	// 	console.error(err);
-	// });
-
-};
 
 let limiterSpotify;
 let limiterWiki;
 let limiterCamp;
+let limiterBand;
 let limiterGoogle;
 
 let limiters = function(){
@@ -446,6 +187,13 @@ let limiters = function(){
 		maxConcurrent: 15,
 		minTime: 100,
 		trackDoneStatus: true
+	});
+
+	//todo: optimize
+	limiterBand = new Bottleneck({
+		maxConcurrent: 20,
+		minTime: 300,
+		trackDoneStatus: true,
 	});
 
 	limiterCamp = new Bottleneck({
@@ -509,6 +257,10 @@ let limiters = function(){
 	});
 }
 limiters()
+
+
+//testing:
+let executeOnce = false;
 
 module.exports.getInfos  = function(req,res) {
 	console.log("getInfo input artists length:",req.body.artists.length);
@@ -683,7 +435,8 @@ module.exports.getInfos  = function(req,res) {
 	//they also have the responsibility of deciding the quality of the return value, which if
 	//positive will set the value in resultCache
 
-	//todo: searchSpotify currently outputs error flags, search should be detecting quality not searchSpotify
+	//todo: searchSpotify currently outputs error flags when this search function should be detecting quality - not searchSpotify
+	//todo: catch and quickly exit when token is expired
 
 	var search =  function(sReq){
 		return new Promise(function(done, fail) {
@@ -735,7 +488,7 @@ module.exports.getInfos  = function(req,res) {
 						// console.log(resWiki.artist.genres);
 						// console.log(resWiki.artist.genres.length > wikiThreshold);
 						if(resWiki.artist.genres && resWiki.artist.genres.length > wikiThreshold){
-							console.log("WIKI:",wReq.body.artist.name + " " + resWiki.artist.genres);
+							console.good("WIKI:",wReq.body.artist.name + " " + resWiki.artist.genres);
 							resultCache[wReq.body.artist.name] = resWiki;
 							wikiResults.push(resWiki);
 						}else{
@@ -772,7 +525,7 @@ module.exports.getInfos  = function(req,res) {
 					let campThreshold = 1;
 
 					if(cRes.artist.genres.length > campThreshold){
-						console.log("CAMP:",cReq.body.artist.name + " " + cRes.artist.genres);
+						console.good("CAMP:",cReq.body.artist.name + " " + cRes.artist.genres);
 						resultCache[cReq.body.artist.name] = cRes;
 						campResults.push(cRes);
 					}else{
@@ -798,14 +551,15 @@ module.exports.getInfos  = function(req,res) {
 
 			//todo: extremely annoying that there is no way to get #1 band result without google'ing
 
-			limiterGoogle.schedule({expiration:3000},module.exports.googleQueryBands,bReq,{})
+			//{expiration:30000},
+			limiterBand.schedule(module.exports.getBandPage,bReq,{})
 				.then((bRes) => {
 
 					//todo: decide on threshold
 					let bandThreshold = 1;
 
 					if(bRes.artist.genres.length > bandThreshold){
-						console.log("BAND:",bReq.body.artist.name + " " + bRes.artist.genres);
+						console.good("BAND:",bReq.body.artist.name + " " + bRes.artist.genres);
 						resultCache[bReq.body.artist.name] = bRes;
 						bandResults.push(bRes);
 					}else{
@@ -928,185 +682,214 @@ module.exports.getInfos  = function(req,res) {
 	};
 
 
-	let finish = function(res){
+	let finish = function(){
 		// console.log("finish!");
 		// console.log(Object.keys(resultCache));
 		// console.log(JSON.stringify(resultCache,null,4));
+		//res.send(resultCache)
+
 	};
 
-	let mod = 0;
-	req.body.artists.forEach(function(ar){
-		fReq = {};
-		fReq.body = {token:req.body.token};
-		fReq.body.artist = ar;
+	//testing:
+	if(executeOnce){
+		req.body.artists = [];
+		console.error("==========SKIPPING SECOND EXECUTION==============");
+	}
 
-		search(fReq)
-			.then(wiki)
-			.then(function(wRes){
+	if(req.body.artists.length > 0){
 
-				//just doll them out equally for now
-				let check = mod % 2 ===0;
-				mod++;
+		//testing:
+		console.warn("==========SET SKIPONCE==============");
+		executeOnce = true;
 
-				//todo: add scrape (also, is this pattern sustainable?)
+		let mod = 0;
+		req.body.artists.forEach(function(ar){
+			fReq = {};
+			fReq.body = {token:req.body.token};
+			fReq.body.artist = ar;
 
-				if(!resultCache[wRes.body.artist.name]){
-					if(check){
-						camp(wRes).then(function(){
-							if(!resultCache[wRes.body.artist.name]){
-								console.warn("failed camp, trying band for:" + wRes.body.artist.name);
-								band(wRes).then(finish).catch(function(err){
-									let msg = "camp -> band failure";
-									let error = {msg:msg,artist:wRes.body.artist.name,error:err};
-									console.error(error);
-								})
-							}
-							else{finish()}
-						})
+			search(fReq)
+				.then(wiki)
+				.then(function(wRes){
+
+					//just doll them out equally for now
+					let check = mod % 2 ===0;
+					mod++;
+
+					//todo: add scrape (also, is this pattern sustainable?)
+
+					if(!resultCache[wRes.body.artist.name]){
+						if(check){
+							camp(wRes).then(function(){
+								if(!resultCache[wRes.body.artist.name]){
+									console.warn("failed camp, trying band for:" + wRes.body.artist.name);
+									band(wRes).then(finish).catch(function(err){
+										let msg = "camp -> band failure";
+										let error = {msg:msg,artist:wRes.body.artist.name,error:err};
+										console.error(error);
+									})
+								}
+								else{finish()}
+							})
+						}
+						else{
+							band(wRes).then(function(){
+								if(!resultCache[wRes.body.artist.name]){
+									console.warn("failed band, trying camp for:" + wRes.body.artist.name);
+									camp(wRes).then(finish).catch(function(err){
+										let msg = "band -> camp failure";
+										let error = {msg:msg,artist:wRes.body.artist.name,error:err};
+										console.error(error);
+										//fail(error)
+									})
+								}else{finish()}
+
+							})
+						}
 					}
 					else{
-						band(wRes).then(function(){
-							if(!resultCache[wRes.body.artist.name]){
-								console.warn("failed band, trying camp for:" + wRes.body.artist.name);
-								camp(wRes).then(finish).catch(function(err){
-									let msg = "band -> camp failure";
-									let error = {msg:msg,artist:wRes.body.artist.name,error:err};
-									console.error(error);
-									//fail(error)
-								})
-							}else{finish()}
-
-						})
+						finish(wRes)
 					}
 
-				}
-				else{
-					finish(wRes)
-				}
+				})
+				// .then(finish)
+				.catch(function(err){
+					console.error("chain failed for: ",ar.name);
+					console.log(err);
 
+				})
+		});
+
+		var wait =  function(ms){
+			return new Promise(function(done, fail) {
+				//console.log("waiting...");
+				setTimeout(function(){
+					//console.log("done!");
+					done()
+				},ms);
 			})
-			.then(finish)
-			.catch(function(err){
-				console.error("chain failed for: ",ar.name);
-				console.log(err);
+		};
 
-			})
-	});
+		let totalTime = 0;
+		let checkCount = function() {
 
-	var wait =  function(ms){
-		return new Promise(function(done, fail) {
-			//console.log("waiting...");
-			setTimeout(function(){
-				//console.log("done!");
-				done()
-			},ms);
-		})
-	};
+			wait(100).then(function () {
+				totalTime = totalTime + 100;
 
-	let totalTime = 0;
-	let checkCount = function() {
+				// let totalResultsFailures = wikiResults.length +wikiFailures.length +
+				// 	campResults.length + campFailures.length +
+				// 	bandResults.length + bandFailures.length +
+				// 	scrapeResults.length +	scrapeFailures.length;
 
-		wait(100).then(function () {
-			totalTime = totalTime + 100;
+				let totalFailures = wikiFailures.length +
+					campFailures.length +
+					bandFailures.length +
+					scrapeFailures.length +
+					spotFailures.length;
 
-			// let totalResultsFailures = wikiResults.length +wikiFailures.length +
-			// 	campResults.length + campFailures.length +
-			// 	bandResults.length + bandFailures.length +
-			// 	scrapeResults.length +	scrapeFailures.length;
+				let totalResults = wikiResults.length +
+					campResults.length +
+					bandResults.length +
+					scrapeResults.length +
+					spotResults.length;
 
-			let totalFailures = wikiFailures.length +
-				campFailures.length +
-				bandFailures.length +
-				scrapeFailures.length +
-				spotFailures.length;
+				let notDone = function(limiter,name,print){
 
-			let totalResults = wikiResults.length +
-				campResults.length +
-				bandResults.length +
-				scrapeResults.length +
-				spotResults.length;
+					//testing: enable to see readouts of every limiter
+					print? console.log(name,limiter.counts()) :{};
 
-			let notDone = function(limiter,name){
-				//console.log(name,limiter.counts());
+					//I guess don't do this? it works sometimes????
+					//let cs = JSON.parse(JSON.stringify(limiterWiki.counts()))
 
-				//I guess don't do this? it works sometimes????
-				//let cs = JSON.parse(JSON.stringify(limiterWiki.counts()))
+					let nots = ["RECEIVED","QUEUED","RUNNING","EXECUTING"]
+					let counts = 0;
 
-				let nots = ["RECEIVED","QUEUED","RUNNING","EXECUTING"]
-				let counts = 0;
+					nots.forEach(function(t){
+						counts = counts  + limiter.jobs(t).length
+					});
 
-				nots.forEach(function(t){
-					counts = counts  + limiter.jobs(t).length
-				});
+					return counts > 0;
+				};
 
-				return counts > 0;
-			};
+				//if any of the bottlenecks are not done, continue checking
+				//|| notDone(limiterGoogle,"google");
+				let checkIt = notDone(limiterSpotify,"spotify") || notDone(limiterWiki,"wiki") || notDone(limiterCamp,"camp") || notDone(limiterBand,"band")
 
-			//if any of the bottlenecks are not done, continue checking
-			let checkIt = notDone(limiterSpotify,"spotify") || notDone(limiterWiki,"wiki") || notDone(limiterCamp,"camp") || notDone(limiterGoogle,"google");
+				if(checkIt){
 
-			if(checkIt){
+					if(totalTime % 5000 === 0){
 
-				if(totalTime % 5000 === 0){
+						console.log("totalResults/artists",totalResults + "/" + req.body.artists.length);
+						console.log("totalFailures",totalFailures);
+						let checkIt = notDone(limiterSpotify,"spotify",true)
+							|| notDone(limiterWiki,"wiki",true)
+							|| notDone(limiterCamp,"camp",true)
+							|| notDone(limiterBand,"band",true)
+
+
+						// console.log("spot",spotResults.length)
+						// console.log("w",wikiResults.length);
+						// console.log("c",campResults.length);
+						// console.log("b",bandResults.length);
+						// console.log("s",scrapeResults.length)
+					}
+
+					checkCount()
+				}else{
+					console.log("getExternalInfos finished execution:",Math.abs(new Date() - startDate) / 600);
 
 					console.log("totalResults/artists",totalResults + "/" + req.body.artists.length);
 					console.log("totalFailures",totalFailures);
 
-					// console.log("spot",spotResults.length)
-					// console.log("w",wikiResults.length);
-					// console.log("c",campResults.length);
-					// console.log("b",bandResults.length);
-					// console.log("s",scrapeResults.length)
-				}
+					console.log("spot",spotResults.length)
+					console.log("w",wikiResults.length);
+					console.log("c",campResults.length);
+					console.log("b",bandResults.length);
+					console.log("s",scrapeResults.length + " / " + 	scrapeFailures.length);
 
-				checkCount()
-			}else{
-				console.log("getExternalInfos finished execution:",Math.abs(new Date() - startDate) / 600);
+					//todo:
 
-				console.log("totalResults/artists",totalResults + "/" + req.body.artists.length);
-				console.log("totalFailures",totalFailures);
+					// console.log(wikiResultsKeep.length + " wiki results were successful");
+					// console.log(googleResults.length + " google results were returned");
+					// console.log("FINISHED!",JSON.stringify(wikiResults,null,4));
+					// console.log("FINISHED!",JSON.stringify(googleResults,null,4));
 
-				console.log("spot",spotResults.length)
-				console.log("w",wikiResults.length);
-				console.log("c",campResults.length);
-				console.log("b",bandResults.length);
-				console.log("s",scrapeResults.length + " / " + 	scrapeFailures.length);
+					//console.log("resultCache",JSON.stringify(resultCache,null,4))
 
-				//todo:
-
-				// console.log(wikiResultsKeep.length + " wiki results were successful");
-				// console.log(googleResults.length + " google results were returned");
-				// console.log("FINISHED!",JSON.stringify(wikiResults,null,4));
-				// console.log("FINISHED!",JSON.stringify(googleResults,null,4));
-
-				//console.log("resultCache",JSON.stringify(resultCache,null,4))
-
-				let results = [];
-				for(var nameKey in resultCache){
-					results.push(resultCache[nameKey].artist)
-				}
-
-				let missingNo = 0;
-				req.body.artists.forEach(function(a){
-					if(!resultCache[a.name]){
-						missingNo++;
-						results.push({name:a.name,artistSongkick_id:a.artistSongkick_id,error:true})
+					let results = [];
+					for(var nameKey in resultCache){
+						results.push(resultCache[nameKey].artist)
 					}
-				})
 
-				console.log(missingNo + " padded error results");
+					let missingNo = 0;
+					req.body.artists.forEach(function(a){
+						if(!resultCache[a.name]){
+							missingNo++;
+							results.push({name:a.name,artistSongkick_id:a.artistSongkick_id,error:true})
+						}
+					});
 
-				//let ret = wikiResults.concat(campResults).concat(bandResults).concat(scrapeResults);
-				res.send(results);
-			}
-		})
-	};
+					console.log(missingNo + " padded error results");
 
-	// setTimeout(function(){
-	// 	checkCount();
-	// },2000)
+					//let ret = wikiResults.concat(campResults).concat(bandResults).concat(scrapeResults);
+					res.send(results);
 
-	checkCount();
+
+				}
+			})
+		};
+
+		// setTimeout(function(){
+		// 	checkCount();
+		// },2000)
+
+		checkCount();
+	}
+	else{
+		console.error({msg:"no artists submitted"});
+		res.send();
+	}
+
 
 };
 
@@ -1230,6 +1013,138 @@ module.exports.searchSpotify = function(req, res){
 			fail(error)
 		})
 	})
+};
+
+module.exports.getBandPage = function(req,res) {
+
+	return new Promise(function(done, fail) {
+		console.log("getBandPage", req.body.artist.name);
+		let startDate = new Date();
+		//console.log("start time:",startDate);
+
+		const browser = new Browser();
+
+		//testing:
+		//browser.debug();
+
+		//todo: trying to speed this up
+		//bug zombie.js doesn't have shit for documentation
+		//debug helps but I can't really tell whats going on
+
+		//best guesses:
+		//1) I see 2x 'setTimeout after 15000ms delay + 11s/+15s'
+		//2) I wonder if NOT having to load all this other JS (I see a lot of facebook stuff) would speed things up
+		//3) Can I load an preserve an 'instance' of the bandsintown main site, then spawn a new copy for each artist?
+		//   or even hit the 'back' button when I found what I want and then restart the thing?
+
+		//seems like the durations that i've tried for options (up to 10s) all bomb on batch runes
+		// a single run @ 1s helped a little bit 86s -> 58s
+		//but 1s when trying to batch process yields :  'No open window with an HTML document'
+		let options= {
+			duration:"10s"
+		};
+
+		browser.visit('https://www.bandsintown.com/en',function(res){
+		// browser.visit('https://www.bandsintown.com/en',options,function(res){
+			console.log("visited");
+
+			browser
+				.fill("input","Funk Worthy")
+				.then(function() {
+					//console.log("inputted");
+					let r = 'a[class^="artistResult"]';
+					return browser.click(r)
+				})
+				.then(function(){
+					//console.log("clicked",browser.html());
+
+					//browser.body never seems valid
+					// let b = browser.body;
+					let page = browser.html();
+					let r = 'div[class^="artistBio"]';
+					let d = $(page).find(r);
+					let str = "";
+
+					d.each(function(k,elem){
+						let t = $(this).text();
+						t = t.trim();
+						if(t === "Genres:"){
+							//console.log("$$",t);
+							let next = d[k+1];
+							let tnext = $(next).text();
+							//console.log("Genres:",tnext);
+
+							//todo: shitty selector above produces genre list 3x and writes over last
+							str = tnext;
+						}
+					})
+
+					//let ar = browser.query(r);
+					//console.log("ar0",ar["children"]["0"]);
+					//try inspect on circular json: console.log(util.inspect(ar1s))
+
+					//checkout:
+					//https://github.com/assaf/zombie#browser
+					//https://stackoverflow.com/questions/5926421/dumping-browser-document-content-using-zombie-js
+
+					let response = {};
+					response.artist = req.body.artist;
+					response.artist.genres = []
+
+					//console.log("raw genres:",str);
+					if(str.length > 0){
+
+						let genres = [];
+						if(str) {
+							if (str.indexOf(",") !== -1) {
+								genres = str.split(",")
+							}else{
+								//console.warn("if this is >1 genre, there was an issue on split:",str);
+								genres.push(str);
+							}
+						}
+
+						//split funny genres
+						//examples from https://www.bandsintown.com/en/a/12732676-funk-worthy
+						// R&b/soul, R&b, Rock, Soul, Rnb-soul, Fusion, Funk
+
+						let sGenres = [];
+						genres.forEach(function(g){
+							g = g.trim().toLowerCase();
+
+							if(g.indexOf("/") !== -1){
+								let sp = g.split("/");
+								sp.forEach(function(s){
+									if(sGenres.indexOf(s) === -1){sGenres.push(s)}
+								})
+							}
+							else{
+								if(sGenres.indexOf(g) === -1){sGenres.push(g)}
+							}
+						});
+
+						//console.log("getBandPage finished execution:",Math.abs(new Date() - startDate) / 600);
+						//console.log("split genres",sGenres);
+
+						response.artist.genres = sGenres;
+						done(response);
+
+					}else{
+						let msg = "bandsintown failed to find genres";
+						let error = {msg:msg,artist:req.body.artist.name,error:{}};
+						console.error(error);
+						fail(error)
+					}
+				})
+				.catch(function(err){
+					let msg = "band fetch failure";
+					let error = {msg:msg,artist:req.body.artist.name,error:err};
+					console.error(error);
+					fail(error)
+				})
+
+		})//visit
+	})//promise
 };
 
 module.exports.getCampPage =  function(req,res){
@@ -1491,121 +1406,29 @@ module.exports.getWikiPage= function(req,res) {
 	})//promise
 };
 
-module.exports.getWikiPage_deprecated = function(req,res) {
+//todo: for actual searching
+var wikiSearch = function(){
 
-	return new Promise(function(done, fail) {
+	//https://www.mediawiki.org/wiki/API:Query
 
-		//console.log("getWikiPage",req.body.artist);
-
-		let artist = req.body.artist;
-		let artist_save = JSON.parse(JSON.stringify(req.body.artist));
-
-		//no content fields specified
-		//https://en.wikipedia.org/w/api.php?action=query&format=jsonfm&formatversion=2&titles=Wynchester
-
-		//i'm feeling lucky? just go to whatever page has that title
-
-		let code_prefix = function (exp) {
-
-			//let exp = "Guns N' Roses";
-			//result: Guns_N%27_Roses
-
-			//wiki likes _ for spaces
-			exp = exp.replace(/\s/g, '_');
-
-			//https://www.w3schools.com/tags/ref_urlencode.asp
-			exp = encodeURI(exp);
-
-			//not handling apostrophes/single quotes?
-			exp = exp.replace("'", "%27");
-			return exp;
-		};
-
-		//todo: can I get any smaller than this?
-		// its just getting content, don't think I can go lower than that
-		//https://www.mediawiki.org/wiki/API:Revisions
-
-		let url = "https://en.wikipedia.org/w/api.php?action=query" +
-			"&prop=revisions" +
-			"&rvprop=content" +
-			"&format=jsonfm" +
-			"&formatversion=2" +
-			"&titles=" + code_prefix(artist.name) + "&format=json";
-		//console.log("URI encode exp:",code_prefix(artist.name));
-		console.log("URL:",url);
-
-		let options = {
-			method: "POST",
-			uri: url,
-			headers: {
-				'User-Agent': 'Request-Promise',
-				"Content-Type": "jsonp"
-			},
-			//json: true
-		};
-
-		rp(options).then(function (result) {
-			result = JSON.parse(result);
-			//console.log("res", JSON.stringify(result,null,4));
-			let facts = [];
-
-			if(!result.query['pages'][0].missing){
-				//don't know what n pages or n revisions means as of yet
-				let content = result.query['pages'][0]['revisions'][0]['content'].toString();
-
-				//what is the prevelance of people actually using the correct template?
-				//I'm putting my money on pretty high
-				let infoStr = "Infobox musical artist"
-				let pat = /\[\[([A-Za-z\s\|]*)\]\]/gs;
-
-				if(content.indexOf(infoStr) !== -1){
-					let matches = content.match(pat);
-					//console.log(matches);
-
-					let pat2 = /[^\w\s]/g;
-					matches.forEach(function(m){
-						if(m.indexOf("|") !== -1){
-							let split = m.split("|")
-							//console.log("$",split);
-							let a = split[0].replace(pat2," ").toLowerCase().trim();
-							let b = split[1].replace(pat2," ").toLowerCase().trim();
-							//console.log(a);console.log(b);
-							facts.push(b);facts.push(a);
-						}
-						else{
-							let y = m.replace(pat2," ").toLowerCase().trim()
-							//console.log("#",y);
-							facts.push(y)
-						}
-					});
-				}
-			}
-
-			//console.log(JSON.stringify(facts));
-			let response = {};
-			response.artist = artist_save;
-
-			function removeDups(records) {
-				let unique = {};
-				records.forEach(function(i) {
-					if(!unique[i]) {	unique[i] = true;}});
-				return Object.keys(unique);
-			}
-
-
-			response.facts = removeDups(facts);
-
-
-			done(response)
-			//res.send(response)
-
-		}).catch(function (err) {
-			console.log(err);
-		})
-
-	})//promise
+	// $.ajax({
+	// 	 url: "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=" + keyword + "&prop=info&inprop=url&utf8=&format=json",
+	// 	dataType: "jsonp",
+	// 	success: function(response) {
+	// 		console.log(response.query);
+	// 		if (response.query.searchinfo.totalhits === 0) {
+	// 			console.error(response);
+	// 		}
+	// 		else {
+	// 			console.log(response);
+	// 		}
+	// 	},
+	// 	error: function () {
+	// 		alert("Error retrieving search results, please refresh the page");
+	// 	}
+	//
+	// });
 };
-
 
 
 var DeathByCaptcha = require('deathbycaptcha');
@@ -1630,7 +1453,7 @@ let simple_google = function(req){
 
 let doOne = true;
 
-module.exports.googleQueryBands = function(req,res) {
+module.exports.googleQueryBands_DEPRECATED = function(req,res) {
 	//console.log("googleQuery",req.body.artist.name);
 
 	return new Promise(function(done, fail) {
@@ -1867,35 +1690,6 @@ module.exports.googleQueryScrape  = function(req,res) {
 
 	})//promise
 };
-
-
-
-
-
-
-
-
-
-//https://www.mediawiki.org/wiki/API:Query
-//for searching
-
-// $.ajax({
-// 	 url: "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=" + keyword + "&prop=info&inprop=url&utf8=&format=json",
-// 	dataType: "jsonp",
-// 	success: function(response) {
-// 		console.log(response.query);
-// 		if (response.query.searchinfo.totalhits === 0) {
-// 			console.error(response);
-// 		}
-// 		else {
-// 			console.log(response);
-// 		}
-// 	},
-// 	error: function () {
-// 		alert("Error retrieving search results, please refresh the page");
-// 	}
-//
-// });
 
 
 //todo: haven't tested yet
