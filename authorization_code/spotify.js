@@ -1050,91 +1050,113 @@ module.exports.getBandPage = function(req,res) {
 
 			browser
 				.fill("input","Funk Worthy")
-				.then(function() {
-					//console.log("inputted");
-					let r = 'a[class^="artistResult"]';
-					return browser.click(r)
-				})
+			// .fill("input",req.body.artist.name)
 				.then(function(){
-					//console.log("clicked",browser.html());
 
-					//browser.body never seems valid
-					// let b = browser.body;
-					let page = browser.html();
-					let r = 'div[class^="artistBio"]';
-					let d = $(page).find(r);
-					let str = "";
-
-					d.each(function(k,elem){
-						let t = $(this).text();
-						t = t.trim();
-						if(t === "Genres:"){
-							//console.log("$$",t);
-							let next = d[k+1];
-							let tnext = $(next).text();
-							//console.log("Genres:",tnext);
-
-							//todo: shitty selector above produces genre list 3x and writes over last
-							str = tnext;
-						}
-					})
-
-					//let ar = browser.query(r);
-					//console.log("ar0",ar["children"]["0"]);
-					//try inspect on circular json: console.log(util.inspect(ar1s))
-
-					//checkout:
-					//https://github.com/assaf/zombie#browser
-					//https://stackoverflow.com/questions/5926421/dumping-browser-document-content-using-zombie-js
+					console.log("inputted");
+					let r = 'a[class^="artistResult"]';
+					let rs = browser.query(r);
+					console.log("$$rs",rs);
 
 					let response = {};
 					response.artist = req.body.artist;
-					response.artist.genres = []
+					response.artist.genres = [];
 
-					//console.log("raw genres:",str);
-					if(str.length > 0){
+					if(!rs){
+						let m = {msg:"no result",artist:req.body.artist.name};
+						console.warn(m);
+						done(response)
+					}else {
 
-						let genres = [];
-						if(str) {
-							if (str.indexOf(",") !== -1) {
-								genres = str.split(",")
-							}else{
-								//console.warn("if this is >1 genre, there was an issue on split:",str);
-								genres.push(str);
+						browser.click(r).then(function () {
+							//browser.html()
+							console.log("clicked");
+
+							//todo: BROKEN
+							//it just gets to clicked and stops
+
+							//browser.body never seems valid
+							// let b = browser.body;
+							let page = browser.html();
+							let r = 'div[class^="artistBio"]';
+							let d = $(page).find(r);
+							let str = "";
+
+
+							d.each(function (k, elem) {
+								let t = $(this).text();
+								t = t.trim();
+								if (t === "Genres:") {
+									//console.log("$$",t);
+									let next = d[k + 1];
+									let tnext = $(next).text();
+									//console.log("Genres:",tnext);
+
+									//todo: shitty selector above produces genre list 3x and writes over last
+									str = tnext;
+								}
+							})
+
+							//let ar = browser.query(r);
+							//console.log("ar0",ar["children"]["0"]);
+							//try inspect on circular json: console.log(util.inspect(ar1s))
+
+							//checkout:
+							//https://github.com/assaf/zombie#browser
+							//https://stackoverflow.com/questions/5926421/dumping-browser-document-content-using-zombie-js
+
+
+
+							//console.log("raw genres:",str);
+							if (str.length > 0) {
+
+								let genres = [];
+								if (str) {
+									if (str.indexOf(",") !== -1) {
+										genres = str.split(",")
+									} else {
+										//console.warn("if this is >1 genre, there was an issue on split:",str);
+										genres.push(str);
+									}
+								}
+
+								//split funny genres
+								//examples from https://www.bandsintown.com/en/a/12732676-funk-worthy
+								// R&b/soul, R&b, Rock, Soul, Rnb-soul, Fusion, Funk
+
+								let sGenres = [];
+								genres.forEach(function (g) {
+									g = g.trim().toLowerCase();
+
+									if (g.indexOf("/") !== -1) {
+										let sp = g.split("/");
+										sp.forEach(function (s) {
+											if (sGenres.indexOf(s) === -1) {
+												sGenres.push(s)
+											}
+										})
+									} else {
+										if (sGenres.indexOf(g) === -1) {
+											sGenres.push(g)
+										}
+									}
+								});
+
+								//console.log("getBandPage finished execution:",Math.abs(new Date() - startDate) / 600);
+								//console.log("split genres",sGenres);
+
+								response.artist.genres = sGenres;
+								done(response);
+
+							} else {
+
+								let msg = "bandsintown failed to find genres";
+								let error = {msg: msg, artist: req.body.artist.name, error: {}};
+								console.error(error);
+								fail(error)
 							}
-						}
-
-						//split funny genres
-						//examples from https://www.bandsintown.com/en/a/12732676-funk-worthy
-						// R&b/soul, R&b, Rock, Soul, Rnb-soul, Fusion, Funk
-
-						let sGenres = [];
-						genres.forEach(function(g){
-							g = g.trim().toLowerCase();
-
-							if(g.indexOf("/") !== -1){
-								let sp = g.split("/");
-								sp.forEach(function(s){
-									if(sGenres.indexOf(s) === -1){sGenres.push(s)}
-								})
-							}
-							else{
-								if(sGenres.indexOf(g) === -1){sGenres.push(g)}
-							}
-						});
-
-						//console.log("getBandPage finished execution:",Math.abs(new Date() - startDate) / 600);
-						//console.log("split genres",sGenres);
-
-						response.artist.genres = sGenres;
-						done(response);
-
-					}else{
-						let msg = "bandsintown failed to find genres";
-						let error = {msg:msg,artist:req.body.artist.name,error:{}};
-						console.error(error);
-						fail(error)
-					}
+						})
+					}//else
 				})
 				.catch(function(err){
 					let msg = "band fetch failure";
