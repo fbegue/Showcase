@@ -168,6 +168,118 @@ sql.connect(config).then(pool => {
 
 	}).catch(err => {console.log(err)});
 
+const Nightwatch = require('nightwatch');
+//Nightwatch.runTests([testSource], [settings]);
+
+let settings = {
+	"src_folders" : ["tests"],
+
+	//stuff from the example cited in new feature desc
+
+	// "selenium": {
+	// 	port: 4444,
+	// 	//version2: true,
+	// 	//start_process: true
+	// },
+	//"output": false,
+	//"persist_globals": true,
+	//"globals": globals,
+	//"output_folder": false,
+
+	"webdriver" : {
+		"start_process": true,
+		"-server_path": "node_modules/.bin/chromedriver",
+		"--server_path": "./node_modules/chromedriver/lib/chromedriver",
+		"port": 9515
+	},
+
+	"test_settings" : {
+		"default" : {
+			"desiredCapabilities": {
+				"browserName": "chrome",
+				"javascriptEnabled": true,
+				"acceptSslCerts": true,
+				"chromeOptions" : {
+					"args" : ["headless", "no-sandbox", "disable-gpu"]
+				}
+			}
+		}
+	}
+};
+
+console.log('nightwatch...');
+
+// https://libupdate.com/libs/6b0b60cc-1a1e-4f88-b45b-d5d1f24ad96a
+// never got to work: Error: An error occurred while retrieving a new session: "Connection refused to 127.0.0.1:9515".
+
+// Nightwatch.runTests('./tests', settings)
+// 	.then(function() {
+// 		console.log("finished!");
+//
+// 	}).catch(function(err) {
+// 	// An error occurred
+// });
+
+
+// https://github.com/nightwatchjs/nightwatch/issues/1919
+
+var NWconfig = require("./nightwatch.json");
+const chromedriver = require("chromedriver");
+
+console.log("NWconfig",NWconfig);
+
+// https://nightwatchjs.org/guide/#command-line-options
+// https://github.com/nightwatchjs/nightwatch/issues/1954
+// https://github.com/nightwatchjs/nightwatch/issues/498
+
+Nightwatch.cli(function(argv) {
+	argv.verbose = false;
+	argv.config = './nightwatch.conf.js';
+
+	//todo: is super fucking easy with runner - but that fails right now
+	//maybe just try to fix this instead of fucking with CLI?
+
+	//https://stackoverflow.com/questions/43817893/passing-command-line-arguments-to-nightwatch-runner
+
+	//todo: trying to set global programatically from here
+
+	//todo: thought I could replicate conf.js right here...
+	//just doesn't even start up the script
+
+	//argv.config = NWconfig;
+	//argv.config.test_workers = false;
+	//argv.config.webdriver.server_path = chromedriver.path;
+
+	argv.settings = {
+		globals: {
+			artist: 'Funk Worthy'
+		}
+	};
+
+	const done = function() {
+		console.log('nightwatch complete');
+	}; // your callback function
+
+	const runner = Nightwatch.CliRunner(argv);
+	runner
+		.setup()
+		.startWebDriver()
+		.catch(err => {	console.error(err);throw err;})
+		.then(() => {return runner.runTests();})
+		.catch(err => {console.error(err);	runner.processListener.setExitCode(10);})
+		.then((str) => {
+			console.log("finished!",str);
+			return runner.stopWebDriver();
+		})
+		// .then(() => {
+		// 	process.exit(0);
+		// })
+		.catch(err => {
+			console.error(err);
+		});
+
+});
+
 
 let limiterSpotify;
 let limiterWiki;
@@ -1020,7 +1132,7 @@ module.exports.getBandPage = function(req,res) {
 	return new Promise(function(done, fail) {
 		console.log("getBandPage", req.body.artist.name);
 		let startDate = new Date();
-		//console.log("start time:",startDate);
+		console.log("start time:",startDate);
 
 		const browser = new Browser();
 
@@ -1045,12 +1157,12 @@ module.exports.getBandPage = function(req,res) {
 		};
 
 		browser.visit('https://www.bandsintown.com/en',function(res){
-		// browser.visit('https://www.bandsintown.com/en',options,function(res){
+			// browser.visit('https://www.bandsintown.com/en',options,function(res){
 			console.log("visited");
 
 			browser
 				.fill("input","Funk Worthy")
-			// .fill("input",req.body.artist.name)
+				// .fill("input",req.body.artist.name)
 				.then(function(){
 
 					console.log("inputted");
@@ -1142,7 +1254,7 @@ module.exports.getBandPage = function(req,res) {
 									}
 								});
 
-								//console.log("getBandPage finished execution:",Math.abs(new Date() - startDate) / 600);
+								console.log("getBandPage finished execution:",Math.abs(new Date() - startDate) / 600);
 								//console.log("split genres",sGenres);
 
 								response.artist.genres = sGenres;

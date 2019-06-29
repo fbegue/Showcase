@@ -27,11 +27,15 @@
     "msnodesqlv8": "latest",
     "mssql": "latest",
     "musicbrainz-api": "latest",
+    "nightwatch": "^1.1.12",
     "promise-throttle": "latest",
     "querystring": "~0.2.0",
     "request": "^2.81.0",
     "request-promise": "^4.2.1",
     "songkick-api-node": "1.0.2",
     "zombie": "^6.1.4"
+  },
+  "devDependencies": {
+    "chromedriver": "^75.0.0"
   }
 }
