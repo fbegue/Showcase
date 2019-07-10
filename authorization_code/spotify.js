@@ -122,95 +122,135 @@ sql.connect(config).then(pool => {
 	.then(result => {
 		console.log("connected @ ",result)
 
-
 		let tDate = new Date();
 		let strDate = tDate.toISOString();
 
-		let as = {
-			id:1,
-			displayName:"testName",
-			identifier:"mbei-233r-asfsdf-dfdsasfd",
-			//onTourUntil:strDate
+		// var vlist = Object.values(update).map(function(value){
+		// 	if(value === null){
+		// 		return null
+		// 	}else{
+		// 		return "'" + value + "'"
+		// 	}
+		//
+		// }).join(",");
+
+		let insert_artistsSongkick  = function(){
+			//console.log("insert_artistsSongkick");
+
+			let a = {
+				id:4,
+				displayName:"testDisplayName",
+				identifier:"test-mbei-233r-asfsdf-dfdsasfd",
+				//onTourUntil:strDate
+			};
+
+			var keys = Object.keys(a);
+			var klist = keys.map(function(value){
+				return "" + value + ""
+			}).join(",");
+			var kparams = keys.map(function(value){
+				return "@" + value + ""
+			}).join(",");
+			
+			var sreq = new sql.Request(poolGlobal);
+			sreq.input("id", sql.Int, a.id);
+			sreq.input("displayName", sql.VarChar(100), a.displayName);
+			sreq.input("identifier", sql.VarChar(150), a.identifier);
+
+			//todo: sreq.input("onTourUntil", sql.DateTimeOffset(7), as.onTourUntil)
+
+			var qry = "IF NOT EXISTS (SELECT * FROM dbo.artistsSongkick WHERE id = @id)"
+				+ " INSERT INTO dbo.artistsSongkick("+ klist + ")"
+				+ " OUTPUT inserted.id, inserted.displayName, inserted.identifier"
+				+ " VALUES(" + kparams +")"
+				+ " else select * from dbo.artistsSongkick WHERE id = @id";
+
+			sreq.query(qry).then(function(res){
+				console.log(res);
+			}).catch(function(err){
+				console.log(err);
+			})
+
 		};
 
-		var keys = Object.keys(as);
+		//insert_artistsSongkick();
+		
+		let insertGenre = function(){
+			console.log("insertGenre");
+			var genre = "Country";
+			var sreq = new sql.Request(poolGlobal);
+			var qry = "IF NOT EXISTS (SELECT * FROM dbo.genres WHERE name = @name) " +
+				"INSERT INTO dbo.genres(name) OUTPUT inserted.id, inserted.name VALUES(@name) " +
+				"else select * from dbo.genres WHERE name = @name";
+			sreq.input("name", sql.VarChar(255), genre);
+			sreq.query(qry).then(function(res){
+				console.log(res);
+			}).catch(function(err){
+				console.log(err);
+			})
+		};
 
-		var klist = keys.map(function(value){
-			return "" + value + ""
-		}).join(",");
+		//insertGenre();
 
-		var kparams = keys.map(function(value){
-			return "@" + value + ""
-		}).join(",");
+		let insert_genre_artist = function(){
+			console.log("insert_genre_artist");
 
-// var vlist = Object.values(update).map(function(value){
-// 	if(value === null){
-// 		return null
-// 	}else{
-// 		return "'" + value + "'"
-// 	}
-//
-// }).join(",");
+			//todo: NOT SURE about decision to mix formats for artist_id here
+			//songkick's numeric ids always treated as strings
 
-		var sreq = new sql.Request(poolGlobal);
-		sreq.input("id", sql.Int, as.id);
-		sreq.input("displayName", sql.VarChar(100), as.displayName);
-		sreq.input("identifier", sql.VarChar(150), as.identifier);
-		//sreq.input("onTourUntil", sql.DateTimeOffset(7), as.onTourUntil)
+			var ga_songkick ={
+				genre_id:2,
+				artist_id:"253846"
+			}
 
-		var qry = "insert into artistsSongkick ( " + klist + " ) values ( "  + kparams + " )";
+			var ga_spotify ={
+				genre_id:1,
+				artist_id:"1CD77o9fbdyQFrHnUPUEsF"
+			};
 
-		sreq.query(qry).then(function(res){
-			console.log(res);
-		}).catch(function(err){
-			console.log(err);
-		})
+			var keys = Object.keys(ga_songkick);
+			var klist = keys.map(function(value){
+				return "" + value + ""
+			}).join(",");
+			var kparams = keys.map(function(value){
+				return "@" + value + ""
+			}).join(",");
+
+			var sreq = new sql.Request(poolGlobal);
+			sreq.input("genre_id", sql.Int, ga_songkick.genre_id);
+			sreq.input("artist_id", sql.VarChar(50), ga_songkick.artist_id);
+
+			var qry = "IF NOT EXISTS (SELECT * FROM dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id)"
+				+ " INSERT INTO dbo.genre_artist(" + klist + " )"
+				+ " OUTPUT inserted.genre_id, inserted.artist_id"
+				+ " VALUES(" + kparams +")"
+				+ " else select * from dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id";
+
+			sreq.query(qry).then(function(res){
+				console.log(res);
+			}).catch(function(err){
+				console.log(err);
+			})
+		};
+
+		//insert_genre_artist();
 
 	}).catch(err => {console.log(err)});
 
+
 const Nightwatch = require('nightwatch');
-//Nightwatch.runTests([testSource], [settings]);
-
-let settings = {
-	"src_folders" : ["tests"],
-
-	//stuff from the example cited in new feature desc
-
-	// "selenium": {
-	// 	port: 4444,
-	// 	//version2: true,
-	// 	//start_process: true
-	// },
-	//"output": false,
-	//"persist_globals": true,
-	//"globals": globals,
-	//"output_folder": false,
-
-	"webdriver" : {
-		"start_process": true,
-		"-server_path": "node_modules/.bin/chromedriver",
-		"--server_path": "./node_modules/chromedriver/lib/chromedriver",
-		"port": 9515
-	},
-
-	"test_settings" : {
-		"default" : {
-			"desiredCapabilities": {
-				"browserName": "chrome",
-				"javascriptEnabled": true,
-				"acceptSslCerts": true,
-				"chromeOptions" : {
-					"args" : ["headless", "no-sandbox", "disable-gpu"]
-				}
-			}
-		}
-	}
-};
 
 console.log('nightwatch...');
 
-// https://libupdate.com/libs/6b0b60cc-1a1e-4f88-b45b-d5d1f24ad96a
+//todo: attempt to pass parameters to test via settings.global
+// https://libupdate.com/libs/6b0b60cc-1a1e-4f88-b45b-d5d1f24ad96a (search 'programatic API')
+
+//appears to be easy as shit with 'runTests'
+
 // never got to work: Error: An error occurred while retrieving a new session: "Connection refused to 127.0.0.1:9515".
+// when looking for advice, told to use CLI instead, which doesn't appear to let you pass settings
+// https://github.com/nightwatchjs/nightwatch/issues/1954
+// https://github.com/nightwatchjs/nightwatch/issues/1919
 
 // Nightwatch.runTests('./tests', settings)
 // 	.then(function() {
@@ -220,65 +260,54 @@ console.log('nightwatch...');
 // 	// An error occurred
 // });
 
+//todo: tried with .runner instead, same issues? can't remember
+//https://stackoverflow.com/questions/43817893/passing-command-line-arguments-to-nightwatch-runner
 
-// https://github.com/nightwatchjs/nightwatch/issues/1919
+//nightwatch.runner(argv, done, settings);
 
-var NWconfig = require("./nightwatch.json");
-const chromedriver = require("chromedriver");
 
-console.log("NWconfig",NWconfig);
-
-// https://nightwatchjs.org/guide/#command-line-options
-// https://github.com/nightwatchjs/nightwatch/issues/1954
+//todo: advice on passing globals via commandline
+//haven't really looked into this one, could be promising
 // https://github.com/nightwatchjs/nightwatch/issues/498
 
-Nightwatch.cli(function(argv) {
-	argv.verbose = false;
-	argv.config = './nightwatch.conf.js';
+let bandTest = function(artist){
 
-	//todo: is super fucking easy with runner - but that fails right now
-	//maybe just try to fix this instead of fucking with CLI?
+	Nightwatch.cli(function(argv) {
 
-	//https://stackoverflow.com/questions/43817893/passing-command-line-arguments-to-nightwatch-runner
+		// https://nightwatchjs.org/guide/#command-line-options
 
-	//todo: trying to set global programatically from here
+		argv.verbose = false;
+		argv.config = './nightwatch.conf.js';
 
-	//todo: thought I could replicate conf.js right here...
-	//just doesn't even start up the script
+		//thought maybe I could point config to an object I generate on the fly
+		//argv.config = NWconfig;
+		//argv.config.test_workers = false;
+		//argv.config.webdriver.server_path = chromedriver.path;
 
-	//argv.config = NWconfig;
-	//argv.config.test_workers = false;
-	//argv.config.webdriver.server_path = chromedriver.path;
+		//fuck it I guess
+		argv.skiptags = artist.name;
 
-	argv.settings = {
-		globals: {
-			artist: 'Funk Worthy'
-		}
-	};
+		const runner = Nightwatch.CliRunner(argv);
+		runner
+			.setup()
+			.startWebDriver()
+			.catch(err => {	console.error(err);throw err;})
+			.then(() => {return runner.runTests();})
+			.catch(err => {console.error(err);	runner.processListener.setExitCode(10);})
+			.then((str) => {
+				console.log("finished!",str);
+				return runner.stopWebDriver();
+			})
+			// .then(() => {
+			// 	process.exit(0);
+			// })
+			.catch(err => {
+				console.error(err);
+			});
 
-	const done = function() {
-		console.log('nightwatch complete');
-	}; // your callback function
+	});
+}
 
-	const runner = Nightwatch.CliRunner(argv);
-	runner
-		.setup()
-		.startWebDriver()
-		.catch(err => {	console.error(err);throw err;})
-		.then(() => {return runner.runTests();})
-		.catch(err => {console.error(err);	runner.processListener.setExitCode(10);})
-		.then((str) => {
-			console.log("finished!",str);
-			return runner.stopWebDriver();
-		})
-		// .then(() => {
-		// 	process.exit(0);
-		// })
-		.catch(err => {
-			console.error(err);
-		});
-
-});
 
 
 let limiterSpotify;
