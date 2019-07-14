@@ -111,13 +111,23 @@ var config = {
 	"dialect": "mssql",
 };
 
+let conn = {};
+let poolGlobal = {};
+
+
+//todo: check if connetions are alive and get new/existing ones
+
+var getConnect =  function(){
+    return new Promise(function(done, fail) {
+
+
+    })
+};
+
 let runSQLTests = function(){
 
 
-	let conn = {};
-	let poolGlobal = {};
-
-	sql.connect(config).then(pool => {
+	 sql.connect(config).then(pool => {
 		poolGlobal = pool;
 		conn = pool.request();
 		return conn.query("select getdate();")
@@ -285,11 +295,13 @@ let runSQLTests = function(){
 
 			//insert_genre_artist();
 
+			sql.close();
+
 		}).catch(err => {console.log(err)});
 
 };
 
-//runSQLTests();
+runSQLTests();
 
 
 const Nightwatch = require('nightwatch');
@@ -768,22 +780,66 @@ module.exports.getInfos  = function(req,res) {
 	var band =  function(bReq){
 		return new Promise(function(done, fail) {
 
-			//todo: extremely annoying that there is no way to get #1 band result without google'ing
-
 			//{expiration:30000},
 			limiterBand.schedule(module.exports.getBandPage,bReq,{})
 				.then((bRes) => {
 
-					//todo: decide on threshold
-					let bandThreshold = 1;
+					//todo: unlike other getInfo tools, getBandPage can't (yet?) return actual results b/c theres
+					//no way to pass back data from the test - so our pass/fail here is going to be to see if the DB
+					//got information added to it for that artist id
 
-					if(bRes.artist.genres.length > bandThreshold){
-						console.good("BAND:",bReq.body.artist.name + " " + bRes.artist.genres);
-						resultCache[bReq.body.artist.name] = bRes;
-						bandResults.push(bRes);
-					}else{
-						bandFailures.push(bRes)
-					}
+					console.log("$bReq",bReq);
+
+					//todo: not managing sql connetions well, so this fails here
+					//therefore, need to test code under here properly
+
+					var sreq = new sql.Request(poolGlobal);
+
+					var qry = "select * from artistsSongkick aso "
+						+ " left join genre_artist ga on aso.id = ga.artist_id"
+						+ " left join genres g on ga.genre_id = g.id"
+						+ " left join artists a on a.id = ga.artist_id"
+						+ " where  aso.id = cast(@artistId  as int) or a.id = @artistId";
+					sreq.input("artistId", sql.VarChar(50), bReq.body.artist.id);
+
+					console.log("in",bReq.body.artist.id);
+					console.log("qry",qry);
+
+					sreq.query(qry).then(function(res){
+						console.log(res.recordset);
+
+						let genres = [];
+						res.recordset.forEach(function(match){
+							genres.push(match["name"])
+						});
+
+						bRes = {};
+						bRes.artist = bReq.body.artist;
+						bRes.artist.genres = genres;
+
+						//todo: decide on threshold
+						let bandThreshold = 1;
+
+						if(res.recordset.length > bandThreshold){
+							console.good("BAND:",bReq.body.artist.name + " " + bRes.artist.genres);
+							resultCache[bReq.body.artist.name] = bRes;
+							bandResults.push(bRes);
+						}else{
+							bandFailures.push(bRes)
+						}
+
+					}).catch(function(err){
+						console.log(err);
+					});
+
+
+					// if(bRes.artist.genres.length > bandThreshold){
+					// 	console.good("BAND:",bReq.body.artist.name + " " + bRes.artist.genres);
+					// 	resultCache[bReq.body.artist.name] = bRes;
+					// 	bandResults.push(bRes);
+					// }else{
+					// 	bandFailures.push(bRes)
+					// }
 
 					done(bReq)
 

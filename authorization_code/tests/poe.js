@@ -13,11 +13,16 @@ var config = {
 	"dialect": "mssql",
 };
 
-sql.connect(config).then(pool => {
+sql.connect(config)
+	.then(pool => {
 	poolGlobal = pool;
 	conn = pool.request();
 	return conn.query("select getdate();")
+
+}).catch(err =>{
+	console.log("ignore, we already have a connection");
 });
+
 
 module.exports = {
 	tags: ['poe'],
@@ -128,69 +133,9 @@ module.exports = {
 					    })
 					};
 
-					let insert_genre_artist = function(genre,artist){
-						//console.log("insert_genre_artist");
+					let insert_artist  = function(artist){
 
-						//todo: NOT SURE about decision to mix formats for artist_id here
-						//songkick's numeric ids always treated as strings
-
-						//todo: check if I need to encode incoming numeric artist id from songkick
-						if(typeof artist.id === "number"){
-							artist.id = artist.id.toString();
-						}
-
-						//multi-object doesn't make sense to use k-extraction
-						var klist = "genre_id,artist_id"
-						var kparams = "@genre_id,@artist_id"
-
-						var sreq = new sql.Request(poolGlobal);
-						sreq.input("genre_id", sql.Int, genre.id);
-						sreq.input("artist_id", sql.VarChar(50), artist.id);
-
-						var qry = "IF NOT EXISTS (SELECT * FROM dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id)"
-							+ " INSERT INTO dbo.genre_artist(" + klist + " )"
-							+ " OUTPUT inserted.genre_id, inserted.artist_id"
-							+ " VALUES(" + kparams + ")"
-							+ " else select * from dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id";
-
-						sreq.query(qry).then(function(res){
-							console.log(res);
-						}).catch(function(err){
-							console.log(err);
-						})
-					};
-
-					let gPromises = []
-					sGenres.forEach(function(genre){
-						gPromises.push(insertGenre(genre))
-					});
-
-					Promise.all(gPromises).then(function(){
-
-						console.log("qual_genres",qual_genres);
-
-						//todo: about to insert qualified genres
-
-						// qual_genres.forEach(function(genre){
-						// 	insert_genre_artist(genre,artist)
-						// })
-
-					})
-
-					//todo: insert artists and get qualified ones back, then do genre-artist?
-					//maybe don't need to b/c artists have their own id anyways
-
-					let insert_artist  = function(){
-						//console.log("insert_artistsSongkick");
-
-						let a = {
-							id:"052uQIm9OdFVUpsXaIXS7p",
-							name:"testName",
-							uri:"spotify:track:4aOy3Z4SaX3Mh1rJGh2HLz",
-							//onTourUntil:strDate
-						};
-
-						var keys = Object.keys(a);
+						var keys = Object.keys(artist);
 						var klist = keys.map(function(value){
 							return "" + value + ""
 						}).join(",");
@@ -199,9 +144,9 @@ module.exports = {
 						}).join(",");
 
 						var sreq = new sql.Request(poolGlobal);
-						sreq.input("id",  sql.VarChar(50), a.id);
-						sreq.input("name", sql.VarChar(50), a.name);
-						sreq.input("uri", sql.VarChar(100), a.uri);
+						sreq.input("id",  sql.VarChar(50), artist.id);
+						sreq.input("name", sql.VarChar(50), artist.name);
+						sreq.input("uri", sql.VarChar(100), artist.uri);
 
 						//todo: sreq.input("onTourUntil", sql.DateTimeOffset(7), as.onTourUntil)
 
@@ -219,17 +164,13 @@ module.exports = {
 
 					};
 
-					let insert_artistsSongkick  = function(){
-						//console.log("insert_artistsSongkick");
+					let insert_artistsSongkick  = function(artist){
 
-						let a = {
-							id:4,
-							displayName:"testDisplayName",
-							identifier:"test-mbei-233r-asfsdf-dfdsasfd",
-							//onTourUntil:strDate
-						};
+						//todo: don't think this is consistent
+						artist.displayName = artist.name;
+						delete artist.name;
 
-						var keys = Object.keys(a);
+						var keys = Object.keys(artist);
 						var klist = keys.map(function(value){
 							return "" + value + ""
 						}).join(",");
@@ -238,9 +179,11 @@ module.exports = {
 						}).join(",");
 
 						var sreq = new sql.Request(poolGlobal);
-						sreq.input("id", sql.Int, a.id);
-						sreq.input("displayName", sql.VarChar(100), a.displayName);
-						sreq.input("identifier", sql.VarChar(150), a.identifier);
+						sreq.input("id", sql.Int, artist.id);
+
+
+						sreq.input("displayName", sql.VarChar(100), artist.displayName);
+						sreq.input("identifier", sql.VarChar(150), artist.identifier);
 
 						//todo: sreq.input("onTourUntil", sql.DateTimeOffset(7), as.onTourUntil)
 
@@ -258,7 +201,64 @@ module.exports = {
 
 					};
 
+					//songkick
+					if(typeof artist.id === "number"){insert_artistsSongkick(artist)}
+					//spotify
+					else {insert_artist(artist)}
 
+					let insert_genre_artist = function(genre,artist){
+						//console.log("insert_genre_artist");
+
+						//todo: NOT SURE about decision to mix formats for artist_id here
+						//songkick's numeric ids always treated as strings
+
+						//todo: check if I need to encode incoming numeric artist id from songkick
+						if(typeof artist.id === "number"){
+							artist.id = artist.id.toString();
+						};
+
+						//multi-object doesn't make sense to use k-extraction
+						var klist = "genre_id,artist_id"
+						var kparams = "@genre_id,@artist_id"
+
+						var sreq = new sql.Request(poolGlobal);
+						sreq.input("genre_id", sql.Int, genre.id);
+						sreq.input("artist_id", sql.VarChar(50), artist.id);
+
+						var qry = "IF NOT EXISTS (SELECT * FROM dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id)"
+							+ " INSERT INTO dbo.genre_artist(" + klist + " )"
+							+ " OUTPUT inserted.genre_id, inserted.artist_id"
+							+ " VALUES(" + kparams + ")"
+							+ " else select * from dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id";
+
+						sreq.query(qry).then(function(res){
+							//console.log(res);
+						}).catch(function(err){
+							console.log(err);
+						})
+					};
+
+					let gPromises = [];
+					let gaPromises = [];
+
+					sGenres.forEach(function(genre){
+						gPromises.push(insertGenre(genre))
+					});
+
+					Promise.all(gPromises).then(function(){
+
+						console.log("insertGenre finished");
+						console.log("starting insert_genre_artist",qual_genres);
+
+						qual_genres.forEach(function(genre){
+							gaPromises.push(insert_genre_artist(genre,artist));
+						});
+
+						Promise.all(gaPromises).then(function(){
+							console.log("insert_genre_artist finished");
+
+						})
+					})
 
 				} else {
 
