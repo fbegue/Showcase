@@ -1,6 +1,9 @@
 const chromedriver = require("chromedriver");
 module.exports = (function (settings) {
-	settings.test_workers = false;
+
+	settings.test_workers = {};
+	settings.test_workers.enabled = true;
+	settings.test_workers.workers = "auto"
 	settings.webdriver.server_path = chromedriver.path;
 
 	//todo: works

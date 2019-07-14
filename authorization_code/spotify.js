@@ -111,80 +111,204 @@ var config = {
 	"dialect": "mssql",
 };
 
-let conn = {};
-let poolGlobal = {};
-
-sql.connect(config).then(pool => {
-	poolGlobal = pool;
-	conn = pool.request();
-	return conn.query("select getdate();")
-})
-	.then(result => {
-		console.log("connected @ ",result)
+let runSQLTests = function(){
 
 
-		let tDate = new Date();
-		let strDate = tDate.toISOString();
+	let conn = {};
+	let poolGlobal = {};
 
-		let as = {
-			id:1,
-			displayName:"testName",
-			identifier:"mbei-233r-asfsdf-dfdsasfd",
-			//onTourUntil:strDate
-		};
+	sql.connect(config).then(pool => {
+		poolGlobal = pool;
+		conn = pool.request();
+		return conn.query("select getdate();")
+	})
+		.then(result => {
+			console.log("connected @ ",result)
 
-		var keys = Object.keys(as);
+			let tDate = new Date();
+			let strDate = tDate.toISOString();
 
-		var klist = keys.map(function(value){
-			return "" + value + ""
-		}).join(",");
+			// var vlist = Object.values(update).map(function(value){
+			// 	if(value === null){
+			// 		return null
+			// 	}else{
+			// 		return "'" + value + "'"
+			// 	}
+			//
+			// }).join(",");
 
-		var kparams = keys.map(function(value){
-			return "@" + value + ""
-		}).join(",");
+			let insert_artistsSongkick  = function(){
+				//console.log("insert_artistsSongkick");
 
-// var vlist = Object.values(update).map(function(value){
-// 	if(value === null){
-// 		return null
-// 	}else{
-// 		return "'" + value + "'"
-// 	}
-//
-// }).join(",");
+				let a = {
+					id:4,
+					displayName:"testDisplayName",
+					identifier:"test-mbei-233r-asfsdf-dfdsasfd",
+					//onTourUntil:strDate
+				};
 
-		var sreq = new sql.Request(poolGlobal);
-		sreq.input("id", sql.Int, as.id);
-		sreq.input("displayName", sql.VarChar(100), as.displayName);
-		sreq.input("identifier", sql.VarChar(150), as.identifier);
-		//sreq.input("onTourUntil", sql.DateTimeOffset(7), as.onTourUntil)
+				var keys = Object.keys(a);
+				var klist = keys.map(function(value){
+					return "" + value + ""
+				}).join(",");
+				var kparams = keys.map(function(value){
+					return "@" + value + ""
+				}).join(",");
 
-		var qry = "insert into artistsSongkick ( " + klist + " ) values ( "  + kparams + " )";
+				var sreq = new sql.Request(poolGlobal);
+				sreq.input("id", sql.Int, a.id);
+				sreq.input("displayName", sql.VarChar(100), a.displayName);
+				sreq.input("identifier", sql.VarChar(150), a.identifier);
 
-		sreq.query(qry).then(function(res){
-			console.log(res);
-		}).catch(function(err){
-			console.log(err);
-		})
+				//todo: sreq.input("onTourUntil", sql.DateTimeOffset(7), as.onTourUntil)
 
-	}).catch(err => {console.log(err)});
+				var qry = "IF NOT EXISTS (SELECT * FROM dbo.artistsSongkick WHERE id = @id)"
+					+ " INSERT INTO dbo.artistsSongkick("+ klist + ")"
+					+ " OUTPUT inserted.id, inserted.displayName, inserted.identifier"
+					+ " VALUES(" + kparams +")"
+					+ " else select * from dbo.artistsSongkick WHERE id = @id";
+
+				sreq.query(qry).then(function(res){
+					console.log(res);
+				}).catch(function(err){
+					console.log(err);
+				})
+
+			};
+
+			//insert_artistsSongkick();
+
+			let insert_artist  = function(){
+				//console.log("insert_artistsSongkick");
+
+				let a = {
+					id:"052uQIm9OdFVUpsXaIXS7p",
+					name:"testName",
+					uri:"spotify:track:4aOy3Z4SaX3Mh1rJGh2HLz",
+					//onTourUntil:strDate
+				};
+
+				var keys = Object.keys(a);
+				var klist = keys.map(function(value){
+					return "" + value + ""
+				}).join(",");
+				var kparams = keys.map(function(value){
+					return "@" + value + ""
+				}).join(",");
+
+				var sreq = new sql.Request(poolGlobal);
+				sreq.input("id",  sql.VarChar(50), a.id);
+				sreq.input("name", sql.VarChar(50), a.name);
+				sreq.input("uri", sql.VarChar(100), a.uri);
+
+				//todo: sreq.input("onTourUntil", sql.DateTimeOffset(7), as.onTourUntil)
+
+				var qry = "IF NOT EXISTS (SELECT * FROM dbo.artists WHERE id = @id)"
+					+ " INSERT INTO dbo.artists("+ klist + ")"
+					+ " OUTPUT inserted.id, inserted.name, inserted.uri"
+					+ " VALUES(" + kparams +")"
+					+ " else select * from dbo.artists WHERE id = @id";
+
+				sreq.query(qry).then(function(res){
+					console.log(res);
+				}).catch(function(err){
+					console.log(err);
+				})
+
+			};
+
+			//insert_artist();
+
+			let insertGenre = function(){
+				console.log("insertGenre");
+				var genre = "Country";
+				var sreq = new sql.Request(poolGlobal);
+				var qry = "IF NOT EXISTS (SELECT * FROM dbo.genres WHERE name = @name) " +
+					"INSERT INTO dbo.genres(name) OUTPUT inserted.id, inserted.name VALUES(@name) " +
+					"else select * from dbo.genres WHERE name = @name";
+				sreq.input("name", sql.VarChar(255), genre);
+				sreq.query(qry).then(function(res){
+					console.log(res);
+				}).catch(function(err){
+					console.log(err);
+				})
+			};
+
+			//insertGenre();
+
+			let insert_genre_artist = function(){
+				console.log("insert_genre_artist");
+
+				//todo: NOT SURE about decision to mix formats for artist_id here
+				//songkick's numeric ids always treated as strings
+
+				var g = {
+					id:"1",
+					name:"rock"
+				};
+
+				var a_songkick ={
+					id:"253846"
+				}
+
+				var a_spotify ={
+					id:"1CD77o9fbdyQFrHnUPUEsF"
+				};
+
+				//todo: check if I need to encode incoming numeric artist id from songkick
+				// let artist = a_songkick;
+				let artist = a_spotify;
+
+				if(typeof artist.id === "integer"){
+					artist.id = artist.id.toString();
+				}
+
+				//multi-object doesn't make sense to use k-extraction
+				var klist = "genre_id,artist_id"
+				var kparams = "@genre_id,@artist_id"
+
+				var sreq = new sql.Request(poolGlobal);
+				sreq.input("genre_id", sql.Int, g.id);
+				sreq.input("artist_id", sql.VarChar(50), artist.id);
+				var qry = "IF NOT EXISTS (SELECT * FROM dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id)"
+					+ " INSERT INTO dbo.genre_artist(" + klist + " )"
+					+ " OUTPUT inserted.genre_id, inserted.artist_id"
+					+ " VALUES(" + kparams + ")"
+					+ " else select * from dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id";
+
+				sreq.query(qry).then(function(res){
+					console.log(res);
+				}).catch(function(err){
+					console.log(err);
+				})
+			};
+
+			//insert_genre_artist();
+
+		}).catch(err => {console.log(err)});
+
+};
+
+//runSQLTests();
+
 
 const Nightwatch = require('nightwatch');
-//Nightwatch.runTests([testSource], [settings]);
 
-let settings = {
+
+
+//todo: attempt to pass parameters to test via settings.global
+// https://libupdate.com/libs/6b0b60cc-1a1e-4f88-b45b-d5d1f24ad96a (search 'programatic API')
+
+//appears to be easy as shit with 'runTests'
+
+// never got to work: Error: An error occurred while retrieving a new session: "Connection refused to 127.0.0.1:9515".
+// when looking for advice, told to use CLI instead, which doesn't appear to let you pass settings
+// https://github.com/nightwatchjs/nightwatch/issues/1954
+// https://github.com/nightwatchjs/nightwatch/issues/1919
+
+
+var settings = {
 	"src_folders" : ["tests"],
-
-	//stuff from the example cited in new feature desc
-
-	// "selenium": {
-	// 	port: 4444,
-	// 	//version2: true,
-	// 	//start_process: true
-	// },
-	//"output": false,
-	//"persist_globals": true,
-	//"globals": globals,
-	//"output_folder": false,
 
 	"webdriver" : {
 		"start_process": true,
@@ -206,12 +330,9 @@ let settings = {
 		}
 	}
 };
-
-console.log('nightwatch...');
-
-// https://libupdate.com/libs/6b0b60cc-1a1e-4f88-b45b-d5d1f24ad96a
-// never got to work: Error: An error occurred while retrieving a new session: "Connection refused to 127.0.0.1:9515".
-
+//
+// try{
+// 	console.log("runTests");
 // Nightwatch.runTests('./tests', settings)
 // 	.then(function() {
 // 		console.log("finished!");
@@ -219,67 +340,53 @@ console.log('nightwatch...');
 // 	}).catch(function(err) {
 // 	// An error occurred
 // });
+//
+// }catch(e){
+// 	console.log(e);
+// }
+
+//todo: tried with .runner instead, same issues? can't remember
+//https://stackoverflow.com/questions/43817893/passing-command-line-arguments-to-nightwatch-runner
+
+//Nightwatch.runner(argv, done, settings);
 
 
-// https://github.com/nightwatchjs/nightwatch/issues/1919
-
-var NWconfig = require("./nightwatch.json");
-const chromedriver = require("chromedriver");
-
-console.log("NWconfig",NWconfig);
-
-// https://nightwatchjs.org/guide/#command-line-options
-// https://github.com/nightwatchjs/nightwatch/issues/1954
+//todo: advice on passing globals via commandline
+//haven't really looked into this one, could be promising
 // https://github.com/nightwatchjs/nightwatch/issues/498
 
-Nightwatch.cli(function(argv) {
-	argv.verbose = false;
-	argv.config = './nightwatch.conf.js';
 
-	//todo: is super fucking easy with runner - but that fails right now
-	//maybe just try to fix this instead of fucking with CLI?
+let funk = {
+	id:99999,
+	name:"Funk Worthy",
+	identifier:"test-mbei-233r-asfsdf-dfdsasfd",
+};
 
-	//https://stackoverflow.com/questions/43817893/passing-command-line-arguments-to-nightwatch-runner
+let MercyMe = {
+	id:99998,
+	name:"MercyMe",
+	identifier:"test2-mbei-233r-asfsdf-dfdsasfd",
+}
 
-	//todo: trying to set global programatically from here
 
-	//todo: thought I could replicate conf.js right here...
-	//just doesn't even start up the script
 
-	//argv.config = NWconfig;
-	//argv.config.test_workers = false;
-	//argv.config.webdriver.server_path = chromedriver.path;
+//todo: need to figure out elegant solution for the use case I have here
+//of running multiple tests in parallel...
 
-	argv.settings = {
-		globals: {
-			artist: 'Funk Worthy'
-		}
-	};
+//  where the driver is the same (can't just spawn a new one for each query)
+//  where I can continue to call with my artist parameter (which is janky as it is)
 
-	const done = function() {
-		console.log('nightwatch complete');
-	}; // your callback function
+let stress = function(num){
 
-	const runner = Nightwatch.CliRunner(argv);
-	runner
-		.setup()
-		.startWebDriver()
-		.catch(err => {	console.error(err);throw err;})
-		.then(() => {return runner.runTests();})
-		.catch(err => {console.error(err);	runner.processListener.setExitCode(10);})
-		.then((str) => {
-			console.log("finished!",str);
-			return runner.stopWebDriver();
-		})
-		// .then(() => {
-		// 	process.exit(0);
-		// })
-		.catch(err => {
-			console.error(err);
-		});
+	// for(var x = 0; x < num; x++){
+	// 	bandTest(funk);
+	// }
 
-});
+	//bandTest(funk,"default");
+	bandTest(MercyMe,"default");
+}
 
+//stress(10);
 
 let limiterSpotify;
 let limiterWiki;
@@ -577,7 +684,7 @@ module.exports.getInfos  = function(req,res) {
 					done(sReq)
 
 				}).catch(function(err){
-				let error = {artist:wReq.body.artist.name,error:err};
+				let error = {artist:sReq.body.artist.name,error:err};
 				spotFailures.push(error);
 				//console.error(error);
 				fail(error)
@@ -821,49 +928,52 @@ module.exports.getInfos  = function(req,res) {
 			fReq.body.artist = ar;
 
 			search(fReq)
-				.then(wiki)
-				.then(function(wRes){
+				.then(band)
 
-					//just doll them out equally for now
-					let check = mod % 2 ===0;
-					mod++;
+				//todo: disabled rest of tests
 
-					//todo: add scrape (also, is this pattern sustainable?)
-
-					if(!resultCache[wRes.body.artist.name]){
-						if(check){
-							camp(wRes).then(function(){
-								if(!resultCache[wRes.body.artist.name]){
-									console.warn("failed camp, trying band for:" + wRes.body.artist.name);
-									band(wRes).then(finish).catch(function(err){
-										let msg = "camp -> band failure";
-										let error = {msg:msg,artist:wRes.body.artist.name,error:err};
-										console.error(error);
-									})
-								}
-								else{finish()}
-							})
-						}
-						else{
-							band(wRes).then(function(){
-								if(!resultCache[wRes.body.artist.name]){
-									console.warn("failed band, trying camp for:" + wRes.body.artist.name);
-									camp(wRes).then(finish).catch(function(err){
-										let msg = "band -> camp failure";
-										let error = {msg:msg,artist:wRes.body.artist.name,error:err};
-										console.error(error);
-										//fail(error)
-									})
-								}else{finish()}
-
-							})
-						}
-					}
-					else{
-						finish(wRes)
-					}
-
-				})
+				// .then(function(wRes){
+				//
+				// 	//just doll them out equally for now
+				// 	let check = mod % 2 ===0;
+				// 	mod++;
+				//
+				// 	//todo: add scrape (also, is this pattern sustainable?)
+				//
+				// 	if(!resultCache[wRes.body.artist.name]){
+				// 		if(check){
+				// 			camp(wRes).then(function(){
+				// 				if(!resultCache[wRes.body.artist.name]){
+				// 					console.warn("failed camp, trying band for:" + wRes.body.artist.name);
+				// 					band(wRes).then(finish).catch(function(err){
+				// 						let msg = "camp -> band failure";
+				// 						let error = {msg:msg,artist:wRes.body.artist.name,error:err};
+				// 						console.error(error);
+				// 					})
+				// 				}
+				// 				else{finish()}
+				// 			})
+				// 		}
+				// 		else{
+				// 			band(wRes).then(function(){
+				// 				if(!resultCache[wRes.body.artist.name]){
+				// 					console.warn("failed band, trying camp for:" + wRes.body.artist.name);
+				// 					camp(wRes).then(finish).catch(function(err){
+				// 						let msg = "band -> camp failure";
+				// 						let error = {msg:msg,artist:wRes.body.artist.name,error:err};
+				// 						console.error(error);
+				// 						//fail(error)
+				// 					})
+				// 				}else{finish()}
+				//
+				// 			})
+				// 		}
+				// 	}
+				// 	else{
+				// 		finish(wRes)
+				// 	}
+				//
+				// })
 				// .then(finish)
 				.catch(function(err){
 					console.error("chain failed for: ",ar.name);
@@ -1127,160 +1237,6 @@ module.exports.searchSpotify = function(req, res){
 	})
 };
 
-module.exports.getBandPage = function(req,res) {
-
-	return new Promise(function(done, fail) {
-		console.log("getBandPage", req.body.artist.name);
-		let startDate = new Date();
-		console.log("start time:",startDate);
-
-		const browser = new Browser();
-
-		//testing:
-		//browser.debug();
-
-		//todo: trying to speed this up
-		//bug zombie.js doesn't have shit for documentation
-		//debug helps but I can't really tell whats going on
-
-		//best guesses:
-		//1) I see 2x 'setTimeout after 15000ms delay + 11s/+15s'
-		//2) I wonder if NOT having to load all this other JS (I see a lot of facebook stuff) would speed things up
-		//3) Can I load an preserve an 'instance' of the bandsintown main site, then spawn a new copy for each artist?
-		//   or even hit the 'back' button when I found what I want and then restart the thing?
-
-		//seems like the durations that i've tried for options (up to 10s) all bomb on batch runes
-		// a single run @ 1s helped a little bit 86s -> 58s
-		//but 1s when trying to batch process yields :  'No open window with an HTML document'
-		let options= {
-			duration:"10s"
-		};
-
-		browser.visit('https://www.bandsintown.com/en',function(res){
-			// browser.visit('https://www.bandsintown.com/en',options,function(res){
-			console.log("visited");
-
-			browser
-				.fill("input","Funk Worthy")
-				// .fill("input",req.body.artist.name)
-				.then(function(){
-
-					console.log("inputted");
-					let r = 'a[class^="artistResult"]';
-					let rs = browser.query(r);
-					console.log("$$rs",rs);
-
-					let response = {};
-					response.artist = req.body.artist;
-					response.artist.genres = [];
-
-					if(!rs){
-						let m = {msg:"no result",artist:req.body.artist.name};
-						console.warn(m);
-						done(response)
-					}else {
-
-						browser.click(r).then(function () {
-							//browser.html()
-							console.log("clicked");
-
-							//todo: BROKEN
-							//it just gets to clicked and stops
-
-							//browser.body never seems valid
-							// let b = browser.body;
-							let page = browser.html();
-							let r = 'div[class^="artistBio"]';
-							let d = $(page).find(r);
-							let str = "";
-
-
-							d.each(function (k, elem) {
-								let t = $(this).text();
-								t = t.trim();
-								if (t === "Genres:") {
-									//console.log("$$",t);
-									let next = d[k + 1];
-									let tnext = $(next).text();
-									//console.log("Genres:",tnext);
-
-									//todo: shitty selector above produces genre list 3x and writes over last
-									str = tnext;
-								}
-							})
-
-							//let ar = browser.query(r);
-							//console.log("ar0",ar["children"]["0"]);
-							//try inspect on circular json: console.log(util.inspect(ar1s))
-
-							//checkout:
-							//https://github.com/assaf/zombie#browser
-							//https://stackoverflow.com/questions/5926421/dumping-browser-document-content-using-zombie-js
-
-
-
-							//console.log("raw genres:",str);
-							if (str.length > 0) {
-
-								let genres = [];
-								if (str) {
-									if (str.indexOf(",") !== -1) {
-										genres = str.split(",")
-									} else {
-										//console.warn("if this is >1 genre, there was an issue on split:",str);
-										genres.push(str);
-									}
-								}
-
-								//split funny genres
-								//examples from https://www.bandsintown.com/en/a/12732676-funk-worthy
-								// R&b/soul, R&b, Rock, Soul, Rnb-soul, Fusion, Funk
-
-								let sGenres = [];
-								genres.forEach(function (g) {
-									g = g.trim().toLowerCase();
-
-									if (g.indexOf("/") !== -1) {
-										let sp = g.split("/");
-										sp.forEach(function (s) {
-											if (sGenres.indexOf(s) === -1) {
-												sGenres.push(s)
-											}
-										})
-									} else {
-										if (sGenres.indexOf(g) === -1) {
-											sGenres.push(g)
-										}
-									}
-								});
-
-								console.log("getBandPage finished execution:",Math.abs(new Date() - startDate) / 600);
-								//console.log("split genres",sGenres);
-
-								response.artist.genres = sGenres;
-								done(response);
-
-							} else {
-
-								let msg = "bandsintown failed to find genres";
-								let error = {msg: msg, artist: req.body.artist.name, error: {}};
-								console.error(error);
-								fail(error)
-							}
-						})
-					}//else
-				})
-				.catch(function(err){
-					let msg = "band fetch failure";
-					let error = {msg:msg,artist:req.body.artist.name,error:err};
-					console.error(error);
-					fail(error)
-				})
-
-		})//visit
-	})//promise
-};
-
 module.exports.getCampPage =  function(req,res){
 	return new Promise(function(done, fail) {
 
@@ -1537,6 +1493,217 @@ module.exports.getWikiPage= function(req,res) {
 			fail(err)
 		})
 
+	})//promise
+};
+
+
+module.exports.getBandPage = function(req,res) {
+
+	return new Promise(function(done, fail) {
+		console.log("getBandPage", req.body.artist.name);
+
+		let startDate = new Date();
+		console.log("start time:",startDate);
+
+		Nightwatch.cli(function(argv) {
+
+			argv.verbose = false;
+			argv.config = './nightwatch.conf.js';
+			//argv.env = env;
+
+			//todo: thought maybe I could point config to an object I generate on the fly
+			//argv.config = NWconfig;
+			//argv.config.test_workers = false;
+			//argv.config.webdriver.server_path = chromedriver.path;
+
+			// let funk = {
+			// 	id:99999,
+			// 	name:"Funk Worthy",
+			// 	identifier:"test-mbei-233r-asfsdf-dfdsasfd",
+			//
+			// };
+
+			//fuck it I guess
+			argv.skipgroup = JSON.stringify(req.body.artist);
+
+			const runner = Nightwatch.CliRunner(argv);
+			runner
+				.setup()
+				.startWebDriver()
+				.catch(err => {	console.error(err);throw err;})
+				.then(() => {return runner.runTests();})
+				.catch(err => {console.error(err);	runner.processListener.setExitCode(10);})
+				.then((str) => {
+					console.log("finished!",str);
+					console.log("getBandPage finished execution:",Math.abs(new Date() - startDate) / 600);
+
+					//todo:
+					done();
+					return runner.stopWebDriver();
+				})
+				// .then(() => {
+				// 	process.exit(0);
+				// })
+				.catch(err => {
+					console.error(err);
+				});
+
+		});
+	})//promise
+};
+
+//depreciated
+module.exports.getBandPage_zombie = function(req,res) {
+
+	return new Promise(function(done, fail) {
+		console.log("getBandPage", req.body.artist.name);
+		let startDate = new Date();
+		console.log("start time:",startDate);
+
+		const browser = new Browser();
+
+		//testing:
+		//browser.debug();
+
+		//todo: trying to speed this up
+		//bug zombie.js doesn't have shit for documentation
+		//debug helps but I can't really tell whats going on
+
+		//best guesses:
+		//1) I see 2x 'setTimeout after 15000ms delay + 11s/+15s'
+		//2) I wonder if NOT having to load all this other JS (I see a lot of facebook stuff) would speed things up
+		//3) Can I load an preserve an 'instance' of the bandsintown main site, then spawn a new copy for each artist?
+		//   or even hit the 'back' button when I found what I want and then restart the thing?
+
+		//seems like the durations that i've tried for options (up to 10s) all bomb on batch runes
+		// a single run @ 1s helped a little bit 86s -> 58s
+		//but 1s when trying to batch process yields :  'No open window with an HTML document'
+		let options= {
+			duration:"10s"
+		};
+
+		browser.visit('https://www.bandsintown.com/en',function(res){
+			// browser.visit('https://www.bandsintown.com/en',options,function(res){
+			console.log("visited");
+
+			browser
+				.fill("input","Funk Worthy")
+				// .fill("input",req.body.artist.name)
+				.then(function(){
+
+					console.log("inputted");
+					let r = 'a[class^="artistResult"]';
+					let rs = browser.query(r);
+					console.log("$$rs",rs);
+
+					let response = {};
+					response.artist = req.body.artist;
+					response.artist.genres = [];
+
+					if(!rs){
+						let m = {msg:"no result",artist:req.body.artist.name};
+						console.warn(m);
+						done(response)
+					}else {
+
+						browser.click(r).then(function () {
+							//browser.html()
+							console.log("clicked");
+
+							//todo: BROKEN
+							//it just gets to clicked and stops
+
+							//browser.body never seems valid
+							// let b = browser.body;
+							let page = browser.html();
+							let r = 'div[class^="artistBio"]';
+							let d = $(page).find(r);
+							let str = "";
+
+
+							d.each(function (k, elem) {
+								let t = $(this).text();
+								t = t.trim();
+								if (t === "Genres:") {
+									//console.log("$$",t);
+									let next = d[k + 1];
+									let tnext = $(next).text();
+									//console.log("Genres:",tnext);
+
+									//todo: shitty selector above produces genre list 3x and writes over last
+									str = tnext;
+								}
+							})
+
+							//let ar = browser.query(r);
+							//console.log("ar0",ar["children"]["0"]);
+							//try inspect on circular json: console.log(util.inspect(ar1s))
+
+							//checkout:
+							//https://github.com/assaf/zombie#browser
+							//https://stackoverflow.com/questions/5926421/dumping-browser-document-content-using-zombie-js
+
+
+
+							//console.log("raw genres:",str);
+							if (str.length > 0) {
+
+								let genres = [];
+								if (str) {
+									if (str.indexOf(",") !== -1) {
+										genres = str.split(",")
+									} else {
+										//console.warn("if this is >1 genre, there was an issue on split:",str);
+										genres.push(str);
+									}
+								}
+
+								//split funny genres
+								//examples from https://www.bandsintown.com/en/a/12732676-funk-worthy
+								// R&b/soul, R&b, Rock, Soul, Rnb-soul, Fusion, Funk
+
+								let sGenres = [];
+								genres.forEach(function (g) {
+									g = g.trim().toLowerCase();
+
+									if (g.indexOf("/") !== -1) {
+										let sp = g.split("/");
+										sp.forEach(function (s) {
+											if (sGenres.indexOf(s) === -1) {
+												sGenres.push(s)
+											}
+										})
+									} else {
+										if (sGenres.indexOf(g) === -1) {
+											sGenres.push(g)
+										}
+									}
+								});
+
+								console.log("getBandPage finished execution:",Math.abs(new Date() - startDate) / 600);
+								//console.log("split genres",sGenres);
+
+								response.artist.genres = sGenres;
+								done(response);
+
+							} else {
+
+								let msg = "bandsintown failed to find genres";
+								let error = {msg: msg, artist: req.body.artist.name, error: {}};
+								console.error(error);
+								fail(error)
+							}
+						})
+					}//else
+				})
+				.catch(function(err){
+					let msg = "band fetch failure";
+					let error = {msg:msg,artist:req.body.artist.name,error:err};
+					console.error(error);
+					fail(error)
+				})
+
+		})//visit
 	})//promise
 };
 
