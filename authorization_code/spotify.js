@@ -240,7 +240,7 @@ sql.connect(config).then(pool => {
 
 const Nightwatch = require('nightwatch');
 
-console.log('nightwatch...');
+//console.log('nightwatch...');
 
 //todo: attempt to pass parameters to test via settings.global
 // https://libupdate.com/libs/6b0b60cc-1a1e-4f88-b45b-d5d1f24ad96a (search 'programatic API')
@@ -252,6 +252,33 @@ console.log('nightwatch...');
 // https://github.com/nightwatchjs/nightwatch/issues/1954
 // https://github.com/nightwatchjs/nightwatch/issues/1919
 
+
+var settings = {
+	"src_folders" : ["tests"],
+
+	"webdriver" : {
+		"start_process": true,
+		"-server_path": "node_modules/.bin/chromedriver",
+		"--server_path": "./node_modules/chromedriver/lib/chromedriver",
+		"port": 9515
+	},
+
+	"test_settings" : {
+		"default" : {
+			"desiredCapabilities": {
+				"browserName": "chrome",
+				"javascriptEnabled": true,
+				"acceptSslCerts": true,
+				"chromeOptions" : {
+					"args" : ["headless", "no-sandbox", "disable-gpu"]
+				}
+			}
+		}
+	}
+};
+//
+// try{
+// 	console.log("runTests");
 // Nightwatch.runTests('./tests', settings)
 // 	.then(function() {
 // 		console.log("finished!");
@@ -259,18 +286,28 @@ console.log('nightwatch...');
 // 	}).catch(function(err) {
 // 	// An error occurred
 // });
+//
+// }catch(e){
+// 	console.log(e);
+// }
+
 
 //todo: tried with .runner instead, same issues? can't remember
 //https://stackoverflow.com/questions/43817893/passing-command-line-arguments-to-nightwatch-runner
 
-//nightwatch.runner(argv, done, settings);
+//Nightwatch.runner(argv, done, settings);
 
 
 //todo: advice on passing globals via commandline
 //haven't really looked into this one, could be promising
 // https://github.com/nightwatchjs/nightwatch/issues/498
 
+
+
 let bandTest = function(artist){
+
+
+	console.log("bandTest",artist);
 
 	Nightwatch.cli(function(argv) {
 
@@ -285,7 +322,7 @@ let bandTest = function(artist){
 		//argv.config.webdriver.server_path = chromedriver.path;
 
 		//fuck it I guess
-		argv.skiptags = artist.name;
+		//argv.skiptags = JSON.stringify(artist);
 
 		const runner = Nightwatch.CliRunner(argv);
 		runner
@@ -307,6 +344,8 @@ let bandTest = function(artist){
 
 	});
 }
+
+bandTest({name:"Funk Worthy",id:99999})
 
 
 
@@ -1156,7 +1195,7 @@ module.exports.searchSpotify = function(req, res){
 	})
 };
 
-module.exports.getBandPage = function(req,res) {
+module.exports.getBandPage_zombie_depreciated = function(req,res) {
 
 	return new Promise(function(done, fail) {
 		console.log("getBandPage", req.body.artist.name);
