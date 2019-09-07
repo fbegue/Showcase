@@ -13,3 +13,8 @@ IF NOT EXISTS (SELECT * FROM dbo.genre_artist WHERE genre_id = @genre_id and art
     VALUES(@genre_id,@artist_id)
 else
 	select * from dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id
+
+ 
+
+
+

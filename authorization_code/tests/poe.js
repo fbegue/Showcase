@@ -2,7 +2,9 @@ var $ = require('cheerio');
 let sql = require("mssql")
 
 let conn = {};
-let poolGlobal = {};
+//let poolGlobal = require("./../spotify.js").poolGlobal;
+
+const { poolPromise } = require('./../db.js')
 
 var config = {
 	"user": 'test',
@@ -13,26 +15,34 @@ var config = {
 	"dialect": "mssql",
 };
 
-sql.connect(config)
-	.then(pool => {
-	poolGlobal = pool;
-	conn = pool.request();
-	return conn.query("select getdate();")
+// sql.connect(config)
+// 	.then(pool => {
+// 	poolGlobal = pool;
+// 	conn = pool.request();
+// 	return conn.query("select getdate();")
+//
+// }).catch(err =>{
+// 	console.log("ignore, we already have a connection");
+// });
 
-}).catch(err =>{
-	console.log("ignore, we already have a connection");
-});
 
+var poolGlobal = {};
 
-module.exports = {
-	tags: ['poe'],
-	'Band' : function (client) {
+let bandCount = 0;
+var band =  function (client) {
+
+		console.log("==========BAND============" + bandCount);
+
+		poolPromise.then(function(newPool){
+			poolGlobal = newPool;
+		});
+
 
 		var search = 'input[class^=searchBar]';
 		//var search = '.searchBar-cd6d0d92';
 		var result = 'a[class^="artistResult"]';
 
-		 var bio = 'div[class^="artistBio"]';
+		var bio = 'div[class^="artistBio"]';
 		//var bio = '.artistBio-3b904004';
 
 		var str = "";
@@ -40,10 +50,12 @@ module.exports = {
 
 		//console.log("client",JSON.stringify(client,null,4));
 		//console.log("",Object.keys(client));
-		console.log(client.options.skipgroup);
 
-
+		console.log("payload",client.options.skipgroup);
 		var artist = JSON.parse(client.options.skipgroup);
+		artist = artist[bandCount]
+	    bandCount++;
+		console.log(artist.name);
 
 		client
 			.url('https://www.bandsintown.com/en')
@@ -53,7 +65,7 @@ module.exports = {
 			.click(result)
 			//don't know why this didn't work, don't think I need it tho
 			//.waitForElementVisible(bio, 3000)
-			 .assert.visible('body')
+			.assert.visible('body')
 			.source(function(result) {
 				$ = $.load(result.value)
 				let d = $(bio)
@@ -72,7 +84,6 @@ module.exports = {
 						str = tnext;
 					}
 				})
-				//console.log(str);
 
 				if (str.length > 0) {
 
@@ -108,32 +119,37 @@ module.exports = {
 						}
 					});
 
-					console.log("split genres",sGenres);
+					console.log("artist:",artist);
+					console.log("acquired genres",sGenres);
 
 
 					let qual_genres = [];
 
-					var  insertGenre =  function(genre){
-					    return new Promise(function(done, fail) {
-						    var sreq = new sql.Request(poolGlobal);
-						    var qry = "IF NOT EXISTS (SELECT * FROM dbo.genres WHERE name = @name) " +
-							    "INSERT INTO dbo.genres(name) OUTPUT inserted.id, inserted.name VALUES(@name) " +
-							    "else select * from dbo.genres WHERE name = @name";
-						    sreq.input("name", sql.VarChar(255), genre);
-						    sreq.query(qry).then(function(res){
-							    // let rec = JSON.parse(res.recordset[0])
-							    console.log(res.recordset[0]);
-							    qual_genres.push(res.recordset[0]);
-							    done();
+					//todo:testing exported pool
 
-						    }).catch(function(err){
-							    console.log(err);
-							    fail(err);
-						    })
-					    })
+					var  insertGenre =  function(genre){
+						return new Promise(function(done, fail) {
+							var sreq = new sql.Request(poolGlobal);
+							var qry = "IF NOT EXISTS (SELECT * FROM dbo.genres WHERE name = @name) " +
+								"INSERT INTO dbo.genres(name) OUTPUT inserted.id, inserted.name VALUES(@name) " +
+								"else select * from dbo.genres WHERE name = @name";
+							sreq.input("name", sql.VarChar(255), genre);
+							sreq.query(qry).then(function(res){
+								// let rec = JSON.parse(res.recordset[0])
+								console.log(res.recordset[0]);
+								qual_genres.push(res.recordset[0]);
+								done();
+
+							}).catch(function(err){
+								console.log(err);
+								fail(err);
+							})
+						})
 					};
 
 					let insert_artist  = function(artist){
+
+						console.log("spotify artist:",artist);
 
 						var keys = Object.keys(artist);
 						var klist = keys.map(function(value){
@@ -164,11 +180,28 @@ module.exports = {
 
 					};
 
-					let insert_artistsSongkick  = function(artist){
+					let insert_artistSongkick  = function(artist){
 
 						//todo: don't think this is consistent
 						artist.displayName = artist.name;
 						delete artist.name;
+
+						//example from API docs
+
+						// {
+						// 	id: 253846,
+						// 	displayName: "Radiohead",
+						// 	uri: "http://www.songkick.com/artists/253846-radiohead?utm_source=45852&utm_medium=partner",
+						// 	identifier: [
+						// 	{
+						// 		href: "http://api.songkick.com/api/3.0/artists/mbid:a74b1b7f-71a5-4011-9441-d0b5e4122711.json",
+						// 		mbid: "a74b1b7f-71a5-4011-9441-d0b5e4122711"
+						// 	}
+						// ],
+						// 	onTourUntil: "2018-04-25"
+						// }
+
+						console.log("songkick artist:",artist);
 
 						var keys = Object.keys(artist);
 						var klist = keys.map(function(value){
@@ -179,21 +212,26 @@ module.exports = {
 						}).join(",");
 
 						var sreq = new sql.Request(poolGlobal);
+
 						sreq.input("id", sql.Int, artist.id);
-
-
 						sreq.input("displayName", sql.VarChar(100), artist.displayName);
 						sreq.input("identifier", sql.VarChar(150), artist.identifier);
 
-						//todo: sreq.input("onTourUntil", sql.DateTimeOffset(7), as.onTourUntil)
+						//doesn't seem to be a thing anymore?
+						//sreq.input("onTourUntil", sql.DateTimeOffset(7), artist.onTourUntil)
 
-						var qry = "IF NOT EXISTS (SELECT * FROM dbo.artistsSongkick WHERE id = @id)"
-							+ " INSERT INTO dbo.artistsSongkick("+ klist + ")"
-							+ " OUTPUT inserted.id, inserted.displayName, inserted.identifier"
-							+ " VALUES(" + kparams +")"
-							+ " else select * from dbo.artistsSongkick WHERE id = @id";
+						console.log(klist);
+						console.log(kparams);
 
-						sreq.query(qry).then(function(res){
+						//todo:
+
+						// var qry = "IF NOT EXISTS (SELECT * FROM dbo.artistsSongkick WHERE id = @id)"
+						// 	+ " INSERT INTO dbo.artistsSongkick("+ klist + ")"
+						// 	+ " OUTPUT inserted.id, inserted.displayName, inserted.identifier"
+						// 	+ " VALUES(" + kparams +")"
+						// 	+ " else select * from dbo.artistsSongkick WHERE id = @id";
+
+						sreq.execute("insert_artistSongkick").then(function(res){
 							console.log(res);
 						}).catch(function(err){
 							console.log(err);
@@ -201,8 +239,10 @@ module.exports = {
 
 					};
 
+					//todo: need to remember to reinforce dual-type id convention
+
 					//songkick
-					if(typeof artist.id === "number"){insert_artistsSongkick(artist)}
+					if(typeof artist.id === "number"){insert_artistSongkick(artist)}
 					//spotify
 					else {insert_artist(artist)}
 
@@ -241,9 +281,15 @@ module.exports = {
 					let gPromises = [];
 					let gaPromises = [];
 
+					//todo: skipping sql stuff for now (2)
+					//need to know how I'm running repeated NW instances first
+
+//					console.warn("skipping sql stuff for now");
+
 					sGenres.forEach(function(genre){
 						gPromises.push(insertGenre(genre))
 					});
+
 
 					Promise.all(gPromises).then(function(){
 
@@ -256,15 +302,16 @@ module.exports = {
 
 						Promise.all(gaPromises).then(function(){
 							console.log("insert_genre_artist finished");
-
+							//client.end()
 						})
 					})
 
 				} else {
 
 					let msg = "bandsintown failed to find genres";
-					let error = {msg: msg, artist: req.body.artist.name, error: {}};
+					let error = {msg: msg, artist: artist.name, error: {}};
 					console.error(error);
+					//client.end()
 					//fail(error)
 				}
 
@@ -272,6 +319,12 @@ module.exports = {
 			})//source
 
 		//testing
-			.end(str);
+		//.end()
+
 	}
+module.exports = {
+	tags: ['poe'],
+	'Band0' : band,
+	'Band1' : band,
+	'Band2' : band,
 };

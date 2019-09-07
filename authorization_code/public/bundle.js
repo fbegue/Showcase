@@ -1030,10 +1030,10 @@
 					//$scope.dateFilter.start = "";
 					// $scope.dateFilter.end =  '2019-04-04';
 					// $scope.dateFilter.start = '2019-03-04';
-					$scope.dateFilter.start =  '2019-06-01';
+					$scope.dateFilter.start =  '2019-09-07';
 					// $scope.dateFilter.end =  '2019-04-18';
 					// $scope.dateFilter.end =  '2019-04-26';
-					$scope.dateFilter.end =  '2019-06-07';
+					$scope.dateFilter.end =  '2019-09-14';
 					//$scope.dateFilter.end = '2019-04-11';
 					// $scope.raw_filename = "";
 					// $scope.areaDatesArtists_filename= "";
@@ -2192,12 +2192,29 @@
 										if(pushedIds.indexOf(perf.artist.id) === -1){
 											tuple = {};
 											tuple.name = perf.artist.displayName;
-											tuple.artistSongkick_id = perf.artist.id;
+
+											//int id convention
+											//tuple.artistSongkick_id = perf.artist.id;
+											tuple.id = perf.artist.id;
+
+											//this is an array? but we'll just assume 1st-value-valid
+											//perf.artist.identifier.length > 1 ? console.error("MULTIPLE IDENTIFIERS",perf.artist):{};
+											//perf.artist.identifier.length === 0 ? console.error("missing identifier",perf.artist):{};
+
+											perf.artist.identifier.length > 0 ? tuple.identifier = perf.artist.identifier[0].mbid:{};
+
+											//todo: doesn't seem like this is a thing anymore?
+											//I checked to make sure I wasn't parsing it out or anything,
+											//I just dont see it coming back on any perf.artist
+											// tuple.onTourUntil
+
 											artist_search_payload.push(tuple);
 											pushedIds.push(perf.artist.id)
 										}
 
 									}
+
+									//performances keep artistSongkick_id, artists refer to as just 'id' (doublely type)
 									perf.artistSongkick_id = perf.artist.id;
 									reduce(performanceDef,perf);
 

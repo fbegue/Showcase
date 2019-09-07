@@ -114,6 +114,8 @@ var config = {
 let conn = {};
 let poolGlobal = {};
 
+module.exports.poolGlobal = poolGlobal;
+
 
 //todo: check if connetions are alive and get new/existing ones
 
@@ -295,7 +297,8 @@ let runSQLTests = function(){
 
 			//insert_genre_artist();
 
-			sql.close();
+			//todo: not sure about closing this
+			//sql.close();
 
 		}).catch(err => {console.log(err)});
 
@@ -693,6 +696,8 @@ module.exports.getInfos  = function(req,res) {
 					}
 
 					//note we're always just passing the original query along
+
+					sReq.genres = sRes.artist.genres || [];
 					done(sReq)
 
 				}).catch(function(err){
@@ -777,8 +782,11 @@ module.exports.getInfos  = function(req,res) {
 	};
 
 
+	let runCount = 0;
 	var band =  function(bReq){
 		return new Promise(function(done, fail) {
+
+			//todo: changed to take in an array of artists
 
 			//{expiration:30000},
 			limiterBand.schedule(module.exports.getBandPage,bReq,{})
@@ -789,48 +797,125 @@ module.exports.getInfos  = function(req,res) {
 					//got information added to it for that artist id
 
 					console.log("$bReq",bReq);
+					console.log("#artists",bReq.artists.length);
 
-					//todo: not managing sql connetions well, so this fails here
-					//therefore, need to test code under here properly
+					var valPromises = []
+					bReq.artists.forEach(function(artist){
 
-					var sreq = new sql.Request(poolGlobal);
+						//todo: not managing sql connetions well, so this fails here
+						//therefore, need to test code under here properly
 
-					var qry = "select * from artistsSongkick aso "
-						+ " left join genre_artist ga on aso.id = ga.artist_id"
-						+ " left join genres g on ga.genre_id = g.id"
-						+ " left join artists a on a.id = ga.artist_id"
-						+ " where  aso.id = cast(@artistId  as int) or a.id = @artistId";
-					sreq.input("artistId", sql.VarChar(50), bReq.body.artist.id);
+						var sreq = new sql.Request(poolGlobal);
 
-					console.log("in",bReq.body.artist.id);
-					console.log("qry",qry);
+						var qry = "select aso.id,aso.displayName,aso.identifier,g.name as genreName" +
+							" from artistsSongkick aso "
+							+ " left join genre_artist ga on aso.id = ga.artist_id"
+							+ " left join genres g on ga.genre_id = g.id"
+							+ " left join artists a on a.id = ga.artist_id"
+							+ " where  aso.id = cast(@artistId  as int) or a.id = @artistId";
+						sreq.input("artistId", sql.VarChar(50), artist.id);
 
-					sreq.query(qry).then(function(res){
-						console.log(res.recordset);
+						//console.log("in",artist.id);
+						//console.log("qry",qry);
+						valPromises.push(sreq.query(qry));
+					}); //bReq.artists each
 
-						let genres = [];
-						res.recordset.forEach(function(match){
-							genres.push(match["name"])
+					Promise.all(valPromises).then(function(results){
+
+						//console.log("many queries",JSON.stringify(results,null,4));
+						console.log("many queries results");
+						results.forEach(function(r){
+							console.log(JSON.stringify(r.recordset,null,4));
 						});
 
 						bRes = {};
-						bRes.artist = bReq.body.artist;
-						bRes.artist.genres = genres;
+						bRes.artists = [];
+						var artist = {}
+
+						results.forEach(function(res){
+
+							artist = {};
+							artist.genres = []
+
+							if(res.recordset.length > 0){
+								res.recordset.forEach(function(match){
+									artist.genres.push(match["genreName"])
+								});
+
+								//these were genre-joins, so pick any record for artist info
+								artist.name = res.recordset[0].displayName;
+								artist.identifier = res.recordset[0].identifier;
+								artist.id = res.recordset[0].id;
+
+								bRes.artists.push(artist)
+							}
+							else{
+								//todo: POE failed somehow for this artist
+								//but we've given ourselves no way to identify whose a failure occured for
+								console.error("failed for an artist?? yah alright this won't work");
+							}
+
+						}); //forEach
+
+						console.log("bres",JSON.stringify(bRes,null,4));
 
 						//todo: decide on threshold
 						let bandThreshold = 1;
 
-						if(res.recordset.length > bandThreshold){
-							console.good("BAND:",bReq.body.artist.name + " " + bRes.artist.genres);
-							resultCache[bReq.body.artist.name] = bRes;
-							bandResults.push(bRes);
-						}else{
-							bandFailures.push(bRes)
-						}
+						bRes.artists.forEach(function(artist){
+							if(artist.genres.length > bandThreshold){
+								console.log(JSON.stringify(artist,null,4));
+								console.good({"BAND":artist.name + " " + artist.genres});
 
-					}).catch(function(err){
-						console.log(err);
-					});
+								//todo: kind of forgot about this, need to match spotify results
+
+								resultCache[artist.name] = {artist:artist};
+								bandResults.push({artist:artist});
+							}else{
+								bandFailures.push(artist)
+							}
+						})
+
+					}); //promise all
+
+					//  var sreq = new sql.Request(poolGlobal);
+					//
+					// var qry = "select * from artistsSongkick aso "
+					// 	+ " left join genre_artist ga on aso.id = ga.artist_id"
+					// 	+ " left join genres g on ga.genre_id = g.id"
+					// 	+ " left join artists a on a.id = ga.artist_id"
+					// 	+ " where  aso.id = cast(@artistId  as int) or a.id = @artistId";
+					// sreq.input("artistId", sql.VarChar(50), bReq.body.artist.id);
+					//
+					// console.log("in",bReq.body.artist.id);
+					// console.log("qry",qry);
+					//
+					// sreq.query(qry).then(function(res){
+					// 	console.log(res.recordset);
+					//
+					// 	let genres = [];
+					// 	res.recordset.forEach(function(match){
+					// 		genres.push(match["name"])
+					// 	});
+					//
+					// 	bRes = {};
+					// 	bRes.artist = bReq.body.artist;
+					// 	bRes.artist.genres = genres;
+					//
+					// 	//todo: decide on threshold
+					// 	let bandThreshold = 1;
+					//
+					// 	if(res.recordset.length > bandThreshold){
+					// 		console.good("BAND:",bReq.body.artist.name + " " + bRes.artist.genres);
+					// 		resultCache[bReq.body.artist.name] = bRes;
+					// 		bandResults.push(bRes);
+					// 	}else{
+					// 		bandFailures.push(bRes)
+					// 	}
+					//
+					// }).catch(function(err){
+					// 	console.log(err);
+					// });
 
 
 					// if(bRes.artist.genres.length > bandThreshold){
@@ -844,6 +929,8 @@ module.exports.getInfos  = function(req,res) {
 					done(bReq)
 
 				}).catch(function(err){
+				console.log("getBandPage failure",err);
+
 				let error = {artist:bReq.body.artist.name,error:err};
 				console.error(error);
 				bandFailures.push(error);
@@ -978,14 +1065,40 @@ module.exports.getInfos  = function(req,res) {
 		executeOnce = true;
 
 		let mod = 0;
+		let bandLoad = [];
+
 		req.body.artists.forEach(function(ar){
 			fReq = {};
 			fReq.body = {token:req.body.token};
 			fReq.body.artist = ar;
 
-			search(fReq)
-				.then(band)
 
+			search(fReq)
+				.then(function(res){
+
+					if(res.genres.length === 0){
+						bandLoad.push(ar);
+
+						//we're trying to create payloads for band to process at once
+
+						if(bandLoad.length % 3 === 0){
+							let offset = bandLoad.length /3;
+							// 1: 0-2
+							// 2: 3-5
+							// 3: 6-8
+							// 4: 9-1
+							// console.log(bandLoad.length);
+							// console.log("lb",offset-1);
+							// console.log("ub",offset+1);
+							var load = bandLoad.slice(offset-1,offset+1+1)
+							// console.log("$load",load);
+							console.log("$bandLoad",bandLoad);
+							band({artists:bandLoad})
+						 }
+					}
+				}).then(function(){
+
+			    })
 				//todo: disabled rest of tests
 
 				// .then(function(wRes){
@@ -1132,7 +1245,7 @@ module.exports.getInfos  = function(req,res) {
 					// console.log("FINISHED!",JSON.stringify(wikiResults,null,4));
 					// console.log("FINISHED!",JSON.stringify(googleResults,null,4));
 
-					//console.log("resultCache",JSON.stringify(resultCache,null,4))
+					console.log("resultCache",JSON.stringify(resultCache,null,4))
 
 					let results = [];
 					for(var nameKey in resultCache){
@@ -1140,6 +1253,7 @@ module.exports.getInfos  = function(req,res) {
 					}
 
 					let missingNo = 0;
+					console.log("initial payload",req.body.artists);
 					req.body.artists.forEach(function(a){
 						if(!resultCache[a.name]){
 							missingNo++;
@@ -1552,11 +1666,13 @@ module.exports.getWikiPage= function(req,res) {
 	})//promise
 };
 
-
 module.exports.getBandPage = function(req,res) {
 
 	return new Promise(function(done, fail) {
-		console.log("getBandPage", req.body.artist.name);
+
+		// console.log("getBandPage", req.body.artist.name);
+
+		console.log("getBandPage", req);
 
 		let startDate = new Date();
 		console.log("start time:",startDate);
@@ -1564,7 +1680,35 @@ module.exports.getBandPage = function(req,res) {
 		Nightwatch.cli(function(argv) {
 
 			argv.verbose = false;
-			argv.config = './nightwatch.conf.js';
+			argv.config = "./authorization_code/nightwatch.conf.js"
+
+			// console.warn("COUNT:",runCount);
+			// if(runCount === 0){
+			// 	console.log("1");
+			// 	argv.config = "./authorization_code/nightwatch.conf.js"
+			// 	runCount++;
+			// }
+			// else{
+			// 	console.log("2");
+			// 	argv.config = "./authorization_code/nightwatch2.conf.js"
+			// }
+
+			console.log("argv",argv.config);
+
+			//
+			// 	let args = ["headless", "no-sandbox", "disable-gpu"]
+			// 	if(runCount === 0){
+			// 		args.push("--user-data-dir=C:/ChromeProfile/Profile1")
+			// 		runCount++
+			// 	}
+			// 	else{
+			// 		args.push("--user-data-dir=C:/ChromeProfile/Profile2")
+			// 	}
+			//
+			// 	settings.test_settings.chrome2.desiredCapabilities.chromeOptions.args = args;
+
+
+
 			//argv.env = env;
 
 			//todo: thought maybe I could point config to an object I generate on the fly
@@ -1580,17 +1724,23 @@ module.exports.getBandPage = function(req,res) {
 			// };
 
 			//fuck it I guess
-			argv.skipgroup = JSON.stringify(req.body.artist);
 
-			const runner = Nightwatch.CliRunner(argv);
+			//todo: testing
+			//argv.skipgroup = JSON.stringify(req.body.artist);
+			//argv.skipgroup = JSON.stringify([{name:"Funk Worthy"},{name:"Blink-182"},{name:"Slayer"}]);
+			argv.skipgroup = JSON.stringify(req.artists);
+
+			var runner = Nightwatch.CliRunner(argv);
 			runner
 				.setup()
 				.startWebDriver()
 				.catch(err => {	console.error(err);throw err;})
 				.then(() => {return runner.runTests();})
-				.catch(err => {console.error(err);	runner.processListener.setExitCode(10);})
+				.catch(err => {
+					console.error("band script error1");
+					console.error(err);
+					runner.processListener.setExitCode(10);})
 				.then((str) => {
-					console.log("finished!",str);
 					console.log("getBandPage finished execution:",Math.abs(new Date() - startDate) / 600);
 
 					//todo:
@@ -1601,6 +1751,7 @@ module.exports.getBandPage = function(req,res) {
 				// 	process.exit(0);
 				// })
 				.catch(err => {
+					console.error("band script error2");
 					console.error(err);
 				});
 
