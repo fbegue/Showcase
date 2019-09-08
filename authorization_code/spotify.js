@@ -3,13 +3,13 @@ var PromiseThrottle = require("promise-throttle");
 var rp = require('request-promise');
 var google = require('google');
 var scraper = require('google-search-scraper');
-var Bottleneck = require("bottleneck")
-
+var Bottleneck = require("bottleneck");
 var $ = require('cheerio');
 
-const Browser = require('zombie');
-//testing:
-Browser.waitDuration = '30s';
+
+// const Browser = require('zombie');
+// //testing:
+// Browser.waitDuration = '30s';
 
 const colors = require('colors/safe');
 console.error = function(msg){console.log(colors.red(msg))};
@@ -17,6 +17,94 @@ console.warn = function(msg){console.log(colors.yellow(msg))};
 console.good = function(msg){console.log(colors.green(msg))};
 console.log("colors configured");
 
+//scrapeSongkick-------------------------------------------------------
+
+var songkick = require("./songkick.js");
+
+//example input
+
+var getMetroEventsReq = {
+	"metro": {
+	"displayName": "Columbus",
+		"id": 9480
+},
+	"dateFilter": {
+	"start": "2019-09-08",
+		"end": "2019-09-15"
+},
+	"raw_filename": "raw_Columbus_2019-09-07-2019-09-14.json",
+	"areaDatesArtists_filename": "areaDatesArtists_Columbus_2019-09-07-2019-09-14.json"
+}
+
+let scrapeSongkick = function(){
+
+	songkick.get_metro_events_local({body:getMetroEventsReq})
+		.then(function(res){
+
+			//stripped down (no ala stuff) version of promise return function from spotify.js call to get_metro_events
+
+			let events = res.data;
+			//console.log("get_metro_events results",JSON.parse(JSON.stringify(events)));
+			console.log("get_metro_events events length:",events.length);
+
+			let artist_search_payload = [];
+			let pushedIds = [];
+
+			events.forEach(function(event){
+
+				let tuple = {};
+
+				event.performance.forEach(function(perf){
+
+					//we will process these and update our table in a sec
+					if(pushedIds.indexOf(perf.artist.id) === -1){
+						tuple = {};
+						tuple.name = perf.artist.displayName;
+
+						//int id convention
+						//tuple.artistSongkick_id = perf.artist.id;
+						tuple.id = perf.artist.id;
+
+						//this is an array? but we'll just assume 1st-value-valid
+						//perf.artist.identifier.length > 1 ? console.error("MULTIPLE IDENTIFIERS",perf.artist):{};
+						//perf.artist.identifier.length === 0 ? console.error("missing identifier",perf.artist):{};
+
+						perf.artist.identifier.length > 0 ? tuple.identifier = perf.artist.identifier[0].mbid:{};
+
+						//todo: doesn't seem like this is a thing anymore?
+						//I checked to make sure I wasn't parsing it out or anything,
+						//I just dont see it coming back on any perf.artist
+						// tuple.onTourUntil
+
+						artist_search_payload.push(tuple);
+						pushedIds.push(perf.artist.id)
+					}
+				}); //each performance
+			}); //each event
+
+
+
+			artist_search_payload = artist_search_payload.slice(0,4);
+			//console.log("getInfos payload",artist_search_payload);
+			console.log("getInfos payload size",artist_search_payload.length);
+
+			var token = "BQAnMCI0Zip5R7WF4zaDetsIJluY0pQqKs3mrqQZGtNqrZQIg41kYkjRfnNSMVnJPQMuq2uBNZ00qU6T8tFy4LqB-yqxIjTzHx-CxzmVEoq7TvEMgaqdiusVy9_Qwevm7gbXWl4CnBc2OkwXVKCke4u8L4dBGDu0muAVeVOgp0ZQDys3KWZm6Vh-BjN5OBvImvZklWMX2Hgm-IreO2w-gni8WMNuoJbV7bzNpWgZF5YbnNHT-gLHGfmZNasbP2JmDTwwkP02weUdWNXWcWGpT4bfTiUyOw"
+			module.exports.getInfos_local({body:{artists:artist_search_payload,token:token}})
+				.then(function(){
+
+					console.log("getInfos results:",JSON.parse(JSON.stringify(res.data)));
+
+				});//getInfos
+
+		});//get_metro_events
+
+}
+
+scrapeSongkick();
+
+
+
+//UI Endpoints-------------------------------------------------------
 
 //todo: get this from another source
 let all_genres = require('./public/all_genres2');
@@ -28,8 +116,6 @@ all_genres.all_genres.forEach(function(t){
 	genresMap[t.name] = "dum"
 });
 
-//todo: little weird b/c when we update genre info client side,
-//we can't make decisions with that updated info here
 
 let resultCache = {};
 
@@ -496,7 +582,7 @@ limiters()
 //testing:
 let executeOnce = false;
 
-module.exports.getInfos  = function(req,res) {
+module.exports.getInfos  = function(req,res,next) {
 	console.log("getInfo input artists length:",req.body.artists.length);
 	//console.log("getInfo",req.body.token);
 
@@ -1264,8 +1350,8 @@ module.exports.getInfos  = function(req,res) {
 					console.log(missingNo + " padded error results");
 
 					//let ret = wikiResults.concat(campResults).concat(bandResults).concat(scrapeResults);
-					res.send(results);
 
+					if(next){next(results)}else{res.send(results);}
 
 				}
 			})
@@ -1284,6 +1370,19 @@ module.exports.getInfos  = function(req,res) {
 
 
 };
+
+module.exports.getInfos_local =  function(req){
+	return new Promise(function(done, fail) {
+
+		var callback = function(res){
+			done({data:res})
+		};
+
+		module.exports.getInfos(req,{},callback)
+
+	})
+};
+
 
 //given an artist name and a list of every word in the best-search result,
 //can we determine whether the result was what we were actaully looking for?
@@ -1680,7 +1779,10 @@ module.exports.getBandPage = function(req,res) {
 		Nightwatch.cli(function(argv) {
 
 			argv.verbose = false;
-			argv.config = "./authorization_code/nightwatch.conf.js"
+
+			//todo: odd - why was this working before?
+			// argv.config = "./authorization_code/nightwatch.conf.js"
+			argv.config = "./nightwatch.conf.js";
 
 			// console.warn("COUNT:",runCount);
 			// if(runCount === 0){

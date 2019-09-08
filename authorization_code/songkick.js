@@ -310,6 +310,7 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 		dateFilter.start = new Date(dateFilter.start);
 		dateFilter.end = new Date(dateFilter.end);
 
+
 		console.log(dateFilter.start);
 		console.log(dateFilter.end);
 
@@ -577,7 +578,7 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 }//get_metro_events
 
 
-module.exports.get_metro_events = function(req, res){
+module.exports.get_metro_events = function(req, res,next){
 
 	console.log(req);
 	// req.body = JSON.parse(req.body);
@@ -585,9 +586,28 @@ module.exports.get_metro_events = function(req, res){
 
 	get_metro_events(req.body.metro,req.body.dateFilter,req.body.raw_filename,req.body.areaDatesArtists_filename).then(function(result){
 		//console.log(result);
-		res.send(result);
+
+		if(next){next(result)}else{
+			res.send(result);
+		}
+
 	})
 };
+
+
+module.exports.get_metro_events_local=  function(req){
+    return new Promise(function(done, fail) {
+
+    	var callback = function(res){
+    		done({data:res})
+	    };
+
+	    module.exports.get_metro_events(req,{},callback)
+
+    })
+};
+
+
 module.exports.get_metro_events.type = "POST;"
 
 //module.exports.fuzzy_compare = fuzzy_compare;

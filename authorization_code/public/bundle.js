@@ -2238,25 +2238,7 @@
 								let varchar_keys = ["displayName","venue"];
 								varchar_keys.forEach(function(key) {	event[key] = event[key].replace(/'/g, "''");});
 
-								//console.log("1",JSON.parse(JSON.stringify(event)));
-								reduce(eventDef,event);
-								//console.log("2",JSON.parse(JSON.stringify(event)));
-
-								alasql("INSERT INTO events VALUES ( " + vlister(event)  + " )");
-								//console.log(alasql("select * from events"));
-
-							}); //res.data
-
-							let req = {};
-							req.url_postfix = "getInfos";
-							req.type = "POST";
-							req.body = {};
-							req.body.artists = artist_search_payload;
-							let params = getHashParams();
-							req.body.token = params.access_token;
-
-							//TODO: this doesn't seem right...too many repeats, seems to obviously be missing some
-							console.log("getInfos artist payload:",JSON.parse(JSON.stringify(artist_search_payload)));
+								//co-
 
 							var  fakeInfo =  function(){
 								return new Promise(function(done, fail) {
