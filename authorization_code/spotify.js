@@ -25,13 +25,13 @@ var songkick = require("./songkick.js");
 
 var getMetroEventsReq = {
 	"metro": {
-	"displayName": "Columbus",
+		"displayName": "Columbus",
 		"id": 9480
-},
+	},
 	"dateFilter": {
-	"start": "2019-09-08",
-		"end": "2019-09-15"
-},
+		"start": "2019-10-19",
+		"end": "2019-11-19"
+	},
 	"raw_filename": "raw_Columbus_2019-09-07-2019-09-14.json",
 	"areaDatesArtists_filename": "areaDatesArtists_Columbus_2019-09-07-2019-09-14.json"
 }
@@ -84,11 +84,51 @@ let scrapeSongkick = function(){
 
 
 
-			artist_search_payload = artist_search_payload.slice(0,4);
+			//testing:
+			//artist_search_payload = artist_search_payload.slice(0,4);
 			//console.log("getInfos payload",artist_search_payload);
 			console.log("getInfos payload size",artist_search_payload.length);
 
-			var token = "BQAnMCI0Zip5R7WF4zaDetsIJluY0pQqKs3mrqQZGtNqrZQIg41kYkjRfnNSMVnJPQMuq2uBNZ00qU6T8tFy4LqB-yqxIjTzHx-CxzmVEoq7TvEMgaqdiusVy9_Qwevm7gbXWl4CnBc2OkwXVKCke4u8L4dBGDu0muAVeVOgp0ZQDys3KWZm6Vh-BjN5OBvImvZklWMX2Hgm-IreO2w-gni8WMNuoJbV7bzNpWgZF5YbnNHT-gLHGfmZNasbP2JmDTwwkP02weUdWNXWcWGpT4bfTiUyOw"
+			var token = "BQAgf22Fy_wRH_B6dB2-fxWpcLE4QACeh6yS9tQ4GuvsFwgKtvo_gz02wcV0dLSiTUIvdK1j7p2K48G_i7z9Mq-d7TjBOKbfwMaXEXN6BXX-bOAofSZbSi7C96k5hJ0Q-1q4TupSOv8ynziX0vAfSNWmmgA9BiB6idP3nSAtesTSTiYYyMsoFNgbah-VhEr2zPKIEjskk269m4T_SjbvOW3xt7p8DUI40nizE3cGLP0yd0G8FAOp3XHR5jFZ78nmAYc-2rGkjJC4Ek1m_OYd35DxTTLMwA";
+
+
+			var commitAllArtistsSongkick = function(artist_search_payload){
+
+				console.log("commitAllArtistsSongkick");
+
+				artist_search_payload.forEach(function(ar){
+
+					let insert_artistSongkick = function (artist) {
+
+						var sreq = new sql.Request(poolGlobal);
+
+						sreq.input("id", sql.Int, artist.id);
+						sreq.input("identifier", sql.VarChar(150), artist.identifier);
+
+						//todo: apparantly songkickArtists can have names too???? wtf
+						sreq.input("displayName", sql.VarChar(100), artist.displayName || artist.name);
+
+						//this isn't a 'look' this is just preliminary recording
+						sreq.input("lastLook", sql.DateTimeOffset(7),null);
+
+						sreq.execute("insert_artistSongkick").then(function (res) {
+							//console.log(res);
+						}).catch(function (err) {
+							console.log(err);
+						})
+
+					};
+
+					insert_artistSongkick(ar)
+
+				});
+
+			};
+
+			commitAllArtistsSongkick(artist_search_payload);
+
+			console.log("commitAllArtistsSongkick finished");
+
 			module.exports.getInfos_local({body:{artists:artist_search_payload,token:token}})
 				.then(function(){
 
@@ -206,16 +246,16 @@ module.exports.poolGlobal = poolGlobal;
 //todo: check if connetions are alive and get new/existing ones
 
 var getConnect =  function(){
-    return new Promise(function(done, fail) {
+	return new Promise(function(done, fail) {
 
 
-    })
+	})
 };
 
 let runSQLTests = function(){
 
 
-	 sql.connect(config).then(pool => {
+	sql.connect(config).then(pool => {
 		poolGlobal = pool;
 		conn = pool.request();
 		return conn.query("select getdate();")
@@ -511,7 +551,7 @@ let limiters = function(){
 
 	//todo: optimize
 	limiterBand = new Bottleneck({
-		maxConcurrent: 20,
+		maxConcurrent: 1,
 		minTime: 300,
 		trackDoneStatus: true,
 	});
@@ -581,794 +621,1033 @@ limiters()
 
 //testing:
 let executeOnce = false;
+let runsMagic =5
 
 module.exports.getInfos  = function(req,res,next) {
 	console.log("getInfo input artists length:",req.body.artists.length);
 	//console.log("getInfo",req.body.token);
 
-	let startDate = new Date();
-	console.log("start time:",startDate);
 
+	//todo: reduce workset
+	//testing
+	console.warn("WORKING WITH REDUCED SET");
+	req.body.artists = req.body.artists.splice(100,200)
 
-	//fixme: subset
-	// let set = JSON.parse(JSON.stringify(req.body.artists))
-	// 	// req.body.artists = [set[0],set[111],set[222],set[333]]
+	var lastFail = {};
+	var lastRan = false;
 
-	let doBrainz = function(){
-		//ex: getArtistById
-		//http://musicbrainz.org/ws/2/artist/e9787dd2-5857-4b51-8e59-a190a54820fc?inc=genres&fmt=json
+	var checkProms = [];
+	var filteredPayload = [];
+	var alreadyHave = [];
 
-		//ex: query artist
-		//https://musicbrainz.org/ws/2/artist/?query=The%20Polish%20Ambassador&fmt=json
+	var checkDBForArtist =  function(artist){
+		return new Promise(function(done, fail) {
 
-		//desired format for queries (full Lucene Search syntax)
-		//https://lucene.apache.org/core/4_3_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description
+			//console.log("in",artist.id);
+			//console.log("qry",qry);
 
-		let queryCode = function (exp) {
+			var sreq = new sql.Request(poolGlobal);
+			sreq.input("artistId", sql.VarChar(50), artist.id);
 
-			//let exp = "Guns N' Roses";
-			//result: Guns_N%27_Roses
+			sreq.execute("checkForArtistGenres").then(function(res){
+				if(res.recordset.length > 0){
 
-			//wiki likes _ for spaces
-			//exp = exp.replace(/\s/g, '_');
+					//we're fetching artist join on genres.
 
-			//https://www.w3schools.com/tags/ref_urlencode.asp
-			exp = encodeURI(exp);
+					//if lastLook is populated we recorded a failure at some point in the past, skip this
+					//todo: make this a time-sensitive expiration (when we have more than 1 service to feed from)
 
-			//not handling apostrophes/single quotes?
-			//exp = exp.replace("'", "%27");
-
-			console.log(exp);
-			return exp;
-		};
-
-		let musicBrainzLookup =  function(artistId){
-			return new Promise(function(done, fail) {
-				let lookArtist_pre = "http://musicbrainz.org/ws/2/artist/"
-				let lookArtist_post = "?inc=genres&fmt=json";
-
-				//artistId = "e9787dd2-5857-4b51-8e59-a190a54820fc"
-
-				let url = lookArtist_pre + artistId + lookArtist_post;
-				let options = {
-					method: "GET",
-					uri: url,
-					headers: {
-						'User-Agent': 'Request-Promise',
-					},
-				};
-				console.log(url);
-				rp(options).then(function (result) {
-					//console.log("#####",JSON.stringify(JSON.parse(result),null,4));
-					let resultP = JSON.parse(result);
-					done(resultP.genres)
-				})
-			})
-		};
-
-		let musicBrainzQry =  function(artist){
-			return new Promise(function(done, fail) {
-				let queryArtist_pre = "https://musicbrainz.org/ws/2/artist/?query=";
-				let queryArtist_post = "&fmt=json";
-
-				//artist.name = "Muse"
-				let url = queryArtist_pre + queryCode(artist.name) + queryArtist_post;
-				let options = {
-					method: "GET",
-					uri: url,
-					headers: {
-						// 'User-Agent': 'Request-Promise',
-						'User-Agent': 'Showcase/alpha (dacandyman0@gmail.com)',
-					},
-					//json: true
-				};
-				console.log(url);
-				rp(options).then(function (result) {
-					//console.log("$$$$$$",JSON.stringify(JSON.parse(result),null,4));
-					let resultP = JSON.parse(result);
-
-					//todo: always assume first artist is what who we want
-					//in the future, how can we tell how many results are useful?
-					//many ids for the same entity, but who has the genres info?
-					//is it ever useful to tranverse past the first (score = 100?)
-
-
-					if(resultP.artists.length === 0){
-						console.log("$$$no musicbrainz match found for",artist.name);
-						done([])
+					if(res.recordset[0].lastLook !== null){
+						var oneNull =res.recordset[0];
+						console.log("",oneNull.displayName + " lastLook: " + oneNull.lastLook);
+						alreadyHave.push(artist)
+					}
+					//if there's only 1 row and the genres null, we have a record but no genres
+					else if(res.recordset.length === 1 && res.recordset[0].genreName === null){
+						filteredPayload.push(artist)
 					}
 					else{
-
-						done(resultP.artists[0])
-						//todo: managing the API rate while having a request in a request is hard
-
-						// var wait =  function(ms){
-						// 	return new Promise(function(done, fail) {
-						// 		console.log("waiting...");
-						// 		setTimeout(function(){
-						// 			console.log("done!");
-						// 			done()
-						// 		},ms);
-						// 	})
-						// }
-						//
-						// wait(2000).then(function(){
-						//
-						// 	musicBrainzLookup(resultP.artists[0].id).then(function(genres){
-						// 		if(genres.length === 0){
-						// 			console.log("$no musicbrainz genres found for",resultP.artists[0].name);
-						// 		}
-						// 		done(genres);
-						// 	})
-						// })
-					}
-				})
-			})
-		};
-
-		var promiseThrottle_brainz = new PromiseThrottle({
-
-			//https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#Provide_meaningful_User-Agent_strings
-			//am i missing something here? whats the point of having limit of 50/sec/user when the IP limit is 1/sec/ip
-
-			//therefore, even 2 begins the fuckoff sequence :(
-			requestsPerSecond: 1,
-			promiseImplementation: Promise  // the Promise library you are using
-		});
-
-		let brainPromises = [];
-		req.body.artists.forEach(function(ar){
-			// brainPromises.push(musicBrainzQry(ar))
-			brainPromises.push(promiseThrottle_brainz.add(musicBrainzQry.bind(this,ar)));
-
-		});
-
-		Promise.all(brainPromises).then(function(brainResults){
-			console.log("brainResults",brainResults);
-			//genres? store them
-			//otherwise go to wiki? does wiki always have same info?
-		});
-	}
-
-	//todo: readup on possibly combining some of these searches?
-	//https://www.mediawiki.org/wiki/API:Etiquette
-
-	let fReq = {};
-	let spotResults = [];
-	let spotFailures = [];
-	let wikiResults = [];
-	let wikiFailures = [];
-	let campResults = [];
-	let campFailures = [];
-	let bandResults = [];
-	let bandFailures = [];
-	let scrapeResults = [];
-	let scrapeFailures = [];
-
-	//all of these function in a similar manner have the same purpose: get genre info about an artist
-	//they are designed to (later) be hit seperately, and therefore expect paramters on body
-	//the value that they are passing forward is always just the original fReq that gets passed to search
-
-	//they all (besides search) also check if they need to be ran by asserting existence of a record
-	//for that artist in resultCache[wRes.artist.name])
-
-	//they also have the responsibility of deciding the quality of the return value, which if
-	//positive will set the value in resultCache
-
-	//todo: searchSpotify currently outputs error flags when this search function should be detecting quality - not searchSpotify
-	//todo: catch and quickly exit when token is expired
-
-	var search =  function(sReq){
-		return new Promise(function(done, fail) {
-			limiterSpotify.schedule(module.exports.searchSpotify,sReq,{})
-				.then((sRes) => {
-					//success:
-					// {	artistSongkick_id: 1111111,artist:<spotifyArtistObject> }
-
-					//couldn't locate
-					// "error":true,
-
-					//located but no genres:
-					//"error":true, "noGenresFound":true
-
-					//rebind songkickId
-					sRes.artist.artistSongkick_id = sReq.body.artist.artistSongkick_id;
-
-					if(!sRes.error){
-						resultCache[sRes.artist.name] = sRes;
-						spotResults.push(sRes);
-					}else{
-						spotFailures.push(sRes);
-					}
-
-					//note we're always just passing the original query along
-
-					sReq.genres = sRes.artist.genres || [];
-					done(sReq)
-
-				}).catch(function(err){
-				let error = {artist:sReq.body.artist.name,error:err};
-				spotFailures.push(error);
-				//console.error(error);
-				fail(error)
-			});
-		})
-	}
-
-	var wiki =  function(wReq){
-		return new Promise(function(done, fail) {
-			//console.log("wiki...",wReq);
-
-			if(!resultCache[wReq.body.artist.name]){
-				limiterWiki.schedule(module.exports.getWikiPage,wReq,{})
-					.then((resWiki) => {
-
-						console.log("$wiki",resWiki);
-						//todo: decide on threshold
-						let wikiThreshold = 1;
-
-						// console.log(resWiki.artist.genres);
-						// console.log(resWiki.artist.genres.length > wikiThreshold);
-						if(resWiki.artist.genres && resWiki.artist.genres.length > wikiThreshold){
-							console.good("WIKI:",wReq.body.artist.name + " " + resWiki.artist.genres);
-							resultCache[wReq.body.artist.name] = resWiki;
-							wikiResults.push(resWiki);
-						}else{
-							wikiFailures.push(resWiki)
-						}
-
-						done(wReq)
-
-					}).catch(function(err){
-					let error = {artist:wReq.body.artist.name,error:err};
-					wikiFailures.push(error);
-
-					//todo: should recover from these not just fail out
-					fail(error)
-				});
-			}else{
-				done(wReq)
-			}
-		})
-	};
-
-	let campgood = 0;
-	var camp =  function(cReq){
-		return new Promise(function(done, fail) {
-			//console.log("camp...",cReq);
-
-			limiterCamp.schedule(module.exports.getCampPage,cReq,{})
-				.then((cRes) => {
-
-					//console.log("$camp",cRes);
-					//console.warn(++campgood + "==========================");
-
-					//todo: decide on threshold
-					let campThreshold = 1;
-
-					if(cRes.artist.genres.length > campThreshold){
-						console.good("CAMP:",cReq.body.artist.name + " " + cRes.artist.genres);
-						resultCache[cReq.body.artist.name] = cRes;
-						campResults.push(cRes);
-					}else{
-						campFailures.push(cRes)
-					}
-					done(cReq)
-
-				}).catch(function(err){
-				let error = {artist:cReq.body.artist.name,error:err};
-				console.error(error);
-				campFailures.push(error);
-
-				//todo: should recover from these not just fail out
-				fail(error)
-			});
-
-		})
-	};
-
-
-	let runCount = 0;
-	var band =  function(bReq){
-		return new Promise(function(done, fail) {
-
-			//todo: changed to take in an array of artists
-
-			//{expiration:30000},
-			limiterBand.schedule(module.exports.getBandPage,bReq,{})
-				.then((bRes) => {
-
-					//todo: unlike other getInfo tools, getBandPage can't (yet?) return actual results b/c theres
-					//no way to pass back data from the test - so our pass/fail here is going to be to see if the DB
-					//got information added to it for that artist id
-
-					console.log("$bReq",bReq);
-					console.log("#artists",bReq.artists.length);
-
-					var valPromises = []
-					bReq.artists.forEach(function(artist){
-
-						//todo: not managing sql connetions well, so this fails here
-						//therefore, need to test code under here properly
-
-						var sreq = new sql.Request(poolGlobal);
-
-						var qry = "select aso.id,aso.displayName,aso.identifier,g.name as genreName" +
-							" from artistsSongkick aso "
-							+ " left join genre_artist ga on aso.id = ga.artist_id"
-							+ " left join genres g on ga.genre_id = g.id"
-							+ " left join artists a on a.id = ga.artist_id"
-							+ " where  aso.id = cast(@artistId  as int) or a.id = @artistId";
-						sreq.input("artistId", sql.VarChar(50), artist.id);
-
-						//console.log("in",artist.id);
-						//console.log("qry",qry);
-						valPromises.push(sreq.query(qry));
-					}); //bReq.artists each
-
-					Promise.all(valPromises).then(function(results){
-
-						//console.log("many queries",JSON.stringify(results,null,4));
-						console.log("many queries results");
-						results.forEach(function(r){
-							console.log(JSON.stringify(r.recordset,null,4));
+						artist.genres = [];
+						res.recordset.forEach(function(match){
+							artist.genres.push(match["genreName"])
 						});
 
-						bRes = {};
-						bRes.artists = [];
-						var artist = {}
+						//these were genre-joins, so pick any record for artist info
+						artist.name = res.recordset[0].displayName || res.recordset[0].name
+						artist.identifier = res.recordset[0].identifier;
+						artist.id = res.recordset[0].id;
 
-						results.forEach(function(res){
+						resultCache[artist.name] = {artist:artist};
+						alreadyHave.push(artist)
+					}
+				}
+				else{
+					//console.log("push");
+					filteredPayload.push(artist)
+				}
+				done();
 
-							artist = {};
-							artist.genres = []
+			}).catch(function(err){
+				console.log("checkDBForArtist failure",err);
+				fail(err)
+			})
 
-							if(res.recordset.length > 0){
-								res.recordset.forEach(function(match){
-									artist.genres.push(match["genreName"])
-								});
+		})
+	};
 
-								//these were genre-joins, so pick any record for artist info
-								artist.name = res.recordset[0].displayName;
-								artist.identifier = res.recordset[0].identifier;
-								artist.id = res.recordset[0].id;
+	req.body.artists.forEach(function(artist){
+		checkProms.push(checkDBForArtist(artist));
+	});
 
-								bRes.artists.push(artist)
-							}
-							else{
-								//todo: POE failed somehow for this artist
-								//but we've given ourselves no way to identify whose a failure occured for
-								console.error("failed for an artist?? yah alright this won't work");
-							}
+	Promise.all(checkProms).then(function(results){
 
-						}); //forEach
+		//console.log("many queries",JSON.stringify(results,null,4));
+		//console.log("many queries results");
+		// results.forEach(function(r){
+		// 	console.log(JSON.stringify(r.recordset,null,4));
+		// });
 
-						console.log("bres",JSON.stringify(bRes,null,4));
+		console.log("skipping getinfo for" + alreadyHave.length);
+		console.log("executing getinfo for" + filteredPayload.length);
+		console.log("total skipped:" + alreadyHave.length + "/" + req.body.artists.length);
 
-						//todo: decide on threshold
-						let bandThreshold = 1;
-
-						bRes.artists.forEach(function(artist){
-							if(artist.genres.length > bandThreshold){
-								console.log(JSON.stringify(artist,null,4));
-								console.good({"BAND":artist.name + " " + artist.genres});
-
-								//todo: kind of forgot about this, need to match spotify results
-
-								resultCache[artist.name] = {artist:artist};
-								bandResults.push({artist:artist});
-							}else{
-								bandFailures.push(artist)
-							}
-						})
-
-					}); //promise all
-
-					//  var sreq = new sql.Request(poolGlobal);
-					//
-					// var qry = "select * from artistsSongkick aso "
-					// 	+ " left join genre_artist ga on aso.id = ga.artist_id"
-					// 	+ " left join genres g on ga.genre_id = g.id"
-					// 	+ " left join artists a on a.id = ga.artist_id"
-					// 	+ " where  aso.id = cast(@artistId  as int) or a.id = @artistId";
-					// sreq.input("artistId", sql.VarChar(50), bReq.body.artist.id);
-					//
-					// console.log("in",bReq.body.artist.id);
-					// console.log("qry",qry);
-					//
-					// sreq.query(qry).then(function(res){
-					// 	console.log(res.recordset);
-					//
-					// 	let genres = [];
-					// 	res.recordset.forEach(function(match){
-					// 		genres.push(match["name"])
-					// 	});
-					//
-					// 	bRes = {};
-					// 	bRes.artist = bReq.body.artist;
-					// 	bRes.artist.genres = genres;
-					//
-					// 	//todo: decide on threshold
-					// 	let bandThreshold = 1;
-					//
-					// 	if(res.recordset.length > bandThreshold){
-					// 		console.good("BAND:",bReq.body.artist.name + " " + bRes.artist.genres);
-					// 		resultCache[bReq.body.artist.name] = bRes;
-					// 		bandResults.push(bRes);
-					// 	}else{
-					// 		bandFailures.push(bRes)
-					// 	}
-					//
-					// }).catch(function(err){
-					// 	console.log(err);
-					// });
+		let startDate = new Date();
+		console.log("start time:",startDate);
 
 
-					// if(bRes.artist.genres.length > bandThreshold){
-					// 	console.good("BAND:",bReq.body.artist.name + " " + bRes.artist.genres);
-					// 	resultCache[bReq.body.artist.name] = bRes;
-					// 	bandResults.push(bRes);
-					// }else{
-					// 	bandFailures.push(bRes)
-					// }
+		//fixme: subset
+		// let set = JSON.parse(JSON.stringify(req.body.artists))
+		// 	// req.body.artists = [set[0],set[111],set[222],set[333]]
 
-					done(bReq)
+		let doBrainz = function(){
+			//ex: getArtistById
+			//http://musicbrainz.org/ws/2/artist/e9787dd2-5857-4b51-8e59-a190a54820fc?inc=genres&fmt=json
 
-				}).catch(function(err){
-				console.log("getBandPage failure",err);
+			//ex: query artist
+			//https://musicbrainz.org/ws/2/artist/?query=The%20Polish%20Ambassador&fmt=json
 
-				let error = {artist:bReq.body.artist.name,error:err};
-				console.error(error);
-				bandFailures.push(error);
+			//desired format for queries (full Lucene Search syntax)
+			//https://lucene.apache.org/core/4_3_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description
 
-				//todo: should recover from these not just fail out
-				fail(error)
+			let queryCode = function (exp) {
+
+				//let exp = "Guns N' Roses";
+				//result: Guns_N%27_Roses
+
+				//wiki likes _ for spaces
+				//exp = exp.replace(/\s/g, '_');
+
+				//https://www.w3schools.com/tags/ref_urlencode.asp
+				exp = encodeURI(exp);
+
+				//not handling apostrophes/single quotes?
+				//exp = exp.replace("'", "%27");
+
+				console.log(exp);
+				return exp;
+			};
+
+			let musicBrainzLookup =  function(artistId){
+				return new Promise(function(done, fail) {
+					let lookArtist_pre = "http://musicbrainz.org/ws/2/artist/"
+					let lookArtist_post = "?inc=genres&fmt=json";
+
+					//artistId = "e9787dd2-5857-4b51-8e59-a190a54820fc"
+
+					let url = lookArtist_pre + artistId + lookArtist_post;
+					let options = {
+						method: "GET",
+						uri: url,
+						headers: {
+							'User-Agent': 'Request-Promise',
+						},
+					};
+					console.log(url);
+					rp(options).then(function (result) {
+						//console.log("#####",JSON.stringify(JSON.parse(result),null,4));
+						let resultP = JSON.parse(result);
+						done(resultP.genres)
+					})
+				})
+			};
+
+			let musicBrainzQry =  function(artist){
+				return new Promise(function(done, fail) {
+					let queryArtist_pre = "https://musicbrainz.org/ws/2/artist/?query=";
+					let queryArtist_post = "&fmt=json";
+
+					//artist.name = "Muse"
+					let url = queryArtist_pre + queryCode(artist.name) + queryArtist_post;
+					let options = {
+						method: "GET",
+						uri: url,
+						headers: {
+							// 'User-Agent': 'Request-Promise',
+							'User-Agent': 'Showcase/alpha (dacandyman0@gmail.com)',
+						},
+						//json: true
+					};
+					console.log(url);
+					rp(options).then(function (result) {
+						//console.log("$$$$$$",JSON.stringify(JSON.parse(result),null,4));
+						let resultP = JSON.parse(result);
+
+						//todo: always assume first artist is what who we want
+						//in the future, how can we tell how many results are useful?
+						//many ids for the same entity, but who has the genres info?
+						//is it ever useful to tranverse past the first (score = 100?)
+
+
+						if(resultP.artists.length === 0){
+							console.log("$$$no musicbrainz match found for",artist.name);
+							done([])
+						}
+						else{
+
+							done(resultP.artists[0])
+							//todo: managing the API rate while having a request in a request is hard
+
+							// var wait =  function(ms){
+							// 	return new Promise(function(done, fail) {
+							// 		console.log("waiting...");
+							// 		setTimeout(function(){
+							// 			console.log("done!");
+							// 			done()
+							// 		},ms);
+							// 	})
+							// }
+							//
+							// wait(2000).then(function(){
+							//
+							// 	musicBrainzLookup(resultP.artists[0].id).then(function(genres){
+							// 		if(genres.length === 0){
+							// 			console.log("$no musicbrainz genres found for",resultP.artists[0].name);
+							// 		}
+							// 		done(genres);
+							// 	})
+							// })
+						}
+					})
+				})
+			};
+
+			var promiseThrottle_brainz = new PromiseThrottle({
+
+				//https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting#Provide_meaningful_User-Agent_strings
+				//am i missing something here? whats the point of having limit of 50/sec/user when the IP limit is 1/sec/ip
+
+				//therefore, even 2 begins the fuckoff sequence :(
+				requestsPerSecond: 1,
+				promiseImplementation: Promise  // the Promise library you are using
+			});
+
+			let brainPromises = [];
+			req.body.artists.forEach(function(ar){
+				// brainPromises.push(musicBrainzQry(ar))
+				brainPromises.push(promiseThrottle_brainz.add(musicBrainzQry.bind(this,ar)));
 
 			});
-		})
-	};
 
-	var scrape =  function(sReq){
-		return new Promise(function(done, fail) {
-			//thingsfddsfasdfds
-			//console.log("scrape...",bReq.continue);
+			Promise.all(brainPromises).then(function(brainResults){
+				console.log("brainResults",brainResults);
+				//genres? store them
+				//otherwise go to wiki? does wiki always have same info?
+			});
+		}
 
-			if(sReq.continue){
-				limiterGoogle.schedule(module.exports.googleQueryScrape,sReq,{})
+		//todo: readup on possibly combining some of these searches?
+		//https://www.mediawiki.org/wiki/API:Etiquette
+
+		let fReq = {};
+		let spotResults = [];
+		let spotFailures = [];
+		let wikiResults = [];
+		let wikiFailures = [];
+		let campResults = [];
+		let campFailures = [];
+		let bandResults = [];
+		let bandFailures = [];
+		let scrapeResults = [];
+		let scrapeFailures = [];
+
+		//all of these function in a similar manner have the same purpose: get genre info about an artist
+		//they are designed to (later) be hit seperately, and therefore expect paramters on body
+		//the value that they are passing forward is always just the original fReq that gets passed to search
+
+		//they all (besides search) also check if they need to be ran by asserting existence of a record
+		//for that artist in resultCache[wRes.artist.name])
+
+		//they also have the responsibility of deciding the quality of the return value, which if
+		//positive will set the value in resultCache
+
+		//todo: searchSpotify currently outputs error flags when this search function should be detecting quality - not searchSpotify
+		//todo: catch and quickly exit when token is expired
+
+		var search =  function(sReq){
+			return new Promise(function(done, fail) {
+				limiterSpotify.schedule(module.exports.searchSpotify,sReq,{})
 					.then((sRes) => {
+						//success:
+						// {	artistSongkick_id: 1111111,artist:<spotifyArtistObject> }
 
+						//couldn't locate
+						// "error":true,
 
-						//started by keeping all the results seperated
-						//so that I could do rank-choice later if I wanted to
-						//doesn't seem like that will come in too handy atm tho...
+						//located but no genres:
+						//"error":true, "noGenresFound":true
 
+						console.log("sRes",sRes);
 
-						let parsed = [];
-						//x is the same cursor b/c titles.length always = descs.length
-						for(var x = 0; x < sRes.titles.length; x++){
+						//rebind songkickId
+						sRes.artist.artistSongkick_id = sReq.body.artist.artistSongkick_id;
 
-							let parseLoad = {};
-							//parseLoad.artist = payload.artist;
-							parseLoad.titles = [];
-							parseLoad.descs = [];
+						//console.log("search result:",sRes.artist);
 
-							let words = sRes.titles[x].split(" ");
-							let words2 = sRes.descs[x].split(" ");
+						let insert_artist = function (artist) {
 
-							words.forEach(function(w){
-								if(genresMap[w]){
-									parseLoad.titles.indexOf(w) === -1 ? parseLoad.titles.push(w):{}
-								}
-							});
+							//console.log("spotify artist:", artist);
 
-							words2.forEach(function(w){
-								if(genresMap[w]){
-									parseLoad.descs.indexOf(w) === -1 ? parseLoad.descs.push(w):{}
-								}
-							});
+							var sreq = new sql.Request(poolGlobal);
+							sreq.input("id", sql.VarChar(50), artist.id);
+							sreq.input("name", sql.VarChar(50), artist.name);
+							sreq.input("uri", sql.VarChar(100), artist.uri);
+							sreq.input("lastLook", sql.DateTimeOffset(7), new Date());
 
-							//todo: little bit exclusionary
+							sreq.execute("insert_artist").then(function (res) {
+								//console.log(res);
+							}).catch(function (err) {
+								console.log(err);
+							})
 
-							if(parseLoad.descs.length > 0 || parseLoad.titles.length > 0){
-								parsed.push(parseLoad)
+						};
+
+						insert_artist(sRes.artist);
+
+						var qualGenres = [];
+
+						var insertGenre = function (genre) {
+							return new Promise(function (done, fail) {
+								var sreq = new sql.Request(poolGlobal);
+								var qry = "IF NOT EXISTS (SELECT * FROM dbo.genres WHERE name = @name) " +
+									"INSERT INTO dbo.genres(name) OUTPUT inserted.id, inserted.name VALUES(@name) " +
+									"else select * from dbo.genres WHERE name = @name";
+								sreq.input("name", sql.VarChar(255), genre);
+								sreq.query(qry).then(function (res) {
+									// let rec = JSON.parse(res.recordset[0])
+									//console.log(res.recordset[0]);
+									//sRes.artist.genres.push(res.recordset[0]);
+									qualGenres.push(res.recordset[0]);
+									done();
+
+								}).catch(function (err) {
+									console.log(err);
+									fail(err);
+								})
+							})
+						};
+
+						let insert_genre_artist = function (genre, artist) {
+							//console.log("insert_genre_artist");
+
+							//todo: NOT SURE about decision to mix formats for artist_id here
+							//songkick's numeric ids always treated as strings
+
+							//todo: check if I need to encode incoming numeric artist id from songkick
+							if (typeof artist.id === "number") {
+								artist.id = artist.id.toString();
 							}
 
+
+							//multi-object doesn't make sense to use k-extraction
+							var klist = "genre_id,artist_id"
+							var kparams = "@genre_id,@artist_id"
+
+							var sreq = new sql.Request(poolGlobal);
+							sreq.input("genre_id", sql.Int, genre.id);
+							sreq.input("artist_id", sql.VarChar(50), artist.id);
+
+							var qry = "IF NOT EXISTS (SELECT * FROM dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id)"
+								+ " INSERT INTO dbo.genre_artist(" + klist + " )"
+								+ " OUTPUT inserted.genre_id, inserted.artist_id"
+								+ " VALUES(" + kparams + ")"
+								+ " else select * from dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id";
+
+							sreq.query(qry).then(function (res) {
+								//console.log(res);
+							}).catch(function (err) {
+								console.log(err);
+							})
+						};
+
+						let gPromises = [];
+						let gaPromises = [];
+
+						//todo: skipping sql stuff for now (2)
+						//need to know how I'm running repeated NW instances first
+
+//					console.warn("skipping sql stuff for now");
+
+						sRes.artist.genres.forEach(function (genre) {
+							gPromises.push(insertGenre(genre))
+						});
+
+						Promise.all(gPromises).then(function () {
+
+							//console.log("insertGenre finished");
+							//console.log("starting insert_genre_artist", sRes.artist);
+							///console.log("starting qualGenres", qualGenres)
+
+							qualGenres.forEach(function (genre) {
+								gaPromises.push(insert_genre_artist(genre, sRes.artist));
+							});
+
+							Promise.all(gaPromises).then(function () {
+								//console.log("insert_genre_artist finished");
+
+								//client.end()
+							})
+						});
+
+
+						if(!sRes.error){
+							resultCache[sRes.artist.name] = sRes;
+							spotResults.push(sRes);
+						}else{
+							spotFailures.push(sRes);
 						}
 
-						//console.log("$$$PARSED",sRes.artist.name);
-						//console.log(JSON.stringify(parsed,null,4));
+						//note we're always just passing the original query along
 
-						let parsedGenres = [];
-
-						parsed.forEach(function(p){
-							p.descs.forEach(function(d){
-								parsedGenres.indexOf(d) === -1 ? parsedGenres.push(d):{};
-							})
-							p.titles.forEach(function(t){
-								parsedGenres.indexOf(t) === -1 ? parsedGenres.push(t):{};
-							})
-						})
-
-						//todo: decide on threshold
-
-
-						//todo:
-
-						let scrapeThreshold = 1;
-						let cont = parsedGenres.length < scrapeThreshold;
-
-						let fReq = {};
-						fReq.body = {artist: sRes.artist};
-						fReq.continue =  cont;
-
-						let payload = {artist: sRes.artist,genres:parsedGenres};
-
-						//console.log("scrape cont",cont);
-						cont ? scrapeFailures.push(payload):scrapeResults.push(payload);
-
-
-						//todo: just checking out failures
-						if(cont){
-							console.log("$$$",JSON.stringify(sRes,null,4))
-						}
-
-						done(fReq)
+						sReq.genres = sRes.artist.genres || [];
+						done(sReq)
 
 					}).catch(function(err){
-					let error = {artist:wReq.body.artist.name,error:err};
-					scrapeFailures.push(error);
-
-					//todo: should recover from these not just fail out
+					let error = {artist:sReq.body.artist.name,error:err};
+					spotFailures.push(error);
+					//console.error(error);
 					fail(error)
-
 				});
-			}
-			else{
-				done({continue:false})
-			}
-		})
-	};
-
-
-	let finish = function(){
-		// console.log("finish!");
-		// console.log(Object.keys(resultCache));
-		// console.log(JSON.stringify(resultCache,null,4));
-		//res.send(resultCache)
-
-	};
-
-	//testing:
-	if(executeOnce){
-		req.body.artists = [];
-		console.error("==========SKIPPING SECOND EXECUTION==============");
-	}
-
-	if(req.body.artists.length > 0){
-
-		//testing:
-		console.warn("==========SET SKIPONCE==============");
-		executeOnce = true;
-
-		let mod = 0;
-		let bandLoad = [];
-
-		req.body.artists.forEach(function(ar){
-			fReq = {};
-			fReq.body = {token:req.body.token};
-			fReq.body.artist = ar;
-
-
-			search(fReq)
-				.then(function(res){
-
-					if(res.genres.length === 0){
-						bandLoad.push(ar);
-
-						//we're trying to create payloads for band to process at once
-
-						if(bandLoad.length % 3 === 0){
-							let offset = bandLoad.length /3;
-							// 1: 0-2
-							// 2: 3-5
-							// 3: 6-8
-							// 4: 9-1
-							// console.log(bandLoad.length);
-							// console.log("lb",offset-1);
-							// console.log("ub",offset+1);
-							var load = bandLoad.slice(offset-1,offset+1+1)
-							// console.log("$load",load);
-							console.log("$bandLoad",bandLoad);
-							band({artists:bandLoad})
-						 }
-					}
-				}).then(function(){
-
-			    })
-				//todo: disabled rest of tests
-
-				// .then(function(wRes){
-				//
-				// 	//just doll them out equally for now
-				// 	let check = mod % 2 ===0;
-				// 	mod++;
-				//
-				// 	//todo: add scrape (also, is this pattern sustainable?)
-				//
-				// 	if(!resultCache[wRes.body.artist.name]){
-				// 		if(check){
-				// 			camp(wRes).then(function(){
-				// 				if(!resultCache[wRes.body.artist.name]){
-				// 					console.warn("failed camp, trying band for:" + wRes.body.artist.name);
-				// 					band(wRes).then(finish).catch(function(err){
-				// 						let msg = "camp -> band failure";
-				// 						let error = {msg:msg,artist:wRes.body.artist.name,error:err};
-				// 						console.error(error);
-				// 					})
-				// 				}
-				// 				else{finish()}
-				// 			})
-				// 		}
-				// 		else{
-				// 			band(wRes).then(function(){
-				// 				if(!resultCache[wRes.body.artist.name]){
-				// 					console.warn("failed band, trying camp for:" + wRes.body.artist.name);
-				// 					camp(wRes).then(finish).catch(function(err){
-				// 						let msg = "band -> camp failure";
-				// 						let error = {msg:msg,artist:wRes.body.artist.name,error:err};
-				// 						console.error(error);
-				// 						//fail(error)
-				// 					})
-				// 				}else{finish()}
-				//
-				// 			})
-				// 		}
-				// 	}
-				// 	else{
-				// 		finish(wRes)
-				// 	}
-				//
-				// })
-				// .then(finish)
-				.catch(function(err){
-					console.error("chain failed for: ",ar.name);
-					console.log(err);
-
-				})
-		});
-
-		var wait =  function(ms){
-			return new Promise(function(done, fail) {
-				//console.log("waiting...");
-				setTimeout(function(){
-					//console.log("done!");
-					done()
-				},ms);
 			})
-		};
+		}
 
-		let totalTime = 0;
-		let checkCount = function() {
+		var wiki =  function(wReq){
+			return new Promise(function(done, fail) {
+				//console.log("wiki...",wReq);
 
-			wait(100).then(function () {
-				totalTime = totalTime + 100;
+				if(!resultCache[wReq.body.artist.name]){
+					limiterWiki.schedule(module.exports.getWikiPage,wReq,{})
+						.then((resWiki) => {
 
-				// let totalResultsFailures = wikiResults.length +wikiFailures.length +
-				// 	campResults.length + campFailures.length +
-				// 	bandResults.length + bandFailures.length +
-				// 	scrapeResults.length +	scrapeFailures.length;
+							console.log("$wiki",resWiki);
+							//todo: decide on threshold
+							let wikiThreshold = 1;
 
-				let totalFailures = wikiFailures.length +
-					campFailures.length +
-					bandFailures.length +
-					scrapeFailures.length +
-					spotFailures.length;
+							// console.log(resWiki.artist.genres);
+							// console.log(resWiki.artist.genres.length > wikiThreshold);
+							if(resWiki.artist.genres && resWiki.artist.genres.length > wikiThreshold){
+								console.good("WIKI:",wReq.body.artist.name + " " + resWiki.artist.genres);
+								resultCache[wReq.body.artist.name] = resWiki;
+								wikiResults.push(resWiki);
+							}else{
+								wikiFailures.push(resWiki)
+							}
 
-				let totalResults = wikiResults.length +
-					campResults.length +
-					bandResults.length +
-					scrapeResults.length +
-					spotResults.length;
+							done(wReq)
 
-				let notDone = function(limiter,name,print){
+						}).catch(function(err){
+						let error = {artist:wReq.body.artist.name,error:err};
+						wikiFailures.push(error);
 
-					//testing: enable to see readouts of every limiter
-					print? console.log(name,limiter.counts()) :{};
-
-					//I guess don't do this? it works sometimes????
-					//let cs = JSON.parse(JSON.stringify(limiterWiki.counts()))
-
-					let nots = ["RECEIVED","QUEUED","RUNNING","EXECUTING"]
-					let counts = 0;
-
-					nots.forEach(function(t){
-						counts = counts  + limiter.jobs(t).length
+						//todo: should recover from these not just fail out
+						fail(error)
 					});
-
-					return counts > 0;
-				};
-
-				//if any of the bottlenecks are not done, continue checking
-				//|| notDone(limiterGoogle,"google");
-				let checkIt = notDone(limiterSpotify,"spotify") || notDone(limiterWiki,"wiki") || notDone(limiterCamp,"camp") || notDone(limiterBand,"band")
-
-				if(checkIt){
-
-					if(totalTime % 5000 === 0){
-
-						console.log("totalResults/artists",totalResults + "/" + req.body.artists.length);
-						console.log("totalFailures",totalFailures);
-						let checkIt = notDone(limiterSpotify,"spotify",true)
-							|| notDone(limiterWiki,"wiki",true)
-							|| notDone(limiterCamp,"camp",true)
-							|| notDone(limiterBand,"band",true)
-
-
-						// console.log("spot",spotResults.length)
-						// console.log("w",wikiResults.length);
-						// console.log("c",campResults.length);
-						// console.log("b",bandResults.length);
-						// console.log("s",scrapeResults.length)
-					}
-
-					checkCount()
 				}else{
-					console.log("getExternalInfos finished execution:",Math.abs(new Date() - startDate) / 600);
-
-					console.log("totalResults/artists",totalResults + "/" + req.body.artists.length);
-					console.log("totalFailures",totalFailures);
-
-					console.log("spot",spotResults.length)
-					console.log("w",wikiResults.length);
-					console.log("c",campResults.length);
-					console.log("b",bandResults.length);
-					console.log("s",scrapeResults.length + " / " + 	scrapeFailures.length);
-
-					//todo:
-
-					// console.log(wikiResultsKeep.length + " wiki results were successful");
-					// console.log(googleResults.length + " google results were returned");
-					// console.log("FINISHED!",JSON.stringify(wikiResults,null,4));
-					// console.log("FINISHED!",JSON.stringify(googleResults,null,4));
-
-					console.log("resultCache",JSON.stringify(resultCache,null,4))
-
-					let results = [];
-					for(var nameKey in resultCache){
-						results.push(resultCache[nameKey].artist)
-					}
-
-					let missingNo = 0;
-					console.log("initial payload",req.body.artists);
-					req.body.artists.forEach(function(a){
-						if(!resultCache[a.name]){
-							missingNo++;
-							results.push({name:a.name,artistSongkick_id:a.artistSongkick_id,error:true})
-						}
-					});
-
-					console.log(missingNo + " padded error results");
-
-					//let ret = wikiResults.concat(campResults).concat(bandResults).concat(scrapeResults);
-
-					if(next){next(results)}else{res.send(results);}
-
+					done(wReq)
 				}
 			})
 		};
 
-		// setTimeout(function(){
-		// 	checkCount();
-		// },2000)
+		let campgood = 0;
+		var camp =  function(cReq){
+			return new Promise(function(done, fail) {
+				//console.log("camp...",cReq);
 
-		checkCount();
-	}
-	else{
-		console.error({msg:"no artists submitted"});
-		res.send();
-	}
+				limiterCamp.schedule(module.exports.getCampPage,cReq,{})
+					.then((cRes) => {
+
+						//console.log("$camp",cRes);
+						//console.warn(++campgood + "==========================");
+
+						//todo: decide on threshold
+						let campThreshold = 1;
+
+						if(cRes.artist.genres.length > campThreshold){
+							console.good("CAMP:",cReq.body.artist.name + " " + cRes.artist.genres);
+							resultCache[cReq.body.artist.name] = cRes;
+							campResults.push(cRes);
+						}else{
+							campFailures.push(cRes)
+						}
+						done(cReq)
+
+					}).catch(function(err){
+					let error = {artist:cReq.body.artist.name,error:err};
+					console.error(error);
+					campFailures.push(error);
+
+					//todo: should recover from these not just fail out
+					fail(error)
+				});
+
+			})
+		};
 
 
+		let runCount = 0;
+		var band =  function(bReq){
+			return new Promise(function(done, fail) {
+
+				//todo: changed to take in an array of artists
+
+				//{expiration:30000},
+				limiterBand.schedule(module.exports.getBandPage,bReq,{})
+					.then((bRes) => {
+
+						//todo: unlike other getInfo tools, getBandPage can't (yet?) return actual results b/c theres
+						//no way to pass back data from the test - so our pass/fail here is going to be to see if the DB
+						//got information added to it for that artist id
+
+						console.log("$bReq",bReq);
+						console.log("#artists",bReq.artists.length);
+
+						var valPromises = []
+						bReq.artists.forEach(function(artist){
+
+							//todo: not managing sql connetions well, so this fails here
+							//therefore, need to test code under here properly
+
+							var sreq = new sql.Request(poolGlobal);
+
+							var qry = "select aso.id,aso.displayName,aso.identifier,g.name as genreName" +
+								" from artistsSongkick aso "
+								+ " left join genre_artist ga on aso.id = ga.artist_id"
+								+ " left join genres g on ga.genre_id = g.id"
+								+ " left join artists a on a.id = ga.artist_id"
+								+ " where  aso.id = cast(@artistId  as int) or a.id = @artistId";
+							sreq.input("artistId", sql.VarChar(50), artist.id);
+
+							//console.log("in",artist.id);
+							//console.log("qry",qry);
+							valPromises.push(sreq.query(qry));
+						}); //bReq.artists each
+
+						Promise.all(valPromises).then(function(results){
+
+							//console.log("many queries",JSON.stringify(results,null,4));
+							console.log("many queries results");
+							results.forEach(function(r){
+								console.log(JSON.stringify(r.recordset,null,4));
+							});
+
+							bRes = {};
+							bRes.artists = [];
+							var artist = {}
+
+							results.forEach(function(res){
+
+								artist = {};
+								artist.genres = []
+
+								if(res.recordset.length > 0){
+									res.recordset.forEach(function(match){
+										artist.genres.push(match["genreName"])
+									});
+
+									//these were genre-joins, so pick any record for artist info
+									artist.name = res.recordset[0].displayName;
+									artist.identifier = res.recordset[0].identifier;
+									artist.id = res.recordset[0].id;
+
+									bRes.artists.push(artist)
+								}
+								else{
+									//todo: POE failed somehow for this artist
+									//but we've given ourselves no way to identify whose a failure occured for
+									console.error("failed for an artist?? yah alright this won't work");
+								}
+
+							}); //forEach
+
+							console.log("bres",JSON.stringify(bRes,null,4));
+
+							//todo: decide on threshold
+							let bandThreshold = 1;
+
+							bRes.artists.forEach(function(artist){
+								if(artist.genres.length > bandThreshold){
+									console.log(JSON.stringify(artist,null,4));
+									console.good({"BAND":artist.name + " " + artist.genres});
+
+									//todo: kind of forgot about this, need to match spotify results
+
+									resultCache[artist.name] = {artist:artist};
+									bandResults.push({artist:artist});
+								}else{
+									console.log("failure",artist);
+									bandFailures.push(artist)
+								}
+							})
+
+						}); //promise all
+
+						//  var sreq = new sql.Request(poolGlobal);
+						//
+						// var qry = "select * from artistsSongkick aso "
+						// 	+ " left join genre_artist ga on aso.id = ga.artist_id"
+						// 	+ " left join genres g on ga.genre_id = g.id"
+						// 	+ " left join artists a on a.id = ga.artist_id"
+						// 	+ " where  aso.id = cast(@artistId  as int) or a.id = @artistId";
+						// sreq.input("artistId", sql.VarChar(50), bReq.body.artist.id);
+						//
+						// console.log("in",bReq.body.artist.id);
+						// console.log("qry",qry);
+						//
+						// sreq.query(qry).then(function(res){
+						// 	console.log(res.recordset);
+						//
+						// 	let genres = [];
+						// 	res.recordset.forEach(function(match){
+						// 		genres.push(match["name"])
+						// 	});
+						//
+						// 	bRes = {};
+						// 	bRes.artist = bReq.body.artist;
+						// 	bRes.artist.genres = genres;
+						//
+						// 	//todo: decide on threshold
+						// 	let bandThreshold = 1;
+						//
+						// 	if(res.recordset.length > bandThreshold){
+						// 		console.good("BAND:",bReq.body.artist.name + " " + bRes.artist.genres);
+						// 		resultCache[bReq.body.artist.name] = bRes;
+						// 		bandResults.push(bRes);
+						// 	}else{
+						// 		bandFailures.push(bRes)
+						// 	}
+						//
+						// }).catch(function(err){
+						// 	console.log(err);
+						// });
+
+
+						// if(bRes.artist.genres.length > bandThreshold){
+						// 	console.good("BAND:",bReq.body.artist.name + " " + bRes.artist.genres);
+						// 	resultCache[bReq.body.artist.name] = bRes;
+						// 	bandResults.push(bRes);
+						// }else{
+						// 	bandFailures.push(bRes)
+						// }
+
+						done(bReq)
+
+					}).catch(function(err){
+					console.log("getBandPage failure",err);
+
+					let error = {artist:bReq.body.artist.name,error:err};
+					console.error(error);
+					bandFailures.push(error);
+
+					//todo: should recover from these not just fail out
+					fail(error)
+
+				});
+			})
+		};
+
+		var scrape =  function(sReq){
+			return new Promise(function(done, fail) {
+				//thingsfddsfasdfds
+				//console.log("scrape...",bReq.continue);
+
+				if(sReq.continue){
+					limiterGoogle.schedule(module.exports.googleQueryScrape,sReq,{})
+						.then((sRes) => {
+
+
+							//started by keeping all the results seperated
+							//so that I could do rank-choice later if I wanted to
+							//doesn't seem like that will come in too handy atm tho...
+
+
+							let parsed = [];
+							//x is the same cursor b/c titles.length always = descs.length
+							for(var x = 0; x < sRes.titles.length; x++){
+
+								let parseLoad = {};
+								//parseLoad.artist = payload.artist;
+								parseLoad.titles = [];
+								parseLoad.descs = [];
+
+								let words = sRes.titles[x].split(" ");
+								let words2 = sRes.descs[x].split(" ");
+
+								words.forEach(function(w){
+									if(genresMap[w]){
+										parseLoad.titles.indexOf(w) === -1 ? parseLoad.titles.push(w):{}
+									}
+								});
+
+								words2.forEach(function(w){
+									if(genresMap[w]){
+										parseLoad.descs.indexOf(w) === -1 ? parseLoad.descs.push(w):{}
+									}
+								});
+
+								//todo: little bit exclusionary
+
+								if(parseLoad.descs.length > 0 || parseLoad.titles.length > 0){
+									parsed.push(parseLoad)
+								}
+
+							}
+
+							//console.log("$$$PARSED",sRes.artist.name);
+							//console.log(JSON.stringify(parsed,null,4));
+
+							let parsedGenres = [];
+
+							parsed.forEach(function(p){
+								p.descs.forEach(function(d){
+									parsedGenres.indexOf(d) === -1 ? parsedGenres.push(d):{};
+								})
+								p.titles.forEach(function(t){
+									parsedGenres.indexOf(t) === -1 ? parsedGenres.push(t):{};
+								})
+							})
+
+							//todo: decide on threshold
+
+
+							//todo:
+
+							let scrapeThreshold = 1;
+							let cont = parsedGenres.length < scrapeThreshold;
+
+							let fReq = {};
+							fReq.body = {artist: sRes.artist};
+							fReq.continue =  cont;
+
+							let payload = {artist: sRes.artist,genres:parsedGenres};
+
+							//console.log("scrape cont",cont);
+							cont ? scrapeFailures.push(payload):scrapeResults.push(payload);
+
+
+							//todo: just checking out failures
+							if(cont){
+								console.log("$$$",JSON.stringify(sRes,null,4))
+							}
+
+							done(fReq)
+
+						}).catch(function(err){
+						let error = {artist:wReq.body.artist.name,error:err};
+						scrapeFailures.push(error);
+
+						//todo: should recover from these not just fail out
+						fail(error)
+
+					});
+				}
+				else{
+					done({continue:false})
+				}
+			})
+		};
+
+
+		let finish = function(){
+			// console.log("finish!");
+			// console.log(Object.keys(resultCache));
+			// console.log(JSON.stringify(resultCache,null,4));
+			//res.send(resultCache)
+
+		};
+
+		//testing:
+		if(executeOnce){
+			req.body.artists = [];
+			console.error("==========SKIPPING SECOND EXECUTION==============");
+		}
+
+		if(req.body.artists.length > 0){
+
+			//testing:
+			console.warn("==========SET SKIPONCE==============");
+			executeOnce = true;
+
+			let mod = 0;
+			let bandLoad = [];
+
+			req.body.artists.forEach(function(ar){
+
+				if(filteredPayload.indexOf(ar) === -1){
+					//skip
+					console.log("skip",ar.name);
+				}
+				else{
+
+					fReq = {};
+					fReq.body = {token:req.body.token};
+					fReq.body.artist = ar;
+
+					search(fReq)
+						.then(function(res){
+
+							if(res.genres.length === 0){
+								bandLoad.push(ar);
+
+								//we're trying to create payloads for band to process at once
+
+								if(bandLoad.length % runsMagic === 0){
+									let offset = bandLoad.length /runsMagic;
+									// 1: 0-2
+									// 2: 3-5
+									// 3: 6-8
+									// 4: 9-1
+									// console.log(bandLoad.length);
+									//console.log("lb",offset-1);
+									//console.log("ub",offset+2);
+									var load = bandLoad.splice(offset-1,offset + runsMagic -1)
+									// console.log("$load",load);
+									//console.log("$bandLoad",load);
+									band({artists:load})
+								}else if(bandLoad.length < runsMagic && !lastRan){
+									console.log("lastLoad====",bandLoad.length);
+									setTimeout(function(){
+										if(bandLoad.length < runsMagic && !lastRan){
+											console.log("$bandLoad final",bandLoad);
+											lastRan = true;
+											band({artists:bandLoad})
+										}
+									},2000)
+
+									// lastFail[bandLoad.length]++;
+									// if(lastFail[bandLoad.length] >= 100){
+
+									// }
+									//lastFail++
+
+								}
+							}
+						}).then(function(){
+
+					})
+					//todo: disabled rest of tests
+
+					// .then(function(wRes){
+					//
+					// 	//just doll them out equally for now
+					// 	let check = mod % 2 ===0;
+					// 	mod++;
+					//
+					// 	//todo: add scrape (also, is this pattern sustainable?)
+					//
+					// 	if(!resultCache[wRes.body.artist.name]){
+					// 		if(check){
+					// 			camp(wRes).then(function(){
+					// 				if(!resultCache[wRes.body.artist.name]){
+					// 					console.warn("failed camp, trying band for:" + wRes.body.artist.name);
+					// 					band(wRes).then(finish).catch(function(err){
+					// 						let msg = "camp -> band failure";
+					// 						let error = {msg:msg,artist:wRes.body.artist.name,error:err};
+					// 						console.error(error);
+					// 					})
+					// 				}
+					// 				else{finish()}
+					// 			})
+					// 		}
+					// 		else{
+					// 			band(wRes).then(function(){
+					// 				if(!resultCache[wRes.body.artist.name]){
+					// 					console.warn("failed band, trying camp for:" + wRes.body.artist.name);
+					// 					camp(wRes).then(finish).catch(function(err){
+					// 						let msg = "band -> camp failure";
+					// 						let error = {msg:msg,artist:wRes.body.artist.name,error:err};
+					// 						console.error(error);
+					// 						//fail(error)
+					// 					})
+					// 				}else{finish()}
+					//
+					// 			})
+					// 		}
+					// 	}
+					// 	else{
+					// 		finish(wRes)
+					// 	}
+					//
+					// })
+					// .then(finish)
+						.catch(function(err){
+							console.error("chain failed for: ",ar.name);
+							console.log(err);
+
+						})
+				}//not filtered
+			});
+
+			var wait =  function(ms){
+				return new Promise(function(done, fail) {
+					//console.log("waiting...");
+					setTimeout(function(){
+						//console.log("done!");
+						done()
+					},ms);
+				})
+			};
+
+			let totalTime = 0;
+			let checkCount = function() {
+
+				wait(100).then(function () {
+					totalTime = totalTime + 100;
+
+					// let totalResultsFailures = wikiResults.length +wikiFailures.length +
+					// 	campResults.length + campFailures.length +
+					// 	bandResults.length + bandFailures.length +
+					// 	scrapeResults.length +	scrapeFailures.length;
+
+					let totalFailures = wikiFailures.length +
+						campFailures.length +
+						bandFailures.length +
+						scrapeFailures.length +
+						spotFailures.length;
+
+					let totalResults = wikiResults.length +
+						campResults.length +
+						bandResults.length +
+						scrapeResults.length +
+						spotResults.length;
+
+					let notDone = function(limiter,name,print){
+
+						//testing: enable to see readouts of every limiter
+						print? console.log(name,limiter.counts()) :{};
+
+						//I guess don't do this? it works sometimes????
+						//let cs = JSON.parse(JSON.stringify(limiterWiki.counts()))
+
+						let nots = ["RECEIVED","QUEUED","RUNNING","EXECUTING"]
+						let counts = 0;
+
+						nots.forEach(function(t){
+							counts = counts  + limiter.jobs(t).length
+						});
+
+						return counts > 0;
+					};
+
+					//if any of the bottlenecks are not done, continue checking
+					//|| notDone(limiterGoogle,"google");
+					let checkIt = notDone(limiterSpotify,"spotify") || notDone(limiterWiki,"wiki") || notDone(limiterCamp,"camp") || notDone(limiterBand,"band")
+
+					if(checkIt){
+
+						if(totalTime % 5000 === 0){
+
+							console.log("totalResults/artists",totalResults + "/" + req.body.artists.length);
+							console.log("totalFailures",totalFailures);
+							let checkIt = notDone(limiterSpotify,"spotify",true)
+								|| notDone(limiterWiki,"wiki",true)
+								|| notDone(limiterCamp,"camp",true)
+								|| notDone(limiterBand,"band",true)
+
+
+							// console.log("spot",spotResults.length)
+							// console.log("w",wikiResults.length);
+							// console.log("c",campResults.length);
+							// console.log("b",bandResults.length);
+							// console.log("s",scrapeResults.length)
+						}
+
+						checkCount()
+					}else{
+						console.log("getExternalInfos finished execution:",Math.abs(new Date() - startDate) / 600);
+
+						console.log("totalResults/artists",totalResults + "/" + req.body.artists.length);
+						console.log("totalFailures",totalFailures);
+
+						console.log("spot",spotResults.length)
+						console.log("w",wikiResults.length);
+						console.log("c",campResults.length);
+						console.log("b",bandResults.length);
+						console.log("s",scrapeResults.length + " / " + 	scrapeFailures.length);
+
+						//todo:
+
+						// console.log(wikiResultsKeep.length + " wiki results were successful");
+						// console.log(googleResults.length + " google results were returned");
+						// console.log("FINISHED!",JSON.stringify(wikiResults,null,4));
+						// console.log("FINISHED!",JSON.stringify(googleResults,null,4));
+
+						console.log("resultCache",JSON.stringify(resultCache,null,4))
+
+						let results = [];
+						for(var nameKey in resultCache){
+							results.push(resultCache[nameKey].artist)
+						}
+
+						let missingNo = 0;
+						//console.log("initial payload",req.body.artists);
+
+						req.body.artists.forEach(function(a){
+							if(!resultCache[a.name]){
+								missingNo++;
+								results.push({name:a.name,artistSongkick_id:a.artistSongkick_id,error:true})
+							}
+						});
+
+						console.log(missingNo + " padded error results");
+
+						//let ret = wikiResults.concat(campResults).concat(bandResults).concat(scrapeResults);
+
+						console.log("results:",JSON.stringify(results,null,4));
+
+						let nextStrBegin = "function next(err) {";
+						var nextStr = next.toString().trim()
+						//console.log(nextStr);
+						//console.log("=====");
+						//console.log(nextStr.slice(0,20));
+
+						if( nextStr.slice(0,20) == nextStrBegin) {
+							console.log("standard");
+							res.send(results)
+						}
+						else{
+							console.log("custom");
+
+							next(results)
+						}
+
+						//if(next){next(results)}else{res.send(results);}
+
+					}
+				})
+			};
+
+			// setTimeout(function(){
+			// 	checkCount();
+			// },2000)
+
+			checkCount();
+		}
+		else{
+			console.error({msg:"no artists submitted"});
+			res.send();
+		}
+
+
+	}); //promise all checkproms
 };
 
 module.exports.getInfos_local =  function(req){
@@ -1489,7 +1768,8 @@ module.exports.searchSpotify = function(req, res){
 		options.displayName = artist.name;
 		options.displayName_clean = nameClean;
 
-		console.log(options.uri);
+		//todo: only output from spotify
+		//console.log(options.uri);
 
 		searchReq(options)
 			.then(function(result) {
@@ -1780,9 +2060,13 @@ module.exports.getBandPage = function(req,res) {
 
 			argv.verbose = false;
 
-			//todo: odd - why was this working before?
-			// argv.config = "./authorization_code/nightwatch.conf.js"
+
+
+			//todo: odd - this is the correct path only if you start the app from authorization_code> node app.js
 			argv.config = "./nightwatch.conf.js";
+
+			//believe if we start it form Showcase> node authorization_code/app.js it must be:
+			// argv.config = "./authorization_code/nightwatch.conf.js"
 
 			// console.warn("COUNT:",runCount);
 			// if(runCount === 0){
