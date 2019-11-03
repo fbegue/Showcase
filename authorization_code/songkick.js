@@ -24,6 +24,23 @@ module.exports.test = function(req, res){
 };
 
 
+//just checking out raw artist search
+var searchArtists = function(){
+	console.log("searchArtists");
+	songkickApi.searchArtists({ query: 'Queen' })
+		.then((res)=>{
+			console.log(JSON.stringify(res[0],null,4));
+
+			if(res[0].identifier){
+				res[0].identifier.forEach(function(id){
+					console.log(id.mbid);
+				})
+			}
+		})
+}
+//searchArtists();
+
+
 
 
 //figure out metro ids (i think these are universal location ids for places)

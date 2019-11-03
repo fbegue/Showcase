@@ -29,8 +29,8 @@ var getMetroEventsReq = {
 		"id": 9480
 	},
 	"dateFilter": {
-		"start": "2019-10-19",
-		"end": "2019-11-19"
+		"start": "2019-11-02",
+		"end": "2019-11-30"
 	},
 	"raw_filename": "raw_Columbus_2019-09-07-2019-09-14.json",
 	"areaDatesArtists_filename": "areaDatesArtists_Columbus_2019-09-07-2019-09-14.json"
@@ -89,7 +89,7 @@ let scrapeSongkick = function(){
 			//console.log("getInfos payload",artist_search_payload);
 			console.log("getInfos payload size",artist_search_payload.length);
 
-			var token = "BQAgf22Fy_wRH_B6dB2-fxWpcLE4QACeh6yS9tQ4GuvsFwgKtvo_gz02wcV0dLSiTUIvdK1j7p2K48G_i7z9Mq-d7TjBOKbfwMaXEXN6BXX-bOAofSZbSi7C96k5hJ0Q-1q4TupSOv8ynziX0vAfSNWmmgA9BiB6idP3nSAtesTSTiYYyMsoFNgbah-VhEr2zPKIEjskk269m4T_SjbvOW3xt7p8DUI40nizE3cGLP0yd0G8FAOp3XHR5jFZ78nmAYc-2rGkjJC4Ek1m_OYd35DxTTLMwA";
+			var token = "BQD3HB7yNlEoTm2mkaTj29Z2CVIvChpKXTa3BiCCgJHNhUlkzhf8SmSooNTiNbezNXBzq3Ys5LTZryNCRXdQ-q62EpHzP2A2ptvXk3ssHudcPXOLpe9KwJ5AWGR66ZQg8QRVaXXSpadM7joVzgK3F4j1W2BW1d8w5O2yiSu3JoAFr6lV2HNU20LP7Li68Wab2pgFczepcJlgvaefTd68EwryGeRE2yjAlxOoOKIk16Uj8hHWKVIzn6Ajp17AApgnU9LMuAyImxX0fMlyOd3G2u7VcH5QNg"
 
 
 			var commitAllArtistsSongkick = function(artist_search_payload){
@@ -98,6 +98,7 @@ let scrapeSongkick = function(){
 
 				artist_search_payload.forEach(function(ar){
 
+					//upsert
 					let insert_artistSongkick = function (artist) {
 
 						var sreq = new sql.Request(poolGlobal);
@@ -132,7 +133,8 @@ let scrapeSongkick = function(){
 			module.exports.getInfos_local({body:{artists:artist_search_payload,token:token}})
 				.then(function(){
 
-					console.log("getInfos results:",JSON.parse(JSON.stringify(res.data)));
+					//todo:
+					//console.log("getInfos results:",JSON.parse(JSON.stringify(res.data)));
 
 				});//getInfos
 
@@ -140,9 +142,36 @@ let scrapeSongkick = function(){
 
 }
 
-scrapeSongkick();
+//scrapeSongkick();
 
 
+
+var artist_artistSongkickScript = function(){
+	var sreq = new sql.Request(poolGlobal);
+	var qry = "select a.id as artist_id, aso.id as artistSongkick_id from dbo.artists a join dbo.artistsSongkick aso on aso.displayName = a.name";
+
+	sreq.query(qry)
+		.then(function(rlts){
+			rlts.recordset.forEach(function(r){
+				//console.log(r);
+
+				var sreq2 = new sql.Request(poolGlobal);
+
+				sreq2.input("artist_id", sql.VarChar(150), r.artist_id);
+				sreq2.input("artistSongkick_id",sql.Int, r.artistSongkick_id);
+				var qry2 = "insert into artist_artistSongkick(artist_id, artistSongkick_id) values (@artist_id, @artistSongkick_id)";
+				sreq2.query(qry2).then(function(rlts2){
+					//console.log("rlts2",rlts2);
+				})
+			});
+		});
+
+
+};
+
+setTimeout(function(){
+	//artist_artistSongkickScript();
+},2000)
 
 //UI Endpoints-------------------------------------------------------
 
@@ -187,23 +216,25 @@ let testBrainz = function(){
 
 	mbApi.searchArtist('Queen')
 		.then(function(result){
-			console.log("$searchArtist",JSON.stringify(result,null,4));
+			//console.log("$searchArtist",JSON.stringify(result,null,4));
+			console.log(JSON.stringify(	result["artist-list"].artist[0],null,4))
+
 		}).catch(pErr);
 
-	mbApi.search('artist', 'Queen')
-		.then(function(result){
-			console.log("$artist",JSON.stringify(result,null,4));
-		}).catch(pErr);
+	// mbApi.search('artist', 'Queen')
+	// 	.then(function(result){
+	// 		console.log("$artist",JSON.stringify(result,null,4));
+	// 	}).catch(pErr);
 
 
-	let artist = "Queen";
-
-	const query = 'query="Queen" AND type:group';
-
-	mbApi.search('artist', query)
-		.then(function(result){
-			console.log("$artistType=group",JSON.stringify(result,null,4));
-		}).catch(pErr);
+	// let artist = "Queen";
+	//
+	// const query = 'query="Queen" AND type:group';
+	//
+	// mbApi.search('artist', query)
+	// 	.then(function(result){
+	// 		console.log("$artistType=group",JSON.stringify(result,null,4));
+	// 	}).catch(pErr);
 
 
 	//todo: test of strength
@@ -432,7 +463,6 @@ let runSQLTests = function(){
 
 runSQLTests();
 
-
 const Nightwatch = require('nightwatch');
 
 
@@ -630,8 +660,8 @@ module.exports.getInfos  = function(req,res,next) {
 
 	//todo: reduce workset
 	//testing
-	console.warn("WORKING WITH REDUCED SET");
-	req.body.artists = req.body.artists.splice(100,200)
+	//console.warn("WORKING WITH REDUCED SET");
+	//req.body.artists = req.body.artists.splice(100,200)
 
 	var lastFail = {};
 	var lastRan = false;
@@ -654,7 +684,7 @@ module.exports.getInfos  = function(req,res,next) {
 
 					//we're fetching artist join on genres.
 
-					//if lastLook is populated we recorded a failure at some point in the past, skip this
+					//if lastLook isnt but there IS a record populated, we recorded a failure at some point in the past, skip this
 					//todo: make this a time-sensitive expiration (when we have more than 1 service to feed from)
 
 					if(res.recordset[0].lastLook !== null){
@@ -666,6 +696,7 @@ module.exports.getInfos  = function(req,res,next) {
 					else if(res.recordset.length === 1 && res.recordset[0].genreName === null){
 						filteredPayload.push(artist)
 					}
+					//we have genres. record them in the return cache
 					else{
 						artist.genres = [];
 						res.recordset.forEach(function(match){
@@ -681,6 +712,7 @@ module.exports.getInfos  = function(req,res,next) {
 						alreadyHave.push(artist)
 					}
 				}
+				//we've never seen this id before
 				else{
 					//console.log("push");
 					filteredPayload.push(artist)
@@ -707,8 +739,18 @@ module.exports.getInfos  = function(req,res,next) {
 		// 	console.log(JSON.stringify(r.recordset,null,4));
 		// });
 
+
+		//console.error("STOPPED EXECUTION");
+		//req.body.artists = [];
+
+		//console.error("RECUDED SET");
+		//req.body.artists = req.body.artists.slice(0,req.body.artists.length -199);
+		console.log(req.body.artists);
+
 		console.log("skipping getinfo for" + alreadyHave.length);
 		console.log("executing getinfo for" + filteredPayload.length);
+
+		//console.log("filteredPayload:",JSON.stringify(filteredPayload,null,4));
 		console.log("total skipped:" + alreadyHave.length + "/" + req.body.artists.length);
 
 		let startDate = new Date();
@@ -883,138 +925,164 @@ module.exports.getInfos  = function(req,res,next) {
 		//todo: searchSpotify currently outputs error flags when this search function should be detecting quality - not searchSpotify
 		//todo: catch and quickly exit when token is expired
 
+		//search spotify by artist's displayName string from songkick
+		//if we get a good result back, insert into insert the artist and its songkick linking
+		//record into the db
+
 		var search =  function(sReq){
 			return new Promise(function(done, fail) {
 				limiterSpotify.schedule(module.exports.searchSpotify,sReq,{})
 					.then((sRes) => {
-						//success:
-						// {	artistSongkick_id: 1111111,artist:<spotifyArtistObject> }
 
-						//couldn't locate
-						// "error":true,
+						//todo: assuming these artists are coming fron songkick
+						//the id here will be a songkick on then
+						sRes.artist.artistSongkick_id = sReq.body.artist.id;
 
-						//located but no genres:
-						//"error":true, "noGenresFound":true
+						//console.log("sReq",JSON.stringify(sReq,null,4));
+						//console.log("sRes",JSON.stringify(sRes,null,4));
 
-						console.log("sRes",sRes);
+						//located
+						if(sRes.artist.id){
 
-						//rebind songkickId
-						sRes.artist.artistSongkick_id = sReq.body.artist.artistSongkick_id;
+							//console.log("located",sRes.body.artist);
 
-						//console.log("search result:",sRes.artist);
+							let insert_artist_artistSongkick = function(artist){
+								var sreq2 = new sql.Request(poolGlobal);
+								sreq2.input("artist_id", sql.VarChar(150), artist.id);
+								sreq2.input("artistSongkick_id",sql.Int, artist.artistSongkick_id);
+								sreq2.execute("insert_artist_artistSongkick").then(function(rlts2){
+									//console.log("insert_artist_artistSongkick: ",rlts2);
+								})
+							};
 
-						let insert_artist = function (artist) {
+							insert_artist_artistSongkick(sRes.artist);
 
-							//console.log("spotify artist:", artist);
+							let insert_artist = function (artist) {
 
-							var sreq = new sql.Request(poolGlobal);
-							sreq.input("id", sql.VarChar(50), artist.id);
-							sreq.input("name", sql.VarChar(50), artist.name);
-							sreq.input("uri", sql.VarChar(100), artist.uri);
-							sreq.input("lastLook", sql.DateTimeOffset(7), new Date());
+								//console.log("spotify artist:", artist);
 
-							sreq.execute("insert_artist").then(function (res) {
-								//console.log(res);
-							}).catch(function (err) {
-								console.log(err);
-							})
-
-						};
-
-						insert_artist(sRes.artist);
-
-						var qualGenres = [];
-
-						var insertGenre = function (genre) {
-							return new Promise(function (done, fail) {
 								var sreq = new sql.Request(poolGlobal);
-								var qry = "IF NOT EXISTS (SELECT * FROM dbo.genres WHERE name = @name) " +
-									"INSERT INTO dbo.genres(name) OUTPUT inserted.id, inserted.name VALUES(@name) " +
-									"else select * from dbo.genres WHERE name = @name";
-								sreq.input("name", sql.VarChar(255), genre);
-								sreq.query(qry).then(function (res) {
-									// let rec = JSON.parse(res.recordset[0])
-									//console.log(res.recordset[0]);
-									//sRes.artist.genres.push(res.recordset[0]);
-									qualGenres.push(res.recordset[0]);
-									done();
+								sreq.input("id", sql.VarChar(50), artist.id);
+								sreq.input("name", sql.VarChar(50), artist.name);
+								sreq.input("uri", sql.VarChar(100), artist.uri);
+								sreq.input("lastLook", sql.DateTimeOffset(7), new Date());
 
+								sreq.execute("insert_artist").then(function (res) {
+									//console.log(res);
 								}).catch(function (err) {
 									console.log(err);
-									fail(err);
 								})
-							})
-						};
 
-						let insert_genre_artist = function (genre, artist) {
-							//console.log("insert_genre_artist");
+							};
 
-							//todo: NOT SURE about decision to mix formats for artist_id here
-							//songkick's numeric ids always treated as strings
+							insert_artist(sRes.artist);
 
-							//todo: check if I need to encode incoming numeric artist id from songkick
-							if (typeof artist.id === "number") {
-								artist.id = artist.id.toString();
+							//located w/ genres
+							if(sRes.artist.genres){
+								//console.log("located w/ genres",sRes.artist);
+
+								var qualGenres = [];
+
+								var insertGenre = function (genre) {
+									return new Promise(function (done, fail) {
+										var sreq = new sql.Request(poolGlobal);
+										var qry = "IF NOT EXISTS (SELECT * FROM dbo.genres WHERE name = @name) " +
+											"INSERT INTO dbo.genres(name) OUTPUT inserted.id, inserted.name VALUES(@name) " +
+											"else select * from dbo.genres WHERE name = @name";
+										sreq.input("name", sql.VarChar(255), genre);
+										sreq.query(qry).then(function (res) {
+											// let rec = JSON.parse(res.recordset[0])
+											//console.log(res.recordset[0]);
+											//sRes.artist.genres.push(res.recordset[0]);
+											qualGenres.push(res.recordset[0]);
+											done();
+
+										}).catch(function (err) {
+											console.log(err);
+											fail(err);
+										})
+									})
+								};
+
+								let insert_genre_artist = function (genre, artist) {
+									//console.log("insert_genre_artist");
+
+									//todo: NOT SURE about decision to mix formats for artist_id here
+									//songkick's numeric ids always treated as strings
+
+									//todo: check if I need to encode incoming numeric artist id from songkick
+									if (typeof artist.id === "number") {
+										artist.id = artist.id.toString();
+									}
+
+
+									//multi-object doesn't make sense to use k-extraction
+									var klist = "genre_id,artist_id"
+									var kparams = "@genre_id,@artist_id"
+
+									var sreq = new sql.Request(poolGlobal);
+									sreq.input("genre_id", sql.Int, genre.id);
+									sreq.input("artist_id", sql.VarChar(50), artist.id);
+
+									var qry = "IF NOT EXISTS (SELECT * FROM dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id)"
+										+ " INSERT INTO dbo.genre_artist(" + klist + " )"
+										+ " OUTPUT inserted.genre_id, inserted.artist_id"
+										+ " VALUES(" + kparams + ")"
+										+ " else select * from dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id";
+
+									sreq.query(qry).then(function (res) {
+										//console.log(res);
+									}).catch(function (err) {
+										console.log(err);
+									})
+								};
+
+								let gPromises = [];
+								let gaPromises = [];
+
+								sRes.artist.genres.forEach(function (genre) {
+									gPromises.push(insertGenre(genre))
+								});
+
+								Promise.all(gPromises).then(function () {
+
+									//console.log("insertGenre finished");
+									//console.log("starting insert_genre_artist", sRes.artist);
+									///console.log("starting qualGenres", qualGenres)
+
+									qualGenres.forEach(function (genre) {
+										gaPromises.push(insert_genre_artist(genre, sRes.artist));
+									});
+
+									Promise.all(gaPromises).then(function () {
+										//console.log("insert_genre_artist finished");
+
+										//client.end()
+									})
+								});
+
+							}
+							//located no genres
+							else{
+								//console.log("located no genres",sReq.body.artist);
 							}
 
-
-							//multi-object doesn't make sense to use k-extraction
-							var klist = "genre_id,artist_id"
-							var kparams = "@genre_id,@artist_id"
-
-							var sreq = new sql.Request(poolGlobal);
-							sreq.input("genre_id", sql.Int, genre.id);
-							sreq.input("artist_id", sql.VarChar(50), artist.id);
-
-							var qry = "IF NOT EXISTS (SELECT * FROM dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id)"
-								+ " INSERT INTO dbo.genre_artist(" + klist + " )"
-								+ " OUTPUT inserted.genre_id, inserted.artist_id"
-								+ " VALUES(" + kparams + ")"
-								+ " else select * from dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id";
-
-							sreq.query(qry).then(function (res) {
-								//console.log(res);
-							}).catch(function (err) {
-								console.log(err);
-							})
-						};
-
-						let gPromises = [];
-						let gaPromises = [];
-
-						//todo: skipping sql stuff for now (2)
-						//need to know how I'm running repeated NW instances first
-
-//					console.warn("skipping sql stuff for now");
-
-						sRes.artist.genres.forEach(function (genre) {
-							gPromises.push(insertGenre(genre))
-						});
-
-						Promise.all(gPromises).then(function () {
-
-							//console.log("insertGenre finished");
-							//console.log("starting insert_genre_artist", sRes.artist);
-							///console.log("starting qualGenres", qualGenres)
-
-							qualGenres.forEach(function (genre) {
-								gaPromises.push(insert_genre_artist(genre, sRes.artist));
-							});
-
-							Promise.all(gaPromises).then(function () {
-								//console.log("insert_genre_artist finished");
-
-								//client.end()
-							})
-						});
-
-
-						if(!sRes.error){
+							//always return results to cache if we found a record
 							resultCache[sRes.artist.name] = sRes;
 							spotResults.push(sRes);
-						}else{
+						}
+						//no spotify record
+						else{
+							//console.log("no spotify record",sReq.body.artist);
 							spotFailures.push(sRes);
 						}
+
+						// if(!sRes.error){
+						// 	resultCache[sRes.artist.name] = sRes;
+						// 	spotResults.push(sRes);
+						// }else{
+						// 	spotFailures.push(sRes);
+						// }
 
 						//note we're always just passing the original query along
 
@@ -2586,46 +2654,169 @@ module.exports.googleQueryScrape  = function(req,res) {
 };
 
 
-//todo: haven't tested yet
+
+
+//todo: make token system
+var token = "BQCKZ5qq9Yau628-1TuNrD7U3deEILFpWaqgLZ-ol9dLaV6JLlVkQsxtV_TvhzxepVFEDVuGBzu14VbLiUUNcvEPOwJPi9SvxQAtr9MDMFsTA_TiUnUAV4uIWIqfDsI0rCQpmeSwB35Wi_EzWNXiRY0s3vbpEDxLT1t-2j5f4ZhMJwEltNYe5pDdLys9lr5OEqWHwyXTbHTDaMN0VqADrxrontSZUqf5kUolQMXVaT8qNvASyBQaqYSjpaJQXGNKpJs5bxOvueavH3OVO6zQTelwzOprlQ"
+
+//todo: testing max thruput
+
+limiterSpotify = new Bottleneck({
+	maxConcurrent: 100,
+	minTime: 200,
+	trackDoneStatus: true
+});
+
+var load_artists = function(){
+	console.log("load_artists");
+	//these are many genre records, so collapse them to unique artists
+
+	var sreq = new sql.Request(poolGlobal);
+	sreq.execute("getAllArtistsGenres")
+		.then((res)=>{
+
+			var artists = {};
+			var artistsOut = [];
+
+			res.recordset.forEach(function(artGen){
+				if(!artists[artGen.id]){
+					artists[artGen.id] = artGen
+					artists[artGen.id].genres = []
+					artists[artGen.id].genres.push(artGen.genreName)
+				}else{
+					artists[artGen.id].genres.push(artGen.genreName)
+				}
+			})
+
+			for(var ar in artists){
+				delete artists[ar].genreName
+				if( artists[ar].genres[0] === null){
+					artists[ar].genres = [];
+				}
+				artistsOut.push(artists[ar])
+			}
+
+			//todo: makeshift genre filter
+
+			//indie *usually* means rock
+			// var genres = ["rock","indie"];
+
+			var genres = ["rock"];
+			var artistsOutFiltered = [];
+			var genresFiltered = [];
+
+
+			artistsOut.forEach(function(ar){
+				dance:
+				for(var x = 0; x < ar.genres.length; x++){
+					//check every candidate genre
+					for(var y = 0; y < genres.length; y++){
+						//if one of them matches, break
+						if(ar.genres[x].indexOf(genres[y]) !== -1 ){
+							artistsOutFiltered.push(ar);
+							genresFiltered.push(ar.genres[x])
+							break dance;
+						}
+					}
+				}
+
+			});
+
+			// console.log("artistsOut",JSON.stringify(artistsOut,null,4));
+			//console.log("artistsOut",artistsOut.length);
+			//console.log("artistsOutFiltered",JSON.stringify(artistsOutFiltered,null,4));
+			console.log("artistsOutFiltered",artistsOutFiltered.length);
+			console.log("genresFiltered",genresFiltered.length);
+
+			var promises = [];
+
+			//artistsOut
+			artistsOutFiltered.forEach(function(ar){
+				var req = {"body":{"artist":ar,"token":token,"max":3,"playlist":{id:"60J4a7oWhXemOD5hzYUeYh"}}}
+				//promises.push(module.exports.playlist_add_artist_tracks_local(req))
+
+				limiterSpotify.schedule(module.exports.playlist_add_artist_tracks_local,req,{})
+					.then(function(){
+
+				}).catch((err)=>{
+					console.log(err);
+				})
+			});
+
+			Promise.all(promises).then(function(results){
+				console.log("results",results);
+
+			});
+
+
+		})
+		.catch((err)=>{
+			console.log(err);
+		})
+
+};
+
+setTimeout(function(){
+	load_artists();
+},1000);
+
+//todo: static playlist id
+//spotify:playlist:60J4a7oWhXemOD5hzYUeYh
 module.exports.playlist_add_artist_tracks =  function(req,res){
 	return new Promise(function(done, fail) {
 
-		console.log(req.body.token);
-		console.log(req.body.playlist);
-		console.log(req.body.artist);
-		console.log(req.body.max);
+		// console.log(req.body.token);
+		// console.log(req.body.playlist);
+		// console.log(req.body.artist);
+		// console.log(req.body.max);
 
 		let local = {body:{}};
 		Object.assign(local.body,req.body);
 		local.body.local = true;
 
-		module.exports.artist_topTracks(local).then(function(result1){
-			console.log("result1",result1);
+		module.exports.artist_topTracks(local)
+			.then(function(result1){
+				//console.log("result1",result1);
 
-			let local2 = {body:{}};
-			Object.assign(local2.body,req.body);
-			// local2.body.playlist = req.body.playlist;
+				let local2 = {body:{}};
+				Object.assign(local2.body,req.body);
+				// local2.body.playlist = req.body.playlist;
 
-			local2.body.tracks = result1.tracks;
-			local2.body.local = true;
+				local2.body.tracks = result1.tracks;
+				local2.body.local = true;
 
-			module.exports.playlist_add_tracks(local2).then(function(result2){
+				module.exports.playlist_add_tracks(local2).then(function(result2){
 
-				console.log("result2",result2);
+					//console.log("result2",result2);
 
-			})
+				})
+			}).catch((err)=>{
+			console.log(err);
 		})
 	})
 };
 
+
+
+module.exports.playlist_add_artist_tracks_local=  function(req){
+	return new Promise(function(done, fail) {
+
+		var callback = function(res){
+			done({data:res})
+		};
+
+		module.exports.playlist_add_artist_tracks(req,{},callback)
+
+	})
+};
 
 //sometimes this seems to just run 1x, 2x more randomly?
 
 module.exports.playlist_add_tracks =  function(req,res){
 	return new Promise(function(done, fail) {
 
-		console.log(req.body.playlist);
-		console.log(req.body.tracks);
+		//console.log(req.body.playlist);
+		//console.log(req.body.tracks);
 
 		let uri =  "https://api.spotify.com/v1/playlists/" + req.body.playlist.id + "/tracks?uris=";
 		// let track_uri = "spotify:track:";
@@ -2646,10 +2837,10 @@ module.exports.playlist_add_tracks =  function(req,res){
 			i !== req.body.tracks.length - 1 ? options.uri =  options.uri + "%2C" :{}
 		});
 
-		console.log(options.uri);
+		//console.log(options.uri);
 
 		rp(options).then(function(result){
-			console.log("res",result);
+			//console.log("res",result);
 
 			if(req.body.local){
 				done(result);
@@ -2668,8 +2859,8 @@ module.exports.playlist_add_tracks =  function(req,res){
 module.exports.artist_topTracks =  function(req,res){
 	return new Promise(function(done, fail) {
 
-		console.log(req.body.artist);
-		console.log(req.body.local);
+		//console.log(req.body.artist);
+		//console.log(req.body.local);
 
 		let uri =  "https://api.spotify.com/v1/artists/" + req.body.artist.id + "/top-tracks?country=US";
 		let options = {
@@ -2684,7 +2875,13 @@ module.exports.artist_topTracks =  function(req,res){
 		};
 
 		rp(options).then(function(result){
-			console.log("result",result);
+			//console.log("result",result.tracks);
+
+			//console.log("MAX",req.body.max);
+			if(req.body.max){
+				//console.log("trimming to", req.body.max);
+				result.tracks = result.tracks.slice(0,req.body.max)
+			}
 			if(req.body.local){
 				done(result);
 			}

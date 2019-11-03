@@ -1,4 +1,5 @@
 select * from [master].[dbo].genre_artist
+--where artistSongkick_id is not null
 --truncate table [master].[dbo].genre_artist
 
 DECLARE @genre_id int = '1';   
