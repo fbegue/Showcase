@@ -131,6 +131,192 @@
 			(function(exports) {
 
 
+				// var doCalendar = function(){
+
+
+					var CLIENT_ID = '446469140888-768cqn734osc24j0o3cltrbrtlej9336.apps.googleusercontent.com';
+					//secret:iNPWx1vaV2IMFQijkAO-IX7Q
+
+					var API_KEY = 'AIzaSyB_7zsaH5YG74mxwzK_vFcTnDVo4npXLmA';
+
+					// Array of API discovery doc URLs for APIs used by the quickstart
+					var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
+
+					// Authorization scopes required by the API; multiple scopes can be
+					// included, separated by spaces.
+					// var SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
+					var SCOPES = "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events";
+
+					// var authorizeButton = document.getElementById('authorize_button');
+					// var signoutButton = document.getElementById('signout_button');
+
+					var authorizeButton = {}
+					var signoutButton = {}
+
+					/**
+					 *  On load, called to load the auth2 library and API client library.
+					 */
+					function handleClientLoad() {
+						gapi.load('client:auth2', initClient);
+					}
+
+					/**
+					 *  Initializes the API client library and sets up sign-in state
+					 *  listeners.
+					 */
+					function initClient() {
+						gapi.client.init({
+							apiKey: API_KEY,
+							clientId: CLIENT_ID,
+							discoveryDocs: DISCOVERY_DOCS,
+							scope: SCOPES
+						}).then(function () {
+							// Listen for sign-in state changes.
+							gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+
+							// Handle the initial sign-in state.
+							updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+							 authorizeButton.onclick = handleAuthClick;
+							signoutButton.onclick = handleSignoutClick;
+
+						}, function(error) {
+							appendPre(JSON.stringify(error, null, 2));
+						});
+					}
+
+					/**
+					 *  Called when the signed in status changes, to update the UI
+					 *  appropriately. After a sign-in, the API is called.
+					 */
+					function updateSigninStatus(isSignedIn) {
+						if (isSignedIn) {
+							authorizeButton.style.display = 'none';
+							signoutButton.style.display = 'block';
+							listUpcomingEvents();
+						} else {
+							authorizeButton.style.display = 'block';
+							signoutButton.style.display = 'none';
+						}
+					}
+
+					/**
+					 *  Sign in the user upon button click.
+					 */
+					function handleAuthClick(event) {
+						console.log("handleAuthClick");
+						gapi.auth2.getAuthInstance().signIn();
+					}
+
+					/**
+					 *  Sign out the user upon button click.
+					 */
+					function handleSignoutClick(event) {
+						gapi.auth2.getAuthInstance().signOut();
+					}
+
+					/**
+					 * Append a pre element to the body containing the given message
+					 * as its text node. Used to display the results of the API call.
+					 *
+					 * @param {string} message Text to be placed in pre element.
+					 */
+					function appendPre(message) {
+						var pre = document.getElementById('content');
+						var textContent = document.createTextNode(message + '\n');
+						pre.appendChild(textContent);
+					}
+
+					/**
+					 * Print the summary and start datetime/date of the next ten events in
+					 * the authorized user's calendar. If no events are found an
+					 * appropriate message is printed.
+					 */
+					function listUpcomingEvents() {
+						console.log("listUpcomingEvents");
+
+
+						var event = {
+							'summary': 'TestEvent',
+							'location': '800 Howard St., San Francisco, CA 94103',
+							'description': 'A chance to hear more about Google\'s developer products.',
+							'start': {
+								'dateTime': '2019-11-12T20:56:02.372Z',
+								'timeZone': 'America/Los_Angeles'
+							},
+							'end': {
+								'dateTime': '2019-11-12T21:56:02.372Z',
+								'timeZone': 'America/Los_Angeles'
+							},
+							'recurrence': [
+								'RRULE:FREQ=DAILY;COUNT=2'
+							],
+							'attendees': [
+								{'email': 'lpage@example.com'},
+								{'email': 'sbrin@example.com'}
+							],
+							'reminders': {
+								'useDefault': false,
+								'overrides': [
+									{'method': 'email', 'minutes': 24 * 60},
+									{'method': 'popup', 'minutes': 10}
+								]
+							}
+						};
+
+						var request = gapi.client.calendar.events.insert({
+							//'calendarId': 'primary',
+							'calendarId': '8ktpulckak8bl8ebm6j5e3f230@group.calendar.google.com',
+							'resource': event
+						});
+
+						request.execute(function(event) {
+							//appendPre('Event created: ' + event.htmlLink);
+							console.log("event added",event);
+						});
+
+						function execute() {
+							return gapi.client.calendar.calendarList.list({})
+								.then(function(response) {
+										// Handle the results here (response.result has the parsed body).
+										console.log("Response", response);
+										console.log("owned:");
+										response.result.items.forEach(function(i){
+											i.accessRole === "owner" ? console.log( i.id + "|" +i.summary ):{};
+										})
+									},
+									function(err) { console.error("Execute error", err); });
+						}
+						execute();
+
+						gapi.client.calendar.events.list({
+							// 'calendarId': 'primary',
+							'calendarId': '8ktpulckak8bl8ebm6j5e3f230@group.calendar.google.com',
+							'timeMin': (new Date()).toISOString(),
+							'showDeleted': false,
+							'singleEvents': true,
+							'maxResults': 10,
+							'orderBy': 'startTime'
+						}).then(function(response) {
+							var events = response.result.items;
+							appendPre('Upcoming events:');
+
+							if (events.length > 0) {
+								for (i = 0; i < events.length; i++) {
+									var event = events[i];
+									var when = event.start.dateTime;
+									if (!when) {
+										when = event.start.date;
+									}
+									appendPre(event.summary + ' (' + when + ')')
+								}
+							} else {
+								appendPre('No upcoming events found.');
+							}
+						});
+
+					}//listUpcomingEvents
+
+
 				var module = angular.module('showcase', []);
 
 				let global_familyColor_map = {};
@@ -511,7 +697,12 @@
 
 				let controller = module.controller("myCtrl", function($scope,$http,linker) {
 
-
+					$("#gapi").load(function() {
+						console.log( "ready!" );
+						authorizeButton = $('#authorize_button')[0];
+						signoutButton = $('#signout_button')[0];
+						handleClientLoad()
+					});
 
 					$scope.vmapSelection = [];
 
@@ -1676,6 +1867,11 @@
 					};
 
 					//section: UI UTILITIES
+					var  =  function(){
+					    return new Promise(function(done, fail) {
+					    
+					    })
+					}
 					//===========================================================================================
 
 
@@ -2109,7 +2305,7 @@
 
 
 					console.warn("getInfos_0512_0519 imported",getInfos_0512_0519);
-					$scope.get_metro_events = function(metro){
+					$scope.get_metro_events = function(metro) {
 
 						// console.log("get_metro_events hook",metro);
 						// postData('localhost:8888/get_metro_events',
@@ -2126,18 +2322,18 @@
 						req.url_postfix = "get_metro_events";
 
 						req.body = {
-							metro:metro,
-							dateFilter:$scope.dateFilter,
+							metro: metro,
+							dateFilter: $scope.dateFilter,
 							// raw_filename:$scope.raw_filename,
 							// areaDatesArtists_filename:$scope.areaDatesArtists_filename
-							raw_filename:$scope.raw_filename || "raw_" + metro.displayName +"_" + $scope.dateFilter.start + "-" + $scope.dateFilter.end + ".json",
-							areaDatesArtists_filename:$scope.areaDatesArtists_filename || "areaDatesArtists_" + metro.displayName +"_" + $scope.dateFilter.start + "-" + $scope.dateFilter.end + ".json"
+							raw_filename: $scope.raw_filename || "raw_" + metro.displayName + "_" + $scope.dateFilter.start + "-" + $scope.dateFilter.end + ".json",
+							areaDatesArtists_filename: $scope.areaDatesArtists_filename || "areaDatesArtists_" + metro.displayName + "_" + $scope.dateFilter.start + "-" + $scope.dateFilter.end + ".json"
 						};
 
-						$http.post(url_local + req.url_postfix,req.body).then(function(res){
+						$http.post(url_local + req.url_postfix, req.body).then(function (res) {
 							// make_request_local(req).then(function(events){
 							let events = res.data;
-							console.log("get_metro_events results",JSON.parse(JSON.stringify(events)));
+							console.log("get_metro_events results", JSON.parse(JSON.stringify(events)));
 							//console.log("$user_cache",user_cache);
 
 							// let events = [];
@@ -2152,28 +2348,28 @@
 							// 	artist_name_map[art.name] = art;
 							// });
 
-							console.log("create fuzzyset",artist_name_map);
+							console.log("create fuzzyset", artist_name_map);
 							var fm = new FuzzyMatching(artist_names);
 
 							let artist_search_payload = [];
 
 							let pushedIds = [];
 
-							events.forEach(function(event){
+							events.forEach(function (event) {
 
 								//do performances first
 
 								let e_p = {};
 								let tuple = {};
 
-								event.performance.forEach(function(perf){
+								event.performance.forEach(function (perf) {
 									// console.log(perf);
 
 									e_p = {};
 									e_p.event_id = event.id;
 									e_p.performance_id = perf.id;
 
-									alasql("INSERT INTO events_performances VALUES ( " + vlister(e_p)  + " )");
+									alasql("INSERT INTO events_performances VALUES ( " + vlister(e_p) + " )");
 
 									// !$scope.metro_cache_performances[metroResults[0]['id']] ? $scope.metro_cache_performances[metroResults[0]['id']] = [] :{};
 									// $scope.metro_cache_performances[metroResults[0]['id']].push(p);
@@ -2183,13 +2379,12 @@
 									//console.log("$match",match.value + " =? " + p.displayName);
 
 									//todo: what is appropriate distance here?
-									if(match.distance >= .8){
+									if (match.distance >= .8) {
 										perf.artist_match = match.value;
 										perf.artist = artist_name_map[match.value]
-									}
-									else{
+									} else {
 										//we will process these and update our table in a sec
-										if(pushedIds.indexOf(perf.artist.id) === -1){
+										if (pushedIds.indexOf(perf.artist.id) === -1) {
 											tuple = {};
 											tuple.name = perf.artist.displayName;
 
@@ -2201,7 +2396,7 @@
 											//perf.artist.identifier.length > 1 ? console.error("MULTIPLE IDENTIFIERS",perf.artist):{};
 											//perf.artist.identifier.length === 0 ? console.error("missing identifier",perf.artist):{};
 
-											perf.artist.identifier.length > 0 ? tuple.identifier = perf.artist.identifier[0].mbid:{};
+											perf.artist.identifier.length > 0 ? tuple.identifier = perf.artist.identifier[0].mbid : {};
 
 											//todo: doesn't seem like this is a thing anymore?
 											//I checked to make sure I wasn't parsing it out or anything,
@@ -2216,133 +2411,138 @@
 
 									//performances keep artistSongkick_id, artists refer to as just 'id' (doublely type)
 									perf.artistSongkick_id = perf.artist.id;
-									reduce(performanceDef,perf);
+									reduce(performanceDef, perf);
 
 									//sanitize
 									let varchar_keys = ["displayName"];
-									varchar_keys.forEach(function(key) {	perf[key] = perf[key].replace(/'/g, "''");});
+									varchar_keys.forEach(function (key) {
+										perf[key] = perf[key].replace(/'/g, "''");
+									});
 
-									alasql("INSERT INTO performances VALUES ( " + vlister(perf)  + " )");
+									alasql("INSERT INTO performances VALUES ( " + vlister(perf) + " )");
 
 								}); //each performance
 
 								//events
 
 								//special reduce
-								event.location ? event.location = event.location.city :  event.location = null;
+								event.location ? event.location = event.location.city : event.location = null;
 								event.datetime = event.start.datetime;
-								event.date =  event.start.date;
-								event.venue =  event.venue.displayName;
+								event.date = event.start.date;
+								event.venue = event.venue.displayName;
 
 								//sanitize
-								let varchar_keys = ["displayName","venue"];
-								varchar_keys.forEach(function(key) {	event[key] = event[key].replace(/'/g, "''");});
+								let varchar_keys = ["displayName", "venue"];
+								varchar_keys.forEach(function (key) {
+									event[key] = event[key].replace(/'/g, "''");
+								});
 
 								//co-
 
-							var  fakeInfo =  function(){
-								return new Promise(function(done, fail) {
-									console.warn("WARNING: returning fake data from externalInfo");
-									done(getInfos_0512_0519)
-								})
-							};
+								var fakeInfo = function () {
+									return new Promise(function (done, fail) {
+										console.warn("WARNING: returning fake data from externalInfo");
+										done(getInfos_0512_0519)
+									})
+								};
 
-							//todo: replace with handler (already being used by profile resolution)
-							$http.post(url_local + req.url_postfix,req.body).then(function(res){
-								 // fakeInfo().then(function(res){res.data = res;
+								//todo: replace with handler (already being used by profile resolution)
+								$http.post(url_local + req.url_postfix, req.body).then(function (res) {
+									// fakeInfo().then(function(res){res.data = res;
 
-								console.log("getInfos results:",JSON.parse(JSON.stringify(res.data)));
+									console.log("getInfos results:", JSON.parse(JSON.stringify(res.data)));
 
-								let artist_artistSongkick = {};
-								let payloads = [];
-								let payload = {artists:[]};
-								let genId = 0;
-								let genSpotifyIdBase = "xxx"
+									let artist_artistSongkick = {};
+									let payloads = [];
+									let payload = {artists: []};
+									let genId = 0;
+									let genSpotifyIdBase = "xxx"
 
-								res.data.forEach(function(tuple){
+									res.data.forEach(function (tuple) {
 
-									//tuple formats:
+										//tuple formats:
 
-									//full spotify artist + artistSongkick_id
-									//3-field tuple from other source: {artistSongkick_id,name,genres[]}
-									//3-field tuple from failure {artistSongkick_id,name,error:true}
+										//full spotify artist + artistSongkick_id
+										//3-field tuple from other source: {artistSongkick_id,name,genres[]}
+										//3-field tuple from failure {artistSongkick_id,name,error:true}
 
-									//either way, we're going to create these in the artist table
+										//either way, we're going to create these in the artist table
 
-									if(tuple.error || tuple.id === undefined) {
-										// tuple.artist = {};
-										// tuple.artist.name = tuple.name;
-										// tuple.artist.uri = null;
-										// tuple.artist.popularity = null;
-										// tuple.artist.genres = tuple.genres || null;
+										if (tuple.error || tuple.id === undefined) {
+											// tuple.artist = {};
+											// tuple.artist.name = tuple.name;
+											// tuple.artist.uri = null;
+											// tuple.artist.popularity = null;
+											// tuple.artist.genres = tuple.genres || null;
 
-										//todo: assigning a custom generated artist.id for non-spotify artists (hmmm)
-										tuple.id = genSpotifyIdBase + genId++;
-										tuple.uri = null;
-										tuple.popularity = null;
-										tuple.genres = tuple.genres || [];
-										// tuple.name = tuple.name;
-										// tuple.artistSongkick_id = tuple.artistSongkick_id;
-									}
+											//todo: assigning a custom generated artist.id for non-spotify artists (hmmm)
+											tuple.id = genSpotifyIdBase + genId++;
+											tuple.uri = null;
+											tuple.popularity = null;
+											tuple.genres = tuple.genres || [];
+											// tuple.name = tuple.name;
+											// tuple.artistSongkick_id = tuple.artistSongkick_id;
+										}
 
-									artist_artistSongkick.artistSongkick_id = tuple.artistSongkick_id;
-									artist_artistSongkick.artist_id = tuple.id;
+										artist_artistSongkick.artistSongkick_id = tuple.artistSongkick_id;
+										artist_artistSongkick.artist_id = tuple.id;
 
-									artist_artistSongkick.artistSongkick_id === 633278 ? console.log("$artist_artistSongkick",artist_artistSongkick):{};
-									alasql("INSERT INTO artist_artistSongkick VALUES ( " + vlister(artist_artistSongkick)  + " )");
-									payload.artists.push(tuple)
-								});
+										artist_artistSongkick.artistSongkick_id === 633278 ? console.log("$artist_artistSongkick", artist_artistSongkick) : {};
+										alasql("INSERT INTO artist_artistSongkick VALUES ( " + vlister(artist_artistSongkick) + " )");
+										payload.artists.push(tuple)
+									});
 
-								//process_artists has weird params
-								payloads.push(payload);
+									//process_artists has weird params
+									payloads.push(payload);
 
-								console.log("process_artists workset:",JSON.parse(JSON.stringify(payloads)));
+									console.log("process_artists workset:", JSON.parse(JSON.stringify(payloads)));
 
-								$scope.process_artists(payloads).then(function(){
+									$scope.process_artists(payloads).then(function () {
 
-									//todo: modify for multiple metro calls
+										//todo: modify for multiple metro calls
 
-									// $scope.metro_cache[events[0].metro_id] = events;
-									// $scope.metro_cache[events[0].metro_id] = alasql("select * from events;");
+										// $scope.metro_cache[events[0].metro_id] = events;
+										// $scope.metro_cache[events[0].metro_id] = alasql("select * from events;");
 
-									console.log("metro_cache",$scope.metro_cache);
-									// console.log('events:',alasql("select * from events;"));
-									// console.log('performances:',alasql("select * from performances;"));
-									// console.log('events_performances:',alasql("select * from events_performances;"));
-									// console.log('artist_artistSongkick:',alasql("select * from artist_artistSongkick;"));
+										console.log("metro_cache", $scope.metro_cache);
+										// console.log('events:',alasql("select * from events;"));
+										// console.log('performances:',alasql("select * from performances;"));
+										// console.log('events_performances:',alasql("select * from events_performances;"));
+										// console.log('artist_artistSongkick:',alasql("select * from artist_artistSongkick;"));
 
-									// let qry = "select p.displayName as perf_displayName, " +
-									// 	"from events e JOIN events_performances ep on e.id = ep.event_id JOIN performances p on p.id = ep.performance_id";
-									//
-									// $scope.metro_cache[events[0].metro_id] = alasql(qry);
+										// let qry = "select p.displayName as perf_displayName, " +
+										// 	"from events e JOIN events_performances ep on e.id = ep.event_id JOIN performances p on p.id = ep.performance_id";
+										//
+										// $scope.metro_cache[events[0].metro_id] = alasql(qry);
 
-									//todo: (process_artists)
-									!$scope.metro_cache[events[0].metro_id] ? $scope.metro_cache[events[0].metro_id] = {} : {};
+										//todo: (process_artists)
+										!$scope.metro_cache[events[0].metro_id] ? $scope.metro_cache[events[0].metro_id] = {} : {};
 
-									$scope.metro_cache[events[0].metro_id].events = alasql("select * from events;")
-									// $scope.metro_cache[events[0].metro_id].performances = alasql("select * from performances;")
+										$scope.metro_cache[events[0].metro_id].events = alasql("select * from events;")
+										// $scope.metro_cache[events[0].metro_id].performances = alasql("select * from performances;")
 
-									// p.artistSongkick_id
-									// p.billing
-									// p.billingIndex
-									// p.displayName
-									// p.id
+										// p.artistSongkick_id
+										// p.billing
+										// p.billingIndex
+										// p.displayName
+										// p.id
 
-									let qperf = "select * from performances;"
+										let qperf = "select * from performances;"
 
-									$scope.metro_cache[events[0].metro_id].performances = alasql(qperf)
+										$scope.metro_cache[events[0].metro_id].performances = alasql(qperf)
 
-									console.log($scope.metro_cache[events[0].metro_id]);
+										console.log($scope.metro_cache[events[0].metro_id]);
 
-									$scope.alasql(false,"set","distinct_genres_all")
+										$scope.alasql(false, "set", "distinct_genres_all")
 
-									$scope.digestIt();
-								})
+										$scope.digestIt();
+									})
 
-							});//search_artists post
+								});//search_artists post
 
-						})//get_metro_events post
-					};
+							})//foreach
+						}) //get_metro_events post
+					};//get_metro_events
 
 					var write_schedule = function(results){
 						results.forEach(function(result){
@@ -3181,427 +3381,427 @@
 
 							done();
 
-					})//promise
+						})//promise
 
-			};//process_artists
+					};//process_artists
 
-			/**Get tracks for every playlist you throw at it {playlist_tracks_map}
-			 * While processing the playlist track entries, it also fills out artistsInfoMap, artistsInfoMap_simple
-			 * Called while iterating over playlists from get_all_tracks
-			 *
-			 * @function $scope.playlist_tracks
-			 **/
-			$scope.playlist_tracks = function(user,plays){
-				return new Promise(function(done, fail) {
-					console.log("playlist_tracks for: ",user.display_name);
+					/**Get tracks for every playlist you throw at it {playlist_tracks_map}
+					 * While processing the playlist track entries, it also fills out artistsInfoMap, artistsInfoMap_simple
+					 * Called while iterating over playlists from get_all_tracks
+					 *
+					 * @function $scope.playlist_tracks
+					 **/
+					$scope.playlist_tracks = function(user,plays){
+						return new Promise(function(done, fail) {
+							console.log("playlist_tracks for: ",user.display_name);
 
-					console.log(JSON.parse(JSON.stringify(plays,null,4)));
-					let plays_checked = [];
-					if(plays){
-						// plays.forEach(function(p,i){
-						// 	!p._cmo_checked ? plays.splice(i,1) : {};
-						// })
-						plays.forEach(function(p,i){
-							p._cmo_checked ? plays_checked.push(p):{};
-						});
-						plays = plays_checked;
-					}
-					else{
-						let qry = "select * from playlists where owner = '" + user.id + "' ";
-						plays = alasql(qry);
-						console.log(qry,plays);
-					}
-
-					//let promises = [];
-					// plays.forEach(function(play){
-					// 	let payload = {};
-					// 	payload.url_postfix = "playlist_tracks";
-					// 	payload.type = "POST";
-					// 	payload.body = {};
-					// 	payload.body.playlist = play;
-					//
-					// 	let params = getHashParams();
-					// 	payload.body.token = params.access_token;
-					//
-					//
-					// 	//console.log(payload);
-					// 	promises.push($http.post(url_local + payload.url_postfix,payload.body));
-					// });
-
-					//fixme: #getArtist -  force short-query for playlists
-					let p1 =
-						{
-							$$hashKey: "object:240",
-							id: "6Y5pMXlTVVo1y0idN42O6g",
-							name: "Alternative (party)",
-							owner: "dacandyman01",
-							public: "true",
-							uri: "spotify:playlist:6Y5pMXlTVVo1y0idN42O6g",
-							_cmo_checked: true}
-
-
-					let p2 = {
-						"id": "578eYeachMr2J9WUoXm5vp",
-						"name": "REDDIT BEAUTIFUL",
-						"owner": "dacandyman01",
-						"public": "true",
-						"uri": "spotify:playlist:578eYeachMr2J9WUoXm5vp",
-						"$$hashKey": "object:106",
-						"_cmo_checked": true
-					}
-					let p3 ={
-						"id": "35tDrtRWRZzipC2yo4CZI4",
-						"name": "Discover Archive",
-						"owner": "dacandyman01",
-						"public": "false",
-						"uri": "spotify:playlist:35tDrtRWRZzipC2yo4CZI4",
-						"$$hashKey": "object:192",
-						"_cmo_checked": true
-					}
-					// plays = [p1];
-					//plays = [p2];
-
-
-					let payload = {};
-					payload.url_postfix = "playlist_tracks";
-					payload.type = "POST";
-					payload.body = {};
-					payload.body.playlists = plays;
-
-					let params = getHashParams();
-					payload.body.token = params.access_token;
-
-
-					//console.log("sending request : " + payload.type + " :: " + payload.url_postfix);
-					$http.post(url_local + payload.url_postfix,payload.body).then(function(res){
-						// Promise.all(promises).then(function(res){
-
-						console.log("$playlistTrackMap",res);
-
-						let artist_list = [];
-						res.data.forEach(function(payload){
-							artist_list = artist_list.concat($scope.process_tracks(payload.tracks,{id:payload.playlist_id}))
-						});
-
-						let payloads = [];
-						let custom_it = 0;
-						let payload = [];
-						//create payloads of 50 artists each, and push them as promises to resolve later
-
-						artist_list.forEach(function(id,i){
-							if(i === 0){payload.push(id)}
+							console.log(JSON.parse(JSON.stringify(plays,null,4)));
+							let plays_checked = [];
+							if(plays){
+								// plays.forEach(function(p,i){
+								// 	!p._cmo_checked ? plays.splice(i,1) : {};
+								// })
+								plays.forEach(function(p,i){
+									p._cmo_checked ? plays_checked.push(p):{};
+								});
+								plays = plays_checked;
+							}
 							else{
-								if(!(i % 50 === 0)){payload.push(id)}
-								else{
-									payloads.push(payload);custom_it = 0;payload = [];
+								let qry = "select * from playlists where owner = '" + user.id + "' ";
+								plays = alasql(qry);
+								console.log(qry,plays);
+							}
+
+							//let promises = [];
+							// plays.forEach(function(play){
+							// 	let payload = {};
+							// 	payload.url_postfix = "playlist_tracks";
+							// 	payload.type = "POST";
+							// 	payload.body = {};
+							// 	payload.body.playlist = play;
+							//
+							// 	let params = getHashParams();
+							// 	payload.body.token = params.access_token;
+							//
+							//
+							// 	//console.log(payload);
+							// 	promises.push($http.post(url_local + payload.url_postfix,payload.body));
+							// });
+
+							//fixme: #getArtist -  force short-query for playlists
+							let p1 =
+								{
+									$$hashKey: "object:240",
+									id: "6Y5pMXlTVVo1y0idN42O6g",
+									name: "Alternative (party)",
+									owner: "dacandyman01",
+									public: "true",
+									uri: "spotify:playlist:6Y5pMXlTVVo1y0idN42O6g",
+									_cmo_checked: true}
+
+
+							let p2 = {
+								"id": "578eYeachMr2J9WUoXm5vp",
+								"name": "REDDIT BEAUTIFUL",
+								"owner": "dacandyman01",
+								"public": "true",
+								"uri": "spotify:playlist:578eYeachMr2J9WUoXm5vp",
+								"$$hashKey": "object:106",
+								"_cmo_checked": true
+							}
+							let p3 ={
+								"id": "35tDrtRWRZzipC2yo4CZI4",
+								"name": "Discover Archive",
+								"owner": "dacandyman01",
+								"public": "false",
+								"uri": "spotify:playlist:35tDrtRWRZzipC2yo4CZI4",
+								"$$hashKey": "object:192",
+								"_cmo_checked": true
+							}
+							// plays = [p1];
+							//plays = [p2];
+
+
+							let payload = {};
+							payload.url_postfix = "playlist_tracks";
+							payload.type = "POST";
+							payload.body = {};
+							payload.body.playlists = plays;
+
+							let params = getHashParams();
+							payload.body.token = params.access_token;
+
+
+							//console.log("sending request : " + payload.type + " :: " + payload.url_postfix);
+							$http.post(url_local + payload.url_postfix,payload.body).then(function(res){
+								// Promise.all(promises).then(function(res){
+
+								console.log("$playlistTrackMap",res);
+
+								let artist_list = [];
+								res.data.forEach(function(payload){
+									artist_list = artist_list.concat($scope.process_tracks(payload.tracks,{id:payload.playlist_id}))
+								});
+
+								let payloads = [];
+								let custom_it = 0;
+								let payload = [];
+								//create payloads of 50 artists each, and push them as promises to resolve later
+
+								artist_list.forEach(function(id,i){
+									if(i === 0){payload.push(id)}
+									else{
+										if(!(i % 50 === 0)){payload.push(id)}
+										else{
+											payloads.push(payload);custom_it = 0;payload = [];
+										}
+									}
+								});
+
+								//leftover
+								if(payload.length){payloads.push(payload)}
+
+
+								//fixme: #getArtist -  force cached request
+								// console.warn("imported locally:","franky's playlist artist payload");
+								// payloads = get_artists_payload_franky;
+								// console.log("$payloads",payloads);
+
+
+								let promises = [];
+								let payload_strs = [];
+								payloads.forEach(function(payload){
+									//form a comma seperated list of 50 artists ids
+									let payload_str  = "";
+									payload.forEach(function(id,i){
+										payload_str = payload_str + id;
+										i !== payload.length - 1 ? payload_str =  payload_str + "," :{}
+									});
+									payload_strs.push(payload_str);
+								});
+
+
+								let req_all = {};
+								req_all.url_postfix = "get_artists";
+								let params =  getHashParams();
+								req_all.body = {};
+								req_all.body.token = params.access_token;
+								req_all.body.queries = payload_strs;
+
+								//fixme:
+								// let test = [];
+								// test.push(req_all.body.queries[1])
+								// req_all.body.queries = test;
+
+								console.log("# of payload strings:",payload_strs.length);
+								console.log("req_all.body.queries",req_all.body.queries);
+								$http.post(url_local + req_all.url_postfix,req_all.body).then(function(results){
+									console.log("$get_artists",results);
+									//console.log(JSON.stringify(results.data,null,4));
+
+									//fixme:
+									//results = get_artists_results_franky;
+
+									$scope.process_artists(results.data).then(function(){
+										done();
+									})
+
+									// console.log("select * from genres;",alasql("select * from genres;"));
+									// console.log("select * from artists;",alasql("select * from artists;"));
+									// console.log("select * from artists_genres;",alasql("select * from artists_genres;"));
+
+									// let qry = "select a.id AS artist_id, a.name AS artist_name, g.id AS genre_id, g.name AS genre_name " +
+									// 	"from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id";
+									// console.log("join artists with their genres",alasql(qry));
+
+
+								})//promise all
+							})//post then
+						})};//playlist_tracks
+
+
+					//section: searching utilities
+					//===========================================================================================
+
+
+					//this will go to the MS and first try to get more info from wiki, then a google search
+					$scope.getExternalInfos = function(artists){
+						return new Promise(function(done, fail) {
+							var req = {};
+							req.type = "POST";
+							req.url_postfix = "getExternalInfos";
+							let params = getHashParams();
+							req.body = {
+								artists:artists,
+								token:params.access_token
+							};
+
+
+							//attempting to parse out knowledge panels
+							let parseGoogleHTML = function(html,artist){
+								let doc = $(html);
+								let str = "";
+
+								//check each top level element (in case page redesign)
+								for(var x = 0; x < 15; x++){
+									let tbody = $(doc)[x];
+
+									//todo: should always find genre but concerned about relying on next span
+									let g = $(tbody).find("span:contains('Genre')").next()
+
+									//this is the one we're looking for
+									if(g[0]){
+										str = g[0].innerText
+									}
+									// else{
+									// 	g = $(tbody).find("span:contains('Genres')").next()
+									// 	console.log("2");
+									// 	if(g[0]){
+									// 		str = g[0].innerText
+									// 	}
+									// }
 								}
-							}
-						});
+								//console.log(str);
 
-						//leftover
-						if(payload.length){payloads.push(payload)}
+								let genres = [];
+								if(str) {
+									if (str.indexOf(",") !== -1) {
+										genres = str.split(",")
+									} else if (str.indexOf("/") !== -1) {
+										genres = str.split("/")
+									}
+									else{
+										console.warn("had an issue splitting this string result",str);
+									}
+								}
+
+								for(var x = 0; x < genres.length; x++){
+									genres[x] = genres[x].trim();
+								}
+
+								//console.log("genres",genres);
+								//console.log("parseGoogleHTML genres:",artist.name,genres);
+								let tuple = {genres:genres,artist:artist}
+								return tuple;
+							};
+
+							//todo: idk, one day just couldn't parse the whole page
+							let parseGoogleHTML_deprecated = function(html){
+
+								// console.log(res.data);
+								let doc = $(html);
+								//console.log(doc);
+								let g = doc.find("span:contains('Genres')")
+								let y = $(g).next()
+								let z = y.text();
+
+								//todo: catch
+								let genres = z.split(",")
+
+								for(var x = 0; x < genres.length; x++){
+									genres[x] = genres[x].trim();
+								}
+
+								console.log("parseGoogleHTML2 genres:",genres);
+								return genres
+							};
+
+							$http.post(url_local + req.url_postfix,req.body).then(function(res){
+
+								console.log("$getExternalInfos finished:",res.data);
+								let parsed_infos = [];
+
+								res.data.forEach(function(info){
+
+									//fixme:
+
+									// if(info.artist.name === "Funk Worthy"){
+
+									let tuple = {};
+									tuple.artist = info.artist;
+
+									//either we got genres from wiki
+									// or we got an html page to parse from google
+
+									if(info.genres){
+										tuple.genres = info.genres;
+									}
+									else if(info.htmlBand){
+										tuple = parseBandHTML(info.htmlBand,info.artist);
+									}
+									else{
+										tuple = parseGoogleHTML(info.html,info.artist);
+									}
+									parsed_infos.push(tuple)
+
+									// }
 
 
-						//fixme: #getArtist -  force cached request
-						// console.warn("imported locally:","franky's playlist artist payload");
-						// payloads = get_artists_payload_franky;
-						// console.log("$payloads",payloads);
 
+								});
 
-						let promises = [];
-						let payload_strs = [];
-						payloads.forEach(function(payload){
-							//form a comma seperated list of 50 artists ids
-							let payload_str  = "";
-							payload.forEach(function(id,i){
-								payload_str = payload_str + id;
-								i !== payload.length - 1 ? payload_str =  payload_str + "," :{}
-							});
-							payload_strs.push(payload_str);
-						});
+								done(parsed_infos)
 
+								//done(tuple);
 
-						let req_all = {};
-						req_all.url_postfix = "get_artists";
-						let params =  getHashParams();
-						req_all.body = {};
-						req_all.body.token = params.access_token;
-						req_all.body.queries = payload_strs;
+							}).catch(function(err){
+								console.log(err);
+								fail(err)
 
-						//fixme:
-						// let test = [];
-						// test.push(req_all.body.queries[1])
-						// req_all.body.queries = test;
-
-						console.log("# of payload strings:",payload_strs.length);
-						console.log("req_all.body.queries",req_all.body.queries);
-						$http.post(url_local + req_all.url_postfix,req_all.body).then(function(results){
-							console.log("$get_artists",results);
-							//console.log(JSON.stringify(results.data,null,4));
-
-							//fixme:
-							//results = get_artists_results_franky;
-
-							$scope.process_artists(results.data).then(function(){
-								done();
 							})
+						})
 
-							// console.log("select * from genres;",alasql("select * from genres;"));
-							// console.log("select * from artists;",alasql("select * from artists;"));
-							// console.log("select * from artists_genres;",alasql("select * from artists_genres;"));
+					};
 
-							// let qry = "select a.id AS artist_id, a.name AS artist_name, g.id AS genre_id, g.name AS genre_name " +
-							// 	"from artists a JOIN artists_genres ag on a.id = ag.artist_id JOIN genres g on g.id = ag.genre_id";
-							// console.log("join artists with their genres",alasql(qry));
+					//todo: depreciated
+					$scope.getWikiPage = function(expression){
+						return new Promise(function(done, fail) {
+							var req = {};
+							req.type = "POST";
+							req.url_postfix = "getWikiPage";
+							let params = getHashParams();
+							req.body = {
+								expression:expression,
+								token:params.access_token
+							}
 
+							$http.post(url_local + req.url_postfix,req.body).then(function(res){
 
-						})//promise all
-					})//post then
-				})};//playlist_tracks
+								console.log(res);
+								done(res);
 
+							}).catch(function(err){
+								console.log(err);
+								fail(err)
 
-			//section: searching utilities
-			//===========================================================================================
+							})
+						})
 
+					};
 
-			//this will go to the MS and first try to get more info from wiki, then a google search
-			$scope.getExternalInfos = function(artists){
-				return new Promise(function(done, fail) {
-					var req = {};
-					req.type = "POST";
-					req.url_postfix = "getExternalInfos";
-					let params = getHashParams();
-					req.body = {
-						artists:artists,
-						token:params.access_token
+					//todo: depreciated
+					$scope.googleQuery = function(query){
+						var req = {};
+						req.type = "POST";
+						req.url_postfix = "googleQuery";
+
+						//todo: best way to force "music related" results
+						req.body = {query:query + "music group"};
+
+						$http.post(url_local + req.url_postfix,req.body).then(function(res){
+							// console.log(res.data);
+							let doc = $(res.data);
+							//console.log(doc);
+							let g = doc.find("span:contains('Genres')")
+							let y = $(g).next()
+							let z = y.text();
+							let genres = z.split(",")
+
+							for(var x = 0; x < genres.length; x++){
+								genres[x] = genres[x].trim();
+							}
+
+							console.log(genres);
+
+						})//$http
 					};
 
 
-					//attempting to parse out knowledge panels
-					let parseGoogleHTML = function(html,artist){
-						let doc = $(html);
-						let str = "";
-
-						//check each top level element (in case page redesign)
-						for(var x = 0; x < 15; x++){
-							let tbody = $(doc)[x];
-
-							//todo: should always find genre but concerned about relying on next span
-							let g = $(tbody).find("span:contains('Genre')").next()
-
-							//this is the one we're looking for
-							if(g[0]){
-								str = g[0].innerText
-							}
-							// else{
-							// 	g = $(tbody).find("span:contains('Genres')").next()
-							// 	console.log("2");
-							// 	if(g[0]){
-							// 		str = g[0].innerText
-							// 	}
-							// }
-						}
-						//console.log(str);
-
-						let genres = [];
-						if(str) {
-							if (str.indexOf(",") !== -1) {
-								genres = str.split(",")
-							} else if (str.indexOf("/") !== -1) {
-								genres = str.split("/")
-							}
-							else{
-								console.warn("had an issue splitting this string result",str);
-							}
-						}
-
-						for(var x = 0; x < genres.length; x++){
-							genres[x] = genres[x].trim();
-						}
-
-						//console.log("genres",genres);
-						//console.log("parseGoogleHTML genres:",artist.name,genres);
-						let tuple = {genres:genres,artist:artist}
-						return tuple;
-					};
-
-					//todo: idk, one day just couldn't parse the whole page
-					let parseGoogleHTML_deprecated = function(html){
-
-						// console.log(res.data);
-						let doc = $(html);
-						//console.log(doc);
-						let g = doc.find("span:contains('Genres')")
-						let y = $(g).next()
-						let z = y.text();
-
-						//todo: catch
-						let genres = z.split(",")
-
-						for(var x = 0; x < genres.length; x++){
-							genres[x] = genres[x].trim();
-						}
-
-						console.log("parseGoogleHTML2 genres:",genres);
-						return genres
-					};
-
-					$http.post(url_local + req.url_postfix,req.body).then(function(res){
-
-						console.log("$getExternalInfos finished:",res.data);
-						let parsed_infos = [];
-
-						res.data.forEach(function(info){
-
-							//fixme:
-
-							// if(info.artist.name === "Funk Worthy"){
-
-							let tuple = {};
-							tuple.artist = info.artist;
-
-							//either we got genres from wiki
-							// or we got an html page to parse from google
-
-							if(info.genres){
-								tuple.genres = info.genres;
-							}
-							else if(info.htmlBand){
-								tuple = parseBandHTML(info.htmlBand,info.artist);
-							}
-							else{
-								tuple = parseGoogleHTML(info.html,info.artist);
-							}
-							parsed_infos.push(tuple)
-
-							// }
-
-
-
-						});
-
-						done(parsed_infos)
-
-						//done(tuple);
-
-					}).catch(function(err){
-						console.log(err);
-						fail(err)
-
-					})
-				})
-
-			};
-
-			//todo: depreciated
-			$scope.getWikiPage = function(expression){
-				return new Promise(function(done, fail) {
-					var req = {};
-					req.type = "POST";
-					req.url_postfix = "getWikiPage";
-					let params = getHashParams();
-					req.body = {
-						expression:expression,
-						token:params.access_token
-					}
-
-					$http.post(url_local + req.url_postfix,req.body).then(function(res){
-
-						console.log(res);
-						done(res);
-
-					}).catch(function(err){
-						console.log(err);
-						fail(err)
-
-					})
-				})
-
-			};
-
-			//todo: depreciated
-			$scope.googleQuery = function(query){
-				var req = {};
-				req.type = "POST";
-				req.url_postfix = "googleQuery";
-
-				//todo: best way to force "music related" results
-				req.body = {query:query + "music group"};
-
-				$http.post(url_local + req.url_postfix,req.body).then(function(res){
-					// console.log(res.data);
-					let doc = $(res.data);
-					//console.log(doc);
-					let g = doc.find("span:contains('Genres')")
-					let y = $(g).next()
-					let z = y.text();
-					let genres = z.split(",")
-
-					for(var x = 0; x < genres.length; x++){
-						genres[x] = genres[x].trim();
-					}
-
-					console.log(genres);
-
-				})//$http
-			};
-
-
-		}); //controller
+				}); //controller
 
 
 //todo: depreciated
 
-exports.refreshToken = function() {
-	console.log("getNewToken");
+				exports.refreshToken = function() {
+					console.log("getNewToken");
 
-	//var userProfileSource = document.getElementById('user-profile-template').innerHTML,
-	//    userProfileTemplate = Handlebars.compile(userProfileSource),
-	//    userProfilePlaceholder = document.getElementById('user-profile');
-	//
-	//var oauthSource = document.getElementById('oauth-template').innerHTML,
-	//    oauthTemplate = Handlebars.compile(oauthSource),
-	//    oauthPlaceholder = document.getElementById('oauth');
+					//var userProfileSource = document.getElementById('user-profile-template').innerHTML,
+					//    userProfileTemplate = Handlebars.compile(userProfileSource),
+					//    userProfilePlaceholder = document.getElementById('user-profile');
+					//
+					//var oauthSource = document.getElementById('oauth-template').innerHTML,
+					//    oauthTemplate = Handlebars.compile(oauthSource),
+					//    oauthPlaceholder = document.getElementById('oauth');
 
-	var params = getHashParams();
+					var params = getHashParams();
 
-	var access_token = params.access_token,
-		refresh_token = params.refresh_token,
-		error = params.error;
+					var access_token = params.access_token,
+						refresh_token = params.refresh_token,
+						error = params.error;
 
-	var newToken = function(){
-		console.log("newToken");
-		$.ajax({
-			url: '/refresh_token',
-			data: {
-				'refresh_token': refresh_token
-			}
-		}).done(function(data) {
-			console.log("newToken return: ",data.access_token);
-			access_token = data.access_token;
-			global_access_token = data.access_token;
-			//oauthPlaceholder.innerHTML = oauthTemplate({
-			//    access_token: access_token,
-			//    refresh_token: refresh_token
-			//});
-		});
-	}
+					var newToken = function(){
+						console.log("newToken");
+						$.ajax({
+							url: '/refresh_token',
+							data: {
+								'refresh_token': refresh_token
+							}
+						}).done(function(data) {
+							console.log("newToken return: ",data.access_token);
+							access_token = data.access_token;
+							global_access_token = data.access_token;
+							//oauthPlaceholder.innerHTML = oauthTemplate({
+							//    access_token: access_token,
+							//    refresh_token: refresh_token
+							//});
+						});
+					}
 
-	newToken();
+					newToken();
 
 
-};
+				};
 
-var token = "BQBp8TJonAbRUf1MOQtpuLA4kI_j14M8QgySOrg85j6vDfsYRq7EVgFtoXIapfhfP5s0Q4hnmm3KDKagJQaMakm7_NOfVTldxGOngtHIngZSX_4nDSsRHlPg7dembiT_9XFrYXc_wc5uIy0b-u8iYHekcTalYL0hglCylUqMKY6Phz4Nn-WBnyEXx9F0YlMMhc2PAHmfGA"
+				var token = "BQBp8TJonAbRUf1MOQtpuLA4kI_j14M8QgySOrg85j6vDfsYRq7EVgFtoXIapfhfP5s0Q4hnmm3KDKagJQaMakm7_NOfVTldxGOngtHIngZSX_4nDSsRHlPg7dembiT_9XFrYXc_wc5uIy0b-u8iYHekcTalYL0hglCylUqMKY6Phz4Nn-WBnyEXx9F0YlMMhc2PAHmfGA"
 
-exports.forceToken = function() {
-	console.log("forceToken");
-	global_access_token = token;
-};
+				exports.forceToken = function() {
+					console.log("forceToken");
+					global_access_token = token;
+				};
 
-})(window);
+			})(window);
 
-} //!== undefined window
+		} //!== undefined window
 
 
 
@@ -3614,627 +3814,627 @@ exports.forceToken = function() {
 
 //module.exports = doSearchtest
 
-},{"fuzzy-matching":2}],2:[function(require,module,exports){
-	var fuzzySet = require('fuzzyset.js');
-	var removeAccents = require('./lib/removeAccents');
+	},{"fuzzy-matching":2}],2:[function(require,module,exports){
+		var fuzzySet = require('fuzzyset.js');
+		var removeAccents = require('./lib/removeAccents');
 
-	function FuzzyMatching(items) {
-		var self = this;
-		self.set = fuzzySet();
-		self.itemMap = {};
+		function FuzzyMatching(items) {
+			var self = this;
+			self.set = fuzzySet();
+			self.itemMap = {};
 
-		if (items) {
-			items.forEach(function(item) {
-				self.add(item);
-			});
+			if (items) {
+				items.forEach(function(item) {
+					self.add(item);
+				});
+			}
 		}
-	}
 
-	FuzzyMatching.prototype.add = function(item) {
-		if (typeof item !== 'string') {
+		FuzzyMatching.prototype.add = function(item) {
+			if (typeof item !== 'string') {
+				return false;
+			}
+			var itemWithoutAccents = removeAccents(item);
+			if (this.itemMap[itemWithoutAccents]) {
+				return false;
+			}
+			if (this.set.add(itemWithoutAccents) !== false) {
+				this.itemMap[itemWithoutAccents] = item;
+				return true;
+			}
 			return false;
-		}
-		var itemWithoutAccents = removeAccents(item);
-		if (this.itemMap[itemWithoutAccents]) {
-			return false;
-		}
-		if (this.set.add(itemWithoutAccents) !== false) {
-			this.itemMap[itemWithoutAccents] = item;
-			return true;
-		}
-		return false;
-	};
-
-	FuzzyMatching.prototype.get = function(item, criteria) {
-		var notFoundValue = {
-			distance: 0,
-			value: null
 		};
-		if (typeof item !== 'string') {
-			return notFoundValue;
-		}
-		criteria = criteria || {};
 
-		var res = this.set.get(removeAccents(item));
-		if (!res) {
-			return notFoundValue;
-		}
-		res = {
-			distance: res[0][0],
-			value: this.itemMap[res[0][1]]
-		}
+		FuzzyMatching.prototype.get = function(item, criteria) {
+			var notFoundValue = {
+				distance: 0,
+				value: null
+			};
+			if (typeof item !== 'string') {
+				return notFoundValue;
+			}
+			criteria = criteria || {};
 
-		// If it doesn't match requirements --> Consider not found
-		if (criteria.min && res.distance < criteria.min) {
-			return notFoundValue;
-		} else if (criteria.maxChanges !== undefined && res.value.length && res.distance < 1 - (criteria.maxChanges / res.value.length)) {
-			return notFoundValue;
-		}
-		return res;
-	};
+			var res = this.set.get(removeAccents(item));
+			if (!res) {
+				return notFoundValue;
+			}
+			res = {
+				distance: res[0][0],
+				value: this.itemMap[res[0][1]]
+			}
 
-	module.exports = FuzzyMatching;
-},{"./lib/removeAccents":3,"fuzzyset.js":4}],3:[function(require,module,exports){
+			// If it doesn't match requirements --> Consider not found
+			if (criteria.min && res.distance < criteria.min) {
+				return notFoundValue;
+			} else if (criteria.maxChanges !== undefined && res.value.length && res.distance < 1 - (criteria.maxChanges / res.value.length)) {
+				return notFoundValue;
+			}
+			return res;
+		};
+
+		module.exports = FuzzyMatching;
+	},{"./lib/removeAccents":3,"fuzzyset.js":4}],3:[function(require,module,exports){
 // From http://jsperf.com/diacritics/12
 
-	module.exports = function removeDiacritics(str) {
-		return str.replace(/[^\u0000-\u007E]/g, function(a) {
-			return diacriticsMap[a] || a;
-		});
-	};
+		module.exports = function removeDiacritics(str) {
+			return str.replace(/[^\u0000-\u007E]/g, function(a) {
+				return diacriticsMap[a] || a;
+			});
+		};
 
-	var defaultDiacriticsRemovalap = [
-		{
-			'base': 'A',
-			'letters': '\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F'
-		}, {
-			'base': 'AA',
-			'letters': '\uA732'
-		}, {
-			'base': 'AE',
-			'letters': '\u00C6\u01FC\u01E2'
-		}, {
-			'base': 'AO',
-			'letters': '\uA734'
-		}, {
-			'base': 'AU',
-			'letters': '\uA736'
-		}, {
-			'base': 'AV',
-			'letters': '\uA738\uA73A'
-		}, {
-			'base': 'AY',
-			'letters': '\uA73C'
-		}, {
-			'base': 'B',
-			'letters': '\u0042\u24B7\uFF22\u1E02\u1E04\u1E06\u0243\u0182\u0181'
-		}, {
-			'base': 'C',
-			'letters': '\u0043\u24B8\uFF23\u0106\u0108\u010A\u010C\u00C7\u1E08\u0187\u023B\uA73E'
-		}, {
-			'base': 'D',
-			'letters': '\u0044\u24B9\uFF24\u1E0A\u010E\u1E0C\u1E10\u1E12\u1E0E\u0110\u018B\u018A\u0189\uA779'
-		}, {
-			'base': 'DZ',
-			'letters': '\u01F1\u01C4'
-		}, {
-			'base': 'Dz',
-			'letters': '\u01F2\u01C5'
-		}, {
-			'base': 'E',
-			'letters': '\u0045\u24BA\uFF25\u00C8\u00C9\u00CA\u1EC0\u1EBE\u1EC4\u1EC2\u1EBC\u0112\u1E14\u1E16\u0114\u0116\u00CB\u1EBA\u011A\u0204\u0206\u1EB8\u1EC6\u0228\u1E1C\u0118\u1E18\u1E1A\u0190\u018E'
-		}, {
-			'base': 'F',
-			'letters': '\u0046\u24BB\uFF26\u1E1E\u0191\uA77B'
-		}, {
-			'base': 'G',
-			'letters': '\u0047\u24BC\uFF27\u01F4\u011C\u1E20\u011E\u0120\u01E6\u0122\u01E4\u0193\uA7A0\uA77D\uA77E'
-		}, {
-			'base': 'H',
-			'letters': '\u0048\u24BD\uFF28\u0124\u1E22\u1E26\u021E\u1E24\u1E28\u1E2A\u0126\u2C67\u2C75\uA78D'
-		}, {
-			'base': 'I',
-			'letters': '\u0049\u24BE\uFF29\u00CC\u00CD\u00CE\u0128\u012A\u012C\u0130\u00CF\u1E2E\u1EC8\u01CF\u0208\u020A\u1ECA\u012E\u1E2C\u0197'
-		}, {
-			'base': 'J',
-			'letters': '\u004A\u24BF\uFF2A\u0134\u0248'
-		}, {
-			'base': 'K',
-			'letters': '\u004B\u24C0\uFF2B\u1E30\u01E8\u1E32\u0136\u1E34\u0198\u2C69\uA740\uA742\uA744\uA7A2'
-		}, {
-			'base': 'L',
-			'letters': '\u004C\u24C1\uFF2C\u013F\u0139\u013D\u1E36\u1E38\u013B\u1E3C\u1E3A\u0141\u023D\u2C62\u2C60\uA748\uA746\uA780'
-		}, {
-			'base': 'LJ',
-			'letters': '\u01C7'
-		}, {
-			'base': 'Lj',
-			'letters': '\u01C8'
-		}, {
-			'base': 'M',
-			'letters': '\u004D\u24C2\uFF2D\u1E3E\u1E40\u1E42\u2C6E\u019C'
-		}, {
-			'base': 'N',
-			'letters': '\u004E\u24C3\uFF2E\u01F8\u0143\u00D1\u1E44\u0147\u1E46\u0145\u1E4A\u1E48\u0220\u019D\uA790\uA7A4'
-		}, {
-			'base': 'NJ',
-			'letters': '\u01CA'
-		}, {
-			'base': 'Nj',
-			'letters': '\u01CB'
-		}, {
-			'base': 'O',
-			'letters': '\u004F\u24C4\uFF2F\u00D2\u00D3\u00D4\u1ED2\u1ED0\u1ED6\u1ED4\u00D5\u1E4C\u022C\u1E4E\u014C\u1E50\u1E52\u014E\u022E\u0230\u00D6\u022A\u1ECE\u0150\u01D1\u020C\u020E\u01A0\u1EDC\u1EDA\u1EE0\u1EDE\u1EE2\u1ECC\u1ED8\u01EA\u01EC\u00D8\u01FE\u0186\u019F\uA74A\uA74C'
-		}, {
-			'base': 'OI',
-			'letters': '\u01A2'
-		}, {
-			'base': 'OO',
-			'letters': '\uA74E'
-		}, {
-			'base': 'OU',
-			'letters': '\u0222'
-		}, {
-			'base': 'P',
-			'letters': '\u0050\u24C5\uFF30\u1E54\u1E56\u01A4\u2C63\uA750\uA752\uA754'
-		}, {
-			'base': 'Q',
-			'letters': '\u0051\u24C6\uFF31\uA756\uA758\u024A'
-		}, {
-			'base': 'R',
-			'letters': '\u0052\u24C7\uFF32\u0154\u1E58\u0158\u0210\u0212\u1E5A\u1E5C\u0156\u1E5E\u024C\u2C64\uA75A\uA7A6\uA782'
-		}, {
-			'base': 'S',
-			'letters': '\u0053\u24C8\uFF33\u1E9E\u015A\u1E64\u015C\u1E60\u0160\u1E66\u1E62\u1E68\u0218\u015E\u2C7E\uA7A8\uA784'
-		}, {
-			'base': 'T',
-			'letters': '\u0054\u24C9\uFF34\u1E6A\u0164\u1E6C\u021A\u0162\u1E70\u1E6E\u0166\u01AC\u01AE\u023E\uA786'
-		}, {
-			'base': 'TZ',
-			'letters': '\uA728'
-		}, {
-			'base': 'U',
-			'letters': '\u0055\u24CA\uFF35\u00D9\u00DA\u00DB\u0168\u1E78\u016A\u1E7A\u016C\u00DC\u01DB\u01D7\u01D5\u01D9\u1EE6\u016E\u0170\u01D3\u0214\u0216\u01AF\u1EEA\u1EE8\u1EEE\u1EEC\u1EF0\u1EE4\u1E72\u0172\u1E76\u1E74\u0244'
-		}, {
-			'base': 'V',
-			'letters': '\u0056\u24CB\uFF36\u1E7C\u1E7E\u01B2\uA75E\u0245'
-		}, {
-			'base': 'VY',
-			'letters': '\uA760'
-		}, {
-			'base': 'W',
-			'letters': '\u0057\u24CC\uFF37\u1E80\u1E82\u0174\u1E86\u1E84\u1E88\u2C72'
-		}, {
-			'base': 'X',
-			'letters': '\u0058\u24CD\uFF38\u1E8A\u1E8C'
-		}, {
-			'base': 'Y',
-			'letters': '\u0059\u24CE\uFF39\u1EF2\u00DD\u0176\u1EF8\u0232\u1E8E\u0178\u1EF6\u1EF4\u01B3\u024E\u1EFE'
-		}, {
-			'base': 'Z',
-			'letters': '\u005A\u24CF\uFF3A\u0179\u1E90\u017B\u017D\u1E92\u1E94\u01B5\u0224\u2C7F\u2C6B\uA762'
-		}, {
-			'base': 'a',
-			'letters': '\u0061\u24D0\uFF41\u1E9A\u00E0\u00E1\u00E2\u1EA7\u1EA5\u1EAB\u1EA9\u00E3\u0101\u0103\u1EB1\u1EAF\u1EB5\u1EB3\u0227\u01E1\u00E4\u01DF\u1EA3\u00E5\u01FB\u01CE\u0201\u0203\u1EA1\u1EAD\u1EB7\u1E01\u0105\u2C65\u0250'
-		}, {
-			'base': 'aa',
-			'letters': '\uA733'
-		}, {
-			'base': 'ae',
-			'letters': '\u00E6\u01FD\u01E3'
-		}, {
-			'base': 'ao',
-			'letters': '\uA735'
-		}, {
-			'base': 'au',
-			'letters': '\uA737'
-		}, {
-			'base': 'av',
-			'letters': '\uA739\uA73B'
-		}, {
-			'base': 'ay',
-			'letters': '\uA73D'
-		}, {
-			'base': 'b',
-			'letters': '\u0062\u24D1\uFF42\u1E03\u1E05\u1E07\u0180\u0183\u0253'
-		}, {
-			'base': 'c',
-			'letters': '\u0063\u24D2\uFF43\u0107\u0109\u010B\u010D\u00E7\u1E09\u0188\u023C\uA73F\u2184'
-		}, {
-			'base': 'd',
-			'letters': '\u0064\u24D3\uFF44\u1E0B\u010F\u1E0D\u1E11\u1E13\u1E0F\u0111\u018C\u0256\u0257\uA77A'
-		}, {
-			'base': 'dz',
-			'letters': '\u01F3\u01C6'
-		}, {
-			'base': 'e',
-			'letters': '\u0065\u24D4\uFF45\u00E8\u00E9\u00EA\u1EC1\u1EBF\u1EC5\u1EC3\u1EBD\u0113\u1E15\u1E17\u0115\u0117\u00EB\u1EBB\u011B\u0205\u0207\u1EB9\u1EC7\u0229\u1E1D\u0119\u1E19\u1E1B\u0247\u025B\u01DD'
-		}, {
-			'base': 'f',
-			'letters': '\u0066\u24D5\uFF46\u1E1F\u0192\uA77C'
-		}, {
-			'base': 'g',
-			'letters': '\u0067\u24D6\uFF47\u01F5\u011D\u1E21\u011F\u0121\u01E7\u0123\u01E5\u0260\uA7A1\u1D79\uA77F'
-		}, {
-			'base': 'h',
-			'letters': '\u0068\u24D7\uFF48\u0125\u1E23\u1E27\u021F\u1E25\u1E29\u1E2B\u1E96\u0127\u2C68\u2C76\u0265'
-		}, {
-			'base': 'hv',
-			'letters': '\u0195'
-		}, {
-			'base': 'i',
-			'letters': '\u0069\u24D8\uFF49\u00EC\u00ED\u00EE\u0129\u012B\u012D\u00EF\u1E2F\u1EC9\u01D0\u0209\u020B\u1ECB\u012F\u1E2D\u0268\u0131'
-		}, {
-			'base': 'j',
-			'letters': '\u006A\u24D9\uFF4A\u0135\u01F0\u0249'
-		}, {
-			'base': 'k',
-			'letters': '\u006B\u24DA\uFF4B\u1E31\u01E9\u1E33\u0137\u1E35\u0199\u2C6A\uA741\uA743\uA745\uA7A3'
-		}, {
-			'base': 'l',
-			'letters': '\u006C\u24DB\uFF4C\u0140\u013A\u013E\u1E37\u1E39\u013C\u1E3D\u1E3B\u017F\u0142\u019A\u026B\u2C61\uA749\uA781\uA747'
-		}, {
-			'base': 'lj',
-			'letters': '\u01C9'
-		}, {
-			'base': 'm',
-			'letters': '\u006D\u24DC\uFF4D\u1E3F\u1E41\u1E43\u0271\u026F'
-		}, {
-			'base': 'n',
-			'letters': '\u006E\u24DD\uFF4E\u01F9\u0144\u00F1\u1E45\u0148\u1E47\u0146\u1E4B\u1E49\u019E\u0272\u0149\uA791\uA7A5'
-		}, {
-			'base': 'nj',
-			'letters': '\u01CC'
-		}, {
-			'base': 'o',
-			'letters': '\u006F\u24DE\uFF4F\u00F2\u00F3\u00F4\u1ED3\u1ED1\u1ED7\u1ED5\u00F5\u1E4D\u022D\u1E4F\u014D\u1E51\u1E53\u014F\u022F\u0231\u00F6\u022B\u1ECF\u0151\u01D2\u020D\u020F\u01A1\u1EDD\u1EDB\u1EE1\u1EDF\u1EE3\u1ECD\u1ED9\u01EB\u01ED\u00F8\u01FF\u0254\uA74B\uA74D\u0275'
-		}, {
-			'base': 'oi',
-			'letters': '\u01A3'
-		}, {
-			'base': 'ou',
-			'letters': '\u0223'
-		}, {
-			'base': 'oo',
-			'letters': '\uA74F'
-		}, {
-			'base': 'p',
-			'letters': '\u0070\u24DF\uFF50\u1E55\u1E57\u01A5\u1D7D\uA751\uA753\uA755'
-		}, {
-			'base': 'q',
-			'letters': '\u0071\u24E0\uFF51\u024B\uA757\uA759'
-		}, {
-			'base': 'r',
-			'letters': '\u0072\u24E1\uFF52\u0155\u1E59\u0159\u0211\u0213\u1E5B\u1E5D\u0157\u1E5F\u024D\u027D\uA75B\uA7A7\uA783'
-		}, {
-			'base': 's',
-			'letters': '\u0073\u24E2\uFF53\u00DF\u015B\u1E65\u015D\u1E61\u0161\u1E67\u1E63\u1E69\u0219\u015F\u023F\uA7A9\uA785\u1E9B'
-		}, {
-			'base': 't',
-			'letters': '\u0074\u24E3\uFF54\u1E6B\u1E97\u0165\u1E6D\u021B\u0163\u1E71\u1E6F\u0167\u01AD\u0288\u2C66\uA787'
-		}, {
-			'base': 'tz',
-			'letters': '\uA729'
-		}, {
-			'base': 'u',
-			'letters': '\u0075\u24E4\uFF55\u00F9\u00FA\u00FB\u0169\u1E79\u016B\u1E7B\u016D\u00FC\u01DC\u01D8\u01D6\u01DA\u1EE7\u016F\u0171\u01D4\u0215\u0217\u01B0\u1EEB\u1EE9\u1EEF\u1EED\u1EF1\u1EE5\u1E73\u0173\u1E77\u1E75\u0289'
-		}, {
-			'base': 'v',
-			'letters': '\u0076\u24E5\uFF56\u1E7D\u1E7F\u028B\uA75F\u028C'
-		}, {
-			'base': 'vy',
-			'letters': '\uA761'
-		}, {
-			'base': 'w',
-			'letters': '\u0077\u24E6\uFF57\u1E81\u1E83\u0175\u1E87\u1E85\u1E98\u1E89\u2C73'
-		}, {
-			'base': 'x',
-			'letters': '\u0078\u24E7\uFF58\u1E8B\u1E8D'
-		}, {
-			'base': 'y',
-			'letters': '\u0079\u24E8\uFF59\u1EF3\u00FD\u0177\u1EF9\u0233\u1E8F\u00FF\u1EF7\u1E99\u1EF5\u01B4\u024F\u1EFF'
-		}, {
-			'base': 'z',
-			'letters': '\u007A\u24E9\uFF5A\u017A\u1E91\u017C\u017E\u1E93\u1E95\u01B6\u0225\u0240\u2C6C\uA763'
-		}];
-	var diacriticsMap = {};
-	for (var i = 0; i < defaultDiacriticsRemovalap.length; i++) {
-		var letters = defaultDiacriticsRemovalap[i].letters.split("");
-		for (var j = 0; j < letters.length; j++) {
-			diacriticsMap[letters[j]] = defaultDiacriticsRemovalap[i].base;
+		var defaultDiacriticsRemovalap = [
+			{
+				'base': 'A',
+				'letters': '\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F'
+			}, {
+				'base': 'AA',
+				'letters': '\uA732'
+			}, {
+				'base': 'AE',
+				'letters': '\u00C6\u01FC\u01E2'
+			}, {
+				'base': 'AO',
+				'letters': '\uA734'
+			}, {
+				'base': 'AU',
+				'letters': '\uA736'
+			}, {
+				'base': 'AV',
+				'letters': '\uA738\uA73A'
+			}, {
+				'base': 'AY',
+				'letters': '\uA73C'
+			}, {
+				'base': 'B',
+				'letters': '\u0042\u24B7\uFF22\u1E02\u1E04\u1E06\u0243\u0182\u0181'
+			}, {
+				'base': 'C',
+				'letters': '\u0043\u24B8\uFF23\u0106\u0108\u010A\u010C\u00C7\u1E08\u0187\u023B\uA73E'
+			}, {
+				'base': 'D',
+				'letters': '\u0044\u24B9\uFF24\u1E0A\u010E\u1E0C\u1E10\u1E12\u1E0E\u0110\u018B\u018A\u0189\uA779'
+			}, {
+				'base': 'DZ',
+				'letters': '\u01F1\u01C4'
+			}, {
+				'base': 'Dz',
+				'letters': '\u01F2\u01C5'
+			}, {
+				'base': 'E',
+				'letters': '\u0045\u24BA\uFF25\u00C8\u00C9\u00CA\u1EC0\u1EBE\u1EC4\u1EC2\u1EBC\u0112\u1E14\u1E16\u0114\u0116\u00CB\u1EBA\u011A\u0204\u0206\u1EB8\u1EC6\u0228\u1E1C\u0118\u1E18\u1E1A\u0190\u018E'
+			}, {
+				'base': 'F',
+				'letters': '\u0046\u24BB\uFF26\u1E1E\u0191\uA77B'
+			}, {
+				'base': 'G',
+				'letters': '\u0047\u24BC\uFF27\u01F4\u011C\u1E20\u011E\u0120\u01E6\u0122\u01E4\u0193\uA7A0\uA77D\uA77E'
+			}, {
+				'base': 'H',
+				'letters': '\u0048\u24BD\uFF28\u0124\u1E22\u1E26\u021E\u1E24\u1E28\u1E2A\u0126\u2C67\u2C75\uA78D'
+			}, {
+				'base': 'I',
+				'letters': '\u0049\u24BE\uFF29\u00CC\u00CD\u00CE\u0128\u012A\u012C\u0130\u00CF\u1E2E\u1EC8\u01CF\u0208\u020A\u1ECA\u012E\u1E2C\u0197'
+			}, {
+				'base': 'J',
+				'letters': '\u004A\u24BF\uFF2A\u0134\u0248'
+			}, {
+				'base': 'K',
+				'letters': '\u004B\u24C0\uFF2B\u1E30\u01E8\u1E32\u0136\u1E34\u0198\u2C69\uA740\uA742\uA744\uA7A2'
+			}, {
+				'base': 'L',
+				'letters': '\u004C\u24C1\uFF2C\u013F\u0139\u013D\u1E36\u1E38\u013B\u1E3C\u1E3A\u0141\u023D\u2C62\u2C60\uA748\uA746\uA780'
+			}, {
+				'base': 'LJ',
+				'letters': '\u01C7'
+			}, {
+				'base': 'Lj',
+				'letters': '\u01C8'
+			}, {
+				'base': 'M',
+				'letters': '\u004D\u24C2\uFF2D\u1E3E\u1E40\u1E42\u2C6E\u019C'
+			}, {
+				'base': 'N',
+				'letters': '\u004E\u24C3\uFF2E\u01F8\u0143\u00D1\u1E44\u0147\u1E46\u0145\u1E4A\u1E48\u0220\u019D\uA790\uA7A4'
+			}, {
+				'base': 'NJ',
+				'letters': '\u01CA'
+			}, {
+				'base': 'Nj',
+				'letters': '\u01CB'
+			}, {
+				'base': 'O',
+				'letters': '\u004F\u24C4\uFF2F\u00D2\u00D3\u00D4\u1ED2\u1ED0\u1ED6\u1ED4\u00D5\u1E4C\u022C\u1E4E\u014C\u1E50\u1E52\u014E\u022E\u0230\u00D6\u022A\u1ECE\u0150\u01D1\u020C\u020E\u01A0\u1EDC\u1EDA\u1EE0\u1EDE\u1EE2\u1ECC\u1ED8\u01EA\u01EC\u00D8\u01FE\u0186\u019F\uA74A\uA74C'
+			}, {
+				'base': 'OI',
+				'letters': '\u01A2'
+			}, {
+				'base': 'OO',
+				'letters': '\uA74E'
+			}, {
+				'base': 'OU',
+				'letters': '\u0222'
+			}, {
+				'base': 'P',
+				'letters': '\u0050\u24C5\uFF30\u1E54\u1E56\u01A4\u2C63\uA750\uA752\uA754'
+			}, {
+				'base': 'Q',
+				'letters': '\u0051\u24C6\uFF31\uA756\uA758\u024A'
+			}, {
+				'base': 'R',
+				'letters': '\u0052\u24C7\uFF32\u0154\u1E58\u0158\u0210\u0212\u1E5A\u1E5C\u0156\u1E5E\u024C\u2C64\uA75A\uA7A6\uA782'
+			}, {
+				'base': 'S',
+				'letters': '\u0053\u24C8\uFF33\u1E9E\u015A\u1E64\u015C\u1E60\u0160\u1E66\u1E62\u1E68\u0218\u015E\u2C7E\uA7A8\uA784'
+			}, {
+				'base': 'T',
+				'letters': '\u0054\u24C9\uFF34\u1E6A\u0164\u1E6C\u021A\u0162\u1E70\u1E6E\u0166\u01AC\u01AE\u023E\uA786'
+			}, {
+				'base': 'TZ',
+				'letters': '\uA728'
+			}, {
+				'base': 'U',
+				'letters': '\u0055\u24CA\uFF35\u00D9\u00DA\u00DB\u0168\u1E78\u016A\u1E7A\u016C\u00DC\u01DB\u01D7\u01D5\u01D9\u1EE6\u016E\u0170\u01D3\u0214\u0216\u01AF\u1EEA\u1EE8\u1EEE\u1EEC\u1EF0\u1EE4\u1E72\u0172\u1E76\u1E74\u0244'
+			}, {
+				'base': 'V',
+				'letters': '\u0056\u24CB\uFF36\u1E7C\u1E7E\u01B2\uA75E\u0245'
+			}, {
+				'base': 'VY',
+				'letters': '\uA760'
+			}, {
+				'base': 'W',
+				'letters': '\u0057\u24CC\uFF37\u1E80\u1E82\u0174\u1E86\u1E84\u1E88\u2C72'
+			}, {
+				'base': 'X',
+				'letters': '\u0058\u24CD\uFF38\u1E8A\u1E8C'
+			}, {
+				'base': 'Y',
+				'letters': '\u0059\u24CE\uFF39\u1EF2\u00DD\u0176\u1EF8\u0232\u1E8E\u0178\u1EF6\u1EF4\u01B3\u024E\u1EFE'
+			}, {
+				'base': 'Z',
+				'letters': '\u005A\u24CF\uFF3A\u0179\u1E90\u017B\u017D\u1E92\u1E94\u01B5\u0224\u2C7F\u2C6B\uA762'
+			}, {
+				'base': 'a',
+				'letters': '\u0061\u24D0\uFF41\u1E9A\u00E0\u00E1\u00E2\u1EA7\u1EA5\u1EAB\u1EA9\u00E3\u0101\u0103\u1EB1\u1EAF\u1EB5\u1EB3\u0227\u01E1\u00E4\u01DF\u1EA3\u00E5\u01FB\u01CE\u0201\u0203\u1EA1\u1EAD\u1EB7\u1E01\u0105\u2C65\u0250'
+			}, {
+				'base': 'aa',
+				'letters': '\uA733'
+			}, {
+				'base': 'ae',
+				'letters': '\u00E6\u01FD\u01E3'
+			}, {
+				'base': 'ao',
+				'letters': '\uA735'
+			}, {
+				'base': 'au',
+				'letters': '\uA737'
+			}, {
+				'base': 'av',
+				'letters': '\uA739\uA73B'
+			}, {
+				'base': 'ay',
+				'letters': '\uA73D'
+			}, {
+				'base': 'b',
+				'letters': '\u0062\u24D1\uFF42\u1E03\u1E05\u1E07\u0180\u0183\u0253'
+			}, {
+				'base': 'c',
+				'letters': '\u0063\u24D2\uFF43\u0107\u0109\u010B\u010D\u00E7\u1E09\u0188\u023C\uA73F\u2184'
+			}, {
+				'base': 'd',
+				'letters': '\u0064\u24D3\uFF44\u1E0B\u010F\u1E0D\u1E11\u1E13\u1E0F\u0111\u018C\u0256\u0257\uA77A'
+			}, {
+				'base': 'dz',
+				'letters': '\u01F3\u01C6'
+			}, {
+				'base': 'e',
+				'letters': '\u0065\u24D4\uFF45\u00E8\u00E9\u00EA\u1EC1\u1EBF\u1EC5\u1EC3\u1EBD\u0113\u1E15\u1E17\u0115\u0117\u00EB\u1EBB\u011B\u0205\u0207\u1EB9\u1EC7\u0229\u1E1D\u0119\u1E19\u1E1B\u0247\u025B\u01DD'
+			}, {
+				'base': 'f',
+				'letters': '\u0066\u24D5\uFF46\u1E1F\u0192\uA77C'
+			}, {
+				'base': 'g',
+				'letters': '\u0067\u24D6\uFF47\u01F5\u011D\u1E21\u011F\u0121\u01E7\u0123\u01E5\u0260\uA7A1\u1D79\uA77F'
+			}, {
+				'base': 'h',
+				'letters': '\u0068\u24D7\uFF48\u0125\u1E23\u1E27\u021F\u1E25\u1E29\u1E2B\u1E96\u0127\u2C68\u2C76\u0265'
+			}, {
+				'base': 'hv',
+				'letters': '\u0195'
+			}, {
+				'base': 'i',
+				'letters': '\u0069\u24D8\uFF49\u00EC\u00ED\u00EE\u0129\u012B\u012D\u00EF\u1E2F\u1EC9\u01D0\u0209\u020B\u1ECB\u012F\u1E2D\u0268\u0131'
+			}, {
+				'base': 'j',
+				'letters': '\u006A\u24D9\uFF4A\u0135\u01F0\u0249'
+			}, {
+				'base': 'k',
+				'letters': '\u006B\u24DA\uFF4B\u1E31\u01E9\u1E33\u0137\u1E35\u0199\u2C6A\uA741\uA743\uA745\uA7A3'
+			}, {
+				'base': 'l',
+				'letters': '\u006C\u24DB\uFF4C\u0140\u013A\u013E\u1E37\u1E39\u013C\u1E3D\u1E3B\u017F\u0142\u019A\u026B\u2C61\uA749\uA781\uA747'
+			}, {
+				'base': 'lj',
+				'letters': '\u01C9'
+			}, {
+				'base': 'm',
+				'letters': '\u006D\u24DC\uFF4D\u1E3F\u1E41\u1E43\u0271\u026F'
+			}, {
+				'base': 'n',
+				'letters': '\u006E\u24DD\uFF4E\u01F9\u0144\u00F1\u1E45\u0148\u1E47\u0146\u1E4B\u1E49\u019E\u0272\u0149\uA791\uA7A5'
+			}, {
+				'base': 'nj',
+				'letters': '\u01CC'
+			}, {
+				'base': 'o',
+				'letters': '\u006F\u24DE\uFF4F\u00F2\u00F3\u00F4\u1ED3\u1ED1\u1ED7\u1ED5\u00F5\u1E4D\u022D\u1E4F\u014D\u1E51\u1E53\u014F\u022F\u0231\u00F6\u022B\u1ECF\u0151\u01D2\u020D\u020F\u01A1\u1EDD\u1EDB\u1EE1\u1EDF\u1EE3\u1ECD\u1ED9\u01EB\u01ED\u00F8\u01FF\u0254\uA74B\uA74D\u0275'
+			}, {
+				'base': 'oi',
+				'letters': '\u01A3'
+			}, {
+				'base': 'ou',
+				'letters': '\u0223'
+			}, {
+				'base': 'oo',
+				'letters': '\uA74F'
+			}, {
+				'base': 'p',
+				'letters': '\u0070\u24DF\uFF50\u1E55\u1E57\u01A5\u1D7D\uA751\uA753\uA755'
+			}, {
+				'base': 'q',
+				'letters': '\u0071\u24E0\uFF51\u024B\uA757\uA759'
+			}, {
+				'base': 'r',
+				'letters': '\u0072\u24E1\uFF52\u0155\u1E59\u0159\u0211\u0213\u1E5B\u1E5D\u0157\u1E5F\u024D\u027D\uA75B\uA7A7\uA783'
+			}, {
+				'base': 's',
+				'letters': '\u0073\u24E2\uFF53\u00DF\u015B\u1E65\u015D\u1E61\u0161\u1E67\u1E63\u1E69\u0219\u015F\u023F\uA7A9\uA785\u1E9B'
+			}, {
+				'base': 't',
+				'letters': '\u0074\u24E3\uFF54\u1E6B\u1E97\u0165\u1E6D\u021B\u0163\u1E71\u1E6F\u0167\u01AD\u0288\u2C66\uA787'
+			}, {
+				'base': 'tz',
+				'letters': '\uA729'
+			}, {
+				'base': 'u',
+				'letters': '\u0075\u24E4\uFF55\u00F9\u00FA\u00FB\u0169\u1E79\u016B\u1E7B\u016D\u00FC\u01DC\u01D8\u01D6\u01DA\u1EE7\u016F\u0171\u01D4\u0215\u0217\u01B0\u1EEB\u1EE9\u1EEF\u1EED\u1EF1\u1EE5\u1E73\u0173\u1E77\u1E75\u0289'
+			}, {
+				'base': 'v',
+				'letters': '\u0076\u24E5\uFF56\u1E7D\u1E7F\u028B\uA75F\u028C'
+			}, {
+				'base': 'vy',
+				'letters': '\uA761'
+			}, {
+				'base': 'w',
+				'letters': '\u0077\u24E6\uFF57\u1E81\u1E83\u0175\u1E87\u1E85\u1E98\u1E89\u2C73'
+			}, {
+				'base': 'x',
+				'letters': '\u0078\u24E7\uFF58\u1E8B\u1E8D'
+			}, {
+				'base': 'y',
+				'letters': '\u0079\u24E8\uFF59\u1EF3\u00FD\u0177\u1EF9\u0233\u1E8F\u00FF\u1EF7\u1E99\u1EF5\u01B4\u024F\u1EFF'
+			}, {
+				'base': 'z',
+				'letters': '\u007A\u24E9\uFF5A\u017A\u1E91\u017C\u017E\u1E93\u1E95\u01B6\u0225\u0240\u2C6C\uA763'
+			}];
+		var diacriticsMap = {};
+		for (var i = 0; i < defaultDiacriticsRemovalap.length; i++) {
+			var letters = defaultDiacriticsRemovalap[i].letters.split("");
+			for (var j = 0; j < letters.length; j++) {
+				diacriticsMap[letters[j]] = defaultDiacriticsRemovalap[i].base;
+			}
 		}
-	}
-},{}],4:[function(require,module,exports){
-	module.exports = require('./lib/fuzzyset.js');
+	},{}],4:[function(require,module,exports){
+		module.exports = require('./lib/fuzzyset.js');
 
-},{"./lib/fuzzyset.js":5}],5:[function(require,module,exports){
-	(function() {
+	},{"./lib/fuzzyset.js":5}],5:[function(require,module,exports){
+		(function() {
 
-		var FuzzySet = function(arr, useLevenshtein, gramSizeLower, gramSizeUpper) {
-			var fuzzyset = {
-				version: '0.0.1'
-			};
+			var FuzzySet = function(arr, useLevenshtein, gramSizeLower, gramSizeUpper) {
+				var fuzzyset = {
+					version: '0.0.1'
+				};
 
-			// default options
-			arr = arr || [];
-			fuzzyset.gramSizeLower = gramSizeLower || 2;
-			fuzzyset.gramSizeUpper = gramSizeUpper || 3;
-			fuzzyset.useLevenshtein = useLevenshtein || true;
+				// default options
+				arr = arr || [];
+				fuzzyset.gramSizeLower = gramSizeLower || 2;
+				fuzzyset.gramSizeUpper = gramSizeUpper || 3;
+				fuzzyset.useLevenshtein = useLevenshtein || true;
 
-			// define all the object functions and attributes
-			fuzzyset.exactSet = {}
-			fuzzyset.matchDict = {};
-			fuzzyset.items = {};
+				// define all the object functions and attributes
+				fuzzyset.exactSet = {}
+				fuzzyset.matchDict = {};
+				fuzzyset.items = {};
 
-			// helper functions
-			var levenshtein = function(str1, str2) {
-				var current = [], prev, value;
+				// helper functions
+				var levenshtein = function(str1, str2) {
+					var current = [], prev, value;
 
-				for (var i = 0; i <= str2.length; i++)
-					for (var j = 0; j <= str1.length; j++) {
-						if (i && j)
-							if (str1.charAt(j - 1) === str2.charAt(i - 1))
-								value = prev;
+					for (var i = 0; i <= str2.length; i++)
+						for (var j = 0; j <= str1.length; j++) {
+							if (i && j)
+								if (str1.charAt(j - 1) === str2.charAt(i - 1))
+									value = prev;
+								else
+									value = Math.min(current[j], current[j - 1], prev) + 1;
 							else
-								value = Math.min(current[j], current[j - 1], prev) + 1;
-						else
-							value = i + j;
+								value = i + j;
 
-						prev = current[j];
-						current[j] = value;
-					}
+							prev = current[j];
+							current[j] = value;
+						}
 
-				return current.pop();
-			};
+					return current.pop();
+				};
 
-			// return an edit distance from 0 to 1
-			var _distance = function(str1, str2) {
-				if (str1 == null && str2 == null) throw 'Trying to compare two null values'
-				if (str1 == null || str2 == null) return 0;
-				str1 = String(str1); str2 = String(str2);
+				// return an edit distance from 0 to 1
+				var _distance = function(str1, str2) {
+					if (str1 == null && str2 == null) throw 'Trying to compare two null values'
+					if (str1 == null || str2 == null) return 0;
+					str1 = String(str1); str2 = String(str2);
 
-				var distance = levenshtein(str1, str2);
-				if (str1.length > str2.length) {
-					return 1 - distance / str1.length;
-				} else {
-					return 1 - distance / str2.length;
-				}
-			};
-			var _nonWordRe = /[^\w, ]+/;
-
-			var _iterateGrams = function(value, gramSize) {
-				gramSize = gramSize || 2;
-				var simplified = '-' + value.toLowerCase().replace(_nonWordRe, '') + '-',
-					lenDiff = gramSize - simplified.length,
-					results = [];
-				if (lenDiff > 0) {
-					for (var i = 0; i < lenDiff; ++i) {
-						value += '-';
-					}
-				}
-				for (var i = 0; i < simplified.length - gramSize + 1; ++i) {
-					results.push(simplified.slice(i, i + gramSize))
-				}
-				return results;
-			};
-
-			var _gramCounter = function(value, gramSize) {
-				gramSize = gramSize || 2;
-				var result = {},
-					grams = _iterateGrams(value, gramSize),
-					i = 0;
-				for (i; i < grams.length; ++i) {
-					if (grams[i] in result) {
-						result[grams[i]] += 1;
+					var distance = levenshtein(str1, str2);
+					if (str1.length > str2.length) {
+						return 1 - distance / str1.length;
 					} else {
-						result[grams[i]] = 1;
+						return 1 - distance / str2.length;
 					}
-				}
-				return result;
-			};
+				};
+				var _nonWordRe = /[^\w, ]+/;
 
-			// the main functions
-			fuzzyset.get = function(value, defaultValue) {
-				var result = this._get(value);
-				if (!result && defaultValue) {
-					return defaultValue;
-				}
-				return result;
-			};
-
-			fuzzyset._get = function(value) {
-				var normalizedValue = this._normalizeStr(value),
-					result = this.exactSet[normalizedValue];
-				if (result) {
-					return [[1, result]];
-				}
-				var results = [];
-				for (var gramSize = this.gramSizeUpper; gramSize > this.gramSizeLower; --gramSize) {
-					results = this.__get(value, gramSize);
-					if (results) {
-						return results;
+				var _iterateGrams = function(value, gramSize) {
+					gramSize = gramSize || 2;
+					var simplified = '-' + value.toLowerCase().replace(_nonWordRe, '') + '-',
+						lenDiff = gramSize - simplified.length,
+						results = [];
+					if (lenDiff > 0) {
+						for (var i = 0; i < lenDiff; ++i) {
+							value += '-';
+						}
 					}
-				}
-				return null;
-			};
+					for (var i = 0; i < simplified.length - gramSize + 1; ++i) {
+						results.push(simplified.slice(i, i + gramSize))
+					}
+					return results;
+				};
 
-			fuzzyset.__get = function(value, gramSize) {
-				var normalizedValue = this._normalizeStr(value),
-					matches = {},
-					gramCounts = _gramCounter(normalizedValue, gramSize),
-					items = this.items[gramSize],
-					sumOfSquareGramCounts = 0,
-					gram,
-					gramCount,
-					i,
-					index,
-					otherGramCount;
+				var _gramCounter = function(value, gramSize) {
+					gramSize = gramSize || 2;
+					var result = {},
+						grams = _iterateGrams(value, gramSize),
+						i = 0;
+					for (i; i < grams.length; ++i) {
+						if (grams[i] in result) {
+							result[grams[i]] += 1;
+						} else {
+							result[grams[i]] = 1;
+						}
+					}
+					return result;
+				};
 
-				for (gram in gramCounts) {
-					gramCount = gramCounts[gram];
-					sumOfSquareGramCounts += Math.pow(gramCount, 2);
-					if (gram in this.matchDict) {
-						for (i = 0; i < this.matchDict[gram].length; ++i) {
-							index = this.matchDict[gram][i][0];
-							otherGramCount = this.matchDict[gram][i][1];
-							if (index in matches) {
-								matches[index] += gramCount * otherGramCount;
-							} else {
-								matches[index] = gramCount * otherGramCount;
+				// the main functions
+				fuzzyset.get = function(value, defaultValue) {
+					var result = this._get(value);
+					if (!result && defaultValue) {
+						return defaultValue;
+					}
+					return result;
+				};
+
+				fuzzyset._get = function(value) {
+					var normalizedValue = this._normalizeStr(value),
+						result = this.exactSet[normalizedValue];
+					if (result) {
+						return [[1, result]];
+					}
+					var results = [];
+					for (var gramSize = this.gramSizeUpper; gramSize > this.gramSizeLower; --gramSize) {
+						results = this.__get(value, gramSize);
+						if (results) {
+							return results;
+						}
+					}
+					return null;
+				};
+
+				fuzzyset.__get = function(value, gramSize) {
+					var normalizedValue = this._normalizeStr(value),
+						matches = {},
+						gramCounts = _gramCounter(normalizedValue, gramSize),
+						items = this.items[gramSize],
+						sumOfSquareGramCounts = 0,
+						gram,
+						gramCount,
+						i,
+						index,
+						otherGramCount;
+
+					for (gram in gramCounts) {
+						gramCount = gramCounts[gram];
+						sumOfSquareGramCounts += Math.pow(gramCount, 2);
+						if (gram in this.matchDict) {
+							for (i = 0; i < this.matchDict[gram].length; ++i) {
+								index = this.matchDict[gram][i][0];
+								otherGramCount = this.matchDict[gram][i][1];
+								if (index in matches) {
+									matches[index] += gramCount * otherGramCount;
+								} else {
+									matches[index] = gramCount * otherGramCount;
+								}
 							}
 						}
 					}
-				}
 
-				function isEmptyObject(obj) {
-					for(var prop in obj) {
-						if(obj.hasOwnProperty(prop))
-							return false;
+					function isEmptyObject(obj) {
+						for(var prop in obj) {
+							if(obj.hasOwnProperty(prop))
+								return false;
+						}
+						return true;
 					}
-					return true;
-				}
 
-				if (isEmptyObject(matches)) {
-					return null;
-				}
+					if (isEmptyObject(matches)) {
+						return null;
+					}
 
-				var vectorNormal = Math.sqrt(sumOfSquareGramCounts),
-					results = [],
-					matchScore;
-				// build a results list of [score, str]
-				for (var matchIndex in matches) {
-					matchScore = matches[matchIndex];
-					results.push([matchScore / (vectorNormal * items[matchIndex][0]), items[matchIndex][1]]);
-				}
-				var sortDescending = function(a, b) {
-					if (a[0] < b[0]) {
-						return 1;
-					} else if (a[0] > b[0]) {
-						return -1;
-					} else {
-						return 0;
+					var vectorNormal = Math.sqrt(sumOfSquareGramCounts),
+						results = [],
+						matchScore;
+					// build a results list of [score, str]
+					for (var matchIndex in matches) {
+						matchScore = matches[matchIndex];
+						results.push([matchScore / (vectorNormal * items[matchIndex][0]), items[matchIndex][1]]);
 					}
-				};
-				results.sort(sortDescending);
-				if (this.useLevenshtein) {
-					var newResults = [],
-						endIndex = Math.min(50, results.length);
-					// truncate somewhat arbitrarily to 50
-					for (var i = 0; i < endIndex; ++i) {
-						newResults.push([_distance(results[i][1], normalizedValue), results[i][1]]);
-					}
-					results = newResults;
+					var sortDescending = function(a, b) {
+						if (a[0] < b[0]) {
+							return 1;
+						} else if (a[0] > b[0]) {
+							return -1;
+						} else {
+							return 0;
+						}
+					};
 					results.sort(sortDescending);
-				}
-				var newResults = [];
-				for (var i = 0; i < results.length; ++i) {
-					if (results[i][0] == results[0][0]) {
-						newResults.push([results[i][0], this.exactSet[results[i][1]]]);
+					if (this.useLevenshtein) {
+						var newResults = [],
+							endIndex = Math.min(50, results.length);
+						// truncate somewhat arbitrarily to 50
+						for (var i = 0; i < endIndex; ++i) {
+							newResults.push([_distance(results[i][1], normalizedValue), results[i][1]]);
+						}
+						results = newResults;
+						results.sort(sortDescending);
 					}
-				}
-				return newResults;
-			};
-
-			fuzzyset.add = function(value) {
-				var normalizedValue = this._normalizeStr(value);
-				if (normalizedValue in this.exactSet) {
-					return false;
-				}
-
-				var i = this.gramSizeLower;
-				for (i; i < this.gramSizeUpper + 1; ++i) {
-					this._add(value, i);
-				}
-			};
-
-			fuzzyset._add = function(value, gramSize) {
-				var normalizedValue = this._normalizeStr(value),
-					items = this.items[gramSize] || [],
-					index = items.length;
-
-				items.push(0);
-				var gramCounts = _gramCounter(normalizedValue, gramSize),
-					sumOfSquareGramCounts = 0,
-					gram, gramCount;
-				for (var gram in gramCounts) {
-					gramCount = gramCounts[gram];
-					sumOfSquareGramCounts += Math.pow(gramCount, 2);
-					if (gram in this.matchDict) {
-						this.matchDict[gram].push([index, gramCount]);
-					} else {
-						this.matchDict[gram] = [[index, gramCount]];
+					var newResults = [];
+					for (var i = 0; i < results.length; ++i) {
+						if (results[i][0] == results[0][0]) {
+							newResults.push([results[i][0], this.exactSet[results[i][1]]]);
+						}
 					}
-				}
-				var vectorNormal = Math.sqrt(sumOfSquareGramCounts);
-				items[index] = [vectorNormal, normalizedValue];
-				this.items[gramSize] = items;
-				this.exactSet[normalizedValue] = value;
-			};
+					return newResults;
+				};
 
-			fuzzyset._normalizeStr = function(str) {
-				if (Object.prototype.toString.call(str) !== '[object String]') throw 'Must use a string as argument to FuzzySet functions'
-				return str.toLowerCase();
-			};
-
-			// return length of items in set
-			fuzzyset.length = function() {
-				var count = 0,
-					prop;
-				for (prop in this.exactSet) {
-					if (this.exactSet.hasOwnProperty(prop)) {
-						count += 1;
-					}
-				}
-				return count;
-			};
-
-			// return is set is empty
-			fuzzyset.isEmpty = function() {
-				for (var prop in this.exactSet) {
-					if (this.exactSet.hasOwnProperty(prop)) {
+				fuzzyset.add = function(value) {
+					var normalizedValue = this._normalizeStr(value);
+					if (normalizedValue in this.exactSet) {
 						return false;
 					}
-				}
-				return true;
-			};
 
-			// return list of values loaded into set
-			fuzzyset.values = function() {
-				var values = [],
-					prop;
-				for (prop in this.exactSet) {
-					if (this.exactSet.hasOwnProperty(prop)) {
-						values.push(this.exactSet[prop])
+					var i = this.gramSizeLower;
+					for (i; i < this.gramSizeUpper + 1; ++i) {
+						this._add(value, i);
 					}
+				};
+
+				fuzzyset._add = function(value, gramSize) {
+					var normalizedValue = this._normalizeStr(value),
+						items = this.items[gramSize] || [],
+						index = items.length;
+
+					items.push(0);
+					var gramCounts = _gramCounter(normalizedValue, gramSize),
+						sumOfSquareGramCounts = 0,
+						gram, gramCount;
+					for (var gram in gramCounts) {
+						gramCount = gramCounts[gram];
+						sumOfSquareGramCounts += Math.pow(gramCount, 2);
+						if (gram in this.matchDict) {
+							this.matchDict[gram].push([index, gramCount]);
+						} else {
+							this.matchDict[gram] = [[index, gramCount]];
+						}
+					}
+					var vectorNormal = Math.sqrt(sumOfSquareGramCounts);
+					items[index] = [vectorNormal, normalizedValue];
+					this.items[gramSize] = items;
+					this.exactSet[normalizedValue] = value;
+				};
+
+				fuzzyset._normalizeStr = function(str) {
+					if (Object.prototype.toString.call(str) !== '[object String]') throw 'Must use a string as argument to FuzzySet functions'
+					return str.toLowerCase();
+				};
+
+				// return length of items in set
+				fuzzyset.length = function() {
+					var count = 0,
+						prop;
+					for (prop in this.exactSet) {
+						if (this.exactSet.hasOwnProperty(prop)) {
+							count += 1;
+						}
+					}
+					return count;
+				};
+
+				// return is set is empty
+				fuzzyset.isEmpty = function() {
+					for (var prop in this.exactSet) {
+						if (this.exactSet.hasOwnProperty(prop)) {
+							return false;
+						}
+					}
+					return true;
+				};
+
+				// return list of values loaded into set
+				fuzzyset.values = function() {
+					var values = [],
+						prop;
+					for (prop in this.exactSet) {
+						if (this.exactSet.hasOwnProperty(prop)) {
+							values.push(this.exactSet[prop])
+						}
+					}
+					return values;
+				};
+
+
+				// initialization
+				var i = fuzzyset.gramSizeLower;
+				for (i; i < fuzzyset.gramSizeUpper + 1; ++i) {
+					fuzzyset.items[i] = [];
 				}
-				return values;
+				// add all the items to the set
+				for (i = 0; i < arr.length; ++i) {
+					fuzzyset.add(arr[i]);
+				}
+
+				return fuzzyset;
 			};
 
-
-			// initialization
-			var i = fuzzyset.gramSizeLower;
-			for (i; i < fuzzyset.gramSizeUpper + 1; ++i) {
-				fuzzyset.items[i] = [];
-			}
-			// add all the items to the set
-			for (i = 0; i < arr.length; ++i) {
-				fuzzyset.add(arr[i]);
-			}
-
-			return fuzzyset;
-		};
-
-		var root = this;
+			var root = this;
 // Export the fuzzyset object for **CommonJS**, with backwards-compatibility
 // for the old `require()` API. If we're not in CommonJS, add `_` to the
 // global object.
-		if (typeof module !== 'undefined' && module.exports) {
-			module.exports = FuzzySet;
-			root.FuzzySet = FuzzySet;
-		} else {
-			root.FuzzySet = FuzzySet;
-		}
+			if (typeof module !== 'undefined' && module.exports) {
+				module.exports = FuzzySet;
+				root.FuzzySet = FuzzySet;
+			} else {
+				root.FuzzySet = FuzzySet;
+			}
 
-	})();
+		})();
 
-},{}]},{},[1]);
+	},{}]},{},[1]);

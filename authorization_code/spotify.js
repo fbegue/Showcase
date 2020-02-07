@@ -17,6 +17,141 @@ console.warn = function(msg){console.log(colors.yellow(msg))};
 console.good = function(msg){console.log(colors.green(msg))};
 console.log("colors configured");
 
+
+//rip site-------------------------------------------------------
+
+//todo: use cheerio to load site in
+//todo: don't rely on page ping - just do it manually
+
+//var baseurl = "https://cd1025.com/about/playlists/current-playlist";
+
+var songs =  ["Dissolve", "2All", "Orphans", "Running Up That Hill", "Novocaine", "Might Be Right", "The Best", "Everything I Wanted", "Black Madonna", "2All", "I Never Liked Your Friends", "Life In The City", "Blind Leading The Blind", "Thunder", "Don't Know Yet", "Cradles", "The Hype", "Smile For the Camera LIGHT", "Hell N Back", "Uneventful", "Everything Has Changed", "Shine A Little Light", "All Good Girls Go To Hell", "I Really Wish I Hated You", "Shakin' Off The Rust", "Peach Fuzz", "Feel The Way I Want", "Fool", "Nice Guys", "Bad Idea", "Oh Yeah!", "Deleter", "Runaway", "I Want More", "Mariners Apartment Complex", "Disaster Party", "Charlie", "Go Easy", "Misery", "Wars", "Kill The Sun", "Used to Like", "Circles", "Somedays", "Van Horn", "Lost In Yesterday", "You?", "Sunflower (feat. Steve Lacy)"]
+var ars = ["Absofacto", "Catfish and Bottlemen", "Coldplay", "Meg Myers", "Unlikely Candidates", "White Reaper", "Awolnation", "Billie Eilish", "Cage The Elephant", "Catfish and Bottlemen", "The Federal Empire", "The Lumineers", "Mumford & Sons", "Shaed", "Silversun Pickups", "Sub Urban", "Twenty One Pilots", "Upsahl", "Bakar", "Beck", "Best Coast", "The Black Keys", "Billie Eilish", "Blink 182", "The Blue Stones", "Caamp", "Caroline Rose", "Dan Luke & The Raid", "Easy Life", "Girl In Red", "Green Day", "Grouplove", "Half Alive", "Kaleo", "Lana Del Rey", "Magic Giant", "Mallrat", "Matt Maeson", "Michigander", "Of Monsters and Men", "Motherfolk", "Neon Trees", "Post Malone", "The Raconteurs", "Saint Motel", "Tame Impala", "Two Feet", "Vampire Weekend"]
+
+var pay = [];
+for(var x = 0; x < ars.length; x++){
+pay.push(ars[x] + " - " + songs[x])
+}
+
+var token2 = "BQBo13jmG3bB93nLheWuvIcLpffSYl9LFSYpRa5g7VNSRPbqTFm8pD2GqWfWhtmdubnXC7M9HBRM9OgvidiKq2EA1fdNZGnUKJo1EZuKPwFzz6YwAc_tUFJVYsFgGhjOUT-KZcpwddiN38VKIeM2aamryFA0fRo6DxqGQVnqbn3a--3WmxPKorzRRMph8FCalWzyKLzC-WHxY5HgAp4JBFm5NG818EMk3t54JQ7u-MCxKwFW5y8rxwyVE23JvNyWf94OF3_JCNQgHmBsCvN4zJVYTaw"
+
+var playlist_add_tracks =  function(playlistid,tracks){
+	return new Promise(function(done, fail) {
+
+		let uri =  "https://api.spotify.com/v1/playlists/" + playlistid + "/tracks?uris=";
+		// let track_uri = "spotify:track:";
+		//let track_uri = "spotify%3Atrack%3A";
+		let options = {
+			method:"POST",
+			uri: uri,
+			headers: {
+				'User-Agent': 'Request-Promise',
+				"Authorization":'Bearer ' + token2,
+				"Content-Type":"application/json"
+			},
+			json: true
+		};
+
+		tracks.forEach(function(track,i){
+			options.uri += track;
+			i !== tracks - 1 ? options.uri =  options.uri + "%2C" :{}
+		});
+
+		console.log(options.uri);
+
+		rp(options).then(function(result){
+			console.log("result",result);
+
+		}).catch(function(err){
+			console.log(err);
+		})
+
+	})
+};
+
+var findSongs = function(artistAndSong){
+	return new Promise(function(done, fail) {
+		//console.log("findSongs",artistAndSong);
+
+		let options = {
+			uri: "",
+			headers: {
+				'User-Agent': 'Request-Promise',
+				"Authorization":'Bearer ' + token2
+			},
+			json: true,
+		};
+
+		let url_pre = "https://api.spotify.com/v1/search?q=";
+		let url_suf = "&type=track";
+		let tuple = {};
+
+		var searchReq =  function(options){
+			return new Promise(function(done, fail) {
+				rp(options).then(function(res){
+					if(res.tracks.items.length > 0){
+						tuple.artist = res.tracks.items[0].artists[0].name
+						tuple.track = res.tracks.items[0].name
+						tuple.uri = res.tracks.items[0].uri
+					}
+					done(tuple)
+				}).catch(function(e){
+					let msg = "spotify search artistAndSong failure";
+					let error = {msg:msg,artistAndSong:artistAndSong,error:e};
+					console.error(artistAndSong);
+					//console.error(error);
+					done(error);
+				});
+			})
+		};
+
+		options.uri = url_pre + artistAndSong  + url_suf;
+
+		searchReq(options)
+			.then(function(result) {
+				console.log(JSON.stringify(result));
+				done(result)
+			}).catch(function(err){
+			done(err)
+		})
+	})
+};
+
+module.exports.findSongs = function(){
+	var ps = [];
+	var id  = "7tSKoibeWp1Eh5TitvbjKo"
+
+	//testing
+	// var t = "Absofacto - Dissolve"
+	// t = t.replace(" ","%20")
+	// ps.push(findSongs(t))
+
+
+	pay.forEach(function(p){
+		ps.push(findSongs(p.replace(" ","%20")))
+	})
+
+	Promise.all(ps).then(res=>{
+		console.log("findSongs finished");
+		//console.log(res);
+
+		var ts = [];
+		res.forEach( t=>{
+			if(!t.error){
+				ts.push(t.uri)
+			}
+		})
+
+		//console.log(ts);
+
+		playlist_add_tracks(id,ts)
+	})
+
+
+}
+
+
+
 //scrapeSongkick-------------------------------------------------------
 
 var songkick = require("./songkick.js");
@@ -253,6 +388,21 @@ let testBrainz = function(){
 //testBrainz();
 
 
+const options = {
+	url: 'https://api.spotify.com/v1/me/player/currently-playing',
+	headers: {
+		"Accept": "application/json",
+		"Content-Type": "application/json",
+		"Authorization":"Bearer BQCp_1bVgy7O5AMQr8XRXmAl_qgOcPa6BhmYasPzSq8IWBStcH8GatqcsvCuuMfA3z-n5mNOvGIkfi2HGJUeRuV9yalKpTKCMuXttZHM2de_ZVNOyYPnKEOk2gmBvJGArvaMcy68GCog2AU3pGZLyiYjVXWMsuQgXOGkVifC6liwIK4_ZIgsREb05NsyVTP648tphN3GKRBGxmwNRfeaSIgUmrU9zM9h8pfJh_gKG0f6mq8LcCarUgWag3tvKqQO570eWll71o4I5x2M_fszntyao2E"
+	}
+};
+
+var request = require("request");
+
+request.get(options, function (error, response, body) {
+		console.log(body)
+	}
+);
 
 let sql = require("mssql")
 
@@ -461,7 +611,7 @@ let runSQLTests = function(){
 
 };
 
-runSQLTests();
+//runSQLTests();
 
 const Nightwatch = require('nightwatch');
 
@@ -2756,9 +2906,9 @@ var load_artists = function(){
 
 };
 
-setTimeout(function(){
-	load_artists();
-},1000);
+// setTimeout(function(){
+// 	load_artists();
+// },1000);
 
 //todo: static playlist id
 //spotify:playlist:60J4a7oWhXemOD5hzYUeYh
@@ -2795,7 +2945,6 @@ module.exports.playlist_add_artist_tracks =  function(req,res){
 		})
 	})
 };
-
 
 
 module.exports.playlist_add_artist_tracks_local=  function(req){

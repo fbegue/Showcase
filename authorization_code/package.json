@@ -33,7 +33,7 @@
     "querystring": "~0.2.0",
     "request": "^2.81.0",
     "request-promise": "^4.2.1",
-    "songkick-api-node": "1.0.2",
+    "spotify-web-api-node": "^4.0.0",
     "zombie": "^6.1.4"
   },
   "devDependencies": {

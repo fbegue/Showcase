@@ -23,6 +23,8 @@
   <script src="directives/x-directive.multiobject.js"></script>
   <link rel = "stylesheet" type = "text/css" href = "directives/x-directive.multiobject.css" />
 
+
+
 </head>
 
 <!--<script src="http://code.angularjs.org/angular-1.0.1.js"></script>-->
@@ -31,7 +33,16 @@
 <body>
 
 <!--todo-->
-<image src="images/groups_bar.JPG"></image>
+<!--<image src="images/groups_bar.JPG"></image>-->
+
+
+<pre id="content" style="white-space: pre-wrap;"></pre>
+
+<!--Add buttons to initiate auth sequence and sign out-->
+<!--style="display: none;"-->
+<button id="authorize_button" >Authorize</button>
+<button id="signout_button" >Sign Out</button>
+
 
 <div class="container"  ng-app="showcase">
 
@@ -492,6 +503,13 @@
 <!--//$scope.config = widget.customization;-->
 
 <!--</script>-->
+
+<script id="gapi" async defer src="https://apis.google.com/js/api.js">
+        <!--onload="this.onload=function(){};handleClientLoad()"-->
+        <!--onreadystatechange="if (this.readyState === 'complete') this.onload()">-->
+</script>
+
+<!--<script async defer src="https://apis.google.com/js/api.js"></script>-->
 
 <script id="user-profile-template" type="text/x-handlebars-template">
   <!--<h1>Logged in as {{display_name}}</h1>-->
