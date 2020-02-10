@@ -61,11 +61,29 @@ console.log('Listening on ' + port);
 app.listen(port);
 
 
+//=================================================
+//utilities
+
+var jstr = function(ob){
+	return JSON.stringify(ob,null,4)
+}
+
+//=================================================
+//endpoints
+
 app.post('/getUserPlaylists', function(req, res) {
 	spotify_api.getUserPlaylists().then(function(res2){
 		res.send(res2)
 	})
 });
+
+app.post('/playlist_tracks', function(req, res) {
+	spotify_api.playlist_tracks(req).then(function(res2){
+		res.send(res2)
+	})
+});
+
+
 
 
 

@@ -3062,7 +3062,7 @@ module.exports.playlist_create =  function(req,res){
 		options.body = {
 			"name": "New Playlist Test1",
 			"description": "New Playlist Test1 description",
-			"public": false
+			"public": falsejstr
 		};
 
 		rp(options).then(function(res){
