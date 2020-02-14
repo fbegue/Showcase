@@ -24,6 +24,7 @@ var fs      = require('fs');
 
 var songkick = require('./songkick.js');
 var spotify_api = require('./spotify_api.js');
+var puppet = require('./puppet.js');
 
 
 // var maxbody = configuration.requests.limit || "50mb";
@@ -83,7 +84,12 @@ app.post('/playlist_tracks', function(req, res) {
 	})
 });
 
-
+//test
+app.post('/puppet', function(req, res) {
+	puppet.puppet(req).then(function(res2){
+		res.send(res2)
+	})
+});
 
 
 
