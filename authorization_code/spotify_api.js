@@ -3,6 +3,25 @@ var SpotifyWebApi = require('spotify-web-api-node'); // Express web server frame
 var PromiseThrottle = require("promise-throttle");
 var rp = require('request-promise');
 
+var finder = require('./finder.js');
+let sql = require("mssql")
+
+//========================================
+//db setup
+
+const { poolPromise } = require('./db.js');
+poolPromise.then(function(newPool) {
+	module.exports.poolGlobal = newPool;
+	// var sreq = new sql.Request(newPool);
+	// sreq.query("select getdate();")
+	// 	.then(function(res){
+	// 		//console.log("##res",res);
+	// 	})
+});
+
+//========================================
+//spotify api setup
+
 let all_scopes =["playlist-read-private", "playlist-modify-private", "playlist-modify-public", "playlist-read-collaborative", "user-modify-playback-state", "user-read-currently-playing", "user-read-playback-state", "user-top-read", "user-read-recently-played", "app-remote-control", "streaming", "user-read-birthdate", "user-read-email", "user-read-private", "user-follow-read", "user-follow-modify", "user-library-modify", "user-library-read"];
 
 var clientSecret = '1c09323e0aad42cfaef5f23bb08b6428';
@@ -250,3 +269,22 @@ module.exports.playlist_tracks = function(req,res){
 	})//promise
 
 };//playlist_tracks
+
+
+//=================================================
+//resolving methods
+
+module.exports.playlistResolve = function(req,res){
+	return new Promise(function(done, fail) {
+
+		console.log("req.body.playlists",req.body.playlists);
+
+		//todo:
+		//forEach, create a payload of artists.
+		//figure out if we have genre info for them, and if not start a job
+
+		var payload = ["1m7LSAMIB1BErIHYSOn32W", "4nXOZlYoAD67hF9aUEncMY", "2rhFzFmezpnW82MNqEKVry"]
+
+		finder.checkDb()
+	})
+}

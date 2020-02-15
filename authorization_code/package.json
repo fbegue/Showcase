@@ -6,7 +6,7 @@
   "dependencies": {
     "body-parser": "^1.17.1",
     "bottleneck": "^2.17.1",
-    "cheerio": "latest",
+    "cheerio": "^1.0.0-rc.3",
     "colors": "^1.3.3",
     "cookie-parser": "^1.4.3",
     "deathbycaptcha": "0.0.3",

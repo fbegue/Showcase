@@ -84,6 +84,12 @@ app.post('/playlist_tracks', function(req, res) {
 	})
 });
 
+app.post('/playlistResolve', function(req, res) {
+	spotify_api.playlistResolve(req).then(function(res2){
+		res.send(res2)
+	})
+});
+
 //test
 app.post('/puppet', function(req, res) {
 	puppet.puppet(req).then(function(res2){

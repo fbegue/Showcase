@@ -315,8 +315,6 @@ var band =  function (client) {
 					sGenres.forEach(function (genre) {
 						gPromises.push(insertGenre(genre))
 					});
-
-
 					Promise.all(gPromises).then(function () {
 
 						console.log("insertGenre finished");
