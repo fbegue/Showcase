@@ -3,8 +3,10 @@ var SpotifyWebApi = require('spotify-web-api-node'); // Express web server frame
 var PromiseThrottle = require("promise-throttle");
 var rp = require('request-promise');
 
-var finder = require('./finder.js');
+var resolver = require('./resolver.js');
 let sql = require("mssql")
+
+var app =  require('./app')
 
 //========================================
 //db setup
@@ -12,12 +14,13 @@ let sql = require("mssql")
 const { poolPromise } = require('./db.js');
 poolPromise.then(function(newPool) {
 	module.exports.poolGlobal = newPool;
-	// var sreq = new sql.Request(newPool);
-	// sreq.query("select getdate();")
-	// 	.then(function(res){
-	// 		//console.log("##res",res);
-	// 	})
+	var sreq = new sql.Request(newPool);
+	sreq.query("select getdate();")
+		.then(function(res){
+			console.log("sql test:",res);
+		})
 });
+
 
 //========================================
 //spotify api setup
@@ -110,8 +113,9 @@ var spotifyApi = new SpotifyWebApi({
 });
 
 
-var token = "BQAITxzn04auphvTheFcRvlj19gx9na9q_G5wDQDiYXOs7MASaouJryANWXUVOH0gx-Ci82E1XVZXksrPEa-K_5KhKMB1xYvoystGYVyTQ9y_0l6YyDunAhSSCr77-c4HZIy5Bhp9AWNbqNfeN1zUtCy8HQqy_nn5h7XOCmrbw9kZwgVBg3GjXKT85H-rMJuijXdQbXlD2WZYakJKhuk1XanW28nhfVc22SreXpTcxtIqWajqxaMe8c3ld3kmZboXXg1qNVroY3Wm3e2AURY9h16ezQ"
+var token = "BQBLxPRJIglwnAvP6-0AwsW7E7gx4yBkt0ugGICM1Id9TzDXRZPw_tyXNywt87IEypPZW1HoM-VqQxk2cX3WOeYm8FApP1MhkHWIY4A97a1zh2LAetARDpX9vBfE3Fmw4s0su2vMyj9-iGRPj_WXzAb2bTGI1P-q7fYyF1KCjeH4bk_OQn8vF_x9HVVdZVeaNX12VkF3xW4ZsvfETaI88TF5SSBqHSeK_W2RSGzRgfR46apVnH52JC1Z9DYrkidwow9DMhXIWjDXUMRx5_ohDYfh2Xc"
 spotifyApi.setAccessToken(token);
+module.exports.token = token;
 
 
 //=================================================
@@ -119,20 +123,19 @@ spotifyApi.setAccessToken(token);
 
 //https://github.com/thelinmichael/spotify-web-api-node
 
-
-//todo: easier way to expose these?
-
 //todo: hardcoded user name
 module.exports.getUserPlaylists = function(){
-    return new Promise(function(done, fail) {
-	    spotifyApi.getUserPlaylists('dacandyman01')
-		    .then(function(data) {
-			    console.log('Retrieved playlists', data.body);
-			    done(data.body)
-		    },function(err) {
-			    console.log('Something went wrong!', err);
-		    });
-    })
+	return new Promise(function(done, fail) {
+
+		//todo: limit's max = 50 but cut it here for speedier testing
+		spotifyApi.getUserPlaylists('dacandyman01',{limit:20})
+			.then(function(data) {
+				//console.log('Retrieved playlists', data.body);
+				done(data.body)
+			},function(err) {
+				console.log('Something went wrong!', err);
+			});
+	})
 }
 
 
@@ -143,148 +146,130 @@ module.exports.getUserPlaylists = function(){
 // 		console.log('Something went wrong!', err);
 // 	});
 
-module.exports.playlist_tracks = function(req,res){
-	return new Promise(function(done, fail) {
-		console.log("playlist_tracks",JSON.stringify(req.body,null,4));
-		console.log("playlist_tracks # of playlists to process:",req.body.playlists.length);
-		let startDate = new Date();
-		console.log("start time:",startDate);
-
-		let url1 = "https://api.spotify.com/v1/playlists/";
-		let url2 = "/tracks";
-		let offset_base = 50;
-
-
-		function getPages(options) {
-			//console.log(options.uri);
-			return rp(options).then(data => {
-				//console.log("data",data.items.length);
-				options.store = options.store.concat(data.items);
-				//console.log("cacheIT",cacheIT[options.playlist_id].length);
-				if (!(data.items.length === 50)){
-
-					//todo: was thinking about working in creating my get_artists (for genres)
-					//payloads as I go along here, but that will be a little complicated.
-
-					return options;
-				}
-				else{
-					options.offset = options.offset + offset_base ;
-					options.uri =  options.url + "?fields=items.track(id,name,artists)&limit="+ options.limit + "&offset=" + options.offset;
-
-
-					//todo: ideally I think it would be better if I knew how many total requests I was going to have to make
-					//3x for this playlist, 24x for this, etc.
-					//and then put those all in a promises array that I could manage the throttle more efficiently on
-					//because right now my 'throttle' doesn't really know about these recursive getPages calls?
-					//im guessing IDK really how that would work but it seems that would provide a performance advantage
-
-					var wait =  function(ms){
-						return new Promise(function(done, fail) {
-							//console.log("waiting...");
-							setTimeout(function(){
-								//console.log("done!");
-								done()
-							},ms);
-						})
-					}
-
-					return wait(300).then(function(){
-						return getPages(options)
-					})
-
-					// return x();
-
-				}
-			});
-		}
-
-		//todo: test one
-		//let t = JSON.parse(JSON.stringify(req.body.playlist));
-		//req.body.playlist = {};
-		////long 146
-		//req.body.playlist = {id:"5vDmqTWcShNGe7ENaud90q"};
-		////short 29
-		//req.body.playlists = {id:"0sJK4pWqr7bnQ0fgxGmJrh"}
-		////134
-		//req.body.playlist = {id:"0fEQxXtJS7aTK4qrxznjAJ"}
-		//console.log(JSON.stringify(req.body,null,4));
-
-		let options = {
-			uri: "",
-			headers: {
-				// 'User-Agent': 'Request-Promise',
-				"Authorization":'Bearer ' + token
-			},
-			json: true
-		};
-
-		var promiseThrottle_playlists = new PromiseThrottle({
-			requestsPerSecond: 5,
-			//362
-			// requestsPerSecond: 20,
-			//124
-			promiseImplementation: Promise  // the Promise library you are using
-		});
-
-		let promises = [];
-
-		req.body.playlists.forEach(function(play){
-			options = {
-				uri: "",
-				headers: {
-					// 'User-Agent': 'Request-Promise',
-					"Authorization":'Bearer ' + token
-				},
-				json: true,
-			};
-
-			options.url =  url1 + play.id + url2;
-			options.offset = 0;
-			options.limit = 50;
-			options.uri = options.url + "?fields=items.track(id,name,artists)&limit=" + options.limit + "&offset=" + options.offset;
-			options.playlist_id = play.id;
-			options.store = [];
-			promises.push(promiseThrottle_playlists.add(getPages.bind(this,options)));
-
-		})
-
-
-		Promise.all(promises).then(function(results){
-			console.log("playlist_tracks finished execution:",Math.abs(new Date() - startDate) / 600);
-			console.log("results ",results.length);
-			//console.log("results ",results);
-
-			let payloads = [];
-			let payload = {};
-			results.forEach(function(op){
-				payload = {};
-				payload.tracks = op.store;
-				payload.playlist_id = op.playlist_id;
-				payloads.push(payload)
-			});
-			console.log("FINISHED");
-			done(payloads);
-		})
-	})//promise
-
-};//playlist_tracks
 
 
 //=================================================
 //resolving methods
 
-module.exports.playlistResolve = function(req,res){
+
+// var artistResolve =  function(){
+//     return new Promise(function(done, fail) {
+//     done({done:"done"})
+//     })
+// }
+//
+// var artistResolve2 =  function(){
+// 	return new Promise(function(done, fail) {
+// 		done({done:"done2"})
+// 	})
+// }
+
+//this is expecting a playob object defined as: {playlist:{},tracks:[],artists:[]}
+//we are going to get the genres for every artist
+//we're going to check the db
+//first to see if we stored any genre info about an artist
+//before asking spotify for genres on an artist
+
+//todo: better name?
+var getArtists = function(playob){
 	return new Promise(function(done, fail) {
+		//console.log("#len",playob.artists.length);
+		resolver.checkDBForArtistGenres(playob)
+			.then(
+				r =>{
+					//looks like: {playlist:{},tracks:[],artists:[],payload:[],db:[],lastLook:[]}
+					//console.log("checkDBForArtistGenres produced payload:",r.payload.length);
 
-		console.log("req.body.playlists",req.body.playlists);
+					//todo: depending on length of payload might it be advantangous to return some
+					//of that data immediately? or maybe wait until I at least hit spotify first
 
-		//todo:
-		//forEach, create a payload of artists.
-		//figure out if we have genre info for them, and if not start a job
+					//payload means move onto next resolver
+					if(r.payload.length){return resolver.resolveArtists(r.payload)}
+					//no payload so just finish
+					//todo: test
+					else{done(r)}},
+				e =>{console.error(e);fail(e);})
 
-		var payload = ["1m7LSAMIB1BErIHYSOn32W", "4nXOZlYoAD67hF9aUEncMY", "2rhFzFmezpnW82MNqEKVry"]
+			.then(artGenTuples => {
+				//console.log("artGenTuples",artGenTuples.length);
+				done(artGenTuples)
+			})
 
-		finder.checkDb()
+
+	})
+}
+
+
+//this is a request from the UI after selecting playlists
+//to have analyzed
+module.exports.resolvePlaylists =  function(req){
+	return new Promise(function(done, fail) {
+		//console.log("req.body.playlists",req.body.playlists);
+
+		//testing: fake UI request by just getting my own
+		//currently limited to 20 for faster testing
+		module.exports.getUserPlaylists().then(r =>{
+			var plays = [];
+			r.items.forEach(function(i){plays.push(i)})
+			req.body.playlists = plays;
+
+			//testing:2
+			//var playsr = [];playsr.push(plays[0]);playsr.push(plays[1])
+			//req.body.playlists = playsr;
+
+			resolver.resolvePlaylists(req.body.playlists)
+				.then(playobs =>{
+
+					//unwind artists from tracks and attach them to each playob
+					playobs.forEach(function(playob){
+						playob.map = {};
+						playob.artists = [];
+						playob.tracks.forEach(t => {
+							t.track.artists.forEach(a => {
+								playob.map[a.id] = a;
+							})
+						})
+						for (var key in playob.map){playob.artists.push(playob.map[key]) }
+					});
+
+					//now every playob looks like: {playlist:{},tracks:[],artists:[]}
+					//console.log(app.jstr(playobs));
+
+					var promises = [];
+					playobs.forEach(function(playob){
+						promises.push(getArtists(playob))
+					})
+
+					Promise.all(promises).then(artGenArrays => {
+
+						//artGens length = number of playlists
+						//make a big map of all of them
+						//console.log("artGens",artGenArrays.length);
+						// console.log(app.jstr(artGen));
+
+						var artGenMap = {};
+						artGenArrays.forEach(agr =>{
+							agr.forEach(artGen =>{
+								artGenMap[artGen.id] = artGen.genres
+							});
+						});
+
+						//console.log("artGenMap",artGenMap);
+
+						playobs.forEach(function(p){
+							p.artists.forEach(function(a){
+								a.genres = artGenMap[a.id]
+							})
+						})
+						done(playobs)
+
+					},e =>{
+						console.error(e);
+					})
+
+				},e =>{
+					console.error(e);
+				})
+		})
 	})
 }

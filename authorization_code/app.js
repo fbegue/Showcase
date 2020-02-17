@@ -69,6 +69,15 @@ var jstr = function(ob){
 	return JSON.stringify(ob,null,4)
 }
 
+const colors = require('colors/safe');
+console.error = function(msg){console.log(colors.red(msg))};
+console.warn = function(msg){console.log(colors.yellow(msg))};
+console.good = function(msg){console.log(colors.green(msg))};
+console.log("colors configured");
+
+//module.exports.console = console;
+module.exports.jstr = jstr;
+
 //=================================================
 //endpoints
 
@@ -84,8 +93,8 @@ app.post('/playlist_tracks', function(req, res) {
 	})
 });
 
-app.post('/playlistResolve', function(req, res) {
-	spotify_api.playlistResolve(req).then(function(res2){
+app.post('/resolvePlaylists', function(req, res) {
+	spotify_api.resolvePlaylists(req).then(function(res2){
 		res.send(res2)
 	})
 });
