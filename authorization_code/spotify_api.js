@@ -5,6 +5,7 @@ var rp = require('request-promise');
 
 var resolver = require('./resolver.js');
 let sql = require("mssql")
+var db_api = require('./db_api.js');
 
 var app =  require('./app')
 
@@ -113,7 +114,7 @@ var spotifyApi = new SpotifyWebApi({
 });
 
 
-var token = "BQBLxPRJIglwnAvP6-0AwsW7E7gx4yBkt0ugGICM1Id9TzDXRZPw_tyXNywt87IEypPZW1HoM-VqQxk2cX3WOeYm8FApP1MhkHWIY4A97a1zh2LAetARDpX9vBfE3Fmw4s0su2vMyj9-iGRPj_WXzAb2bTGI1P-q7fYyF1KCjeH4bk_OQn8vF_x9HVVdZVeaNX12VkF3xW4ZsvfETaI88TF5SSBqHSeK_W2RSGzRgfR46apVnH52JC1Z9DYrkidwow9DMhXIWjDXUMRx5_ohDYfh2Xc"
+var token = "BQDLESqFsnX4LMu_3_LH-XPqyRC0wATz_ULb5joKipu1mk6TYlNqq4pPmSb4OqpVn0aVqUs9XIH-T5uSxrjK9qtfTjRtzidPh2CMNA63TJV7tKBXi0JpguktdaQGOn3oPTnbUn6XDZSdv2UiF_dIbac_3om6VjjUxGYur-o_vmww4RASWof2J11_6QQlzGzIw9cyhonWyO7CpEFluC2kQi9sQddMBmfJQKgoJIoDk_rIGhk82N1Y5Ju3mB3oVWgLVyvwXKNFQgc6sTEnKpvKQjMfE5Y"
 spotifyApi.setAccessToken(token);
 module.exports.token = token;
 
@@ -174,7 +175,7 @@ module.exports.getUserPlaylists = function(){
 var getArtists = function(playob){
 	return new Promise(function(done, fail) {
 		//console.log("#len",playob.artists.length);
-		resolver.checkDBForArtistGenres(playob)
+		db_api.checkDBForArtistGenres(playob)
 			.then(
 				r =>{
 					//looks like: {playlist:{},tracks:[],artists:[],payload:[],db:[],lastLook:[]}
@@ -204,19 +205,27 @@ var getArtists = function(playob){
 //to have analyzed
 module.exports.resolvePlaylists =  function(req){
 	return new Promise(function(done, fail) {
-		//console.log("req.body.playlists",req.body.playlists);
+		req.body.playlists = JSON.parse(req.body.playlists);
+		console.log("req.body.playlists",req.body.playlists);
 
+		//resolver.resolvePlaylists(req.body.playlists)
 		//testing: fake UI request by just getting my own
-		//currently limited to 20 for faster testing
-		module.exports.getUserPlaylists().then(r =>{
+		//currently limited to 20 for faster
+
+		module.exports.getUserPlaylists().then(r => {
 			var plays = [];
-			r.items.forEach(function(i){plays.push(i)})
+			r.items.forEach(function (i) {
+				plays.push(i)
+			})
 			req.body.playlists = plays;
 
-			//testing:2
-			//var playsr = [];playsr.push(plays[0]);playsr.push(plays[1])
-			//req.body.playlists = playsr;
+			//testing: just 2 of them
+			var playsr = [];
+			playsr.push(plays[0]);
+			playsr.push(plays[1]);
+			req.body.playlists = playsr;
 
+		}).then(q => {
 			resolver.resolvePlaylists(req.body.playlists)
 				.then(playobs =>{
 
@@ -260,8 +269,18 @@ module.exports.resolvePlaylists =  function(req){
 							p.artists.forEach(function(a){
 								a.genres = artGenMap[a.id]
 							})
+						});
+
+						//todo: this could probably be done faster by combining with some other set
+						//concerned about sql operations - purely for information gathering - acting as a bottleneck
+						//outside of getting ids for existing/new genres, I guess everything else could wait?
+
+						//commit new data to sql
+						db_api.commitPlayobs(playobs).then(function(playobs2){
+
+							//genres have ids on them now
+							done(playobs2)
 						})
-						done(playobs)
 
 					},e =>{
 						console.error(e);
