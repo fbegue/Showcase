@@ -143,20 +143,23 @@ module.exports.commitPlayobs =  function(playobs){
 					var apromises = [];
 					var agpromises = [];
 					p.artists.forEach(function(a){
+
+						//crucial mutation happening here: notice when we finish committing to db,
+						//we finish with these playobs which now have genres on them
 						var gs = [];
 						a.genres.forEach(g =>{ gs.push(map[g]) })
 						a.genres = gs;
 
 						//push artists and artist_genres
 						apromises.push(insert_artist(a));
-
-						//todo: this seems fine? just all the promises
-						//apromises.push(insert_genre_artist(a));
-
+						a.genres.forEach(function(g){
+							var ag  = {genre_id:g.id,id:a.id}
+							apromises.push(insert_genre_artist(ag));
+						});
 					})
 					Promise.all(apromises).then(function(r2){
-						console.log("insert_artists finished");
-
+						console.log("insert genres, artists and artist_genres finished");
+						done(playobs);
 					})
 					//...
 				});
@@ -183,7 +186,7 @@ var insert_genre = function (genre) {
 	})
 };
 
-var  insert_artist=  function(){
+var  insert_artist=  function(artist){
 	return new Promise(function(done, fail) {
 
 		// var example = {"external_urls": {"spotify": "https://open.spotify.com/artist/1RHwcv7R6HPCPf1WMWoMbv"},
@@ -202,9 +205,9 @@ var  insert_artist=  function(){
 
 		var del = ["external_urls","href","genres","type"]
 		var a = Object.assign({},artist);
-		del.forEach(p =>{
-			delete a[p]
-		});
+		del.forEach(p =>{	delete a[p]});
+
+
 
 		var keys = Object.keys(a);
 		var klist = keys.map(function(value){
@@ -237,26 +240,18 @@ var  insert_artist=  function(){
 }
 
 
-//todo: need to convert to taking in the artist w/ genres
-let insert_genre_artist = function (genre, artist) {
-	//console.log("insert_genre_artist");
+//todo: setup to handle both songkick and spotify
+//they look like: {genre_id:#,artist_id:"",artistSongkick_id}
+//so whatever's not present is what to submit i.e. up to function that calls this to set that up
 
-	//todo: NOT SURE about decision to mix formats for artist_id here
-	//songkick's numeric ids always treated as strings
+let insert_genre_artist = function (genreArtist) {
+	var klist = "genre_id,artist_id";
+	var kparams = "@genre_id,@artist_id";
 
-	//todo: check if I need to encode incoming numeric artist id from songkick
-	if (typeof artist.id === "number") {
-		artist.id = artist.id.toString();
-	}
-
-
-	//multi-object doesn't make sense to use k-extraction
-	var klist = "genre_id,artist_id"
-	var kparams = "@genre_id,@artist_id"
-
-	var sreq = new sql.Request(poolGlobal);
-	sreq.input("genre_id", sql.Int, genre.id);
-	sreq.input("artist_id", sql.VarChar(50), artist.id);
+	var sreq = new sql.Request(sApi.poolGlobal);
+	sreq.input("genre_id", sql.Int, genreArtist.genre_id);
+	sreq.input("artist_id", sql.VarChar(50), genreArtist.id);
+	//sreq.input("artistSongkick_id", sql.Int(), artist.id);
 
 	var qry = "IF NOT EXISTS (SELECT * FROM dbo.genre_artist WHERE genre_id = @genre_id and artist_id = @artist_id)"
 		+ " INSERT INTO dbo.genre_artist(" + klist + " )"

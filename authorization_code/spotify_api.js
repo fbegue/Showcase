@@ -114,7 +114,7 @@ var spotifyApi = new SpotifyWebApi({
 });
 
 
-var token = "BQDLESqFsnX4LMu_3_LH-XPqyRC0wATz_ULb5joKipu1mk6TYlNqq4pPmSb4OqpVn0aVqUs9XIH-T5uSxrjK9qtfTjRtzidPh2CMNA63TJV7tKBXi0JpguktdaQGOn3oPTnbUn6XDZSdv2UiF_dIbac_3om6VjjUxGYur-o_vmww4RASWof2J11_6QQlzGzIw9cyhonWyO7CpEFluC2kQi9sQddMBmfJQKgoJIoDk_rIGhk82N1Y5Ju3mB3oVWgLVyvwXKNFQgc6sTEnKpvKQjMfE5Y"
+var token = "BQBuIRE8yN847KpVv8KUZm5XhkeS-J_qwl-gplZ3eYi8H0hcJQ4KNOjFpYPJfPmvVoW-jzB1cJ4DM-c80jKG_40FYNWwgGS3zQqBdD3jF7KEaI8P4HeCmWNCA5sPCz5w9kbu7Um7gwcP2JKmpLK9CpZjG1DAdtn49YzwnfSntIiUEsg80fGCDnQ9rRGQWocIqhg3knTLu69KEKor5P33RASs9fb0pFpULthnzQ_ROE3V5STmTUbf_gITeb2zUnJt6YaugLty5yk5R8yJcF6_v72Z0nA"
 spotifyApi.setAccessToken(token);
 module.exports.token = token;
 
@@ -185,10 +185,12 @@ var getArtists = function(playob){
 					//of that data immediately? or maybe wait until I at least hit spotify first
 
 					//payload means move onto next resolver
+					//todo: ignoring db results
 					if(r.payload.length){return resolver.resolveArtists(r.payload)}
-					//no payload so just finish
-					//todo: test
-					else{done(r)}},
+
+					//todo:
+					else{console.log("empty payload");r.flag = true;done(r)}},
+
 				e =>{console.error(e);fail(e);})
 
 			.then(artGenTuples => {
@@ -248,6 +250,10 @@ module.exports.resolvePlaylists =  function(req){
 					playobs.forEach(function(playob){
 						promises.push(getArtists(playob))
 					})
+
+					//todo: bad code design in getArtists
+					//so getArtists will short circuit with the playobs
+					//on an empty payload - it has two return signatures which is meh
 
 					Promise.all(promises).then(artGenArrays => {
 

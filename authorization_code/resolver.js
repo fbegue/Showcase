@@ -160,7 +160,7 @@ module.exports.resolveArtists = function(artists){
 		});
 
 		Promise.all(promises).then(results => {
-			console.log("resolveSpotify finished execution:",Math.abs(new Date() - startDate) / 600);
+			console.log("resolveArtists finished execution:",Math.abs(new Date() - startDate) / 600);
 			//console.log("$results",app.jstr(results));
 
 			//there will be as many results as there were payloads required to resolve the
