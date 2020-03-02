@@ -180,15 +180,19 @@ module.exports.checkDBForArtistLevenMatch =  function(artist){
 		//var sres = {payload:[],db:[],lastLook:[]};
 
 		sreq.input("name", sql.VarChar(50), artist.name);
+		sreq.input("id", sql.Int, artist.id);
 		sreq.execute("levenMatch").then(function(res){
 
-			if( res.recordset[0] && res.recordset[0].levenMatch < levenMatchLimit){
-				var ret = {id:res.recordset[0].id,name:res.recordset[0].name,genres:[]}
+			console.log(res);
+			var ret = {id:res.recordset[0].id,name:res.recordset[0].name,genres:[]}
+
+			if( res.recordset[0].levenMatch && res.recordset[0].levenMatch
+				&& res.recordset[0].levenMatch< levenMatchLimit){
 				res.recordset.forEach(r =>{ret.genres.push({id:r.id,name:r.genre_name})})
 				done(ret)
 			}
 			else{
-				done({error:"no good match"});
+				done(Object.assign({error:"no good match"},ret));
 			}
 		}).catch(err =>{
 			console.error(err);

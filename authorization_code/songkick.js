@@ -13,6 +13,8 @@ const songkickApi = new Songkick(apikey);
 
 const aggregator = require('./aggregator');
 const db_api = require('./db_api');
+const app = require('./app');
+const puppet = require('./puppet').puppet;
 
 module.exports.test = function(req, res){
 	console.log("test!");
@@ -617,22 +619,24 @@ module.exports.getMetroEvents =  function(req, res,next){
 						next(results)
 					} else {
 
+						var metrOb = {metro:req.body.metro,dateFilter:req.body.dateFilter,artists:[],payload:[],db:[]}
+						//lastLook:[]
 
-						var artists = [];
 						var AASMatch = [];
 						results.forEach(ob =>{
 							ob.performance.forEach(p =>{
 								var a = {id:p.artist.id,name:p.artist.displayName};
-								artists.push(a)
+								metrOb.artists.push(a);
 								AASMatch.push(db_api.checkDBFor_artist_artistSongkick_match(a))
 							})
 						})
 
-						console.log("artists",artists.length);
+						console.log("artists",metrOb.artists.length);
 
-						//probably need to make links between spotify and songkick artists right here
-						//so that 1) I can get spotify genre info I already have and
-						// 2) I can qualify some of the payload with spotify ids if I need to go get them
+						// 1) check if we know of a match between songkick and spotify ids formed by leven distance already
+						// 2) attempt to leven match on all spotify artists
+						// 2.b) todo: do Spotify free text artist search?
+						// 3) puppet
 
 						//check if we know of a match between songkick and spotify
 						Promise.all(AASMatch).then(results => {
@@ -647,23 +651,35 @@ module.exports.getMetroEvents =  function(req, res,next){
 									matchMap[r.artistSongkick_id] = r;
 								})
 
-								artists.forEach(a =>{
+								metrOb.artists.forEach(a =>{
 									!(matchMap[a.id])? LevenMatch.push(db_api.checkDBForArtistLevenMatch(a)):{};
 								})
 
 								//testing:
 								//LevenMatch.push(db_api.checkDBForArtistLevenMatch({name:"earth gang",id:1234324}));
 
-								Promise.all(LevenMatch).then(result => {
+								Promise.all(LevenMatch).then(results => {
 
-									console.log("$result",result);
+									var puppets = [];
+									console.log("$results",app.jstr(results));
+									results.forEach(r =>{
+										if(!(r.error)){
+											//should be artist objects w/ genres
+											metrOb.db.push(r);
+										}else{
+											puppets.push(puppet(r))
+										}
+									})
 
-									//todo: handle errors coming back
+									console.log("metrOb",app.jstr(metrOb));
 
-									//todo: continue on to aggregator (puppet and such)
+									Promise.all(puppets).then(results2 => {
+										console.log("$results2",app.jstr(results2));
+
+
+									},error =>{ console.log("$puppets",error);})
 
 								},error =>{ console.log("$LevenMatch",error);})
-
 							},
 							error =>{ console.log("$AASMatch",error);})
 
