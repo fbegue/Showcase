@@ -1,8 +1,3 @@
-/**
- * Created by DICK-SHRIVELER on 2/17/2018.
- */
-
-
 //repo
 //https://github.com/schnogz/songkick-api-node
 //All requests to the library will be returned a promise and when resolved the response will be JSON.
@@ -14,6 +9,10 @@ const fs = require('fs')
 var FuzzyMatching = require('fuzzy-matching');
 
 const songkickApi = new Songkick(apikey);
+
+
+const aggregator = require('./aggregator');
+const db_api = require('./db_api');
 
 module.exports.test = function(req, res){
 	console.log("test!");
@@ -39,8 +38,6 @@ var searchArtists = function(){
 		})
 }
 //searchArtists();
-
-
 
 
 //figure out metro ids (i think these are universal location ids for places)
@@ -320,6 +317,7 @@ dateFilter.end = '2018-07-18';
  * then get events upcoming for a metro
  * @function get_metro_events
  **/
+
 var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
 	return new Promise(function(done, fail) {
@@ -355,7 +353,7 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 					songkickApi.getLocationUpcomingEvents(metro.id,params)
 						.then(function(events){
 
-							 //console.log(JSON.stringify(events, null,4));
+							//console.log(JSON.stringify(events, null,4));
 
 							var filterInRange = function(event){
 
@@ -450,13 +448,13 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 		Promise.all(promises).then(function(results){
 
 			//b/c I'm doing one metro?
-
+			console.log(JSON.stringify(results,null,4));
 			results = results[0];
-			//console.log(JSON.stringify(results,null,4));
+
 			let events = [];
 
-		   let metro_id = results[0].id;
-		   let ids = {};
+			let metro_id = results[0].id;
+			let ids = {};
 
 			results.forEach(function(result){
 				result.events.forEach(function(event){
@@ -592,40 +590,108 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
 	})
 
-}//get_metro_events
+}//getMetroEvents
+
+/**
+ * then get events upcoming for a metro
+ * @function getMetroEvents
+ * @param req.body{
+ *	"metro":{"displayName":"Columbus",
+ *		"id":9480},
+ *	"dateFilter":{"start":"2020-02-29T16:36:07.100Z","end":"2020-03-06T16:36:07.100Z"}
+ *}
+ **/
+module.exports.getMetroEvents =  function(req, res,next){
+	return new Promise(function(done, fail) {
+		console.log(req);
+		// req.body = JSON.parse(req.body);
+		console.log("getMetroEvents", JSON.stringify(req.body, null, 4));
+
+		if (new Date(req.body.dateFilter.start).getDate() < new Date().getDate()) {
+			done({error: "start date is less than current date"})}
+		else {
+			get_metro_events(req.body.metro, req.body.dateFilter, req.body.raw_filename, req.body.areaDatesArtists_filename)
+				.then(function (results) {
+
+					if (next) {
+						next(results)
+					} else {
 
 
-module.exports.get_metro_events = function(req, res,next){
+						var artists = [];
+						var AASMatch = [];
+						results.forEach(ob =>{
+							ob.performance.forEach(p =>{
+								var a = {id:p.artist.id,name:p.artist.displayName};
+								artists.push(a)
+								AASMatch.push(db_api.checkDBFor_artist_artistSongkick_match(a))
+							})
+						})
 
-	console.log(req);
-	// req.body = JSON.parse(req.body);
-	console.log("get_metro_events",JSON.stringify(req.body,null,4));
+						console.log("artists",artists.length);
 
-	get_metro_events(req.body.metro,req.body.dateFilter,req.body.raw_filename,req.body.areaDatesArtists_filename).then(function(result){
-		//console.log(result);
+						//probably need to make links between spotify and songkick artists right here
+						//so that 1) I can get spotify genre info I already have and
+						// 2) I can qualify some of the payload with spotify ids if I need to go get them
 
-		if(next){next(result)}else{
-			res.send(result);
+						//check if we know of a match between songkick and spotify
+						Promise.all(AASMatch).then(results => {
+								var matchMap = {};
+								var LevenMatch = [];
+								//console.log(results);
+								results.forEach(r =>{
+
+									//todo: finish this and test it
+									//todo: checkDBFor_artist_artistSongkick_match doesn't bring back artists
+
+									matchMap[r.artistSongkick_id] = r;
+								})
+
+								artists.forEach(a =>{
+									!(matchMap[a.id])? LevenMatch.push(db_api.checkDBForArtistLevenMatch(a)):{};
+								})
+
+								//testing:
+								//LevenMatch.push(db_api.checkDBForArtistLevenMatch({name:"earth gang",id:1234324}));
+
+								Promise.all(LevenMatch).then(result => {
+
+									console.log("$result",result);
+
+									//todo: handle errors coming back
+
+									//todo: continue on to aggregator (puppet and such)
+
+								},error =>{ console.log("$LevenMatch",error);})
+
+							},
+							error =>{ console.log("$AASMatch",error);})
+
+						//expecting a playob so we'll wrap this here
+						// db_api.checkDBForArtistGenres({artists:artists}).then(r =>{
+						// 	console.log("checkDBForArtistGenres:",r);
+						// })
+
+						//aggregator.bandsintown
+						res.send(results);
+					}
+				})
 		}
-
 	})
 };
 
 
 module.exports.get_metro_events_local=  function(req){
-    return new Promise(function(done, fail) {
+	return new Promise(function(done, fail) {
 
-    	var callback = function(res){
-    		done({data:res})
-	    };
+		var callback = function(res){
+			done({data:res})
+		};
 
-	    module.exports.get_metro_events(req,{},callback)
+		module.exports.get_metro_events(req,{},callback)
 
-    })
+	})
 };
-
-
-module.exports.get_metro_events.type = "POST;"
 
 //module.exports.fuzzy_compare = fuzzy_compare;
 

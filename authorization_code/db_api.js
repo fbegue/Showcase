@@ -81,7 +81,7 @@ module.exports.checkDBForArtistGenres =  function(playob){
 		var artists = playob.artists;
 		var songkickIds = true;
 		typeof artists[0].id === "string" ? songkickIds = false:{};
-		//console.log("process set of" + songkickIds?"songkickIds":"spotifyIds");
+		console.log("process set of" + songkickIds?"songkickIds":"spotifyIds");
 
 		var promises = [];
 
@@ -169,6 +169,56 @@ module.exports.commitPlayobs =  function(playobs){
 			e =>{})
 	})
 }
+
+//todo: arbitrary limit here not sure what to do with this yet
+const levenMatchLimit = 5;
+
+module.exports.checkDBForArtistLevenMatch =  function(artist){
+	return new Promise(function(done, fail) {
+
+		var sreq = new sql.Request(sApi.poolGlobal);
+		//var sres = {payload:[],db:[],lastLook:[]};
+
+		sreq.input("name", sql.VarChar(50), artist.name);
+		sreq.execute("levenMatch").then(function(res){
+
+			if( res.recordset[0] && res.recordset[0].levenMatch < levenMatchLimit){
+				var ret = {id:res.recordset[0].id,name:res.recordset[0].name,genres:[]}
+				res.recordset.forEach(r =>{ret.genres.push({id:r.id,name:r.genre_name})})
+				done(ret)
+			}
+			else{
+				done({error:"no good match"});
+			}
+		}).catch(err =>{
+			console.error(err);
+			fail(err);
+		})
+	})
+};
+
+module.exports.checkDBFor_artist_artistSongkick_match =  function(artist){
+	return new Promise(function(done, fail) {
+
+		var sreq = new sql.Request(sApi.poolGlobal);
+
+		//sreq.input("artistSongkick_id", sql.VarChar(50), 123);
+		sreq.input("artistSongkick_id", sql.VarChar(50), artist.id);
+
+		//todo: should include a join to the spotify match w/ genres
+		//have code in work.sql pretty close to this out there already
+		sreq.query("select * from artist_artistSongkick where artistSongkick_id = @artistSongkick_id")
+			.then(r => {
+				//console.log("$r",r.recordset);
+				r.recordset[0] ? done(r.recordset[0]):done({})
+				//todo: then before sending back, set into a artist w/ genres object
+
+			}).catch(err =>{
+			console.error(err);
+			fail(err);
+		})
+	})
+};
 
 var insert_genre = function (genre) {
 	return new Promise(function (done, fail) {

@@ -87,14 +87,14 @@ app.post('/getUserPlaylists', function(req, res) {
 	})
 });
 
-app.post('/playlist_tracks', function(req, res) {
-	spotify_api.playlist_tracks(req).then(function(res2){
+app.post('/resolvePlaylists', function(req, res) {
+	spotify_api.resolvePlaylists(req).then(function(res2){
 		res.send(res2)
 	})
 });
 
-app.post('/resolvePlaylists', function(req, res) {
-	spotify_api.resolvePlaylists(req).then(function(res2){
+app.post('/getMetroEvents', function(req, res) {
+	songkick.getMetroEvents(req,res).then(function(res2){
 		res.send(res2)
 	})
 });
