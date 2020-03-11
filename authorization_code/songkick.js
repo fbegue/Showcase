@@ -16,6 +16,8 @@ const db_api = require('./db_api');
 const app = require('./app');
 const puppet = require('./puppet').puppet;
 
+var db_mongo_api = require('./db_mongo_api')
+
 module.exports.test = function(req, res){
 	console.log("test!");
 	let data = "test";
@@ -603,11 +605,10 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
  *	"dateFilter":{"start":"2020-02-29T16:36:07.100Z","end":"2020-03-06T16:36:07.100Z"}
  *}
  **/
-module.exports.getMetroEvents =  function(req, res,next){
+module.exports.fetchMetroEvents =  function(req, res,next){
 	return new Promise(function(done, fail) {
-		console.log(req);
-		// req.body = JSON.parse(req.body);
-		console.log("getMetroEvents", JSON.stringify(req.body, null, 4));
+		//todo:Fix
+		req.body = JSON.parse(req.body.data);
 
 		if (new Date(req.body.dateFilter.start).getDate() < new Date().getDate()) {
 			done({error: "start date is less than current date"})}
@@ -622,14 +623,17 @@ module.exports.getMetroEvents =  function(req, res,next){
 						var metrOb = {metro:req.body.metro,dateFilter:req.body.dateFilter,artists:[],payload:[],db:[]}
 						//lastLook:[]
 
+						//todo: how to parallel these?
 						var AASMatch = [];
+
 						results.forEach(ob =>{
+							AASMatch.push(db_mongo_api.insert(ob));
 							ob.performance.forEach(p =>{
 								var a = {id:p.artist.id,name:p.artist.displayName};
 								metrOb.artists.push(a);
 								AASMatch.push(db_api.checkDBFor_artist_artistSongkick_match(a))
 							})
-						})
+						});
 
 						console.log("artists",metrOb.artists.length);
 
@@ -687,7 +691,6 @@ module.exports.getMetroEvents =  function(req, res,next){
 						// db_api.checkDBForArtistGenres({artists:artists}).then(r =>{
 						// 	console.log("checkDBForArtistGenres:",r);
 						// })
-
 						//aggregator.bandsintown
 						res.send(results);
 					}

@@ -139,7 +139,7 @@ module.exports.resolveArtists = function(artists){
 		let startDate = new Date();
 		//console.log("resolveSpotify start time:",startDate);
 
-		//resolver.spotify expects batches of 50 artist's ids
+		//resolver.spotify expects batpoolPromiseches of 50 artist's ids
 		var promises = [];
 		var payloads = [];
 		var payload = [];

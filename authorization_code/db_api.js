@@ -257,6 +257,9 @@ var  insert_artist=  function(artist){
 		// 	uri:"spotify:track:4aOy3Z4SaX3Mh1rJGh2HLz",
 		// };
 
+
+		console.log("$artist",artist);
+
 		var del = ["external_urls","href","genres","type"]
 		var a = Object.assign({},artist);
 		del.forEach(p =>{	delete a[p]});

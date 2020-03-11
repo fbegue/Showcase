@@ -114,7 +114,7 @@ var spotifyApi = new SpotifyWebApi({
 });
 
 
-var token = "BQC1GKR7dso8lsvs0w6helPmhlEYZoV8eib4_mL4d9S0l5GZfVBBYceLxupV20jGGs8PgXwz_Ax64V1PcuGHEwN5vMrXrhtWaTTUW7L5-sXKbDdb-uUVaRKnE76Yin4Au9Zn19hC0OfUFq_4YwChO64Wl-2nZJB6PFYFmO2VOgKSyAdh8l0Zz8hCq3xi2UzhU_rf8-nrWCoaRXv0jjIa_o29MzWOhFJnOpduYPCgiSAh5o8hV2dIDNaEUGAu1ssI-6CFcyfuVBYT7UdgX7JSy--Rrws"
+var token = "BQD9hpJY4yLeJtOekN-3tTyalU4wrWWrpWgdQBoFgpMd_dXJ5HuQ9sUBvP1s58Yyerl_TbAcZ4IY2FGdx2FhmHTLpTPfu-NpBQE700VXN-NsSC3aJpXzcfaM4Hd-OabraRfYip1e-IaR-mm5dfoIZMLgWLuuFwZG1TxOhgslAqguNaZ0hr7GTpRjGU4N38Hp0FkNdkfDt9YMSMGPhV7oQAAyFgwgmGHEZm8mzP4R9x6L0YsXio6ZDo5BexrWzH5KQZlbXBgeZSrMBOcFFLV1urD-cmk"
 spotifyApi.setAccessToken(token);
 module.exports.token = token;
 
@@ -261,6 +261,8 @@ module.exports.resolvePlaylists =  function(req){
 						//make a big map of all of them
 						//console.log("artGens",artGenArrays.length);
 						// console.log(app.jstr(artGen));
+
+						// console.log("$test",artGenArrays[0][0]);
 
 						var artGenMap = {};
 						artGenArrays.forEach(agr =>{

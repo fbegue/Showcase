@@ -24,6 +24,7 @@ var fs      = require('fs');
 
 var songkick = require('./songkick.js');
 var spotify_api = require('./spotify_api.js');
+var db_mongo_api = require('./db_mongo_api.js');
 var puppet = require('./puppet.js');
 
 
@@ -94,10 +95,17 @@ app.post('/resolvePlaylists', function(req, res) {
 });
 
 app.post('/getMetroEvents', function(req, res) {
-	songkick.getMetroEvents(req,res).then(function(res2){
+	db_mongo_api.fetch(req,res).then(function(res2){
 		res.send(res2)
 	})
 });
+
+app.post('/fetchMetroEvents', function(req, res) {
+	songkick.fetchMetroEvents(req,res).then(function(res2){
+		res.send(res2)
+	})
+});
+
 
 //test
 app.post('/puppet', function(req, res) {
