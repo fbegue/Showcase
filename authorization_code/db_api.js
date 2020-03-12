@@ -182,8 +182,7 @@ module.exports.checkDBForArtistLevenMatch =  function(artist){
 		sreq.input("name", sql.VarChar(50), artist.name);
 		sreq.input("id", sql.Int, artist.id);
 		sreq.execute("levenMatch").then(function(res){
-
-			console.log(res);
+			//console.log(res);
 			var ret = {id:res.recordset[0].id,name:res.recordset[0].name,genres:[]}
 
 			if( res.recordset[0].levenMatch && res.recordset[0].levenMatch

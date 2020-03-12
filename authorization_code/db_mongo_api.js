@@ -4,19 +4,29 @@ import_client().then(c =>{client = c;})
 
 
 var insert =  function(events){
-    return new Promise(function(done, fail) {
-	    var dbo = client.db("master");
-	    dbo.collection("events").insert(events).then(r =>{
-	    	done(r)
-	    })
-    })
+	return new Promise(function(done, fail) {
+		var dbo = client.db("master");
+		//infer correct collection from one sample event
+		// dbo.collection(events[0].venue.metroArea.id).insert(events).then(r =>{
+		// 	done(r)
+		// })
+		// console.log(events[0]);
+		dbo.collection(events[0].venue.metroArea.id.toString())
+		//todo: can't figure out the easy way to do a massive insert if not already in collection wtf?
+		//it can't really be a find and insert if not found right?
+		//.updateMany({},events,{"upsert":true}).then(r =>{
+
+			.insertMany(events).then(r =>{
+			done(r)
+		})
+	})
 }
 
 var fetch =  function(param){
 	return new Promise(function(done, fail) {
 		var dbo = client.db("master");
 		var events = dbo.collection("events").find().toArray();
-			done(events)
+		done(events)
 	})
 }
 

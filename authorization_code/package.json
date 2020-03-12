@@ -25,6 +25,7 @@
     "grunt-express-server": "latest",
     "jquery": "^3.2.1",
     "jsdom": "10.1.0",
+    "mongodb": "^3.5.4",
     "msnodesqlv8": "latest",
     "mssql": "latest",
     "musicbrainz-api": "latest",

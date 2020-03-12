@@ -114,7 +114,7 @@ var spotifyApi = new SpotifyWebApi({
 });
 
 
-var token = "BQD9hpJY4yLeJtOekN-3tTyalU4wrWWrpWgdQBoFgpMd_dXJ5HuQ9sUBvP1s58Yyerl_TbAcZ4IY2FGdx2FhmHTLpTPfu-NpBQE700VXN-NsSC3aJpXzcfaM4Hd-OabraRfYip1e-IaR-mm5dfoIZMLgWLuuFwZG1TxOhgslAqguNaZ0hr7GTpRjGU4N38Hp0FkNdkfDt9YMSMGPhV7oQAAyFgwgmGHEZm8mzP4R9x6L0YsXio6ZDo5BexrWzH5KQZlbXBgeZSrMBOcFFLV1urD-cmk"
+var token = "BQACId2diPBcHyeZILE-Nbsiqc1X-aOjSKce2Tcpubck14TN631pVWeXcU9QRdkRhW2cn8a9RP5HDBhg8EoWPjCRuQ9rHlNCntPykjZGRwgfqJk6QHznblPpyxc96sgZEBRdH9f3mvVQ2ErZKErqUJXwZhH1syb2Xb1nhepHbwyaBiSDy2MRfyZrlzU5v8KS3a2tYrdyjnj519QRDkrBiyJ2uqnE-1gLDLTtEl3P6RkWoDQcSu1PiCX2nPNP2pYTL0ell18GHa73VXjJ87q3pXUOfdA";
 spotifyApi.setAccessToken(token);
 module.exports.token = token;
 
@@ -300,3 +300,15 @@ module.exports.resolvePlaylists =  function(req){
 		})
 	})
 }
+
+module.exports.searchArtist  =  function(){
+    return new Promise(function(done, fail) {
+	    spotifyApi.searchArtists(query)
+		    .then(function(r) {
+			    done(r)
+		    }, function(err) {
+			    console.error(err);
+			    fail(err);
+		    });
+    })
+};

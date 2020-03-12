@@ -17,6 +17,7 @@ const app = require('./app');
 const puppet = require('./puppet').puppet;
 
 var db_mongo_api = require('./db_mongo_api')
+var spotify_api = require('./spotify_api')
 
 module.exports.test = function(req, res){
 	console.log("test!");
@@ -322,7 +323,7 @@ dateFilter.end = '2018-07-18';
  * @function get_metro_events
  **/
 
-var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
+var fetch_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
 	return new Promise(function(done, fail) {
 
@@ -451,12 +452,12 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 		//results is an object with three fields: metro id, displayName (of metro) and the future events in that metro
 		Promise.all(promises).then(function(results){
 
-			//b/c I'm doing one metro?
-			console.log(JSON.stringify(results,null,4));
+			//console.log(JSON.stringify(results,null,4));
+
+			//todo: b/c I'm doing one metro?
 			results = results[0];
 
 			let events = [];
-
 			let metro_id = results[0].id;
 			let ids = {};
 
@@ -596,6 +597,15 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
 }//getMetroEvents
 
+var fake_events = require('./example data objects/event.js').events;
+var fake_metro_events =  function(){
+    return new Promise(function(done, fail) {
+	    console.warn("faking events");
+	    console.warn(fake_events.length);
+        done(fake_events)
+    })
+}
+
 /**
  * then get events upcoming for a metro
  * @function getMetroEvents
@@ -607,27 +617,28 @@ var get_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
  **/
 module.exports.fetchMetroEvents =  function(req, res,next){
 	return new Promise(function(done, fail) {
-		//todo:Fix
-		req.body = JSON.parse(req.body.data);
 
 		if (new Date(req.body.dateFilter.start).getDate() < new Date().getDate()) {
 			done({error: "start date is less than current date"})}
 		else {
-			get_metro_events(req.body.metro, req.body.dateFilter, req.body.raw_filename, req.body.areaDatesArtists_filename)
+			//testing:
+			fake_metro_events()
+			//fetch_metro_events(req.body.metro, req.body.dateFilter, req.body.raw_filename, req.body.areaDatesArtists_filename)
 				.then(function (results) {
 
 					if (next) {
 						next(results)
 					} else {
+						//console.log(app.jstr(results));
 
 						var metrOb = {metro:req.body.metro,dateFilter:req.body.dateFilter,artists:[],payload:[],db:[]}
 						//lastLook:[]
 
-						//todo: how to parallel these?
+						//todo: how to parallel these? mixing promises here
 						var AASMatch = [];
 
+						AASMatch.push(db_mongo_api.insert(results));
 						results.forEach(ob =>{
-							AASMatch.push(db_mongo_api.insert(ob));
 							ob.performance.forEach(p =>{
 								var a = {id:p.artist.id,name:p.artist.displayName};
 								metrOb.artists.push(a);
@@ -646,41 +657,58 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 						Promise.all(AASMatch).then(results => {
 								var matchMap = {};
 								var LevenMatch = [];
-								//console.log(results);
-								results.forEach(r =>{
+								//todo:
+								results.shift();
+								console.log("$artist_artistSongkick",results[0]);
 
-									//todo: finish this and test it
-									//todo: checkDBFor_artist_artistSongkick_match doesn't bring back artists
+								//make a map of the matches we got so we can filter a payload for step (2)
 
-									matchMap[r.artistSongkick_id] = r;
-								})
-
+								results.forEach(r =>{	matchMap[r.artistSongkick_id] = r;})
 								metrOb.artists.forEach(a =>{
 									!(matchMap[a.id])? LevenMatch.push(db_api.checkDBForArtistLevenMatch(a)):{};
-								})
+								});
+
+								console.log("$matchMap",matchMap);
 
 								//testing:
 								//LevenMatch.push(db_api.checkDBForArtistLevenMatch({name:"earth gang",id:1234324}));
 
 								Promise.all(LevenMatch).then(results => {
 
-									var puppets = [];
-									console.log("$results",app.jstr(results));
+									//spotify artist string search
+
+									var searches = [];
 									results.forEach(r =>{
 										if(!(r.error)){
 											//should be artist objects w/ genres
 											metrOb.db.push(r);
 										}else{
-											puppets.push(puppet(r))
+											//todo: need this to return the query and result I think
+											//might have to look at quality of match as well?
+											//searches.push(spotify_api())
 										}
 									})
 
-									console.log("metrOb",app.jstr(metrOb));
+									//....
+
+
+									//puppets
+
+									 var puppets = [];
+									// //console.log("$levenMatch",app.jstr(results));
+									// results.forEach(r =>{
+									// 	if(!(r.error)){
+									// 		//should be artist objects w/ genres
+									// 		metrOb.db.push(r);
+									// 	}else{
+									// 		puppets.push(puppet(r))
+									// 	}
+									// })
+
+									//console.log("metrOb",app.jstr(metrOb));
 
 									Promise.all(puppets).then(results2 => {
 										console.log("$results2",app.jstr(results2));
-
-
 									},error =>{ console.log("$puppets",error);})
 
 								},error =>{ console.log("$LevenMatch",error);})
@@ -698,7 +726,6 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 		}
 	})
 };
-
 
 module.exports.get_metro_events_local=  function(req){
 	return new Promise(function(done, fail) {
