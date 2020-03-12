@@ -114,7 +114,7 @@ var spotifyApi = new SpotifyWebApi({
 });
 
 
-var token = "BQACId2diPBcHyeZILE-Nbsiqc1X-aOjSKce2Tcpubck14TN631pVWeXcU9QRdkRhW2cn8a9RP5HDBhg8EoWPjCRuQ9rHlNCntPykjZGRwgfqJk6QHznblPpyxc96sgZEBRdH9f3mvVQ2ErZKErqUJXwZhH1syb2Xb1nhepHbwyaBiSDy2MRfyZrlzU5v8KS3a2tYrdyjnj519QRDkrBiyJ2uqnE-1gLDLTtEl3P6RkWoDQcSu1PiCX2nPNP2pYTL0ell18GHa73VXjJ87q3pXUOfdA";
+var token = "BQD-Ng2Y35UfdXKrL7WqI5mAGT-ozpSCRZxtPeA2iQ-d-WOHkL1NBrr5xF2a2TA0PEy65L8gr_dBLsoK-kk8FrSJn7DKnpdc8ZFfRKcDBPx0VYNXD0BSkl4FzuVTOQvIuYeY9Zq-_zGHvzOGjAKkoZYWMlB0Mze-rdq5lH1OTY6jlExnslXh2e8_hhY0a6FQuGZ6pu4F0Rp2c8YqbtKI85WdCsGjyUom8RWggnvQj95BjOpK4WBEml077G83KRGN4E5r5xXD5mBZr_ibbSSkyRzPZR0"
 spotifyApi.setAccessToken(token);
 module.exports.token = token;
 
@@ -301,11 +301,13 @@ module.exports.resolvePlaylists =  function(req){
 	})
 }
 
-module.exports.searchArtist  =  function(){
+
+module.exports.searchArtist  =  function(query){
     return new Promise(function(done, fail) {
-	    spotifyApi.searchArtists(query)
+	    console.log(query);
+	    spotifyApi.searchArtists(query.name)
 		    .then(function(r) {
-			    done(r)
+			    done({query:query,result:r})
 		    }, function(err) {
 			    console.error(err);
 			    fail(err);

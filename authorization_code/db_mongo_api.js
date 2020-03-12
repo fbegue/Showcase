@@ -11,7 +11,12 @@ var insert =  function(events){
 		// 	done(r)
 		// })
 		// console.log(events[0]);
-		dbo.collection(events[0].venue.metroArea.id.toString())
+		var c = events[0].venue.metroArea.id.toString()
+		dbo.collection(c).deleteMany({}).then(r =>{
+			dbo.collection(c).insertMany(events).then(r2 =>{
+				done(r2)
+			})
+		})
 		//todo: can't figure out the easy way to do a massive insert if not already in collection wtf?
 		//it can't really be a find and insert if not found right?
 
@@ -20,9 +25,7 @@ var insert =  function(events){
 
 		//.updateMany({},events,{"upsert":true}).then(r =>{
 
-			.insertMany(events).then(r =>{
-			done(r)
-		})
+
 	})
 }
 

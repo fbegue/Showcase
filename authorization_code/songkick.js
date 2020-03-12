@@ -599,11 +599,11 @@ var fetch_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
 var fake_events = require('./example data objects/event.js').events;
 var fake_metro_events =  function(){
-    return new Promise(function(done, fail) {
-	    console.warn("faking events");
-	    console.warn(fake_events.length);
-        done(fake_events)
-    })
+	return new Promise(function(done, fail) {
+		console.warn("faking events");
+		console.warn(fake_events.length);
+		done(fake_events)
+	})
 }
 
 /**
@@ -631,7 +631,9 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 					} else {
 						//console.log(app.jstr(results));
 
-						var metrOb = {metro:req.body.metro,dateFilter:req.body.dateFilter,artists:[],payload:[],db:[]}
+						var metrOb = {metro:req.body.metro,dateFilter:req.body.dateFilter,
+							leven_match:[],spotify_match:[],artists:[],payload:[],db:[],
+							results:["leven_match","spotify_match","db"]}
 						//lastLook:[]
 
 						//todo: how to parallel these? mixing promises here
@@ -648,6 +650,9 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 						console.log("artists",metrOb.artists.length);
 
+						//testing:
+						metrOb.artists = metrOb.artists.slice(0,5);
+
 						// 1) check if we know of a match between songkick and spotify ids formed by leven distance already
 						// 2) attempt to leven match on all spotify artists
 						// 2.b) todo: do Spotify free text artist search?
@@ -659,7 +664,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 								var LevenMatch = [];
 								//todo:
 								results.shift();
-								console.log("$artist_artistSongkick",results[0]);
+								//console.log("$artist_artistSongkick",results[0]);
 
 								//make a map of the matches we got so we can filter a payload for step (2)
 
@@ -668,33 +673,85 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									!(matchMap[a.id])? LevenMatch.push(db_api.checkDBForArtistLevenMatch(a)):{};
 								});
 
-								console.log("$matchMap",matchMap);
+								//todo: have to do something with the ones we matched
+								//SHOW-32
+								//i.e. push into metrOb.db
+								//console.log("$matchMap",matchMap);
 
 								//testing:
 								//LevenMatch.push(db_api.checkDBForArtistLevenMatch({name:"earth gang",id:1234324}));
 
 								Promise.all(LevenMatch).then(results => {
-
+									//console.log("$r",results[0]);
 									//spotify artist string search
+
+									//todo: MOVE
+									var Bottleneck = require("bottleneck");
+									var limiterSpotify = new Bottleneck({
+										maxConcurrent: 20,
+										minTime: 30,
+										trackDoneStatus: true
+									});
 
 									var searches = [];
 									results.forEach(r =>{
 										if(!(r.error)){
 											//should be artist objects w/ genres
-											metrOb.db.push(r);
+											metrOb.leven_match.push(r);
+
+											//todo: need to evaluate these new matches
+											//and commit back to db
+
+											//...
+
 										}else{
+											//console.log("$r",r);
 											//todo: need this to return the query and result I think
 											//might have to look at quality of match as well?
-											//searches.push(spotify_api())
+											//searches.push(spotify_api.searchArtist(r.name));
+											searches.push(limiterSpotify.schedule(spotify_api.searchArtist,r,{}))
 										}
-									})
+									});
 
-									//....
 
+									console.log("db",metrOb.db.length);
+									console.log("queries #",searches.length);
+									Promise.all(searches).then(results => {
+										//look like: {query:query,result:r}
+										//console.log("$searches",app.jstr(results[0]));
+
+										results.forEach(r =>{
+											var aas,artist,artistSongkick = {};
+											if(r.result.body.artists.items.length > 0){
+												var item = r.result.body.artists.items[0];	var q = r.query;
+
+												//todo: need to remake this insert to accept entire object
+												artist= item;
+												artistSongkick= {id:q.id,name:q.name};
+
+												//todo: evaluate integrity of new match
+												aas = {id:item.id,name:item.name,artistSongkick_id:q.id,artistSongkick_name:q.name}
+
+												// console.log(artist);
+												// console.log(artistSongkick);
+												// console.log(aas);
+
+												//todo: somehow the last item.id here is getting replaced with spotify?
+												//strange but tired
+
+												//commit to db
+
+												//...
+
+											}
+										})
+
+
+									},error =>{ console.log("$searches",error);})
 
 									//puppets
 
-									 var puppets = [];
+									var puppets = [];
 									// //console.log("$levenMatch",app.jstr(results));
 									// results.forEach(r =>{
 									// 	if(!(r.error)){
@@ -707,9 +764,11 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 									//console.log("metrOb",app.jstr(metrOb));
 
-									Promise.all(puppets).then(results2 => {
-										console.log("$results2",app.jstr(results2));
-									},error =>{ console.log("$puppets",error);})
+
+
+									// Promise.all(puppets).then(results2 => {
+									// 	console.log("$results2",app.jstr(results2));
+									// },error =>{ console.log("$puppets",error);})
 
 								},error =>{ console.log("$LevenMatch",error);})
 							},
@@ -720,7 +779,9 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 						// 	console.log("checkDBForArtistGenres:",r);
 						// })
 						//aggregator.bandsintown
-						res.send(results);
+
+						//testing:
+						//res.send(results);
 					}
 				})
 		}
