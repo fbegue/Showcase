@@ -10,7 +10,7 @@
     "fuzzy-matching": "^0.4.3",
     "git": "^0.1.5",
     "grunt": "^1.0.3",
-    "jquery": "3.2.1",
+    "jquery": "3.4.0",
     "jsdom": "10.1.0",
     "querystring": "~0.2.0",
     "request": "^2.88.0",
