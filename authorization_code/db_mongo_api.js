@@ -14,6 +14,10 @@ var insert =  function(events){
 		dbo.collection(events[0].venue.metroArea.id.toString())
 		//todo: can't figure out the easy way to do a massive insert if not already in collection wtf?
 		//it can't really be a find and insert if not found right?
+
+		// https://docs.mongodb.com/stitch/mongodb/actions/collection.insertMany/
+		// https://docs.mongodb.com/stitch/mongodb/actions/collection.updateMany/
+
 		//.updateMany({},events,{"upsert":true}).then(r =>{
 
 			.insertMany(events).then(r =>{
