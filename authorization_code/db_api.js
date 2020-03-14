@@ -170,11 +170,73 @@ module.exports.commitPlayobs =  function(playobs){
 	})
 }
 
+//
+module.exports.commitMetrobArtist =   function(metrob){
+	return new Promise(function(done, fail) {
+
+		//submit genres, annotating the incoming object with ids created or fetched
+		//insert artists and genre_artist relations
+
+		var gpromises = [];
+		var unique = []
+
+		playobs.forEach(function(p){
+			p.artists.forEach(function(a){
+				a.genres.forEach(g =>{
+					//todo: pretty sure theres a timing issue here causing me to register some
+					//exact same value genres twice. so just going to prune for uniqueness here
+					if(unique.indexOf(g) === -1){gpromises.push(insert_genre(g));unique.push(g)}
+				})
+			})
+		});
+
+		Promise.all(gpromises).then(r =>{
+				//console.log("$r",r);
+
+				//mutate playobs with qualified genres
+
+				var genres = r.reduce(function(prev, curr) { return prev.concat(curr); });
+				var map = {};
+				genres.forEach(g => {map[g.name] = g;});
+
+				playobs.forEach(function(p){
+
+					var apromises = [];
+					var agpromises = [];
+					p.artists.forEach(function(a){
+
+						//crucial mutation happening here: notice when we finish committing to db,
+						//we finish with these playobs which now have genres on them
+						var gs = [];
+						a.genres.forEach(g =>{ gs.push(map[g]) })
+						a.genres = gs;
+
+						//push artists and artist_genres
+						apromises.push(insert_artist(a));
+						a.genres.forEach(function(g){
+							var ag  = {genre_id:g.id,id:a.id}
+							apromises.push(insert_genre_artist(ag));
+						});
+					})
+					Promise.all(apromises).then(function(r2){
+						console.log("insert genres, artists and artist_genres finished");
+						done(playobs);
+					})
+					//...
+				});
+
+				//console.log(app.jstr(playobs));
+			},
+			e =>{})
+	})
+}
+
 //todo: arbitrary limit here not sure what to do with this yet
 const levenMatchLimit = 5;
 
 module.exports.checkDBForArtistLevenMatch =  function(artist){
 	return new Promise(function(done, fail) {
+		console.log("$artist",artist);
 
 		var sreq = new sql.Request(sApi.poolGlobal);
 		//var sres = {payload:[],db:[],lastLook:[]};
@@ -183,7 +245,8 @@ module.exports.checkDBForArtistLevenMatch =  function(artist){
 		sreq.input("id", sql.Int, artist.id);
 		sreq.execute("levenMatch").then(function(res){
 			//console.log(res);
-			var ret = {id:res.recordset[0].id,name:res.recordset[0].name,genres:[]}
+			var r = res.recordset[0];
+			var ret = {id:r.id,name:r.name,artistSongkick_id:r.artistSongkick_id,displayName:r.displayName,genres:[]}
 
 			if( res.recordset[0].levenMatch && res.recordset[0].levenMatch
 				&& res.recordset[0].levenMatch< levenMatchLimit){
@@ -194,7 +257,7 @@ module.exports.checkDBForArtistLevenMatch =  function(artist){
 				done(Object.assign({error:"no good match"},ret));
 			}
 		}).catch(err =>{
-			console.error(err);
+			//console.error(err);
 			fail(err);
 		})
 	})
@@ -207,14 +270,14 @@ module.exports.checkDBFor_artist_artistSongkick_match =  function(artist){
 
 		//sreq.input("artistSongkick_id", sql.VarChar(50), 123);
 		sreq.input("artistSongkick_id", sql.VarChar(50), artist.id);
-
-		//todo: should include a join to the spotify match w/ genres
-		//have code in work.sql pretty close to this out there already
-		sreq.query("select * from artist_artistSongkick where artistSongkick_id = @artistSongkick_id")
+		// sreq.query("select * from artist_artistSongkick where artistSongkick_id = @artistSongkick_id")
+		sreq.execute("match_artist_artistSongkick")
 			.then(r => {
 				//console.log("$r",r.recordset);
-				r.recordset[0] ? done(r.recordset[0]):done({})
+				r.recordset[0] ? done(r.recordset[0]):done({genres:[]})
 				//todo: then before sending back, set into a artist w/ genres object
+				//...
+
 
 			}).catch(err =>{
 			console.error(err);
@@ -239,7 +302,7 @@ var insert_genre = function (genre) {
 	})
 };
 
-var  insert_artist=  function(artist){
+var insert_artist =  function(artist){
 	return new Promise(function(done, fail) {
 
 		// var example = {"external_urls": {"spotify": "https://open.spotify.com/artist/1RHwcv7R6HPCPf1WMWoMbv"},
@@ -262,8 +325,6 @@ var  insert_artist=  function(artist){
 		var del = ["external_urls","href","genres","type"]
 		var a = Object.assign({},artist);
 		del.forEach(p =>{	delete a[p]});
-
-
 
 		var keys = Object.keys(a);
 		var klist = keys.map(function(value){
@@ -322,7 +383,7 @@ let insert_genre_artist = function (genreArtist) {
 	})
 };
 
-let insert_artistsSongkick  = function(){
+let insert_artistSongkick  = function(artistSongkick){
 	//console.log("insert_artistsSongkick");
 
 	let a = {
@@ -332,7 +393,7 @@ let insert_artistsSongkick  = function(){
 		//onTourUntil:strDate
 	};
 
-	var keys = Object.keys(a);
+	var keys = Object.keys(artistSongkick);
 	var klist = keys.map(function(value){
 		return "" + value + ""
 	}).join(",");

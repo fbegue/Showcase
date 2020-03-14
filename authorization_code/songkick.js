@@ -631,12 +631,56 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 					} else {
 						//console.log(app.jstr(results));
 
-						var metrOb = {metro:req.body.metro,dateFilter:req.body.dateFilter,
-							leven_match:[],spotify_match:[],artists:[],payload:[],db:[],
-							results:["leven_match","spotify_match","db"]}
-						//lastLook:[]
+						//this object acts as a record tracking the result of this run of
+						//fetch_metro_events. we will record this in our logs so that we can tell:
 
-						//todo: how to parallel these? mixing promises here
+						//todo: is aas_match being filled with either spotify or songkick genre data an issue?
+
+						/**
+						 * @class metrOb
+						 * @prop artists - total # of artists from this run
+						 * @prop aas_match - we already linked songkick-spotify to
+						 * @prop aas_match_genres - "" and found genres from either spotify OR songkick
+						 *
+						 * @prop leven_match - # new aas_matches we formed from w/ Leven
+						 * @prop spotify_match - # new aas_matches we formed from w/ Spotify free text artist search
+						 */
+
+						var metrOb = {metro:req.body.metro,dateFilter:req.body.dateFilter,
+							artists:[], aas_match:[], leven_match:[], spotify_match:[],
+							payload:[],
+						};
+
+						//is there such thing as lastLook for songkick artists?
+						//yes - the lastLook for songkick artists records the last time
+						//we hit the db with a levenMatch, spotify free search or puppet/other resolver utilities request?
+
+						//but this lastLook is more than just 'the last time I looked for genres' - here we are also talking
+						//about linking songkick artist to spotify - how often do the inputs to those two things change?
+						//anytime my NO THE spotify library grows I now have new artists to try to free match on
+						//but thats really it as far as newly created linking information goes right? free text is my
+						//only method of linking songkick and spotify artists right now.
+						//so we just record 'lastLookSpotify' for songkickArtists
+
+						//wheras 'lastLook' for all songkick artists is a json object describing the last time we looked
+						//for GENRES in each resolver utility - exactly the same as a spotify artist 'lastLook'
+
+
+						//so the plan here will be:
+
+						// 1)   check if we know of a match between songkick and spotify
+						//      AND pull down existing genre info for:
+						//      1.b) just songkick
+						//      1.b) the spotify match
+
+						// 2) attempt to leven match on all spotify artists
+						// 2.a) pull down genres w/ lastLook on new matches
+
+						// 3 Spotify free text artist search?
+						// 4) puppet
+
+
+						//todo: how to parallel these? mixing promises here (1)
 						var AASMatch = [];
 
 						AASMatch.push(db_mongo_api.insert(results));
@@ -651,38 +695,47 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 						console.log("artists",metrOb.artists.length);
 
 						//testing:
+						console.warn("clipping total artists to 5!!!");
 						metrOb.artists = metrOb.artists.slice(0,5);
 
-						// 1) check if we know of a match between songkick and spotify ids formed by leven distance already
-						// 2) attempt to leven match on all spotify artists
-						// 2.b) todo: do Spotify free text artist search?
-						// 3) puppet
 
 						//check if we know of a match between songkick and spotify
 						Promise.all(AASMatch).then(results => {
+
+							    //a matchMap populated from aas_match (never aas_match_genres)
 								var matchMap = {};
 								var LevenMatch = [];
-								//todo:
+
+								//todo: how to parallel these? mixing promises here (2)
 								results.shift();
-								//console.log("$artist_artistSongkick",results[0]);
+
 
 								//make a map of the matches we got so we can filter a payload for step (2)
+								results.forEach(r =>{
 
-								results.forEach(r =>{	matchMap[r.artistSongkick_id] = r;})
+									//record differently depending on weather we found genres
+
+									if(r.genres.length > 0){
+										metrOb.aas_match_genres.push(r)
+									}
+									else{
+										metrOb.aas_match.push(r);
+										//just prevent n^n when comparing matches
+										matchMap[r.artistSongkick_id] = r;
+									}
+								});
+
+								//console.log("$matchMap",matchMap);
+
 								metrOb.artists.forEach(a =>{
 									!(matchMap[a.id])? LevenMatch.push(db_api.checkDBForArtistLevenMatch(a)):{};
 								});
-
-								//todo: have to do something with the ones we matched
-								//SHOW-32
-								//i.e. push into metrOb.db
-								//console.log("$matchMap",matchMap);
 
 								//testing:
 								//LevenMatch.push(db_api.checkDBForArtistLevenMatch({name:"earth gang",id:1234324}));
 
 								Promise.all(LevenMatch).then(results => {
-									//console.log("$r",results[0]);
+
 									//spotify artist string search
 
 									//todo: MOVE
@@ -694,15 +747,22 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									});
 
 									var searches = [];
+									var metrobArtists = [];
+
 									results.forEach(r =>{
-										if(!(r.error)){
-											//should be artist objects w/ genres
+										if(r.error === undefined){
+
+											//record LevenMatch we found
+											//todo: evaluate these new matches integrity
+
 											metrOb.leven_match.push(r);
+											//console.log(r);
 
-											//todo: need to evaluate these new matches
-											//and commit back to db
+											//commit to match to db
+											//todo: need songkick id
 
-											//...
+											metrobArtists.push(db_api.commitMetrobArtist(r))
+											//console.log(r);
 
 										}else{
 											//console.log("$r",r);
@@ -714,9 +774,19 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									});
 
 
-									console.log("db",metrOb.db.length);
+									//console.log("db",metrOb.db.length);
 									console.log("queries #",searches.length);
-									Promise.all(searches).then(results => {
+									console.log("metrobArtists #",metrobArtists.length);
+
+
+
+									//todo: parallel
+									var combined_promises = metrobArtists.concat(searches);
+
+									//testing:
+									combined_promises = [];
+
+									Promise.all(combined_promises).then(results => {
 										//look like: {query:query,result:r}
 										//console.log("$searches",app.jstr(results[0]));
 
