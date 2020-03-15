@@ -682,8 +682,14 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 						//todo: how to parallel these? mixing promises here (1)
 						var AASMatch = [];
-
 						AASMatch.push(db_mongo_api.insert(results));
+
+						//testing:
+						//results = results.splice(0,1)
+						//console.warn("clipping AASMatch results to 1!!!");
+						//console.log(AASMatch[0]);
+
+
 						results.forEach(ob =>{
 							ob.performance.forEach(p =>{
 								var a = {id:p.artist.id,name:p.artist.displayName};
@@ -702,7 +708,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 						//check if we know of a match between songkick and spotify
 						Promise.all(AASMatch).then(results => {
 
-							    //a matchMap populated from aas_match (never aas_match_genres)
+								//a matchMap populated from aas_match (never aas_match_genres)
 								var matchMap = {};
 								var LevenMatch = [];
 
@@ -716,6 +722,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									//record differently depending on weather we found genres
 
 									if(r.genres.length > 0){
+										console.log("$match",r);
 										metrOb.aas_match_genres.push(r)
 									}
 									else{
@@ -747,7 +754,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									});
 
 									var searches = [];
-									var metrobArtists = [];
+									var artistSongkicks = [];
 
 									results.forEach(r =>{
 										if(r.error === undefined){
@@ -756,15 +763,17 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 											//todo: evaluate these new matches integrity
 
 											metrOb.leven_match.push(r);
-											//console.log(r);
 
 											//commit to match to db
-											//todo: need songkick id
+											artistSongkicks.push(db_api.commit_artistSongkick_with_match(r))
 
-											metrobArtists.push(db_api.commitMetrobArtist(r))
-											//console.log(r);
 
+											//we couldn't find a match in our db via direct id lookups
+											//or my levenmatching, but lets try one more time to link
+											//spotify and songkick artists before we just work with the songkick
+											//artist and try to resolve genres for it
 										}else{
+
 											//console.log("$r",r);
 											//todo: need this to return the query and result I think
 											//might have to look at quality of match as well?
@@ -776,12 +785,12 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 									//console.log("db",metrOb.db.length);
 									console.log("queries #",searches.length);
-									console.log("metrobArtists #",metrobArtists.length);
+									console.log("metrobArtists #",artistSongkicks.length);
 
 
 
 									//todo: parallel
-									var combined_promises = metrobArtists.concat(searches);
+									var combined_promises = artistSongkicks.concat(searches);
 
 									//testing:
 									combined_promises = [];

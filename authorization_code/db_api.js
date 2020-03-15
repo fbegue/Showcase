@@ -170,73 +170,39 @@ module.exports.commitPlayobs =  function(playobs){
 	})
 }
 
-//
-module.exports.commitMetrobArtist =   function(metrob){
-	return new Promise(function(done, fail) {
+//incoming object looks like:
+// {
+// 	id: '1xD85sp0kecIVuMwUHShxs',
+// 	name: 'Twin Peaks',
+// 	artistSongkick_id: 296530,
+// 	displayName: 'Twin Peaks',
+// 	genres: []
+// 	}
 
-		//submit genres, annotating the incoming object with ids created or fetched
-		//insert artists and genre_artist relations
+module.exports.commit_artistSongkick_with_match =   function(songkickOb) {
+	return new Promise(function (done, fail) {
+		//console.log("$artist", songkickOb);
 
-		var gpromises = [];
-		var unique = []
-
-		playobs.forEach(function(p){
-			p.artists.forEach(function(a){
-				a.genres.forEach(g =>{
-					//todo: pretty sure theres a timing issue here causing me to register some
-					//exact same value genres twice. so just going to prune for uniqueness here
-					if(unique.indexOf(g) === -1){gpromises.push(insert_genre(g));unique.push(g)}
-				})
-			})
-		});
-
-		Promise.all(gpromises).then(r =>{
-				//console.log("$r",r);
-
-				//mutate playobs with qualified genres
-
-				var genres = r.reduce(function(prev, curr) { return prev.concat(curr); });
-				var map = {};
-				genres.forEach(g => {map[g.name] = g;});
-
-				playobs.forEach(function(p){
-
-					var apromises = [];
-					var agpromises = [];
-					p.artists.forEach(function(a){
-
-						//crucial mutation happening here: notice when we finish committing to db,
-						//we finish with these playobs which now have genres on them
-						var gs = [];
-						a.genres.forEach(g =>{ gs.push(map[g]) })
-						a.genres = gs;
-
-						//push artists and artist_genres
-						apromises.push(insert_artist(a));
-						a.genres.forEach(function(g){
-							var ag  = {genre_id:g.id,id:a.id}
-							apromises.push(insert_genre_artist(ag));
-						});
-					})
-					Promise.all(apromises).then(function(r2){
-						console.log("insert genres, artists and artist_genres finished");
-						done(playobs);
-					})
-					//...
-				});
-
-				//console.log(app.jstr(playobs));
-			},
-			e =>{})
+		var artistSongkick = {id:songkickOb.artistSongkick_id,displayName:songkickOb.displayName};
+		var artist_artistSongkick = {artist_id:songkickOb.id,artistSongkick_id:songkickOb.artistSongkick_id};
+		async function commit(){
+			await insert_artistSongkick(artistSongkick);
+			await insert_artist_artistSongkick(artist_artistSongkick)
+		}
+		commit().then(r =>{
+			done(r);
+		},e =>{
+			console.error(e);
+		})
 	})
-}
+};
 
 //todo: arbitrary limit here not sure what to do with this yet
 const levenMatchLimit = 5;
 
 module.exports.checkDBForArtistLevenMatch =  function(artist){
 	return new Promise(function(done, fail) {
-		console.log("$artist",artist);
+		// console.log("$artist",artist);
 
 		var sreq = new sql.Request(sApi.poolGlobal);
 		//var sres = {payload:[],db:[],lastLook:[]};
@@ -248,8 +214,7 @@ module.exports.checkDBForArtistLevenMatch =  function(artist){
 			var r = res.recordset[0];
 			var ret = {id:r.id,name:r.name,artistSongkick_id:r.artistSongkick_id,displayName:r.displayName,genres:[]}
 
-			if( res.recordset[0].levenMatch && res.recordset[0].levenMatch
-				&& res.recordset[0].levenMatch< levenMatchLimit){
+			if( res.recordset[0].levenMatch && res.recordset[0].levenMatch < levenMatchLimit){
 				res.recordset.forEach(r =>{ret.genres.push({id:r.id,name:r.genre_name})})
 				done(ret)
 			}
@@ -266,21 +231,23 @@ module.exports.checkDBForArtistLevenMatch =  function(artist){
 module.exports.checkDBFor_artist_artistSongkick_match =  function(artist){
 	return new Promise(function(done, fail) {
 
+		//console.log("$artist",artist);
 		var sreq = new sql.Request(sApi.poolGlobal);
 
-		//sreq.input("artistSongkick_id", sql.VarChar(50), 123);
-		sreq.input("artistSongkick_id", sql.VarChar(50), artist.id);
-		// sreq.query("select * from artist_artistSongkick where artistSongkick_id = @artistSongkick_id")
+		sreq.input("artistSongkick_id", sql.Int, artist.id);
 		sreq.execute("match_artist_artistSongkick")
 			.then(r => {
 				//console.log("$r",r.recordset);
-				r.recordset[0] ? done(r.recordset[0]):done({genres:[]})
-				//todo: then before sending back, set into a artist w/ genres object
-				//...
-
-
+				var ret = Object.assign({}, artist);
+				ret.genres = [];
+				if(r.recordset[0] && r.recordset[0].length > 0) {
+					r.recordset.forEach(rec => {
+						ret.genres.push({id:rec.genre_id,name:rec.genreName})
+					})
+				}
+				done(ret);
 			}).catch(err =>{
-			console.error(err);
+			//console.error(err);
 			fail(err);
 		})
 	})
@@ -320,7 +287,7 @@ var insert_artist =  function(artist){
 		// };
 
 
-		console.log("$artist",artist);
+		//console.log("$artist",artist);
 
 		var del = ["external_urls","href","genres","type"]
 		var a = Object.assign({},artist);
@@ -383,68 +350,55 @@ let insert_genre_artist = function (genreArtist) {
 	})
 };
 
-let insert_artistSongkick  = function(artistSongkick){
-	//console.log("insert_artistsSongkick");
+var insert_artistSongkick =  function(artistSongkick){
+	return new Promise(function(done, fail) {
 
-	let a = {
-		id:4,
-		displayName:"testDisplayName",
-		identifier:"test-mbei-233r-asfsdf-dfdsasfd",
-		//onTourUntil:strDate
-	};
+		//let a = {id:4,displayName:"testDisplayName",identifier:"test-mbei-233r-asfsdf-dfdsasfd"};
 
-	var keys = Object.keys(artistSongkick);
-	var klist = keys.map(function(value){
-		return "" + value + ""
-	}).join(",");
-	var kparams = keys.map(function(value){
-		return "@" + value + ""
-	}).join(",");
+		var keys = Object.keys(artistSongkick);
+		var klist = keys.map(function(value){
+			return "" + value + ""
+		}).join(",");
+		var kparams = keys.map(function(value){
+			return "@" + value + ""
+		}).join(",");
 
-	var sreq = new sql.Request(poolGlobal);
-	sreq.input("id", sql.Int, a.id);
-	sreq.input("displayName", sql.VarChar(100), a.displayName);
-	sreq.input("identifier", sql.VarChar(150), a.identifier);
+		var sreq = new sql.Request(sApi.poolGlobal);
+		sreq.input("id", sql.Int, artistSongkick.id);
+		sreq.input("displayName", sql.VarChar(100), artistSongkick.displayName);
 
-	//todo: sreq.input("onTourUntil", sql.DateTimeOffset(7), as.onTourUntil)
+		//todo: sreq.input("identifier", sql.VarChar(150), a.identifier);
+		//todo: sreq.input("onTourUntil", sql.DateTimeOffset(7), as.onTourUntil)
 
-	var qry = "IF NOT EXISTS (SELECT * FROM dbo.artistsSongkick WHERE id = @id)"
-		+ " INSERT INTO dbo.artistsSongkick("+ klist + ")"
-		+ " OUTPUT inserted.id, inserted.displayName, inserted.identifier"
-		+ " VALUES(" + kparams +")"
-		+ " else select * from dbo.artistsSongkick WHERE id = @id";
+		var qry = "IF NOT EXISTS (SELECT * FROM dbo.artistsSongkick WHERE id = @id)"
+			+ " INSERT INTO dbo.artistsSongkick("+ klist + ")"
+			+ " OUTPUT inserted.id, inserted.displayName, inserted.identifier"
+			+ " VALUES(" + kparams +")"
+			+ " else select * from dbo.artistsSongkick WHERE id = @id";
 
-	sreq.query(qry).then(function(res){
-		console.log(res);
-	}).catch(function(err){
-		console.log(err);
+		sreq.query(qry).then(function(res){
+			//console.log(res);
+			done(res);
+		}).catch(function(err){
+			console.log(err);
+		})
 	})
+}
 
-};
-
-var insert_artist_artistSongkick = function(){
-	var sreq = new sql.Request(poolGlobal);
-	var qry = "select a.id as artist_id, aso.id as artistSongkick_id from dbo.artists a join dbo.artistsSongkick aso on aso.displayName = a.name";
-
-	sreq.query(qry)
-		.then(function(rlts){
-			rlts.recordset.forEach(function(r){
-				//console.log(r);
-
-				var sreq2 = new sql.Request(poolGlobal);
-
-				sreq2.input("artist_id", sql.VarChar(150), r.artist_id);
-				sreq2.input("artistSongkick_id",sql.Int, r.artistSongkick_id);
-				var qry2 = "insert into artist_artistSongkick(artist_id, artistSongkick_id) values (@artist_id, @artistSongkick_id)";
-				sreq2.query(qry2).then(function(rlts2){
-					//console.log("rlts2",rlts2);
-				})
-			});
-		});
-
-
-};
-
+var insert_artist_artistSongkick =  function(artist_artistSongkick){
+	return new Promise(function(done, fail) {
+		var sreq = new sql.Request(sApi.poolGlobal);
+		sreq.input("artist_id", sql.VarChar(150), artist_artistSongkick.artist_id);
+		sreq.input("artistSongkick_id",sql.Int, artist_artistSongkick.artistSongkick_id);
+		var qry2 = "insert into artist_artistSongkick(artist_id, artistSongkick_id) values (@artist_id, @artistSongkick_id)";
+		sreq.query(qry2).then(function(res){
+			//console.log(res);
+			done(res);
+		}).catch(function(err){
+			console.log(err);
+		})
+	});
+}
 
 
 
