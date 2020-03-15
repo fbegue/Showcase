@@ -210,17 +210,23 @@ module.exports.checkDBForArtistLevenMatch =  function(artist){
 		sreq.input("name", sql.VarChar(50), artist.name);
 		sreq.input("id", sql.Int, artist.id);
 		sreq.execute("levenMatch").then(function(res){
-			//console.log(res);
-			var r = res.recordset[0];
-			var ret = {id:r.id,name:r.name,artistSongkick_id:r.artistSongkick_id,displayName:r.displayName,genres:[]}
+			var r0 = res.recordset[0];
+			//var ret = {id:r.id,name:r.name,artistSongkick_id:r.artistSongkick_id,displayName:r.displayName,genres:[]}
+			var ret = Object.assign({}, artist);
+			ret.genres = [];
 
-			if( res.recordset[0].levenMatch && res.recordset[0].levenMatch < levenMatchLimit){
-				res.recordset.forEach(r =>{ret.genres.push({id:r.id,name:r.genre_name})})
-				done(ret)
+			//they are sorted by levenMatch so index [0] will be the best we can do
+			if(res.recordset.length > 0 && r0.levenMatch !== null && r0.levenMatch < levenMatchLimit) {
+				//console.log(res.recordset);
+				res.recordset.forEach(rec => {
+					ret.genres.push({id:rec.genre_id,name:rec.genre_name})
+				})
 			}
+			//todo: just fail it and catch in a reflect?
 			else{
-				done(Object.assign({error:"no good match"},ret));
+				Object.assign({error:"no good match"},ret);
 			}
+			done(ret)
 		}).catch(err =>{
 			//console.error(err);
 			fail(err);
@@ -235,16 +241,18 @@ module.exports.checkDBFor_artist_artistSongkick_match =  function(artist){
 		var sreq = new sql.Request(sApi.poolGlobal);
 
 		sreq.input("artistSongkick_id", sql.Int, artist.id);
+		//console.log(sreq.parameters);
 		sreq.execute("match_artist_artistSongkick")
 			.then(r => {
 				//console.log("$r",r.recordset);
 				var ret = Object.assign({}, artist);
 				ret.genres = [];
-				if(r.recordset[0] && r.recordset[0].length > 0) {
+				if(r.recordset.length > 0) {
 					r.recordset.forEach(rec => {
-						ret.genres.push({id:rec.genre_id,name:rec.genreName})
+						ret.genres.push({id:rec.genre_id,name:rec.genre_name})
 					})
 				}
+				console.log(ret);
 				done(ret);
 			}).catch(err =>{
 			//console.error(err);

@@ -597,12 +597,12 @@ var fetch_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
 
 }//getMetroEvents
 
-var fake_events = require('./example data objects/event.js').events;
-var fake_metro_events =  function(){
+var fake_events = require('./example data objects/event.js')
+var fake_metro_events =  function(label){
 	return new Promise(function(done, fail) {
-		console.warn("faking events");
-		console.warn(fake_events.length);
-		done(fake_events)
+		console.warn("faking events:",label);
+		console.warn(fake_events[label].length);
+		done(fake_events[label])
 	})
 }
 
@@ -622,7 +622,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 			done({error: "start date is less than current date"})}
 		else {
 			//testing:
-			fake_metro_events()
+			fake_metro_events('melted')
 			//fetch_metro_events(req.body.metro, req.body.dateFilter, req.body.raw_filename, req.body.areaDatesArtists_filename)
 				.then(function (results) {
 
@@ -647,7 +647,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 						 */
 
 						var metrOb = {metro:req.body.metro,dateFilter:req.body.dateFilter,
-							artists:[], aas_match:[], leven_match:[], spotify_match:[],
+							artists:[], aas_match:[],aas_match_genres:[], leven_match:[], spotify_match:[],
 							payload:[],
 						};
 
@@ -701,20 +701,21 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 						console.log("artists",metrOb.artists.length);
 
 						//testing:
-						console.warn("clipping total artists to 5!!!");
+						var death = metrOb.artists.filter(a =>{return a.name === 'Death Valley Girls'});
+
+						console.warn("clipping total artists to 6!!!");
 						metrOb.artists = metrOb.artists.slice(0,5);
+						metrOb.artists.push(death[0]);
+						//console.log(app.jstr(metrOb.artists));
 
 
 						//check if we know of a match between songkick and spotify
 						Promise.all(AASMatch).then(results => {
 
-								//a matchMap populated from aas_match (never aas_match_genres)
-								var matchMap = {};
 								var LevenMatch = [];
 
 								//todo: how to parallel these? mixing promises here (2)
 								results.shift();
-
 
 								//make a map of the matches we got so we can filter a payload for step (2)
 								results.forEach(r =>{
@@ -722,21 +723,23 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									//record differently depending on weather we found genres
 
 									if(r.genres.length > 0){
-										console.log("$match",r);
+										//matched and found genres
 										metrOb.aas_match_genres.push(r)
 									}
-									else{
+									else if(r.length === 0){
+										//matched but no genres
 										metrOb.aas_match.push(r);
-										//just prevent n^n when comparing matches
-										matchMap[r.artistSongkick_id] = r;
+										LevenMatch.push(db_api.checkDBForArtistLevenMatch(r))
+									}
+									else{
+										//no match
+										LevenMatch.push(db_api.checkDBForArtistLevenMatch(r))
 									}
 								});
 
-								//console.log("$matchMap",matchMap);
-
-								metrOb.artists.forEach(a =>{
-									!(matchMap[a.id])? LevenMatch.push(db_api.checkDBForArtistLevenMatch(a)):{};
-								});
+								console.log("metrOb.aas_match",metrOb.aas_match.length);
+								console.log("metrOb.aas_match_genres",metrOb.aas_match_genres.length);
+								console.log("LevenMatch payload",LevenMatch.length);
 
 								//testing:
 								//LevenMatch.push(db_api.checkDBForArtistLevenMatch({name:"earth gang",id:1234324}));
@@ -756,7 +759,14 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									var searches = [];
 									var artistSongkicks = [];
 
+									//testing:
+									console.warn("auto-failing LevenMatch results");
+
 									results.forEach(r =>{
+
+										//testing:
+										r.error = true;
+
 										if(r.error === undefined){
 
 											//record LevenMatch we found
@@ -774,16 +784,14 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 											//artist and try to resolve genres for it
 										}else{
 
-											//console.log("$r",r);
-											//todo: need this to return the query and result I think
-											//might have to look at quality of match as well?
-											//searches.push(spotify_api.searchArtist(r.name));
+											//right?
+											delete r.error;
 											searches.push(limiterSpotify.schedule(spotify_api.searchArtist,r,{}))
 										}
 									});
 
 
-									//console.log("db",metrOb.db.length);
+									console.log("leven_match",metrOb.leven_match.length);
 									console.log("queries #",searches.length);
 									console.log("metrobArtists #",artistSongkicks.length);
 
@@ -792,24 +800,26 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									//todo: parallel
 									var combined_promises = artistSongkicks.concat(searches);
 
-									//testing:
-									combined_promises = [];
-
 									Promise.all(combined_promises).then(results => {
-										//look like: {query:query,result:r}
+										//look like: {artist:{},result:{}}
 										//console.log("$searches",app.jstr(results[0]));
 
 										results.forEach(r =>{
 											var aas,artist,artistSongkick = {};
 											if(r.result.body.artists.items.length > 0){
-												var item = r.result.body.artists.items[0];	var q = r.query;
-
-												//todo: need to remake this insert to accept entire object
-												artist= item;
-												artistSongkick= {id:q.id,name:q.name};
+												var item = r.result.body.artists.items[0];	var artist = r.artist;
 
 												//todo: evaluate integrity of new match
-												aas = {id:item.id,name:item.name,artistSongkick_id:q.id,artistSongkick_name:q.name}
+												//we had a fuzzy match node thing, does that work here?
+												console.log(item.name + "/" + artist.name);
+
+												//insert new match
+
+												//...
+
+												//artist= item;
+												//artistSongkick= {id:q.id,name:q.name};
+												//aas = {id:item.id,name:item.name,artistSongkick_id:q.id,artistSongkick_name:q.name}
 
 												// console.log(artist);
 												// console.log(artistSongkick);
@@ -826,7 +836,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 										})
 
 
-									},error =>{ console.log("$searches",error);})
+									},error =>{ console.log("$searches error",error);})
 
 									//puppets
 

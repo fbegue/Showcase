@@ -4351,3 +4351,213 @@ module.exports.events = [
 		"_id": "5e69866a1e9b88571448cb0a"
 	}
 ]
+
+module.exports.melted = [
+	{
+		"id": 39291001,
+		"displayName": "Oh Sees with Twin Peaks, Combo Chimbita, Death Valley Girls, and 5 more… at Bluestone (March 13, 2020)",
+		"type": "Concert",
+		"uri": "http://www.songkick.com/concerts/39291001-oh-sees-at-bluestone?utm_source=47817&utm_medium=partner",
+		"status": "ok",
+		"popularity": 0.030759,
+		"start": {
+			"date": "2020-03-13",
+			"datetime": "2020-03-13T16:00:00-0400",
+			"time": "16:00:00"
+		},
+		"performance": [
+			{
+				"id": 74358468,
+				"displayName": "Oh Sees",
+				"billing": "headline",
+				"billingIndex": 1,
+				"artist": {
+					"id": 9862514,
+					"displayName": "Oh Sees",
+					"uri": "http://www.songkick.com/artists/9862514-oh-sees?utm_source=47817&utm_medium=partner",
+					"identifier": [
+						{
+							"mbid": "194272cc-dcc8-4640-a4a6-66da7d250d5c",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:194272cc-dcc8-4640-a4a6-66da7d250d5c.json"
+						}
+					]
+				}
+			},
+			{
+				"id": 74358469,
+				"displayName": "Twin Peaks",
+				"billing": "support",
+				"billingIndex": 2,
+				"artist": {
+					"id": 296530,
+					"displayName": "Twin Peaks",
+					"uri": "http://www.songkick.com/artists/296530-twin-peaks?utm_source=47817&utm_medium=partner",
+					"identifier": [
+						{
+							"mbid": "1c97bfa2-edd9-4d4f-9dd7-201b925a4abb",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:1c97bfa2-edd9-4d4f-9dd7-201b925a4abb.json"
+						},
+						{
+							"mbid": "a3ee7da1-d892-4cf3-a5ba-4c07806edbca",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:a3ee7da1-d892-4cf3-a5ba-4c07806edbca.json"
+						},
+						{
+							"mbid": "b9bd2ca3-bf1a-4eb0-a89c-f16d95d9457f",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:b9bd2ca3-bf1a-4eb0-a89c-f16d95d9457f.json"
+						}
+					]
+				}
+			},
+			{
+				"id": 74358470,
+				"displayName": "Combo Chimbita",
+				"billing": "support",
+				"billingIndex": 3,
+				"artist": {
+					"id": 8979434,
+					"displayName": "Combo Chimbita",
+					"uri": "http://www.songkick.com/artists/8979434-combo-chimbita?utm_source=47817&utm_medium=partner",
+					"identifier": [
+						{
+							"mbid": "4963f5f1-2ba1-4668-b7e3-82f8564dee9e",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:4963f5f1-2ba1-4668-b7e3-82f8564dee9e.json"
+						}
+					]
+				}
+			},
+			{
+				"id": 74358471,
+				"displayName": "Death Valley Girls",
+				"billing": "support",
+				"billingIndex": 4,
+				"artist": {
+					"id": 6760199,
+					"displayName": "Death Valley Girls",
+					"uri": "http://www.songkick.com/artists/6760199-death-valley-girls?utm_source=47817&utm_medium=partner",
+					"identifier": [
+						{
+							"mbid": "987c6ccf-d4c5-4f23-938a-c0a21782803d",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:987c6ccf-d4c5-4f23-938a-c0a21782803d.json"
+						}
+					]
+				}
+			},
+			{
+				"id": 74358472,
+				"displayName": "Holy Wave",
+				"billing": "support",
+				"billingIndex": 5,
+				"artist": {
+					"id": 2842856,
+					"displayName": "Holy Wave",
+					"uri": "http://www.songkick.com/artists/2842856-holy-wave?utm_source=47817&utm_medium=partner",
+					"identifier": [
+						{
+							"mbid": "715b9af4-36c8-4ae7-bc7a-b1ff147fc110",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:715b9af4-36c8-4ae7-bc7a-b1ff147fc110.json"
+						}
+					]
+				}
+			},
+			{
+				"id": 74358473,
+				"displayName": "Mikal Cronin",
+				"billing": "support",
+				"billingIndex": 6,
+				"artist": {
+					"id": 4323081,
+					"displayName": "Mikal Cronin",
+					"uri": "http://www.songkick.com/artists/4323081-mikal-cronin?utm_source=47817&utm_medium=partner",
+					"identifier": [
+						{
+							"mbid": "c1a217e0-4b3e-46d7-9613-6a14c9e70895",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:c1a217e0-4b3e-46d7-9613-6a14c9e70895.json"
+						}
+					]
+				}
+			},
+			{
+				"id": 74358474,
+				"displayName": "The Lemons",
+				"billing": "support",
+				"billingIndex": 7,
+				"artist": {
+					"id": 286347,
+					"displayName": "The Lemons",
+					"uri": "http://www.songkick.com/artists/286347-lemons?utm_source=47817&utm_medium=partner",
+					"identifier": [
+						{
+							"mbid": "c6c434e1-0d16-4d0d-947f-c981f97d1aa7",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:c6c434e1-0d16-4d0d-947f-c981f97d1aa7.json"
+						},
+						{
+							"mbid": "b06928d4-f2e8-4ec3-901f-69c5ff542999",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:b06928d4-f2e8-4ec3-901f-69c5ff542999.json"
+						}
+					]
+				}
+			},
+			{
+				"id": 74358475,
+				"displayName": "The Mattson 2",
+				"billing": "support",
+				"billingIndex": 8,
+				"artist": {
+					"id": 1105447,
+					"displayName": "The Mattson 2",
+					"uri": "http://www.songkick.com/artists/1105447-mattson-2?utm_source=47817&utm_medium=partner",
+					"identifier": [
+						{
+							"mbid": "89be1555-4771-443b-b76c-47156d606bfa",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:89be1555-4771-443b-b76c-47156d606bfa.json"
+						}
+					]
+				}
+			},
+			{
+				"id": 74358476,
+				"displayName": "Guerilla Toss",
+				"billing": "support",
+				"billingIndex": 9,
+				"artist": {
+					"id": 4509718,
+					"displayName": "Guerilla Toss",
+					"uri": "http://www.songkick.com/artists/4509718-guerilla-toss?utm_source=47817&utm_medium=partner",
+					"identifier": [
+						{
+							"mbid": "a615b8f7-a9f6-4d7a-90c7-6fdf26b13411",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:a615b8f7-a9f6-4d7a-90c7-6fdf26b13411.json"
+						}
+					]
+				}
+			}
+		],
+		"ageRestriction": null,
+		"flaggedAsEnded": false,
+		"venue": {
+			"id": 1204981,
+			"displayName": "Bluestone",
+			"uri": "http://www.songkick.com/venues/1204981-bluestone?utm_source=47817&utm_medium=partner",
+			"metroArea": {
+				"displayName": "Columbus",
+				"country": {
+					"displayName": "US"
+				},
+				"state": {
+					"displayName": "OH"
+				},
+				"id": 9480,
+				"uri": "http://www.songkick.com/metro_areas/9480-us-columbus?utm_source=47817&utm_medium=partner"
+			},
+			"lat": 39.96359,
+			"lng": -82.98497
+		},
+		"location": {
+			"city": "Columbus, OH, US",
+			"lat": 39.96359,
+			"lng": -82.98497
+		},
+		"metro_id": 9480,
+		"_id": "5e69866a1e9b88571448cad5"
+	}
+]

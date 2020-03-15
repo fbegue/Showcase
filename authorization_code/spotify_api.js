@@ -114,7 +114,7 @@ var spotifyApi = new SpotifyWebApi({
 });
 
 
-var token = "BQAUcgsTiM-9bTvxdSX-siKv35bwmsLbcjxx20rt9tfhcfkfpu2je8RtZqChdMkbb5lb8h2WG1pHvPjmevLpvPsxqAP-8Dmmp4khNUWB2dsu_BSQa2L_i15CP0TUGNYhHyWhBddRKxXMTKRiiClDjQhhlCloOfv9ATvZ-9iZvmHn0SzcPGziyHjVBLuJvNOVKk3z3Bsv9ii8hJCq0VlVVMfPcoaAxjol0Lxk9sLhiAtivkt0iLJcX_j-eCBvrOxfbzRicKqEsrn9TDZdxRlVHh_gj3I"
+var token = "BQAmWpEt7H24usnBJRkosmMgJOxfIVaOYQvFIbsul2DcIeW4tPWrpd1ic67RXda06oXFlNT0PYIXi7dSyiWfaiotRuS9FFWBhVTJlvPWaMANTxT3PT9aIckLM5DsNyhELunhmDbis3ecRaTi7awtwsSqqw9OdEBTZoBCppc6DxMSzK-pYwEhUrWQid47xULaI-iSETzgdbL5-dxHzdjvQVI2fLFCuXMGvYFO_S-e1UhJdYkfQac4OO9JDsEiApfsIrGscEQSkHbPnNO5vCQmSTbKlAk"
 spotifyApi.setAccessToken(token);
 module.exports.token = token;
 
@@ -302,12 +302,12 @@ module.exports.resolvePlaylists =  function(req){
 }
 
 
-module.exports.searchArtist  =  function(query){
+module.exports.searchArtist  =  function(artist){
     return new Promise(function(done, fail) {
-	    console.log(query);
-	    spotifyApi.searchArtists(query.name)
+	    //console.log(query);
+	    spotifyApi.searchArtists(artist.name)
 		    .then(function(r) {
-			    done({query:query,result:r})
+			    done({artist:artist,result:r})
 		    }, function(err) {
 			    console.error(err);
 			    fail(err);
