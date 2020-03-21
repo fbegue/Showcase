@@ -6,7 +6,11 @@ const apikey = "pdBY8kzaJtEjFrcw"
 
 const Songkick = require('songkick-api-node');
 const fs = require('fs')
-var FuzzyMatching = require('fuzzy-matching');
+
+//https://github.com/Glench/fuzzyset.js
+//http://glench.github.io/fuzzyset.js/ui/
+const Fuzzyset = require('fuzzyset.js').FuzzySet;
+
 
 const songkickApi = new Songkick(apikey);
 
@@ -19,13 +23,35 @@ const puppet = require('./puppet').puppet;
 var db_mongo_api = require('./db_mongo_api')
 var spotify_api = require('./spotify_api')
 
-module.exports.test = function(req, res){
-	console.log("test!");
-	let data = "test";
-	res.send({
-		data
-	});
+
+
+let sql = require('mssql');
+
+let connect = function(){
+	console.log("connect...");
+	try {
+		conn.connect()
+			.then((res) => {
+				console.log("...success!");
+
+				let sreq = new sql.Request(conn)
+				sreq.query('select * from xtest').then((res) => {
+					console.log(res);
+				})
+			})
+			.catch(function(err){
+				console.log(err);
+			});
+
+	} catch (err) {
+		console.log(err);
+	}
 };
+
+//todo: if trying to use localhost SQL server
+//connect();
+
+
 
 
 //just checking out raw artist search
@@ -98,45 +124,6 @@ weekday_full[4] = "Thursday";
 weekday_full[5] = "Friday";
 weekday_full[6] = "Saturday";
 
-let sql = require('mssql');
-
-const msnodesqlv8 =  require("msnodesqlv8");
-// const conn = new sql.ConnectionPool({
-// 	database: "master",
-// 	//server: "localhost\\SQLEXPRESS",
-// 	server: "localhost\\SQLEXPRESS",
-// 	user:"test",
-// 	password:"test",
-// 	driver: "msnodesqlv8"
-// 	// options: {
-// 	// 	trustedConnection: true
-// 	// }
-// });
-
-let connect = function(){
-	console.log("connect...");
-	try {
-		conn.connect()
-			.then((res) => {
-				console.log("...success!");
-
-				let sreq = new sql.Request(conn)
-				sreq.query('select * from xtest').then((res) => {
-					console.log(res);
-				})
-			})
-			.catch(function(err){
-				console.log(err);
-			});
-
-	} catch (err) {
-		console.log(err);
-	}
-};
-
-//todo: if trying to use localhost SQL server
-//connect();
-
 /**
  * find metros from string query
  * @function find_metros
@@ -181,123 +168,6 @@ var find_metros = function() {
 }
 
 //find_metros()
-
-
-/**
- * fuzzy compare two json files
- * @function fuzzy_compare
- **/
-var fuzzy_compare = function(performances,artist_input,matchesName){
-
-	return new Promise(function(done, fail) {
-
-		// console.log("fuzzy compare performances input:",performances);
-		// console.log("fuzzy compare artist input: ", artist_input);
-
-		// var my_artists = require("./../authorization_code/public/my_artists.json").artists;
-		// var my_performances = require("./songkick_performances.json").result;
-
-		var my_artists = artist_input;
-		var my_performances = performances;
-
-		console.log(my_artists.length + " spotify artists.");
-		console.log(count_properties(my_performances.dates) + " unique dates.");
-		console.log(my_performances.events + " events.");
-
-		//extract a wordset of artists
-		var artists_only = [];
-
-		my_artists.forEach(function(artist_genre) {
-			artists_only.push(artist_genre.name)
-
-		});
-
-		console.log("-------");
-		console.log(artists_only);
-		// var fm = new FuzzyMatching(['tough', 'thought', 'through', 'CafÃ©']);
-		var fm = new FuzzyMatching(artists_only);
-
-
-
-		//console.log(fm.get('tough'));
-
-		var matches = [];
-
-		for (var date in my_performances.dates) {
-			if (my_performances.dates.hasOwnProperty(date)) {
-				my_performances.dates[date].forEach(function(event){
-					event.artists.forEach(function(art){
-
-						//try to match each artist from an event
-						var try_match = fm.get(art);
-
-						//todo: what is appropriate distance here?
-
-						if(try_match.distance > .9){
-							var match = {};
-							match.artists = [];
-							match.artists.push(art)
-							// match.match = try_match.value
-							match.matches = []
-
-							//todo: terrible
-							my_artists.forEach(function(artist_genre){
-								if(artist_genre.name == try_match.value){
-									match.matches.push(artist_genre)
-								}
-							})
-							// match.matches.push(try_match.value)
-
-							match.date = date;
-							match.event = event;
-							match.eventId = event.id;
-
-							//we want to avoid duplicating a record in matches just b/c we matched on its artists more than once.
-							//if the event is already defined in matches, just add artists to match
-
-							var findWithAttr = function(array, attr, value) {
-								for(var i = 0; i < array.length; i += 1) {
-									if(array[i][attr] === value) {
-										return i;
-									}
-								}
-								return -1;
-							};
-
-							var index = findWithAttr(matches,"eventId",match.eventId);
-
-							// console.log("=========================");
-							// console.log(event);
-							// console.log("+++++++++++++++");
-							// console.log(match.event)
-
-							if(index === -1){
-								matches.push(match)
-							}
-							else{
-								matches[index].artists.push(art)
-								matches[index].matches.push(try_match.value)
-							}
-						}
-					})
-				})
-			}
-		}
-
-		console.log("matches.length",matches.length);
-		matches = JSON.stringify(matches,null,4);
-
-		fs.writeFile(matchesName, matches, function(err) {
-
-			if(err) {   return console.log(err); }
-			else{
-				console.log(matchesName + " saved!");
-				done()
-			}
-		});
-
-	})
-};
 
 var metros = [
 	{"displayName":"Columbus",
@@ -620,6 +490,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 		if (new Date(req.body.dateFilter.start).getDate() < new Date().getDate()) {
 			done({error: "start date is less than current date"})}
+
 		else {
 			//testing:
 			fake_metro_events('melted')
@@ -709,7 +580,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 						//console.log(app.jstr(metrOb.artists));
 
 
-						//check if we know of a match between songkick and spotify
+						//check if we ALREADY KNOW OF a match between songkick and spotify
 						Promise.all(AASMatch).then(results => {
 
 								var LevenMatch = [];
@@ -723,7 +594,8 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									//record differently depending on weather we found genres
 
 									if(r.genres.length > 0){
-										//matched and found genres
+										//matched and found genres. just recording for posterity
+										//and filtering out of next step
 										metrOb.aas_match_genres.push(r)
 									}
 									else if(r.length === 0){
@@ -736,6 +608,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 										LevenMatch.push(db_api.checkDBForArtistLevenMatch(r))
 									}
 								});
+
 
 								console.log("metrOb.aas_match",metrOb.aas_match.length);
 								console.log("metrOb.aas_match_genres",metrOb.aas_match_genres.length);
@@ -803,37 +676,74 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									Promise.all(combined_promises).then(results => {
 										//look like: {artist:{},result:{}}
 										//console.log("$searches",app.jstr(results[0]));
+										var newMatches = [];
+										var newMatches_genres = [];
+										var rejectedMatches = [];
+										var noMatches = [];
+
+										var aas_promises = [];
 
 										results.forEach(r =>{
-											var aas,artist,artistSongkick = {};
-											if(r.result.body.artists.items.length > 0){
+
+											//todo: dbl check necessary?
+											if(r.result.body.artists.items === null || r.result.body.artists.items.length === 0  ){
+												noMatches.push(r.artist)}
+											else{
 												var item = r.result.body.artists.items[0];	var artist = r.artist;
+												// console.log(item.name + "/" + artist.name);
+												var a = FuzzySet();a.add(item.name);
+												//console.log("m",a.get(artist.name));
 
-												//todo: evaluate integrity of new match
-												//we had a fuzzy match node thing, does that work here?
-												console.log(item.name + "/" + artist.name);
+												//bad match
+												//push onto next payload
+												if(a.get(item.name) === null || a.get(item.name)[0][0] < .5){
+													rejectedMatches.push([item.name,artist.name])
+													console.log(artist);
+													console.log(item.genres);
+													console.log(a.get(item.name) );
+												}else{
+													//quality match, no genres means we push onto next payload
+													//and we also record this new match
+													if(item.genres.length === 0){
+														newMatches.push([item.name,artist.name])
+														//todo: next payload
 
-												//insert new match
+													}
+													//new quality match with genres, so skip next payload
+													//but we still need to record this
+													else{
+														newMatches_genres.push([item.name,artist.name])
+													}
 
-												//...
+													//example songkickOb
+													// var songkickOb = {
+													// 	id: '1xD85sp0kecIVuMwUHShxs',
+													// 	name: 'Twin Peaks',
+													// 	artistSongkick_id: 296530,
+													// 	displayName: 'Twin Peaks',
+													// 	genres: []}
 
-												//artist= item;
-												//artistSongkick= {id:q.id,name:q.name};
-												//aas = {id:item.id,name:item.name,artistSongkick_id:q.id,artistSongkick_name:q.name}
+													// console.log(item);
+													// console.log(artist);
 
-												// console.log(artist);
-												// console.log(artistSongkick);
-												// console.log(aas);
+													var songkickOb = {id:item.id,name:item.name,artistSongkick_id:artist.id,displayName:artist.name,genres:item.genres}
+													songkickOb.newSpotifyArtist = item;
+													aas_promises.push(db_api.commit_artistSongkick_with_match(songkickOb))
 
-												//todo: somehow the last item.id here is getting replaced with spotify?
-												//strange but tired
-
-												//commit to db
-
-												//...
-
+												}
 											}
-										})
+										})//results.each
+
+										//testing:
+										// console.log(noMatches);
+										// console.log(rejectedMatches);
+										// console.log(newMatches);
+
+										Promise.all(aas_promises).then(r => {
+												console.log("4====================");
+												console.log(r);
+											},
+											error =>{ console.log("$aas_promises error",error);})
 
 
 									},error =>{ console.log("$searches error",error);})
@@ -886,6 +796,31 @@ module.exports.get_metro_events_local=  function(req){
 
 		module.exports.get_metro_events(req,{},callback)
 
+	})
+};
+
+module.exports.testEventResolve=  function(req){
+	return new Promise(function(done, fail) {
+
+		db_mongo_api.fetch('9480').then(r =>{
+			console.log(app.jstr(r));
+			r.performances.forEach(p =>{
+
+				var promises = [];
+
+				//this is the exact same code as when we try to resolve these
+				//via the engine - except when running it on something we already
+				//know we're never 'checking for new matches' or anything just looking
+				//for songkick id straight matches
+
+				//todo: write match_artistSongkick
+				//which will check direct matches
+
+				console.log(p.artist.id);
+
+
+			})
+		})
 	})
 };
 

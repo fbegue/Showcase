@@ -32,7 +32,7 @@ var insert =  function(events){
 var fetch =  function(param){
 	return new Promise(function(done, fail) {
 		var dbo = client.db("master");
-		var events = dbo.collection("events").find().toArray();
+		var events = dbo.collection(param).find().toArray();
 		done(events)
 	})
 }

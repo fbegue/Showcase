@@ -14,3 +14,5 @@ IF NOT EXISTS (SELECT * FROM dbo.artistsSongkick WHERE id = @id)
     VALUES(@id,@displayName,@identifier,@lastLook)
 else
 	select * from dbo.artistsSongkick WHERE id = @id
+
+insert into [master].[dbo].[artistsSongkick] (id,displayName) values (74358471,'Death Valley Girls')

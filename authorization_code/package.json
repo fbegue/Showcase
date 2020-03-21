@@ -12,6 +12,7 @@
     "deathbycaptcha": "0.0.3",
     "express": "^4.15.2",
     "fuzzy-matching": "^0.4.3",
+    "fuzzyset.js": "0.0.91",
     "geckodriver": "^1.16.2",
     "git": "^0.1.5",
     "google": "^2.1.0",

@@ -106,6 +106,13 @@ app.post('/fetchMetroEvents', function(req, res) {
 	})
 });
 
+app.post('/testEventResolve', function(req, res) {
+	songkick.testEventResolve(req,res).then(function(res2){
+		res.send(res2)
+	})
+});
+
+
 
 //test
 app.post('/puppet', function(req, res) {

@@ -179,26 +179,76 @@ module.exports.commitPlayobs =  function(playobs){
 // 	genres: []
 // 	}
 
+//made genres optional for use of this after checking spotify
+//todo: maaaybe getting too messy due to lazyness
+
 module.exports.commit_artistSongkick_with_match =   function(songkickOb) {
 	return new Promise(function (done, fail) {
 		//console.log("$artist", songkickOb);
 
-		var artistSongkick = {id:songkickOb.artistSongkick_id,displayName:songkickOb.displayName};
-		var artist_artistSongkick = {artist_id:songkickOb.id,artistSongkick_id:songkickOb.artistSongkick_id};
-		async function commit(){
+		var artistSongkick = {id: songkickOb.artistSongkick_id, displayName: songkickOb.displayName};
+		var artist_artistSongkick = {artist_id: songkickOb.id, artistSongkick_id: songkickOb.artistSongkick_id};
+
+		async function commit() {
+			//todo: confused whether this is necessary always here?
 			await insert_artistSongkick(artistSongkick);
-			await insert_artist_artistSongkick(artist_artistSongkick)
+			await insert_artist_artistSongkick(artist_artistSongkick);
+
+			//these requests come from spotify->songkick string matching successes
+			//even if there were no genres pulled, we will still record newly exposed spotify artist
+			//as we need to to make the above connection valid anyways
+			if(songkickOb.newSpotifyArtist){
+				var newSpot = {id:songkickOb.newSpotifyArtist.id, name:songkickOb.newSpotifyArtist.name,uri:songkickOb.newSpotifyArtist.uri}
+				await insert_artist(newSpot);
+
+				//todo: how does await work here?
+
+				//these are artist-artistSongkick matches
+				//we will store the genres obtained from the successful spotify lookup if it got any
+				if (songkickOb.genres.length > 0) {
+					var gpromises = [];
+					var apromises = [];
+
+					songkickOb.genres.forEach(g => {
+						gpromises.push(insert_genre(g))
+					});
+					Promise.all(gpromises).then(r => {
+						console.log("1===========");
+						console.log(r);
+						var genres = r.reduce(function(prev, curr) { return prev.concat(curr); });
+						console.log(genres);
+						genres.forEach(g => {
+							var ag = {genre_id: g.id, id: songkickOb.id}
+							apromises.push(insert_genre_artist(ag));
+						});
+
+						//await Promise.all(apromises)
+						Promise.all(apromises).then(r => {
+							console.log("2===========");
+							console.log(r);
+
+						}, e => {console.log(e);})
+					}, e => {console.log(e);})
+				}//genres.length
+
+			}
 		}
-		commit().then(r =>{
+
+		commit().then(r => {
+			console.log("3===========");
+			console.log(r);
 			done(r);
-		},e =>{
+		}, e => {
 			console.error(e);
 		})
-	})
-};
+	})};
 
 //todo: arbitrary limit here not sure what to do with this yet
 const levenMatchLimit = 5;
+
+//attempt to establish a new link between a spotify and songkick artist purely based on the provided names
+//will attempt to return with genres from spotify but NOT songkick because we already checked on that in
+//checkDBFor_artistSongkick_match
 
 module.exports.checkDBForArtistLevenMatch =  function(artist){
 	return new Promise(function(done, fail) {
@@ -234,6 +284,8 @@ module.exports.checkDBForArtistLevenMatch =  function(artist){
 	})
 };
 
+//note this goes to see if we can find an artist_artistSongkick match using only the artistSongkick_id supplied
+//if it finds a match, it will attempt to join on spotify OR songkick's known genres
 module.exports.checkDBFor_artist_artistSongkick_match =  function(artist){
 	return new Promise(function(done, fail) {
 
@@ -260,6 +312,36 @@ module.exports.checkDBFor_artist_artistSongkick_match =  function(artist){
 		})
 	})
 };
+
+//todo: just a shell rn
+//just check for already known genres associated with a songkick object
+module.exports.checkDBFor_artistSongkick_match =  function(artist){
+	return new Promise(function(done, fail) {
+
+		//console.log("$artist",artist);
+		var sreq = new sql.Request(sApi.poolGlobal);
+
+		sreq.input("artistSongkick_id", sql.Int, artist.id);
+		//console.log(sreq.parameters);
+		sreq.execute("match_artist_artistSongkick")
+			.then(r => {
+				//console.log("$r",r.recordset);
+				var ret = Object.assign({}, artist);
+				ret.genres = [];
+				if(r.recordset.length > 0) {
+					r.recordset.forEach(rec => {
+						ret.genres.push({id:rec.genre_id,name:rec.genre_name})
+					})
+				}
+				console.log(ret);
+				done(ret);
+			}).catch(err =>{
+			//console.error(err);
+			fail(err);
+		})
+	})
+};
+
 
 var insert_genre = function (genre) {
 	return new Promise(function (done, fail) {
