@@ -304,7 +304,7 @@ module.exports.checkDBFor_artist_artistSongkick_match =  function(artist){
 						ret.genres.push({id:rec.genre_id,name:rec.genre_name})
 					})
 				}
-				console.log(ret);
+				//console.log(ret);
 				done(ret);
 			}).catch(err =>{
 			//console.error(err);
@@ -323,7 +323,7 @@ module.exports.checkDBFor_artistSongkick_match =  function(artist){
 
 		sreq.input("artistSongkick_id", sql.Int, artist.id);
 		//console.log(sreq.parameters);
-		sreq.execute("match_artist_artistSongkick")
+		sreq.execute("match_artistSongkick")
 			.then(r => {
 				//console.log("$r",r.recordset);
 				var ret = Object.assign({}, artist);

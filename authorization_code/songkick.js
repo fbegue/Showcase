@@ -493,7 +493,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 		else {
 			//testing:
-			fake_metro_events('melted')
+			fake_metro_events('meltedPlus')
 			//fetch_metro_events(req.body.metro, req.body.dateFilter, req.body.raw_filename, req.body.areaDatesArtists_filename)
 				.then(function (results) {
 
@@ -572,11 +572,10 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 						console.log("artists",metrOb.artists.length);
 
 						//testing:
-						var death = metrOb.artists.filter(a =>{return a.name === 'Death Valley Girls'});
-
-						console.warn("clipping total artists to 6!!!");
+						//var death = metrOb.artists.filter(a =>{return a.name === 'Death Valley Girls'});
 						metrOb.artists = metrOb.artists.slice(0,5);
-						metrOb.artists.push(death[0]);
+						//metrOb.artists.push(death[0]);
+						console.warn("clipping total artists to 5!!!");
 						//console.log(app.jstr(metrOb.artists));
 
 
@@ -799,27 +798,49 @@ module.exports.get_metro_events_local=  function(req){
 	})
 };
 
-module.exports.testEventResolve=  function(req){
+module.exports.resolveEvents=  function(req){
 	return new Promise(function(done, fail) {
+		//todo: ajax weirdness
+		req.body = JSON.parse(req.body.data);
+		db_mongo_api.fetch(req.body.metro.id.toString()).then(events =>{
+			//console.log(app.jstr(events));
+			console.log("#events:",events.length);
+			var promises = [];
+			var perfMap = {}
+			events.forEach(e =>{
+				e.performance.forEach(p =>{
+					perfMap[p.id] = p;
+					//trying a little trick to send ancillary data with request
+					async function commit(artist,perf) {
+						var match  = await db_api.checkDBFor_artist_artistSongkick_match(artist);
+						return {match:match,perf:perf}
+					}
+					promises.push(commit(p.artist,p));
+				});
+			});
+			Promise.all(promises).then(results =>{
+				//console.log(app.jstr(r));
 
-		db_mongo_api.fetch('9480').then(r =>{
-			console.log(app.jstr(r));
-			r.performances.forEach(p =>{
+				//todo: speed up unwinding
 
-				var promises = [];
+				//setting perfMap earlier + sending perf along helps unwind results
+				results.forEach(r =>{
+					perfMap[r.perf.id].artist = r.match;
+				});
 
-				//this is the exact same code as when we try to resolve these
-				//via the engine - except when running it on something we already
-				//know we're never 'checking for new matches' or anything just looking
-				//for songkick id straight matches
+				//but binding them back is still n^n (although, mostly not too many performances)
+				events.forEach(e =>{
+					e.performance.forEach(p =>{
+						p = perfMap[p.id]
+					})
+				});
 
-				//todo: write match_artistSongkick
-				//which will check direct matches
-
-				console.log(p.artist.id);
-
+				console.log();
+				done(events);
+			},e =>{
 
 			})
+
 		})
 	})
 };

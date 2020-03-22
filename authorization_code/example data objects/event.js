@@ -4352,7 +4352,7 @@ module.exports.events = [
 	}
 ]
 
-module.exports.melted = [
+module.exports.meltedPlus = [
 	{
 		"id": 39291001,
 		"displayName": "Oh Sees with Twin Peaks, Combo Chimbita, Death Valley Girls, and 5 more… at Bluestone (March 13, 2020)",
@@ -4559,5 +4559,110 @@ module.exports.melted = [
 		},
 		"metro_id": 9480,
 		"_id": "5e69866a1e9b88571448cad5"
+	},
+	{
+		"id": 39349504,
+		"displayName": "Sleep On It with Bearings, Between You and Me, and Neverkept at Big Room Bar (March 13, 2020)",
+		"type": "Concert",
+		"uri": "http://www.songkick.com/concerts/39349504-sleep-on-it-at-big-room-bar?utm_source=47817&utm_medium=partner",
+		"status": "ok",
+		"popularity": 0.001415,
+		"start": {
+			"date": "2020-03-13",
+			"datetime": "2020-03-13T18:00:00-0400",
+			"time": "18:00:00"
+		},
+		"performance": [
+			{
+				"id": 74455268,
+				"displayName": "Sleep On It",
+				"billing": "headline",
+				"billingIndex": 1,
+				"artist": {
+					"id": 7849589,
+					"displayName": "Sleep On It",
+					"uri": "http://www.songkick.com/artists/7849589-sleep-on-it?utm_source=47817&utm_medium=partner",
+					"identifier": [
+						{
+							"mbid": "687823ac-a3b3-495c-bb20-68bce137c77d",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:687823ac-a3b3-495c-bb20-68bce137c77d.json"
+						}
+					]
+				}
+			},
+			{
+				"id": 74633156,
+				"displayName": "Bearings",
+				"billing": "support",
+				"billingIndex": 2,
+				"artist": {
+					"id": 2388082,
+					"displayName": "Bearings",
+					"uri": "http://www.songkick.com/artists/2388082-bearings?utm_source=47817&utm_medium=partner",
+					"identifier": [
+						{
+							"mbid": "5a19c7e6-b435-45f4-b1de-2db9b3271cc5",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:5a19c7e6-b435-45f4-b1de-2db9b3271cc5.json"
+						}
+					]
+				}
+			},
+			{
+				"id": 74633157,
+				"displayName": "Between You and Me",
+				"billing": "support",
+				"billingIndex": 3,
+				"artist": {
+					"id": 4967463,
+					"displayName": "Between You and Me",
+					"uri": "http://www.songkick.com/artists/4967463-between-you-and-me?utm_source=47817&utm_medium=partner",
+					"identifier": [
+						{
+							"mbid": "a4dbddc8-a08d-424e-b0b7-69b423681190",
+							"href": "http://api.songkick.com/api/3.0/artists/mbid:a4dbddc8-a08d-424e-b0b7-69b423681190.json"
+						}
+					]
+				}
+			},
+			{
+				"id": 74633158,
+				"displayName": "Neverkept",
+				"billing": "support",
+				"billingIndex": 4,
+				"artist": {
+					"id": 9601464,
+					"displayName": "Neverkept",
+					"uri": "http://www.songkick.com/artists/9601464-neverkept?utm_source=47817&utm_medium=partner",
+					"identifier": []
+				}
+			}
+		],
+		"ageRestriction": null,
+		"flaggedAsEnded": false,
+		"venue": {
+			"id": 3108324,
+			"displayName": "Big Room Bar",
+			"uri": "http://www.songkick.com/venues/3108324-big-room-bar?utm_source=47817&utm_medium=partner",
+			"metroArea": {
+				"displayName": "Columbus",
+				"country": {
+					"displayName": "US"
+				},
+				"state": {
+					"displayName": "OH"
+				},
+				"id": 9480,
+				"uri": "http://www.songkick.com/metro-areas/9480-us-columbus?utm_source=47817&utm_medium=partner"
+			},
+			"lat": 39.94069,
+			"lng": -82.99754
+		},
+		"location": {
+			"city": "Columbus, OH, US",
+			"lat": 39.94069,
+			"lng": -82.99754
+		},
+		"metro_id": 9480,
+		"_id": "5e69866a1e9b88571448cad6"
 	}
 ]
