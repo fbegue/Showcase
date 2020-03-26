@@ -80,27 +80,35 @@ module.exports.checkDBForArtistGenres =  function(playob){
 	return new Promise(function(done, fail) {
 		var artists = playob.artists;
 		var songkickIds = true;
-		typeof artists[0].id === "string" ? songkickIds = false:{};
-		console.log("process set of" + songkickIds?"songkickIds":"spotifyIds");
+		typeof artists[0].id == "string" ? songkickIds = false:{};
+		console.log("process set of " + (songkickIds ? "songkickIds":"spotifyIds"));
 
 		var promises = [];
 
+		//console.log(artists[0]);
 		artists.forEach(function(a){
 			promises.push(checkDBForArtist(a))
+			//a.id == "0qzzGu8qpbXYpzgV52wOFT" ? console.log(a):{};
+			//a.id == "18H0sAptzdwid08XGg1Lcj" ? console.log(a):{};
 		});
 
 		Promise.all(promises).then(result => {
 			//accidentally set this up checkDBForArtist to do many artists
 			//so weird aggregation here
 
+			//todo: this is also just a weird place to be defining what a playob is, right?
+
 			var agg = {payload:[],db:[],lastLook:[]}
 			result.forEach(function(r){
 				agg.payload = agg.payload.concat(r.payload)
 				agg.db = agg.db.concat(r.db)
 				agg.lastLook =  agg.lastLook.concat(r.lastLook)
+				agg.spotifyArtists = [];
 			});
 
 			Object.assign(playob,agg);
+			// console.log("pay",playob.payload.length);
+			// console.log("db",playob.db.length);
 			done(playob);
 
 		}).catch(err =>{

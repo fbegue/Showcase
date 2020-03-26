@@ -133,13 +133,19 @@ limiters();
 
 //designed to take artist ids input and pull back artists info in batches
 
-module.exports.resolveArtists = function(artists){
+module.exports.resolveArtists = function(playob){
 	return new Promise(function(done, fail) {
-		//console.log("artists",artists.length);
+		var artists = playob.payload;
+		console.log("resolveArtists",artists.length);
+	    artists.forEach(function(a){
+			a.id == "0qzzGu8qpbXYpzgV52wOFT" ? console.log(a):{};
+			a.id == "18H0sAptzdwid08XGg1Lcj" ? console.log(a):{};
+		});
+
 		let startDate = new Date();
 		//console.log("resolveSpotify start time:",startDate);
 
-		//resolver.spotify expects batpoolPromiseches of 50 artist's ids
+		//resolver.spotify expects batches of 50 artist's ids
 		var promises = [];
 		var payloads = [];
 		var payload = [];
@@ -147,12 +153,11 @@ module.exports.resolveArtists = function(artists){
 			if(i === 0){payload.push(a.id)}
 			else{
 				if(!(i % 50 === 0)){	payload.push(a.id)}
-				else{payloads.push(payload);payload = [];}
+				else{payloads.push(payload);payload = [];payload.push(a.id)}
 			}
 		});
 		payload.length ? payloads.push(payload):{};
-
-		//console.log("payloads",payloads.length);
+		console.log("payloads",payloads.length);
 		//console.log("payloads",app.jstr(payloads));
 
 		payloads.forEach(function(pay){
@@ -167,20 +172,23 @@ module.exports.resolveArtists = function(artists){
 			//batch of artists we were tossed
 
 			//unwind them all
-			var artists = [];
+			//var artists = [];
+			playob.spotifyArtists = [];
 			results.forEach(function(r){
 				r.artists.forEach(function(a){
-
+						 // a.id == "0qzzGu8qpbXYpzgV52wOFT" ? console.log(a):{};
+						 // a.id == "18H0sAptzdwid08XGg1Lcj" ? console.log(a):{};
+					//console.log(a.id);
 					//todo: what would cause an artist to be null?
 					if(a){
 						var artGen = {id:a.id,genres:a.genres}
-						artists.push(artGen)
+						playob.spotifyArtists.push(artGen)
 					}
 					else{console.warn("null artist");}
 
 				});
 			});
-			done(artists)
+			done(playob)
 
 		}).catch(err =>{
 			console.error(err.body);
@@ -302,7 +310,7 @@ module.exports.resolvePlaylists = function(playlists){
 		})
 		Promise.all(promises).then(function(results){
 			console.log("playlist_tracks finished execution:",Math.abs(new Date() - startDate) / 600);
-			console.log("results ",results.length);
+			//console.log("results ",results.length);
 			//console.log("results ",results);
 
 			let payloads = [];

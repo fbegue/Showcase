@@ -74,10 +74,73 @@ const colors = require('colors/safe');
 console.error = function(msg){console.log(colors.red(msg))};
 console.warn = function(msg){console.log(colors.yellow(msg))};
 console.good = function(msg){console.log(colors.green(msg))};
-console.log("colors configured");
+console.info = function(msg){
+	var linePrint = function(){
+		let initiator = 'unknown place';
+		try {
+			throw new Error();
+		} catch (e) {
+			if (typeof e.stack === 'string') {
+				let isFirst = true;
+				for (const line of e.stack.split('\n')) {
+					const matches = line.match(/^\s+at\s+(.*)/);
+					if (matches) {
+						if (!isFirst) { // first line - current function
+							// second line - caller (what we are looking for)
+							initiator = matches[1];
+							break;
+						}
+						isFirst = false;
+					}
+				}
+			}
+		}
+		var pat = new RegExp(/\\(?:.(?!\\))+$/)
+		return pat.exec(initiator);
+	};
+	console.log('\x1b[36m%s\x1b[0m',msg + " " + linePrint())
+};
 
-//module.exports.console = console;
+//more strategic way of replacing console methods
+var configureLogs = function(){
+	['log', 'warn', 'error'].forEach((methodName) => {
+		const originalMethod = console[methodName];
+		console[methodName] = (...args) => {
+			let initiator = 'unknown place';
+			try {
+				throw new Error();
+			} catch (e) {
+				if (typeof e.stack === 'string') {
+					let isFirst = true;
+					for (const line of e.stack.split('\n')) {
+						const matches = line.match(/^\s+at\s+(.*)/);
+						if (matches) {
+							if (!isFirst) { // first line - current function
+								// second line - caller (what we are looking for)
+								initiator = matches[1];
+								break;
+							}
+							isFirst = false;
+						}
+					}
+				}
+			}
+			var pat = new RegExp(/\\(?:.(?!\\))+$/)
+			var lineOut = pat.exec(initiator);
+			//negative lookahead
+			//console.log( lineOut[0]);
+			originalMethod.apply(console, [...args, '\n', lineOut[0]]);
+
+		};
+	});
+}
+//configureLogs();
+
+console.log("colors configured");
+console.info("console.info configured with line output");
+
 module.exports.jstr = jstr;
+module.exports.console = console;
 
 //=================================================
 //endpoints

@@ -22,7 +22,6 @@ poolPromise.then(function(newPool) {
 		})
 });
 
-
 //========================================
 //spotify api setup
 
@@ -114,7 +113,7 @@ var spotifyApi = new SpotifyWebApi({
 });
 
 
-var token = "BQAIHcJ6694scu1oKQk_lgrDmlNHwH7KtxFgJM46c9IfaQXHrJNJbecStu5GPLBxZTCZE0x1FgTlLONXjqYXaeP7AlZTozy6T1Hxi45LVA0tMKFcTY1cSUID-68SUAwjh92rq7weUBmvME-EMDxY2LhVgpsUCsx4bfevpQMH2qAmhAKklJAv683ULiy-5KYj-JfWKJLVGGhdvsSX9JozTrql7aL_isytqfzjlCpQd6abR-YsB19ChMF4-YQtMdnTEoFQ8cSpD-HKLAz7AO0lVmeo2-k"
+var token = "BQBZmVdStcluy28C7g7Z4LZFCht1tKSdNbCQcnp_lKwEDxA7OkymBQ8njLIAhjw1eUqIC7ldAwNtzQNNVs-5bxgF5oGuHUbDjoZdBIKX13iQCIQ37chm7olDE5m2C-T4s0vwDO0D9uIaH6do9wc4-qHz3w2P5XlazsiDuFnCp8E2HeXMY7jMbrGRzdH5D3B1q_LHQEG99AmwSpIvbff0oszTZx8aZOZxhatPei-6nPXSmS1-JLir1T_LXGLrYjWBiVcZjh3P4bIrJkrr9deaKshg4ts"
 spotifyApi.setAccessToken(token);
 module.exports.token = token;
 
@@ -172,30 +171,38 @@ module.exports.getUserPlaylists = function(){
 //before asking spotify for genres on an artist
 
 //todo: better name?
-var getArtists = function(playob){
+var resolveReturnArtists = function(playob){
 	return new Promise(function(done, fail) {
-		//console.log("#len",playob.artists.length);
+		console.log("getArtists:",playob.artists.length);
 		db_api.checkDBForArtistGenres(playob)
 			.then(
 				r =>{
 					//looks like: {playlist:{},tracks:[],artists:[],payload:[],db:[],lastLook:[]}
-					//console.log("checkDBForArtistGenres produced payload:",r.payload.length);
+					//entries found in the the db will be returned in db, and those that were't go on payload
+					//therefore, payload.length + db.length = artists.length
 
 					//todo: depending on length of payload might it be advantangous to return some
 					//of that data immediately? or maybe wait until I at least hit spotify first
 
-					//payload means move onto next resolver
-					//todo: ignoring db results
-					if(r.payload.length){return resolver.resolveArtists(r.payload)}
+					//todo: check that work is split
+					console.log("artists",r.artists.length);
+					console.log("payload",r.payload.length);
+					console.log("db population",r.db.length);
 
-					//todo:
-					else{console.log("empty payload");r.flag = true;done(r)}},
+					//returns with a mutated playob
+					if(r.payload.length){return resolver.resolveArtists(r)}
+
+					else{
+						console.log("empty payload - skipping resolveArtists");
+						var dummy =  function(t){return new Promise(function(done, fail) {done(t)})	}
+						return dummy(r)}},
 
 				e =>{console.error(e);fail(e);})
 
-			.then(artGenTuples => {
-				//console.log("artGenTuples",artGenTuples.length);
-				done(artGenTuples)
+			.then(mutatedPlayob => {
+				// console.log("payload",mutatedPlayob.payload.length);
+				// console.log("spotifyArtists",mutatedPlayob.spotifyArtists.length);
+				done(mutatedPlayob)
 			})
 
 
@@ -222,9 +229,10 @@ module.exports.resolvePlaylists =  function(req){
 			req.body.playlists = plays;
 
 			//testing: just 2 of them
+			console.warn("only testing with 1 playlist");
 			var playsr = [];
 			playsr.push(plays[0]);
-			playsr.push(plays[1]);
+			//playsr.push(plays[1]);
 			req.body.playlists = playsr;
 
 		}).then(q => {
@@ -248,20 +256,25 @@ module.exports.resolvePlaylists =  function(req){
 
 					var promises = [];
 					playobs.forEach(function(playob){
-						promises.push(getArtists(playob))
+						promises.push(resolveReturnArtists(playob))
 					})
 
-					//todo: bad code design in getArtists
-					//so getArtists will short circuit with the playobs
-					//on an empty payload - it has two return signatures which is meh
+					Promise.all(promises).then(playobs => {
 
-					Promise.all(promises).then(artGenArrays => {
+						console.log("db population",playobs[0].db.length);
+						//returns with a full artist object
+						console.log(playobs[0].db[0]);
+
+						//todo: just a tuple = which is shitty anyways
+						console.log("spotifyArtists",playobs[0].spotifyArtists.length);
+						console.log(playobs[0].spotifyArtists[0]);
+
+						//this could come back as either
 
 						//artGens length = number of playlists
 						//make a big map of all of them
+						//console.log(app.jstr(artGenArrays));
 						//console.log("artGens",artGenArrays.length);
-						// console.log(app.jstr(artGen));
-
 						// console.log("$test",artGenArrays[0][0]);
 
 						var artGenMap = {};
@@ -272,11 +285,13 @@ module.exports.resolvePlaylists =  function(req){
 						});
 
 						//console.log("artGenMap",artGenMap);
-
+						//artists is our data repo - here we mutate it with results we fetched elsewhere
 						playobs.forEach(function(p){
 							p.artists.forEach(function(a){
 								a.genres = artGenMap[a.id]
+								a.genres === undefined ? console.log(app.jstr(a)):{};
 							})
+
 						});
 
 						//todo: this could probably be done faster by combining with some other set
@@ -284,6 +299,7 @@ module.exports.resolvePlaylists =  function(req){
 						//outside of getting ids for existing/new genres, I guess everything else could wait?
 
 						//commit new data to sql
+						//if(){}
 						db_api.commitPlayobs(playobs).then(function(playobs2){
 
 							//genres have ids on them now
@@ -303,14 +319,14 @@ module.exports.resolvePlaylists =  function(req){
 
 
 module.exports.searchArtist  =  function(artist){
-    return new Promise(function(done, fail) {
-	    //console.log(query);
-	    spotifyApi.searchArtists(artist.name)
-		    .then(function(r) {
-			    done({artist:artist,result:r})
-		    }, function(err) {
-			    console.error(err);
-			    fail(err);
-		    });
-    })
+	return new Promise(function(done, fail) {
+		//console.log(query);
+		spotifyApi.searchArtists(artist.name)
+			.then(function(r) {
+				done({artist:artist,result:r})
+			}, function(err) {
+				console.error(err);
+				fail(err);
+			});
+	})
 };
