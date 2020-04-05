@@ -193,7 +193,7 @@ dateFilter.end = '2018-07-18';
  * @function get_metro_events
  **/
 
-var fetch_metro_events = function(metro,dateFilter,raw,areaDatesArtists){
+var fetch_metro_events = function(metro,dateFilter){
 
 	return new Promise(function(done, fail) {
 
@@ -493,10 +493,9 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 		else {
 			//testing:
-			fake_metro_events('meltedPlus')
-			//fetch_metro_events(req.body.metro, req.body.dateFilter, req.body.raw_filename, req.body.areaDatesArtists_filename)
+			//fake_metro_events('meltedPlus')
+			fetch_metro_events(req.body.metro, req.body.dateFilter)
 				.then(function (results) {
-
 					if (next) {
 						next(results)
 					} else {
@@ -624,7 +623,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									var Bottleneck = require("bottleneck");
 									var limiterSpotify = new Bottleneck({
 										maxConcurrent: 20,
-										minTime: 30,
+										minTime: 100,
 										trackDoneStatus: true
 									});
 

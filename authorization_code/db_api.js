@@ -15,7 +15,8 @@ module.exports.checkDb = function(){
 
 //the utilized SP checkForArtistGenres can handle both types of artist ids
 //expects artist.ids
-var checkDBForArtist =  function(artist){
+var checkDBForArtist;
+module.exports.checkDBForArtist = checkDBForArtist = function(artist){
 	return new Promise(function(done, fail) {
 
 		//console.log("in",artist.id);
@@ -26,7 +27,7 @@ var checkDBForArtist =  function(artist){
 		sreq.input("artistId", sql.VarChar(50), artist.id);
 		sreq.execute("checkForArtistGenres").then(function(res){
 			if(res.recordset.length > 0){
-
+				//console.log(res.recordset);
 				//we're fetching artist join on genres.
 
 				//if lastLook isnt but there IS a record populated,
@@ -49,14 +50,13 @@ var checkDBForArtist =  function(artist){
 				else{
 					artist.genres = [];
 					res.recordset.forEach(function(match){
-						artist.genres.push(match["genreName"])
+						artist.genres.push({id:match.id,name:match["genreName"]})
 					});
 
 					//these were genre-joins, so pick any record for artist info
 					artist.name = res.recordset[0].displayName || res.recordset[0].name
 					artist.identifier = res.recordset[0].identifier;
 					artist.id = res.recordset[0].id;
-
 					sres.db.push(artist)
 				}
 			}
@@ -92,18 +92,19 @@ module.exports.checkDBForArtistGenres =  function(playob){
 			//a.id == "18H0sAptzdwid08XGg1Lcj" ? console.log(a):{};
 		});
 
-		Promise.all(promises).then(result => {
+		Promise.all(promises).then(results => {
 			//accidentally set this up checkDBForArtist to do many artists
 			//so weird aggregation here
 
+			//console.log("$results",app.jstr(results));
 			//todo: this is also just a weird place to be defining what a playob is, right?
 
 			var agg = {payload:[],db:[],lastLook:[]}
-			result.forEach(function(r){
+			results.forEach(function(r){
 				agg.payload = agg.payload.concat(r.payload)
 				agg.db = agg.db.concat(r.db)
 				agg.lastLook =  agg.lastLook.concat(r.lastLook)
-				agg.spotifyArtists = [];
+				//agg.spotifyArtists =  agg.spotifyArtists.concat(r.spotifyArtists)
 			});
 
 			Object.assign(playob,agg);
@@ -118,6 +119,8 @@ module.exports.checkDBForArtistGenres =  function(playob){
 	})
 };
 
+//todo: made this a little more specific - only commits playob.spotifyArtists now
+//might not be a great move
 module.exports.commitPlayobs =  function(playobs){
 	return new Promise(function(done, fail) {
 
@@ -128,7 +131,7 @@ module.exports.commitPlayobs =  function(playobs){
 		var unique = []
 
 		playobs.forEach(function(p){
-			p.artists.forEach(function(a){
+			p.spotifyArtists.forEach(function(a){
 				a.genres.forEach(g =>{
 					//todo: pretty sure theres a timing issue here causing me to register some
 					//exact same value genres twice. so just going to prune for uniqueness here
@@ -138,7 +141,7 @@ module.exports.commitPlayobs =  function(playobs){
 		});
 
 		Promise.all(gpromises).then(r =>{
-				//console.log("$r",r);
+				//console.log("$r",app.jstr(r));
 
 				//mutate playobs with qualified genres
 
@@ -150,10 +153,10 @@ module.exports.commitPlayobs =  function(playobs){
 
 					var apromises = [];
 					var agpromises = [];
-					p.artists.forEach(function(a){
+					p.spotifyArtists.forEach(function(a){
 
-						//crucial mutation happening here: notice when we finish committing to db,
-						//we finish with these playobs which now have genres on them
+					//todo:notes
+
 						var gs = [];
 						a.genres.forEach(g =>{ gs.push(map[g]) })
 						a.genres = gs;
@@ -166,6 +169,8 @@ module.exports.commitPlayobs =  function(playobs){
 						});
 					})
 					Promise.all(apromises).then(function(r2){
+
+						//no, we need this data
 						console.log("insert genres, artists and artist_genres finished");
 						done(playobs);
 					})
@@ -235,6 +240,7 @@ module.exports.commit_artistSongkick_with_match =   function(songkickOb) {
 							console.log("2===========");
 							console.log(r);
 
+
 						}, e => {console.log(e);})
 					}, e => {console.log(e);})
 				}//genres.length
@@ -250,6 +256,7 @@ module.exports.commit_artistSongkick_with_match =   function(songkickOb) {
 			console.error(e);
 		})
 	})};
+
 
 //todo: arbitrary limit here not sure what to do with this yet
 const levenMatchLimit = 5;
@@ -385,11 +392,16 @@ var insert_artist =  function(artist){
 		// };
 
 
-		//console.log("$artist",artist);
+		console.log("$artist",app.jstr(artist));
 
 		var del = ["external_urls","href","genres","type"]
 		var a = Object.assign({},artist);
 		del.forEach(p =>{	delete a[p]});
+
+		//todo: add fields
+		//popularity
+		//a.images = JSON.stringify(a.images);
+		//a.followers = a.followers.total || null;
 
 		var keys = Object.keys(a);
 		var klist = keys.map(function(value){
@@ -402,11 +414,14 @@ var insert_artist =  function(artist){
 		var sreq = new sql.Request(sApi.poolGlobal);
 		sreq.input("id",  sql.VarChar(50), a.id);
 		sreq.input("name", sql.VarChar(50), a.name);
+		sreq.input("images", sql.VarChar(), a.images);
+		sreq.input("followers", sql.Int, a.followers);
+		sreq.input("popularity", sql.Int, a.popularity);
 		sreq.input("uri", sql.VarChar(100), a.uri);
 
 		var qry = "IF NOT EXISTS (SELECT * FROM dbo.artists WHERE id = @id)"
 			+ " INSERT INTO dbo.artists("+ klist + ")"
-			+ " OUTPUT inserted.id, inserted.name, inserted.uri"
+			+ " OUTPUT inserted.id, inserted.name, inserted.images, inserted.followers, inserted.popularity, inserted.uri"
 			+ " VALUES(" + kparams +")"
 			+ " else select * from dbo.artists WHERE id = @id";
 

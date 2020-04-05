@@ -163,7 +163,20 @@ app.post('/getMetroEvents', function(req, res) {
 	})
 });
 
+
+//attempt at a cron job
+
+
+
+
 app.post('/fetchMetroEvents', function(req, res) {
+
+	var date30 = new Date();
+	date30.setDate(date30.getDate() + 30);
+	req.body = {
+		metro:{"displayName":"Columbus", "id":9480},
+		dateFilter:{"start": new Date().toString(),"end":date30.toString()}
+	};
 	songkick.fetchMetroEvents(req,res).then(function(res2){
 		res.send(res2)
 	})
@@ -185,7 +198,21 @@ app.post('/puppet', function(req, res) {
 });
 
 
+//todo: trying to read from my tplink access point
+//this is probably a shitty idea anyways just b/c its secured = probably not going to be able to crawl it?
 
+//#widget--fa9fb31d-1134-3bd0-f9cf-593807f45e41 > div.widget-wrap-outer.text-wrap-outer > div.widget-wrap.text-wrap > span.text-wrap-display
+// var rp = require('request-promise');
+// let options = {
+// 	uri: "http://192.168.68.1/webpages/index.html#networkStatus",
+// };
+app.post('/afraid', function(req, res) {
+	rp(options).then(r =>{
+		res.send(r)
+	},e =>{
+		res.send(e)
+	})
+});
 
 //==========================================================================================
 //BEGIN SPOTIFY AUTH SECTION

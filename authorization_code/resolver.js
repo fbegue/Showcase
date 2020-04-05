@@ -138,8 +138,8 @@ module.exports.resolveArtists = function(playob){
 		var artists = playob.payload;
 		console.log("resolveArtists",artists.length);
 	    artists.forEach(function(a){
-			a.id == "0qzzGu8qpbXYpzgV52wOFT" ? console.log(a):{};
-			a.id == "18H0sAptzdwid08XGg1Lcj" ? console.log(a):{};
+			//a.id == "0qzzGu8qpbXYpzgV52wOFT" ? console.log(a):{};
+			//a.id == "18H0sAptzdwid08XGg1Lcj" ? console.log(a):{};
 		});
 
 		let startDate = new Date();
@@ -157,7 +157,7 @@ module.exports.resolveArtists = function(playob){
 			}
 		});
 		payload.length ? payloads.push(payload):{};
-		console.log("payloads",payloads.length);
+		//console.log("payloads",payloads.length);
 		//console.log("payloads",app.jstr(payloads));
 
 		payloads.forEach(function(pay){
@@ -181,8 +181,8 @@ module.exports.resolveArtists = function(playob){
 					//console.log(a.id);
 					//todo: what would cause an artist to be null?
 					if(a){
-						var artGen = {id:a.id,genres:a.genres}
-						playob.spotifyArtists.push(artGen)
+						//var artGen = {id:a.id,genres:a.genres}
+						playob.spotifyArtists.push(a)
 					}
 					else{console.warn("null artist");}
 
