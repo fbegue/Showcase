@@ -39,13 +39,13 @@ module.exports.checkDBForArtist = checkDBForArtist = function(artist){
 					console.log("",oneNull.displayName + " lastLook: " + oneNull.lastLook);
 					sres.lastLook.push(artist)
 				}
-				//if there's only 1 row and the genres null, we have a record but no genres
-				//and have never attempted to
-				//todo: at what point would I be recording an artist without making this attempt tho?
-				// else if(res.recordset.length === 1 && res.recordset[0].genreName === null){
-				// 	sres.payload.push(artist)
-				// }
-				//
+					//if there's only 1 row and the genres null, we have a record but no genres
+					//and have never attempted to
+					//todo: at what point would I be recording an artist without making this attempt tho?
+					// else if(res.recordset.length === 1 && res.recordset[0].genreName === null){
+					// 	sres.payload.push(artist)
+					// }
+					//
 				//we have genres. record them in the return cache
 				else{
 					artist.genres = [];
@@ -129,15 +129,19 @@ module.exports.commitPlayobs =  function(playobs){
 
 		var gpromises = [];
 		var unique = []
-
+		var skipped = 0;
 		playobs.forEach(function(p){
-			p.spotifyArtists.forEach(function(a){
-				a.genres.forEach(g =>{
-					//todo: pretty sure theres a timing issue here causing me to register some
-					//exact same value genres twice. so just going to prune for uniqueness here
-					if(unique.indexOf(g) === -1){gpromises.push(insert_genre(g));unique.push(g)}
+			//todo: believe we send db fetched artists here as well
+			//so just make them fail fast since they won't have this spotifyArtists field
+			if(!p.spotifyArtists ){p.spotifyArtists = [];skipped++}else{}
+
+				p.spotifyArtists.forEach(function(a){
+					a.genres.forEach(g =>{
+						//todo: pretty sure theres a timing issue here causing me to register some
+						//exact same value genres twice. so just going to prune for uniqueness here
+						if(unique.indexOf(g) === -1){gpromises.push(insert_genre(g));unique.push(g)}
+					})
 				})
-			})
 		});
 
 		Promise.all(gpromises).then(r =>{
@@ -155,7 +159,7 @@ module.exports.commitPlayobs =  function(playobs){
 					var agpromises = [];
 					p.spotifyArtists.forEach(function(a){
 
-					//todo:notes
+						//todo:notes
 
 						var gs = [];
 						a.genres.forEach(g =>{ gs.push(map[g]) })
@@ -172,6 +176,7 @@ module.exports.commitPlayobs =  function(playobs){
 
 						//no, we need this data
 						console.log("insert genres, artists and artist_genres finished");
+						console.log("skipped:",skipped);
 						done(playobs);
 					})
 					//...
@@ -211,8 +216,8 @@ module.exports.commit_artistSongkick_with_match =   function(songkickOb) {
 			//even if there were no genres pulled, we will still record newly exposed spotify artist
 			//as we need to to make the above connection valid anyways
 			if(songkickOb.newSpotifyArtist){
-				var newSpot = {id:songkickOb.newSpotifyArtist.id, name:songkickOb.newSpotifyArtist.name,uri:songkickOb.newSpotifyArtist.uri}
-				await insert_artist(newSpot);
+				//var newSpot = {id:songkickOb.newSpotifyArtist.id, name:songkickOb.newSpotifyArtist.name,uri:songkickOb.newSpotifyArtist.uri}
+				await insert_artist(songkickOb.newSpotifyArtist);
 
 				//todo: how does await work here?
 
@@ -226,10 +231,10 @@ module.exports.commit_artistSongkick_with_match =   function(songkickOb) {
 						gpromises.push(insert_genre(g))
 					});
 					Promise.all(gpromises).then(r => {
-						console.log("1===========");
-						console.log(r);
+						//console.log("1===========");
+						//console.log(r);
 						var genres = r.reduce(function(prev, curr) { return prev.concat(curr); });
-						console.log(genres);
+						//console.log(genres);
 						genres.forEach(g => {
 							var ag = {genre_id: g.id, id: songkickOb.id}
 							apromises.push(insert_genre_artist(ag));
@@ -237,9 +242,9 @@ module.exports.commit_artistSongkick_with_match =   function(songkickOb) {
 
 						//await Promise.all(apromises)
 						Promise.all(apromises).then(r => {
-							console.log("2===========");
-							console.log(r);
-
+							//console.log("2===========");
+							//console.log(r);
+							return r;
 
 						}, e => {console.log(e);})
 					}, e => {console.log(e);})
@@ -249,8 +254,8 @@ module.exports.commit_artistSongkick_with_match =   function(songkickOb) {
 		}
 
 		commit().then(r => {
-			console.log("3===========");
-			console.log(r);
+			//console.log("3===========");
+			//console.log(r);
 			done(r);
 		}, e => {
 			console.error(e);
@@ -377,31 +382,18 @@ var insert_genre = function (genre) {
 var insert_artist =  function(artist){
 	return new Promise(function(done, fail) {
 
-		// var example = {"external_urls": {"spotify": "https://open.spotify.com/artist/1RHwcv7R6HPCPf1WMWoMbv"},
-		// 	"href": "https://api.spotify.com/v1/artists/1RHwcv7R6HPCPf1WMWoMbv",
-		// 	"id": "1RHwcv7R6HPCPf1WMWoMbv",
-		// 	"name": "Charles Mark",
-		// 	"type": "artist",
-		// 	"uri": "spotify:artist:1RHwcv7R6HPCPf1WMWoMbv",
-		// 	"genres": [	{"id": 23,"name": "classic sinhala pop"}]}
-
-		//var desired = {
-		// 	id:"052uQIm9OdFVUpsXaIXS7p",
-		// 	name:"testName",
-		// 	uri:"spotify:track:4aOy3Z4SaX3Mh1rJGh2HLz",
-		// };
-
-
-		console.log("$artist",app.jstr(artist));
+		//console.log("$$artist",app.jstr(artist));
 
 		var del = ["external_urls","href","genres","type"]
 		var a = Object.assign({},artist);
 		del.forEach(p =>{	delete a[p]});
 
-		//todo: add fields
-		//popularity
-		//a.images = JSON.stringify(a.images);
-		//a.followers = a.followers.total || null;
+
+		//todo: make this string json for now
+		a.images = JSON.stringify(a.images);
+		//parsing followers to int (also has a null href?)
+		a.followers = a.followers.total || null;
+		//a.popularity = a.popularity;
 
 		var keys = Object.keys(a);
 		var klist = keys.map(function(value){

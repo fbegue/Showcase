@@ -214,179 +214,254 @@ app.post('/afraid', function(req, res) {
 	})
 });
 
+
 //==========================================================================================
-//BEGIN SPOTIFY AUTH SECTION
+// SPOTIFY oAUTH 2 (with node library)
+// https://developer.spotify.com/documentation/general/guides/authorization-guide/
+// https://www.npmjs.com/package/client-oauth2
 
-var querystring = require('querystring');
-var cookieParser = require('cookie-parser');
+let all_scopes = ["playlist-read-private", "playlist-modify-private", "playlist-modify-public", "playlist-read-collaborative", "user-modify-playback-state", "user-read-currently-playing", "user-read-playback-state", "user-top-read", "user-read-recently-played", "app-remote-control", "streaming", "user-read-birthdate", "user-read-email", "user-read-private", "user-follow-read", "user-follow-modify", "user-library-modify", "user-library-read"];
 
+var ClientOAuth2 = require('client-oauth2')
 var client_id = '178a441343904c588cef9acf8165a5d4'; // Your client id
 var client_secret = '1c09323e0aad42cfaef5f23bb08b6428'; // Your secret
-var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
-var refresh_token_global = {}
-var access_token_global = {};
+var spotifyClientAuth = new ClientOAuth2({
+	clientId: client_id,
+	clientSecret: client_secret,
+	accessTokenUri: 'https://accounts.spotify.com/api/token',
+	authorizationUri: 'https://accounts.spotify.com/authorize',
+	redirectUri: 'http://localhost:8888/callback',
+	scopes: all_scopes
+})
 
-/**
- * Generates a random string containing numbers and letters
- * @param  {number} length The length of the string
- * @return {string} The generated string
- */
-var generateRandomString = function(length) {
-	var text = '';
-	var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+app.get('/login', function (req, res) {
+	var uri = spotifyClientAuth.code.getUri()
+	res.redirect(uri)
+})
 
-	for (var i = 0; i < length; i++) {
-		text += possible.charAt(Math.floor(Math.random() * possible.length));
-	}
-	return text;
+
+var rp = require('request-promise');
+
+
+var testPrivate = function(user){
+	var auth = 'Bearer '  + user.accessToken;
+	let options = {
+		method: "PUT",
+		uri: 'https://api.spotify.com/v1/playlists/4OC9p2TkyKnxgDrzodRq3B',
+		body:"{\"name\":\"private_control\",\"description\":\"Updated:" + new Date().toISOString() + "\",\"public\":false}",
+		headers: {
+			'Authorization': auth
+		}
+	};
+	rp(options).then(function (res) {
+		//doesn't have a response
+		console.log("testPrivate success");
+	}).catch(function (err) {
+		console.log(err);
+	})
 };
 
-var stateKey = 'spotify_auth_state';
+app.get('/callback', function (req, res) {
+	spotifyClientAuth.code.getToken(req.originalUrl)
+		.then(function (user) {
+			console.log(user) //=> { accessToken: '...', tokenType: 'bearer', ... }
+
+			// Refresh the current users access token.
+			user.refresh().then(function (updatedUser) {
+				console.log(updatedUser !== user) //=> true
+				console.log(updatedUser.accessToken)
+			})
+
+			// Sign API requests on behalf of the current user.
+			user.sign({
+				method: 'get',
+				url: 'https://github.com/fbegue/Showcase'
+			})
+
+			testPrivate(user);
+
+			// We should store the token into a database.
+			return res.send(user.accessToken)
+		})
+})
+
+//spotify:playlist:7tSKoibeWp1Eh5TitvbjKo
+
+//==========================================================================================
+//BEGIN SPOTIFY AUTH SECTION (their example code)
 
 
-app.use(express.static(__dirname + '/public'))
-	.use(cookieParser());
-
-app.get('/login', function(req, res) {
-
-	var state = generateRandomString(16);
-	res.cookie(stateKey, state);
-
-
-	//todo: scope requested gives certain permissions for your application's requests
-	//the permissions required change depending on the endpoint you're hitting
-
-	//hit 'get token' on any dev console test page, and the page will tell you
-	//what permissions are required for that endpoint.
-
-	// https://beta.developer.spotify.com/console/get-current-user-top-artists-and-tracks/?type=artists&time_range=&limit=&offset=
-
-	// /v1/me/playlists : playlist-read-private, playlist-read-collaborative
-	// /v1/me/top/{type} : user-top-read
-
-	// your application requests authorization
-
-	res.redirect('https://accounts.spotify.com/authorize?' +
-		querystring.stringify({
-			response_type: 'code',
-			client_id: client_id,
-			scope: scope,
-			redirect_uri: redirect_uri,
-			state: state
-		}));
-});
-
-let all_scopes =["playlist-read-private", "playlist-modify-private", "playlist-modify-public", "playlist-read-collaborative", "user-modify-playback-state", "user-read-currently-playing", "user-read-playback-state", "user-top-read", "user-read-recently-played", "app-remote-control", "streaming", "user-read-birthdate", "user-read-email", "user-read-private", "user-follow-read", "user-follow-modify", "user-library-modify", "user-library-read"];
-let all_scopes_str = "playlist-read-private playlist-modify-private playlist-modify-public playlist-read-collaborative user-modify-playback-state user-read-currently-playing user-read-playback-state user-top-read user-read-recently-played app-remote-control streaming user-read-birthdate user-read-email user-read-private user-follow-read user-follow-modify user-library-modify user-library-read";
-//var scope = 'user-read-private user-read-email user-top-read playlist-read-private playlist-read-collaborative';
-let scope = all_scopes_str;
-
-app.get('/callback', function(req, res) {
-
-	console.log("callback!");
-
-	// your application requests refresh and access tokens
-	// after checking the state parameter
-
-	var code = req.query.code || null;
-	var state = req.query.state || null;
-	var storedState = req.cookies ? req.cookies[stateKey] : null;
-
-	if (state === null || state !== storedState) {
-		res.redirect('/#' +
-			querystring.stringify({
-				error: 'state_mismatch'
-			}));
-	} else {
-		res.clearCookie(stateKey);
-		var authOptions = {
-			url: 'https://accounts.spotify.com/api/token',
-			form: {
-				code: code,
-				redirect_uri: redirect_uri,
-				grant_type: 'authorization_code',
-				scope:scope
-			},
-			headers: {
-				'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
-			},
-			json: true
-		};
-
-		request.post(authOptions, function(error, response, body) {
-			if (!error && response.statusCode === 200) {
-
-				var access_token = body.access_token,
-					refresh_token = body.refresh_token;
-
-				access_token_global = access_token;
-				refresh_token_global = refresh_token;
-
-				//console.log("dosearch.doSearch");
-				//dosearch(access_token,function(){console.log("test callback");})
-
-				var options = {
-					url: 'https://api.spotify.com/v1/me',
-					headers: { 'Authorization': 'Bearer ' + access_token },
-					json: true
-				};
-
-				// use the access token to access the Spotify Web API
-				request.get(options, function(error, response, body) {
-					console.log(body);
-				});
-
-
-				// we can also pass the token to the browser to make requests from there
-				res.redirect('/#' +
-					querystring.stringify({
-						access_token: access_token,
-						refresh_token: refresh_token
-					}));
-			} else {
-				res.redirect('/#' +
-					querystring.stringify({
-						error: 'invalid_token'
-					}));
-			}
-		});
-	}
-});
-
-app.get('/getToken', function(req, res) {
-	res.send({
-		'access_token': access_token_global
-	});
-});
-
-app.get('/refresh_token', function(req, res) {
-
-	console.log("/refresh_token");
-
-	// requesting access token from refresh token
-	var refresh_token = req.query.refresh_token;
-	var authOptions = {
-		url: 'https://accounts.spotify.com/api/token',
-		headers: {'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))},
-		form: {
-			grant_type: 'refresh_token',
-			refresh_token: refresh_token
-		},
-		json: true
-	};
-
-	request.post(authOptions, function (error, response, body) {
-		if (!error && response.statusCode === 200) {
-			var access_token = body.access_token;
-			access_token_global = access_token;
-			res.send({
-				'access_token': access_token
-			});
-		}
-	});
-
-});
+// var querystring = require('querystring');
+// var cookieParser = require('cookie-parser');
+//
+// var client_id = '178a441343904c588cef9acf8165a5d4'; // Your client id
+// var client_secret = '1c09323e0aad42cfaef5f23bb08b6428'; // Your secret
+// var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
+//
+// var refresh_token_global = {}
+// var access_token_global = {};
+//
+// /**
+//  * Generates a random string containing numbers and letters
+//  * @param  {number} length The length of the string
+//  * @return {string} The generated string
+//  */
+// var generateRandomString = function(length) {
+// 	var text = '';
+// 	var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+//
+// 	for (var i = 0; i < length; i++) {
+// 		text += possible.charAt(Math.floor(Math.random() * possible.length));
+// 	}
+// 	return text;
+// };
+//
+// var stateKey = 'spotify_auth_state';
+//
+//
+// app.use(express.static(__dirname + '/public'))
+// 	.use(cookieParser());
+//
+// app.get('/login', function(req, res) {
+//
+// 	var state = generateRandomString(16);
+// 	res.cookie(stateKey, state);
+//
+//
+// 	//todo: scope requested gives certain permissions for your application's requests
+// 	//the permissions required change depending on the endpoint you're hitting
+//
+// 	//hit 'get token' on any dev console test page, and the page will tell you
+// 	//what permissions are required for that endpoint.
+//
+// 	// https://beta.developer.spotify.com/console/get-current-user-top-artists-and-tracks/?type=artists&time_range=&limit=&offset=
+//
+// 	// /v1/me/playlists : playlist-read-private, playlist-read-collaborative
+// 	// /v1/me/top/{type} : user-top-read
+//
+// 	// your application requests authorization
+//
+// 	res.redirect('https://accounts.spotify.com/authorize?' +
+// 		querystring.stringify({
+// 			response_type: 'code',
+// 			client_id: client_id,
+// 			scope: scope,
+// 			redirect_uri: redirect_uri,
+// 			state: state
+// 		}));
+// });
+//
+// let all_scopes =["playlist-read-private", "playlist-modify-private", "playlist-modify-public", "playlist-read-collaborative", "user-modify-playback-state", "user-read-currently-playing", "user-read-playback-state", "user-top-read", "user-read-recently-played", "app-remote-control", "streaming", "user-read-birthdate", "user-read-email", "user-read-private", "user-follow-read", "user-follow-modify", "user-library-modify", "user-library-read"];
+// let all_scopes_str = "playlist-read-private playlist-modify-private playlist-modify-public playlist-read-collaborative user-modify-playback-state user-read-currently-playing user-read-playback-state user-top-read user-read-recently-played app-remote-control streaming user-read-birthdate user-read-email user-read-private user-follow-read user-follow-modify user-library-modify user-library-read";
+// //var scope = 'user-read-private user-read-email user-top-read playlist-read-private playlist-read-collaborative';
+// let scope = all_scopes_str;
+//
+// app.get('/callback', function(req, res) {
+//
+// 	console.log("callback!");
+//
+// 	// your application requests refresh and access tokens
+// 	// after checking the state parameter
+//
+// 	var code = req.query.code || null;
+// 	var state = req.query.state || null;
+// 	var storedState = req.cookies ? req.cookies[stateKey] : null;
+//
+// 	if (state === null || state !== storedState) {
+// 		res.redirect('/#' +
+// 			querystring.stringify({
+// 				error: 'state_mismatch'
+// 			}));
+// 	} else {
+// 		res.clearCookie(stateKey);
+// 		var authOptions = {
+// 			url: 'https://accounts.spotify.com/api/token',
+// 			form: {
+// 				code: code,
+// 				redirect_uri: redirect_uri,
+// 				grant_type: 'authorization_code',
+// 				scope:scope
+// 			},
+// 			headers: {
+// 				'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
+// 			},
+// 			json: true
+// 		};
+//
+// 		request.post(authOptions, function(error, response, body) {
+// 			if (!error && response.statusCode === 200) {
+//
+// 				var access_token = body.access_token,
+// 					refresh_token = body.refresh_token;
+//
+// 				access_token_global = access_token;
+// 				refresh_token_global = refresh_token;
+//
+// 				//console.log("dosearch.doSearch");
+// 				//dosearch(access_token,function(){console.log("test callback");})
+//
+// 				var options = {
+// 					url: 'https://api.spotify.com/v1/me',
+// 					headers: { 'Authorization': 'Bearer ' + access_token },
+// 					json: true
+// 				};
+//
+// 				// use the access token to access the Spotify Web API
+// 				request.get(options, function(error, response, body) {
+// 					console.log(body);
+// 				});
+//
+//
+// 				// we can also pass the token to the browser to make requests from there
+// 				res.redirect('/#' +
+// 					querystring.stringify({
+// 						access_token: access_token,
+// 						refresh_token: refresh_token
+// 					}));
+// 			} else {
+// 				res.redirect('/#' +
+// 					querystring.stringify({
+// 						error: 'invalid_token'
+// 					}));
+// 			}
+// 		});
+// 	}
+// });
+//
+// app.get('/getToken', function(req, res) {
+// 	res.send({
+// 		'access_token': access_token_global
+// 	});
+// });
+//
+// app.get('/refresh_token', function(req, res) {
+//
+// 	console.log("/refresh_token");
+//
+// 	// requesting access token from refresh token
+// 	var refresh_token = req.query.refresh_token;
+// 	var authOptions = {
+// 		url: 'https://accounts.spotify.com/api/token',
+// 		headers: {'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))},
+// 		form: {
+// 			grant_type: 'refresh_token',
+// 			refresh_token: refresh_token
+// 		},
+// 		json: true
+// 	};
+//
+// 	request.post(authOptions, function (error, response, body) {
+// 		if (!error && response.statusCode === 200) {
+// 			var access_token = body.access_token;
+// 			access_token_global = access_token;
+// 			res.send({
+// 				'access_token': access_token
+// 			});
+// 		}
+// 	});
+//
+// });
 
 
 

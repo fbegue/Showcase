@@ -199,10 +199,8 @@ var fetch_metro_events = function(metro,dateFilter){
 
 		dateFilter.start = new Date(dateFilter.start);
 		dateFilter.end = new Date(dateFilter.end);
-
-
-		console.log(dateFilter.start);
-		console.log(dateFilter.end);
+		//console.log(dateFilter.start);
+		//console.log(dateFilter.end);
 
 		//used for stats in return object
 		var event_count = 0;
@@ -282,11 +280,11 @@ var fetch_metro_events = function(metro,dateFilter){
 								event_count = event_count + result.events.length;
 							});
 
-							console.log("--------------------------------");
-							console.log("outrange:",outRange.length);
-							console.log("new events:",result.events.length);
-							console.log("total events:",event_count);
-							console.log("paging invariant:",events.length);
+							//console.log("--------------------------------");
+							//console.log("outrange:",outRange.length);
+							//console.log("new events:",result.events.length);
+							//console.log("total events:",event_count);
+							//console.log("paging invariant:",events.length);
 
 							//if page length is < 50
 							//OR if we're starting to get zero-inrange results back, but we have SOME (for dateFilter.start)
@@ -488,6 +486,8 @@ var fake_metro_events =  function(label){
 module.exports.fetchMetroEvents =  function(req, res,next){
 	return new Promise(function(done, fail) {
 
+		let startDate = new Date();console.log("fetchMetroEvents start time:",startDate);
+
 		if (new Date(req.body.dateFilter.start).getDate() < new Date().getDate()) {
 			done({error: "start date is less than current date"})}
 
@@ -622,11 +622,14 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									//todo: MOVE
 									var Bottleneck = require("bottleneck");
 									var limiterSpotify = new Bottleneck({
-										maxConcurrent: 20,
+										maxConcurrent: 15,
 										minTime: 100,
 										trackDoneStatus: true
 									});
 
+									//history:
+									//238 @ 20:100 FAIL
+									//238 @ 15:100 PASS
 									var searches = [];
 									var artistSongkicks = [];
 
@@ -738,8 +741,10 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 										// console.log(newMatches);
 
 										Promise.all(aas_promises).then(r => {
-												console.log("4====================");
-												console.log(r);
+												//console.log("4====================");
+												//console.log(r);
+												console.log("fetchMetroEvents finished execution:",Math.abs(new Date() - startDate) / 600);
+												console.log("all events, artists and genres committed!");
 											},
 											error =>{ console.log("$aas_promises error",error);})
 
