@@ -136,66 +136,69 @@ limiters();
 module.exports.resolveArtists = function(playob){
 	return new Promise(function(done, fail) {
 		var artists = playob.payload;
-		console.log("resolveArtists",artists.length);
-	    artists.forEach(function(a){
-			//a.id == "0qzzGu8qpbXYpzgV52wOFT" ? console.log(a):{};
-			//a.id == "18H0sAptzdwid08XGg1Lcj" ? console.log(a):{};
-		});
-
-		let startDate = new Date();
-		//console.log("resolveSpotify start time:",startDate);
-
-		//resolver.spotify expects batches of 50 artist's ids
-		var promises = [];
-		var payloads = [];
-		var payload = [];
-		artists.forEach(function(a,i){
-			if(i === 0){payload.push(a.id)}
-			else{
-				if(!(i % 50 === 0)){	payload.push(a.id)}
-				else{payloads.push(payload);payload = [];payload.push(a.id)}
-			}
-		});
-		payload.length ? payloads.push(payload):{};
-		//console.log("payloads",payloads.length);
-		//console.log("payloads",app.jstr(payloads));
-
-		payloads.forEach(function(pay){
-			promises.push(limiterSpotify.schedule(resolver_api.spotifyArtists,pay,{}))
-		});
-
-		Promise.all(promises).then(results => {
-			console.log("resolveArtists finished execution:",Math.abs(new Date() - startDate) / 600);
-			//console.log("$results",app.jstr(results));
-
-			//there will be as many results as there were payloads required to resolve the
-			//batch of artists we were tossed
-
-			//unwind them all
-			//var artists = [];
-			playob.spotifyArtists = [];
-			results.forEach(function(r){
-				r.artists.forEach(function(a){
-						 // a.id == "0qzzGu8qpbXYpzgV52wOFT" ? console.log(a):{};
-						 // a.id == "18H0sAptzdwid08XGg1Lcj" ? console.log(a):{};
-					//console.log(a.id);
-					//todo: what would cause an artist to be null?
-					if(a){
-						//var artGen = {id:a.id,genres:a.genres}
-						playob.spotifyArtists.push(a)
-					}
-					else{console.warn("null artist");}
-
-				});
+		if(artists.length === 0){
+			console.log("skipping playob w/ empty payload");
+			done(playob);
+		}else{
+			console.log("resolveArtists",artists.length);
+			artists.forEach(function(a){
+				//a.id == "0qzzGu8qpbXYpzgV52wOFT" ? console.log(a):{};
+				//a.id == "18H0sAptzdwid08XGg1Lcj" ? console.log(a):{};
 			});
-			done(playob)
 
-		}).catch(err =>{
-			console.error(err.body);
-			fail(err);
-		})
+			let startDate = new Date();
+			//console.log("resolveSpotify start time:",startDate);
 
+			//resolver.spotify expects batches of 50 artist's ids
+			var promises = [];
+			var payloads = [];
+			var payload = [];
+			artists.forEach(function(a,i){
+				if(i === 0){payload.push(a.id)}
+				else{
+					if(!(i % 50 === 0)){	payload.push(a.id)}
+					else{payloads.push(payload);payload = [];payload.push(a.id)}
+				}
+			});
+			payload.length ? payloads.push(payload):{};
+			//console.log("payloads",payloads.length);
+			//console.log("payloads",app.jstr(payloads));
 
+			payloads.forEach(function(pay){
+				promises.push(limiterSpotify.schedule(resolver_api.spotifyArtists,pay,{}))
+			});
+
+			Promise.all(promises).then(results => {
+				console.log("resolveArtists finished execution:",Math.abs(new Date() - startDate) / 600);
+				//console.log("$results",app.jstr(results));
+
+				//there will be as many results as there were payloads required to resolve the
+				//batch of artists we were tossed
+
+				//unwind them all
+				//var artists = [];
+				playob.spotifyArtists = [];
+				results.forEach(function(r){
+					r.artists.forEach(function(a){
+						// a.id == "0qzzGu8qpbXYpzgV52wOFT" ? console.log(a):{};
+						// a.id == "18H0sAptzdwid08XGg1Lcj" ? console.log(a):{};
+						//console.log(a.id);
+						//todo: what would cause an artist to be null?
+						if(a){
+							//var artGen = {id:a.id,genres:a.genres}
+							playob.spotifyArtists.push(a)
+						}
+						else{console.warn("null artist");}
+
+					});
+				});
+				done(playob)
+
+			}).catch(err =>{
+				console.error(err.body);
+				fail(err);
+			})
+		}//else payload.length
 	})
 }
 

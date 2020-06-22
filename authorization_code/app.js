@@ -220,6 +220,7 @@ app.post('/afraid', function(req, res) {
 // https://developer.spotify.com/documentation/general/guides/authorization-guide/
 // https://www.npmjs.com/package/client-oauth2
 
+var rp = require('request-promise');
 let all_scopes = ["playlist-read-private", "playlist-modify-private", "playlist-modify-public", "playlist-read-collaborative", "user-modify-playback-state", "user-read-currently-playing", "user-read-playback-state", "user-top-read", "user-read-recently-played", "app-remote-control", "streaming", "user-read-birthdate", "user-read-email", "user-read-private", "user-follow-read", "user-follow-modify", "user-library-modify", "user-library-read"];
 
 var ClientOAuth2 = require('client-oauth2')
@@ -235,58 +236,190 @@ var spotifyClientAuth = new ClientOAuth2({
 	scopes: all_scopes
 })
 
+var global_refresh = "AQCigbmzot5h6PcEL9XuWX508gtwGJUWzIPwc4N-TwvjoJho6Zj_5Vv6N_4yP1nl-nOi0OS7KxGp716EciKNno0Q-88sCUlMvTdCqE2CMMJT9kfUeo8onI29LLS-lCXkUvY";
+var global_access_token = "";
+
 app.get('/login', function (req, res) {
 	var uri = spotifyClientAuth.code.getUri()
 	res.redirect(uri)
 })
 
-
-var rp = require('request-promise');
-
-
-var testPrivate = function(user){
-	var auth = 'Bearer '  + user.accessToken;
-	let options = {
-		method: "PUT",
-		uri: 'https://api.spotify.com/v1/playlists/4OC9p2TkyKnxgDrzodRq3B',
-		body:"{\"name\":\"private_control\",\"description\":\"Updated:" + new Date().toISOString() + "\",\"public\":false}",
-		headers: {
-			'Authorization': auth
-		}
-	};
-	rp(options).then(function (res) {
-		//doesn't have a response
-		console.log("testPrivate success");
-	}).catch(function (err) {
-		console.log(err);
-	})
-};
+var testPrivate=  function(){
+    return new Promise(function(done, fail) {
+			var auth = 'Bearer '  + global_access_token;
+			console.log("testPrivate token:",global_access_token);
+			let options = {
+				method: "PUT",
+				uri: 'https://api.spotify.com/v1/playlists/4OC9p2TkyKnxgDrzodRq3B',
+				body:"{\"name\":\"private_control\",\"description\":\"Updated:" + new Date().toISOString() + "\",\"public\":false}",
+				headers: {
+					'Authorization': auth
+				}
+			};
+			rp(options).then(function (res) {
+				//doesn't have a response
+				console.log("testPrivate success");
+				done();
+			}).catch(function (err) {
+				console.log(err);
+				fail(err);
+			})
+    })
+}
 
 app.get('/callback', function (req, res) {
 	spotifyClientAuth.code.getToken(req.originalUrl)
 		.then(function (user) {
-			console.log(user) //=> { accessToken: '...', tokenType: 'bearer', ... }
+			console.log("new token:",user.accessToken);
+			global_access_token = user.accessToken;
+			//console.log("$callback",user.data) //=> { accessToken: '...', tokenType: 'bearer', ... }
+
+			//testing: newly minted auth
+			// testPrivate(user).then(r =>{
+			// 	console.log("done!");
+			// });
+
+			//testing: newly minted auth, call refresh, test with new token
+			// async function testRefresh() {
+			// 	await testPrivate()
+			// 	await timed()
+			// 	await testPrivate()
+			// }
+			// testRefresh().then(r =>{
+			// 	console.log("done!");
+			// });
+
+			//depreciated: don't remember exactly what this was all about
+			//user object has a method called refresh and sign?
 
 			// Refresh the current users access token.
-			user.refresh().then(function (updatedUser) {
-				console.log(updatedUser !== user) //=> true
-				console.log(updatedUser.accessToken)
-			})
+			// user.refresh().then(function (updatedUser) {
+			// 	console.log(updatedUser !== user) //=> true
+			// 	console.log(updatedUser.accessToken)
+			// })
 
 			// Sign API requests on behalf of the current user.
-			user.sign({
-				method: 'get',
-				url: 'https://github.com/fbegue/Showcase'
-			})
-
-			testPrivate(user);
+			// user.sign({
+			// 	method: 'get',
+			// 	url: 'https://github.com/fbegue/Showcase'
+			// })
 
 			// We should store the token into a database.
 			return res.send(user.accessToken)
 		})
-})
+});
 
-//spotify:playlist:7tSKoibeWp1Eh5TitvbjKo
+var timed =  function(){
+	return new Promise(function(done, fail) {
+		setTimeout(t =>{
+			console.log("trying to refresh...");
+			refresh()
+				.then(r =>{
+					done();
+				});
+		},3000)
+	})
+};
+
+//testing:
+//my refresh is always good now
+//timed({data:{refresh_token:global_refresh}})
+
+var refresh =  function(){
+    return new Promise(function(done, fail) {
+		var authOptions = {
+			method:"POST",
+			url: 'https://accounts.spotify.com/api/token',
+			headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
+			form: {
+				grant_type: 'refresh_token',
+				refresh_token: global_refresh
+			},
+			json: true
+		};
+
+		rp(authOptions).then(function (res) {
+			global_access_token = res.access_token;
+			console.log("new global_access_token from refresh",global_access_token);
+			done();
+		}).catch(function (err) {
+			console.log(err.error);
+			fail(err);
+		})
+    })
+}
+
+
+//testing:
+
+//depreciated
+//attempt at using SpotifyWebApi to do this
+//feels like at some point I had a manually-extracted return code working like it says below
+//but that stopped working or I misunderstood something?
+//either way never understood how to do it completely programmatically, and left it for permanent refresh token dealio
+
+var scopes =  ['user-read-private', 'user-read-email'];
+var spotifyApi = {};
+
+var doUserAuth = function () {
+
+	var spotifyApi = new SpotifyWebApi({
+		redirectUri: redirectUri,
+		clientId: clientId,
+		clientSecret:clientSecret
+	});
+
+	//var authorizeURL = spotifyApi.createAuthorizeURL(scopes, state, true);
+	//hitting this address gives back some kind of code?
+	//but the code that's returned as a query parameter to the redirect URI is what we want - what is the purpose of the one in the body?
+
+	//todo: but of course this won't work continually b/c it needs refreshed?
+	// or its just good after this initial login, b/c we have a refresh mechanism?
+	//console.log(authorizeURL);
+	var code = "AQDtXS-ysXQPiAtSJ5Ie-uhLben03f8j_yM1H8G-08j7jxCJQwC1_Bb_9ID-0MKKPSmA5oaWtBhI7boBmKaPC7A2hX-MNWKtpjlN76TDhjYV2wMB7BIUfQQKTlfe_HHDK3CVp84AN4j9pnJsQ3GFUqk54taIsM54Y4MGTR0-uRFyxfYx50MCB6x4M1vT3R5A81mWSBABvfmS4VsidTyhc8wIc48Yxw"
+
+	//had trouble programmatically retrieving that code
+
+	// var getCode = function (authorizeURL) {
+	// 	return new Promise(function (done, fail) {
+	// 		let options = {
+	// 			method: "GET",
+	// 			uri: authorizeURL,
+	// 		};
+	// 		rp(options).then(function (res) {
+	// 			console.log("authorizeURL res", res);
+	// 		}).catch(function (err) {
+	// 			console.log(err);
+	// 		})
+	// 	})
+	// };
+	//
+	// getCode(authorizeURL)
+	// 	.then(function (res) {
+	// 		console.log("authorizeURL res", res)
+	// 	})
+	// 	.catch(function (err) {
+	// 		console.log(err);
+	// 	});
+
+	//todo: { [WebapiError: Bad Request] name: 'WebapiError', message: 'Bad Request', statusCode: 400 }
+
+	spotifyApi.authorizationCodeGrant(code).then(
+		function(data) {
+			console.log('The token expires in ' + data.body['expires_in']);
+			console.log('The access token is ' + data.body['access_token']);
+			console.log('The refresh token is ' + data.body['refresh_token']);
+
+			// Set the access token on the API object to use it in later calls
+			spotifyApi.setAccessToken(data.body['access_token']);
+			spotifyApi.setRefreshToken(data.body['refresh_token']);
+		},
+		function(err) {
+			console.log('Something went wrong!', err);
+		}
+	);
+
+}
 
 //==========================================================================================
 //BEGIN SPOTIFY AUTH SECTION (their example code)

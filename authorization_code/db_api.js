@@ -50,7 +50,7 @@ module.exports.checkDBForArtist = checkDBForArtist = function(artist){
 				else{
 					artist.genres = [];
 					res.recordset.forEach(function(match){
-						artist.genres.push({id:match.id,name:match["genreName"]})
+						artist.genres.push({id:match.genre_id,name:match.genre_name})
 					});
 
 					//these were genre-joins, so pick any record for artist info
@@ -107,6 +107,8 @@ module.exports.checkDBForArtistGenres =  function(playob){
 				//agg.spotifyArtists =  agg.spotifyArtists.concat(r.spotifyArtists)
 			});
 
+
+			playob.test = agg.db;
 			Object.assign(playob,agg);
 			// console.log("pay",playob.payload.length);
 			// console.log("db",playob.db.length);
