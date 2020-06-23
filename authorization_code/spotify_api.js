@@ -28,11 +28,11 @@ poolPromise.then(function (newPool) {
 
 let all_scopes = ["playlist-read-private", "playlist-modify-private", "playlist-modify-public", "playlist-read-collaborative", "user-modify-playback-state", "user-read-currently-playing", "user-read-playback-state", "user-top-read", "user-read-recently-played", "app-remote-control", "streaming", "user-read-birthdate", "user-read-email", "user-read-private", "user-follow-read", "user-follow-modify", "user-library-modify", "user-library-read"];
 
-var clientSecret = '1c09323e0aad42cfaef5f23bb08b6428';
+var clientSecret = 'a00084c5c193478e9fc5d9a0c0e70058';
 
 var scopes = all_scopes,
 	redirectUri = 'http://localhost:8888/callback',
-	clientId = '178a441343904c588cef9acf8165a5d4',
+	clientId = '0e7ef13646c9410293a0119e652b35f7',
 	//todo:
 	state = 'some-state-of-my-choice';
 
@@ -45,7 +45,7 @@ var spotifyApi = {};
 //Client Credential flow
 
 
-var doAuth = function(){
+var doAuth = function () {
 
 	var credentials = {
 		clientId: clientId,
@@ -115,7 +115,6 @@ module.exports.getUserPlaylists = function () {
 //=================================================
 //resolving methods
 
-
 // var artistResolve =  function(){
 //     return new Promise(function(done, fail) {
 //     done({done:"done"})
@@ -130,52 +129,23 @@ module.exports.getUserPlaylists = function () {
 
 //this is expecting a playob object defined as: {playlist:{},tracks:[],artists:[]}
 //we are going to get the genres for every artist
-//we're going to check the db
-//first to see if we stored any genre info about an artist
+//we're going to check the db first to see if we stored any genre info about an artist
 //before asking spotify for genres on an artist
 
-//todo: better name?
 var resolveReturnArtists = function (playob) {
 	return new Promise(function (done, fail) {
 		console.log("getArtists:", playob.artists.length);
-		db_api.checkDBForArtistGenres(playob)
+		db_api.checkDBForArtistGenres(playob,'artists')
 			.then(
 				r => {
 					done(r);
-
-					//testing: didn't like this logic split here
-
-					// console.log("artists",r.artists.length);
-					// console.log("payload",r.payload.length);
-					// console.log("db population",r.db.length);
-
-					//returns with a mutated playob
-					// if (r.payload.length) {
-					// 	return resolver.resolveArtists(r)
-					// } else {
-					// 	console.log("empty payload - skipping resolveArtists");
-					// 	var dummy = function (t) {
-					// 		return new Promise(function (done, fail) {
-					// 			done(t)
-					// 		})
-					// 	}
-					// 	return dummy(r)
-					// }
 				},
-
 				e => {
 					console.error(e);
 					fail(e);
 				})
-
-		// .then(mutatedPlayob => {
-		// 	mutatedPlayob.payload && mutatedPlayob.payload.length ? console.log("payload", mutatedPlayob.payload.length) : {};
-		// 	mutatedPlayob.spotifyArtists && mutatedPlayob.spotifyArtists.length ? console.log("spotifyArtists", mutatedPlayob.spotifyArtists.length) : {}
-		// 	done(mutatedPlayob)
-		// })
 	})
-}
-
+};
 
 //this is a request from the UI after selecting playlists
 //to have analyzed
@@ -240,37 +210,36 @@ module.exports.resolvePlaylists = function (req) {
 					//entries found in the the db will be returned in db, and those that were't go on payload
 					//therefore, payload.length + db.length = artists.length
 
-					//todo: depending on lengh of payload might it be advantangous to return some of that data immediately?
+					//feature: depending on lengh of payload might it be advantangous to return some of that data immediately?
 					/// or maybe wait until I at least hit spotify first
 
 					console.log("db fulfilled & payloads created ==================================");
 					console.log(playobs.length);
 
 					var resolverPromises = []
-					playobs.forEach(playob =>{
+					playobs.forEach(playob => {
 						//is just looking at playob.payload - if its empty, it just returns the same object
 						resolverPromises.push(resolver.resolveArtists(playob))
 					})
 
 					Promise.all(resolverPromises).then(resolvedPlayobs => {
-						console.log("resolved payloads into artists  ==================================");
+						console.log("resolved payloads into artists ==================================");
 						console.log(resolvedPlayobs.length);
 
 						//the genres from the newly gathered spotifyArtists have no ids - go get them
 
-						//testing:
+						//testing: only use a couple playlists
 						//done(resolvedPlayobs);
 
-						//todo: send
 						//console.log("db population",playobs[0].db.length);
 						//returns with a full artist object
 						//console.log(playobs[0].db[0]);
 						//console.log("spotifyArtists",playobs[1].spotifyArtists.length);
 						//console.log(playobs[1].spotifyArtists[1]);
 
-						//todo: trying to speed up n^n op here
+						//feature: trying to speed up n^n op here
 						//sure theres a better solution tho - this whole 'mutate the repo thing'
-						//will probably get old at some point but for testing the steps, its nice
+						//will probably get old at some point but for testin the steps, its nice
 
 						var artGenMap = {};
 
@@ -279,64 +248,69 @@ module.exports.resolvePlaylists = function (req) {
 						resolvedPlayobs.forEach(agr => {
 							if (agr.spotifyArtists) {
 								agr.spotifyArtists.forEach(artGen => {
-									if (artGen.genres.length) {
+									if (artGen.genres.length === 0) {
 										artGenMap[artGen.id] = artGen.genres
 									}
 								});
 							}
 						});
 
-						//todo: this could probably be done faster by combining with some other set
+						//feature: this could probably be done faster by combining with some other set
 						//concerned about sql operations - purely for information gathering - acting as a bottleneck
 						//outside of getting ids for existing/new genres, I guess everything else could wait?
 						//our db entries have fully qualified genres - just send'em back
 
-						//todo: dunno what happened here exactly
-						//console.log("$artGenMap",JSON.stringify(artGenMap));
+						//little weird...
+						//so if even 1 of the playobs has an artist we need to resolve b/c we don't have any genres
+						//we're going to enter the resolving loop. otherwise we'll just return right here.
 						var p = JSON.stringify(artGenMap);
 						if (p === JSON.stringify({})) {
 							console.log("no spotifyArtists to commit");
 							//console.log(app.jstr(playobs[0].artists[0]));
+							//todo: change to 'resolved'
 							done(playobs)
 						}
 							//commit new data to sql
 							//commitPlayobs will return with fully qualified artists and genres we commited to db
-						//and will rebind to return payload here
+						    //and will rebind to return payload here
 						else {
 							//so if we committed everything that we obtained from spotifyArtists,
 							//then when we can just do a big pull from the db to get genre-id resolved artists
 							//for everything
 
 							var pullPromises = [];
-							//commitPlayobs only commits playobs.spotifyArtists for immediate retrieval
-							//if there were none, we sail right thru this
+							//commitPlayobs only commits playobs.spotifyArtists for immediate retrieval below, fully qualifying genres in the process
+							//if has no spotifyArtists, its just skipped
+							//notice this is processing our entire dataset (not in a loop)
 							db_api.commitPlayobs(playobs).then(function (justGetFromDb) {
 								playobs.forEach(p => {
-									//goes over the entire original artist list and pulls our db entries for each
-									//therefore, final output should just be equal to the incoming artist list length
-
-									//todo: make this only process spotifyArtists
-									// as db should already have this info, no need to query again
-
-									//todo: see the length 'test' field I put in checkDBForArtistGenres
-									//I was thinking that a result at that stage should have
-									//exactly the # of artists as was inputted - because even if
-									//we didn't get any genres for spotifyArtists we still commit to the db
-									//isn't that the point of commitPlayobs??
-
-									pullPromises.push(db_api.checkDBForArtistGenres(p))
+									//we already have the data we for all the db entries in playob.db
+									//here we're going to get some new playobs that describe what were
+									//were able to pull up after committing everything we learned from spotify
+									//and then trying to pull that from the db
+									pullPromises.push(db_api.checkDBForArtistGenres(p,'spotifyArtists'))
 								});
 								Promise.all(pullPromises).then(playobsResolved => {
 									//console.log(app.jstr(playObsWithSpotifyArtists));
 									console.log("resolvePlaylists finished execution:", Math.abs(new Date() - startDate) / 600);
 
-									//testing: wrong b/c spotifyArtists has no artists
+									//feature: sort of abusing this 'playob' idea with this special 'spotifyArtistsResolved' BS
+									//if checkDBForArtistGenres could find any genre information for the spotifyArtists we fed it
+									//they'll be stored on these playob.db fields - otherwise it'll be in the 'payload' which is just
+									//being abused here as normally this 'payload' would get fed elsewhere but here its just a signal
+									//that yes indeed we couldn't find anything for them
 									playobsResolved.forEach(p => {
 										p.resolved = [];
-										p.resolved = p.artists.concat(p.db)
-										p.resolved = p.artists.concat(p.spotifyArtists)
+										//p.resolved = p.db.concat(p.spotifyArtists)
+										p.resolved = p.resolved.concat(p.db);
+										p.spotifyArtistsResolved.forEach(playob=>{
+											p.resolved = p.resolved.concat(playob.db);
+											p.resolved = p.resolved.concat(playob.payload);
+											//todo: when lastlook is functional
+											//p.resolved = p.resolved.concat(playob.lastlook)
+										})
+										//p.resolved = p.db.concat(p.payload)
 									})
-
 									done(playobsResolved)
 								})
 							})

@@ -16,6 +16,9 @@ module.exports.checkDb = function(){
 //the utilized SP checkForArtistGenres can handle both types of artist ids
 //expects artist.ids
 var checkDBForArtist;
+//this does a 0 check against genres, and if it doens't find any, you don't get any records back
+//so not really the best named function..
+
 module.exports.checkDBForArtist = checkDBForArtist = function(artist){
 	return new Promise(function(done, fail) {
 
@@ -76,9 +79,9 @@ module.exports.checkDBForArtist = checkDBForArtist = function(artist){
 //this should be able to handle both spotify and songkick artists
 //todo: when I do songkick later make sure to follow the playob convention
 
-module.exports.checkDBForArtistGenres =  function(playob){
+module.exports.checkDBForArtistGenres =  function(playob,key){
 	return new Promise(function(done, fail) {
-		var artists = playob.artists;
+		var artists = playob[key];
 		var songkickIds = true;
 		typeof artists[0].id == "string" ? songkickIds = false:{};
 		console.log("process set of " + (songkickIds ? "songkickIds":"spotifyIds"));
@@ -93,25 +96,25 @@ module.exports.checkDBForArtistGenres =  function(playob){
 		});
 
 		Promise.all(promises).then(results => {
-			//accidentally set this up checkDBForArtist to do many artists
+			//todo: accidentally set this up checkDBForArtist to do many artists
 			//so weird aggregation here
 
-			//console.log("$results",app.jstr(results));
+			console.log("$results",app.jstr(results));
 			//todo: this is also just a weird place to be defining what a playob is, right?
 
-			var agg = {payload:[],db:[],lastLook:[]}
-			results.forEach(function(r){
-				agg.payload = agg.payload.concat(r.payload)
-				agg.db = agg.db.concat(r.db)
-				agg.lastLook =  agg.lastLook.concat(r.lastLook)
-				//agg.spotifyArtists =  agg.spotifyArtists.concat(r.spotifyArtists)
-			});
-
-
-			playob.test = agg.db;
-			Object.assign(playob,agg);
-			// console.log("pay",playob.payload.length);
-			// console.log("db",playob.db.length);
+			if(key == 'spotifyArtists'){
+				console.log("set spotifyArtistsResolved");
+				playob.spotifyArtistsResolved = results;
+			}
+			else{
+				var agg = {payload:[],db:[],lastLook:[]}
+				results.forEach(function(r){
+					agg.payload = agg.payload.concat(r.payload)
+					agg.db = agg.db.concat(r.db)
+					agg.lastLook =  agg.lastLook.concat(r.lastLook)
+				});
+				Object.assign(playob,agg);
+			}
 			done(playob);
 
 		}).catch(err =>{
@@ -121,10 +124,16 @@ module.exports.checkDBForArtistGenres =  function(playob){
 	})
 };
 
-//todo: made this a little more specific - only commits playob.spotifyArtists now
-//might not be a great move
-module.exports.commitPlayobs =  function(playobs){
-	return new Promise(function(done, fail) {
+/**
+ * commitPlayobs
+ * commit the newly spotify-sourced artists into the database
+ * in the process, create new / retrieve genre-id pairs for the genres
+ * */
+
+//feature: currently always returns with nothing
+//the idea being that the db will have everything we need
+module.exports.commitPlayobs =  function(playobs) {
+	return new Promise(function (done, fail) {
 
 		//submit genres, annotating the incoming object with ids created or fetched
 		//insert artists and genre_artist relations
@@ -132,61 +141,72 @@ module.exports.commitPlayobs =  function(playobs){
 		var gpromises = [];
 		var unique = []
 		var skipped = 0;
-		playobs.forEach(function(p){
-			//todo: believe we send db fetched artists here as well
-			//so just make them fail fast since they won't have this spotifyArtists field
-			if(!p.spotifyArtists ){p.spotifyArtists = [];skipped++}else{}
-
-				p.spotifyArtists.forEach(function(a){
-					a.genres.forEach(g =>{
-						//todo: pretty sure theres a timing issue here causing me to register some
-						//exact same value genres twice. so just going to prune for uniqueness here
-						if(unique.indexOf(g) === -1){gpromises.push(insert_genre(g));unique.push(g)}
-					})
+		playobs.forEach(function (p) {
+			//since even  we send playobs with only db fetched artists here as well
+			//just make them fail fast since they won't have this spotifyArtists field
+			//but throw this value on here for easy aggregation later
+			if (!p.spotifyArtists) {
+				p.spotifyArtists = [];
+				skipped++
+			}
+			p.spotifyArtists.forEach(function (a) {
+				a.genres.forEach(g => {
+					//todo: pretty sure theres a timing issue here causing me to register some
+					//exact same value genres twice. so just going to prune for uniqueness here
+					if (unique.indexOf(g) === -1) {
+						gpromises.push(insert_genre(g));
+						unique.push(g)
+					}
 				})
-		});
+			})
+			Promise.all(gpromises).then(r => {
+					//console.log("$r",app.jstr(r));
 
-		Promise.all(gpromises).then(r =>{
-				//console.log("$r",app.jstr(r));
+					//mutate playobs with qualified genres
+				   if(r.length){
 
-				//mutate playobs with qualified genres
+					var genres = r.reduce(function (prev, curr) {
+						return prev.concat(curr);
+					});
+					var map = {};
+					genres.forEach(g => {
+						map[g.name] = g;
+					});
 
-				var genres = r.reduce(function(prev, curr) { return prev.concat(curr); });
-				var map = {};
-				genres.forEach(g => {map[g.name] = g;});
+					playobs.forEach(function (p) {
+						var apromises = [];
+						p.spotifyArtists.forEach(function (a) {
+							var gs = [];
+							a.genres.forEach(g => {
+								gs.push(map[g])
+							})
+							a.genres = gs;
 
-				playobs.forEach(function(p){
+							//push artists and artist_genres
+							apromises.push(insert_artist(a));
+							a.genres.forEach(function (g) {
+								var ag = {genre_id: g.id, id: a.id}
+								apromises.push(insert_genre_artist(ag));
+							});
+						})
+						Promise.all(apromises).then(function (r2) {
+							console.log("insert genres, artists and artist_genres finished");
+							console.log("skipped:", skipped);
+							//feature: here I could save some time by returning these and preventing
+							//the final checkDBForArtistGenres from checking for them, but keep it simple for now
+							done();
+						})
+					});
 
-					var apromises = [];
-					var agpromises = [];
-					p.spotifyArtists.forEach(function(a){
-
-						//todo:notes
-
-						var gs = [];
-						a.genres.forEach(g =>{ gs.push(map[g]) })
-						a.genres = gs;
-
-						//push artists and artist_genres
-						apromises.push(insert_artist(a));
-						a.genres.forEach(function(g){
-							var ag  = {genre_id:g.id,id:a.id}
-							apromises.push(insert_genre_artist(ag));
-						});
-					})
-					Promise.all(apromises).then(function(r2){
-
-						//no, we need this data
-						console.log("insert genres, artists and artist_genres finished");
-						console.log("skipped:",skipped);
-						done(playobs);
-					})
-					//...
-				});
-
-				//console.log(app.jstr(playobs));
-			},
-			e =>{})
+				   }//if r
+				else{
+					   console.log("no spotifyArtists to commit in any playob");
+					   done();
+				   }
+				},
+				e => {
+				})
+		})
 	})
 }
 

@@ -50,9 +50,16 @@ let limiters = function(){
 	// });
 
 	//10 per second
+	//todo: changed when I started getting unexpected ETIMEDOUTs?
+	// limiterSpotifySearch = new Bottleneck({
+	// 	maxConcurrent: 10,
+	// 	minTime: 100,
+	// 	trackDoneStatus: true
+	// });
+
 	limiterSpotifySearch = new Bottleneck({
-		maxConcurrent: 10,
-		minTime: 100,
+		maxConcurrent: 9,
+		minTime: 200,
 		trackDoneStatus: true
 	});
 
@@ -131,8 +138,12 @@ let limiters = function(){
 }
 limiters();
 
-//designed to take artist ids input and pull back artists info in batches
 
+/**
+ * resolveArtists
+ * acts on the payload field passed via the playob
+ *
+ * */
 module.exports.resolveArtists = function(playob){
 	return new Promise(function(done, fail) {
 		var artists = playob.payload;
@@ -141,13 +152,8 @@ module.exports.resolveArtists = function(playob){
 			done(playob);
 		}else{
 			console.log("resolveArtists",artists.length);
-			artists.forEach(function(a){
-				//a.id == "0qzzGu8qpbXYpzgV52wOFT" ? console.log(a):{};
-				//a.id == "18H0sAptzdwid08XGg1Lcj" ? console.log(a):{};
-			});
-
 			let startDate = new Date();
-			//console.log("resolveSpotify start time:",startDate);
+			console.log("resolveSpotify start time:",startDate);
 
 			//resolver.spotify expects batches of 50 artist's ids
 			var promises = [];
@@ -161,9 +167,6 @@ module.exports.resolveArtists = function(playob){
 				}
 			});
 			payload.length ? payloads.push(payload):{};
-			//console.log("payloads",payloads.length);
-			//console.log("payloads",app.jstr(payloads));
-
 			payloads.forEach(function(pay){
 				promises.push(limiterSpotify.schedule(resolver_api.spotifyArtists,pay,{}))
 			});
@@ -176,20 +179,16 @@ module.exports.resolveArtists = function(playob){
 				//batch of artists we were tossed
 
 				//unwind them all
-				//var artists = [];
 				playob.spotifyArtists = [];
 				results.forEach(function(r){
 					r.artists.forEach(function(a){
-						// a.id == "0qzzGu8qpbXYpzgV52wOFT" ? console.log(a):{};
-						// a.id == "18H0sAptzdwid08XGg1Lcj" ? console.log(a):{};
-						//console.log(a.id);
-						//todo: what would cause an artist to be null?
 						if(a){
-							//var artGen = {id:a.id,genres:a.genres}
+							//testing: should all have genres? its an api call...
+							!(a.genres)?console.warn("no genres",a):{};
 							playob.spotifyArtists.push(a)
 						}
+						//todo: what would cause a null artist?
 						else{console.warn("null artist");}
-
 					});
 				});
 				done(playob)
@@ -209,7 +208,7 @@ module.exports.resolveArtists = function(playob){
 module.exports.resolvePlaylists = function(playlists){
 	return new Promise(function(done, fail) {
 
-		console.log("playlist_tracks # of playlists to process:",playlists.length);
+		console.log("# of playlists to process:",playlists.length);
 		let startDate = new Date();
 		console.log("start time:",startDate);
 
@@ -325,6 +324,10 @@ module.exports.resolvePlaylists = function(playlists){
 				payloads.push(payload)
 			});
 			done(payloads);
+		}).catch(e =>{
+			//console.log(e);
+			console.log("issue resolving playlist_tracks");
+			fail(e);
 		})
 	})//promise
 
