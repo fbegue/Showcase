@@ -38,8 +38,20 @@ var scopes = all_scopes,
 
 var spotifyApi = {};
 
+
+//todo: hook up infinite refreshable one from app.js
+var doUserAuth = function(){
+	var credentials = {
+		clientId: clientId,
+		clientSecret: clientSecret,
+		redirectUri:"cheat"
+	};
+	spotifyApi = new SpotifyWebApi(credentials);
+	var temp ="BQDnNmzbjgZ3dHizRV3HCmTOSbpEzttOa2Avsz4963TcEIasL9wUAr1_O5AaG5cJ9L0z707UDFJHZGxHtEM1rAgfQM3742m0jkxCYSzLZ_01joNuUmceMJah9PUjDdsjKlWqElGG52hIOUy3rhcqZFLT5yUmsR_G9xfeFaR3rSNhl6uGhQB5aN5zCsjFOnl3y-kmnMD7wT0P6REvrn5e7UrVNzgdt57A5VGSpXdJyi72aXqi9o7exBl2poatou6xyFf4mTZNQQfZHXNpgh-QgLxN4M8";
+	spotifyApi.setAccessToken(temp);
+};
 //testing:
-//doUserAuth()
+doUserAuth()
 
 //========================================
 //Client Credential flow
@@ -76,7 +88,7 @@ var doAuth = function () {
 }
 
 //testing:
-doAuth()
+//doAuth()
 
 // setInterval( e=>{
 // 	console.log("client refresh @ 60m interval");
@@ -110,7 +122,21 @@ module.exports.getUserPlaylists = function () {
 // 	}, function(err) {
 // 		console.log('Something went wrong!', err);
 // 	});
+module.exports.getFollowedArtists =  function(){
+    return new Promise(function(done, fail) {
+    	//{ limit : 1 }
+		spotifyApi.getFollowedArtists()
+			.then(function(data) {
+				// 'This user is following 1051 artists!'
+				console.log('This user is following ', data.body.artists.total, ' artists!');
+				done(data.body)
+			}, function(err) {
+				console.log('Something went wrong!', err);
+				fail(err);
+			});
 
+	})
+}
 
 //=================================================
 //resolving methods

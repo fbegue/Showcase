@@ -150,6 +150,11 @@ app.post('/getUserPlaylists', function(req, res) {
 		res.send(res2)
 	})
 });
+app.post('/getFollowedArtists', function(req, res) {
+	spotify_api.getFollowedArtists().then(function(res2){
+		res.send(res2)
+	})
+});
 
 app.post('/resolvePlaylists', function(req, res) {
 	spotify_api.resolvePlaylists(req).then(function(res2){
