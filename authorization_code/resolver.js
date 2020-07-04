@@ -1,6 +1,6 @@
 var rp = require('request-promise');
 let sql = require("mssql");
-
+var _ = require('lodash')
 
 var app = require('./app');
 // var jstr =  require('./app').jstr;
@@ -139,17 +139,54 @@ let limiters = function(){
 limiters();
 
 
+// module.exports.resolveTrackArtists = function(){
+//
+// }
+
+module.exports.getPages = function(body){
+    return new Promise(function(done, fail) {
+		console.log("getPages",body.next);
+		let options = {uri:body.next, headers: {"Authorization":'Bearer ' + sApi.token}, json: true};
+		//take one out for init call
+		var num = Math.ceil(body.total / 50) - 1;
+		var promises = [];
+
+		//var wrap = function(options){return rp(options).then(r => {return r;})};
+		//promises.push(limiterSpotify.schedule(function(op){return rp(op)},options,{}).catch(error => console.error(error)))
+		for(var x=0; x< num;x++){
+			promises.push(limiterSpotify.schedule(() => rp(options)));
+		}
+		Promise.all(promises).then(r => {done(r);	},err =>{	fail(err)})
+    })
+}
+
+
+
+//created this to accommodate 'im going to build this object' starting philosophy
+//which doesn't really lend itself to clean looking code - when I wanted to be lazy
+//but also change resolveArtists to be more generalized
 /**
- * resolveArtists
- * acts on the payload field passed via the playob
+ * resolvePlayob
+ * stub born of laziness
  *
  * */
-module.exports.resolveArtists = function(playob){
+
+module.exports.resolvePlayob = function(playob){
 	return new Promise(function(done, fail) {
-		var artists = playob.payload;
+		module.exports.resolveArtists(playob.payload)
+			.then(resolvedArtists =>{
+				//specifically, leave it undefined
+				//resolvedArtists:[];
+				!(resolvedArtists === {})?playob.spotifyArtists = resolvedArtists:{};
+				done(playob);
+			},e => {fail(e);})
+	})}
+
+module.exports.resolveArtists = function(artists){
+	return new Promise(function(done, fail) {
 		if(artists.length === 0){
 			console.log("skipping playob w/ empty payload");
-			done(playob);
+			done({});
 		}else{
 			console.log("resolveArtists",artists.length);
 			let startDate = new Date();
@@ -160,6 +197,10 @@ module.exports.resolveArtists = function(playob){
 			var payloads = [];
 			var payload = [];
 			artists.forEach(function(a,i){
+
+				//testing:
+				// a.id === '7HhTERkBV4Ot14KphgBfSh' ? console.log(a):{};
+				// a.id === '3NTbCfTrDL2WFob27hdLTe' ? console.log(a):{};
 				if(i === 0){payload.push(a.id)}
 				else{
 					if(!(i % 50 === 0)){	payload.push(a.id)}
@@ -179,24 +220,23 @@ module.exports.resolveArtists = function(playob){
 				//batch of artists we were tossed
 
 				//unwind them all
-				playob.spotifyArtists = [];
+				var resolved = [];
 				results.forEach(function(r){
 					r.artists.forEach(function(a){
+						//testing:
+						// a.id === '7HhTERkBV4Ot14KphgBfSh' ? console.log(a):{};
+
 						if(a){
 							//testing: should all have genres? its an api call...
 							!(a.genres)?console.warn("no genres",a):{};
-							playob.spotifyArtists.push(a)
+							resolved.push(a)
 						}
 						//todo: what would cause a null artist?
 						else{console.warn("null artist");}
 					});
 				});
-				done(playob)
-
-			}).catch(err =>{
-				console.error(err.body);
-				fail(err);
-			})
+				done(resolved)
+			},e => {fail(e);})
 		}//else payload.length
 	})
 }

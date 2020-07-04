@@ -92,6 +92,12 @@ module.exports.spotifySearch  = function(artist){
 	})
 };
 
+/**
+ * spotifyArtists
+ * Resolves payloads of artist ids
+ * @param payload An array of 50 artist ids
+ * @returns {Promise<unknown>}
+ */
 module.exports.spotifyArtists = function(payload){
 	return new Promise(function(done, fail) {
 		//console.log("spotifyArtists payload",payload.length);
@@ -121,3 +127,5 @@ module.exports.spotifyArtists = function(payload){
 		})
 	})
 };
+
+

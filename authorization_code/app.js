@@ -145,34 +145,36 @@ module.exports.console = console;
 //=================================================
 //endpoints
 
-app.post('/getUserPlaylists', function(req, res) {
-	spotify_api.getUserPlaylists().then(function(res2){
-		res.send(res2)
-	})
-});
-app.post('/getFollowedArtists', function(req, res) {
-	spotify_api.getFollowedArtists().then(function(res2){
-		res.send(res2)
-	})
-});
+console.log("available endpoints:");
+for(var key in spotify_api) {
+	// if(spotify_api[key] instanceof Function && spotify_api[key].length === 3) {
+		console.log(key);
+		app.post("/" + key, spotify_api[key]);
+}
 
-app.post('/resolvePlaylists', function(req, res) {
-	spotify_api.resolvePlaylists(req).then(function(res2){
-		res.send(res2)
-	})
-});
+//
+// app.post('/getFollowedArtists', function(req, res) {
+// 	spotify_api.getFollowedArtists().then(function(res2){
+// 		res.send(res2)
+// 	})
+// });
+// app.post('/getTopArtists', function(req, res) {
+// 	spotify_api.getTopArtists().then(function(res2){
+// 		res.send(res2)
+// 	})
+// });
+//
+// app.post('/resolvePlaylists', function(req, res) {
+// 	spotify_api.resolvePlaylists(req).then(function(res2){
+// 		res.send(res2)
+// 	})
+// });
 
 app.post('/getMetroEvents', function(req, res) {
 	db_mongo_api.fetch(req,res).then(function(res2){
 		res.send(res2)
 	})
 });
-
-
-//attempt at a cron job
-
-
-
 
 app.post('/fetchMetroEvents', function(req, res) {
 
@@ -195,13 +197,13 @@ app.post('/resolveEvents', function(req, res) {
 
 
 
-//test
+//testing
+
 app.post('/puppet', function(req, res) {
 	puppet.puppet(req).then(function(res2){
 		res.send(res2)
 	})
 });
-
 
 //todo: trying to read from my tplink access point
 //this is probably a shitty idea anyways just b/c its secured = probably not going to be able to crawl it?
