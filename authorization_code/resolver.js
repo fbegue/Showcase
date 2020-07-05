@@ -145,7 +145,7 @@ limiters();
 
 module.exports.getPages = function(body){
     return new Promise(function(done, fail) {
-		console.log("getPages",body.next);
+		//console.log("getPages",body.next);
 		let options = {uri:body.next, headers: {"Authorization":'Bearer ' + sApi.token}, json: true};
 		//take one out for init call
 		var num = Math.ceil(body.total / 50) - 1;

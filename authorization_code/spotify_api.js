@@ -68,7 +68,6 @@ var refresh =  function(){
 	})
 }
 
-//todo: hook up infinite refreshable one from app.js
 var doUserAuth = function(){
 	var credentials = {
 		clientId: client_id,
@@ -130,30 +129,8 @@ var doAuth = function () {
 //methods
 var me = module.exports;
 
+//the node api i'm using, although very limited and unfinished it seems like its the best out there...
 //https://github.com/thelinmichael/spotify-web-api-node
-
-//todo: hardcoded user name
-//todo: custom call (weird 50 limit)
-//todo: paging
-me.getUserPlaylists = function (req,res) {
-
-	//todo: limit's max = 50 but cut it here for speedier testing
-	spotifyApi.getUserPlaylists('dacandyman01', {limit: 50})
-		.then(function (data) {
-			//console.log('Retrieved playlists', data.body);
-			res.send(data.body);
-		}, function (err) {
-			console.error('getUserPlaylists failed', err);
-		});
-}
-
-
-// spotifyApi.createPlaylist('spot_test1', { 'public' : false })
-// 	.then(function(data) {
-// 		console.log('Created playlist!');
-// 	}, function(err) {
-// 		console.log('Something went wrong!', err);
-// 	});
 
 //thought about using 'bind' to pass the initial func and call it here
 //but works a little differently with spotifyApi which I can't control insides of
@@ -189,6 +166,110 @@ var pageIt =  function(key,data){
 
 
 
+//todo: hardcoded user name
+//todo: custom call (weird 50 limit)
+//todo: paging
+me.getUserPlaylists = function (req,res) {
+
+	//todo: limit's max = 50 but cut it here for speedier testing
+	spotifyApi.getUserPlaylists('dacandyman01', {limit: 50})
+		.then(pageIt.bind(null,null))
+		.then(function (r) {
+			//console.log('Retrieved playlists', data.body);
+			res.send(r);
+		}, function (err) {
+			console.error('getUserPlaylists failed', err);
+		});
+}
+
+me.getUserPlaylistFriends = function (req,res) {
+
+	//var user = 'tipshishat';
+	var user = 'dacandyman01';
+	spotifyApi.getUserPlaylists(user, {limit: 50})
+		.then(pageIt.bind(null,null))
+		.then(function (body) {
+
+			var users = [];
+			var collab = [];
+			var collabPromises = [];
+
+			//todo: still don't quite understand something here
+			//apparently having the g flag here was causing me to miss Kim somehow unless I exec on her
+			//id before checking it again... idk confusing AF
+
+			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec
+			///JavaScript RegExp objects are stateful when they have the global or sticky flags set (e.g. /foo/g or /foo/y).
+			// They store a lastIndex from the previous match...
+
+			//var numericId = /^[0-9]*$/g;
+			var numericId = /^[0-9]*$/;
+			body.items.forEach(p =>{
+				//was exploring different ways of pushing only unique objects by a specific value
+				//decided just to uniq them later
+
+				//users = _.union(users, [p]);
+				//users.indexOf(p.owner) === -1 ? users.push(p.owner):{};
+				//!users[p.owner.id] ? users[p.owner.id] = p : [];
+
+				users.push(p.owner);
+
+				//weird shit with Kim
+				//for some reason I thought I needed to go resolve these profiles, not true
+
+				//p.owner.id == '1217637895' ? console.log(numericId.exec('1217637895')):{};
+			    //p.owner.id == '1240498738' ? console.log(numericId.exec('1240498738')):{};
+
+				p.id === '7pH9FCTIUwEEc2NkCBjeJ6' ? console.log(p):{};
+
+				p.collaborative ? collab.push(p):{}
+			});
+
+			users = _.uniqBy(users, function(n) {return n.id;});
+			collab = _.uniqBy(collab, function(n) {return n.id;});
+
+			console.log("users",users.length);
+			console.log("collab",collab.length);
+
+			collab.forEach(p =>{collabPromises.push(spotifyApi.getPlaylist(p.id))})
+
+			var collabUsers = [];
+
+			// if(collabPromises.length){
+			// Promise.all(collabPromises).then(results =>{
+			// 	results.forEach(p =>{
+			// 		//todo: this will include MY name FYI since if I'm collabing it's bc
+			// 		//i added a track here
+			// 		p.body.tracks.items.forEach(t =>{
+			// 			collabUsers.indexOf(t.added_by.id) === -1 ? collabUsers.push(t.added_by.id):{};
+			// 		})
+			// 		res.send({users: users,collabUsers:collabUsers});
+			// 	})
+			// });
+			// }else{res.send({users: users,collabUsers:null});}
+
+			res.send(body);
+
+		}, function (err) {
+			console.error('getUserPlaylists failed', err);
+		});
+}
+
+var getUserProfile =  function(u){
+    return new Promise(function(done, fail) {
+		//	https://api.spotify.com/v1/users/{user_id}
+		let uri = "https://api.spotify.com/v1/users/"+ u.id;
+		let options = {uri:uri, headers: {"Authorization":'Bearer ' + module.exports.token}, json: true};
+		rp(options)
+			.then(function (r) {
+				done(r);
+			}, function (err) {
+				console.error('getUserProfile failed', err);
+			});
+    })
+}
+
+
 me.getFollowedArtists =  function(req,res,next){
 	//fully qualified artist objects include genres
 	//todo: not sure on limit of this yet
@@ -204,9 +285,11 @@ me.getFollowedArtists =  function(req,res,next){
 			data.body.total = data.body.artists.total;
 			return data;
 
-			//bind: first value is what this gets set to in function being bound to
-			//the rest are just other arguments which will precede the normal return value
+			//bind: first value is what 'this' gets set to in function being bound to
+			//the rest are just other arguments which will PRECEDE the normal return value
 			//for the bound function in the function's param list
+			//hence it pageit doesn't not use this, has a key value and then takes the data
+			//passed via promise chaining as its last arg
 
 		}).then(pageIt.bind(null,'artists'))
 		.then(r =>{
@@ -276,7 +359,7 @@ me.getMySavedTracks =  function(req,res){
 
 					return db_api.commitArtistGenres(artistsPay)
 						.then(justGetFromDb =>{
-							 return db_api.checkDBForArtistGenres({artists:artistsPay},'artists')
+							return db_api.checkDBForArtistGenres({artists:artistsPay},'artists')
 								.then(result =>{
 									if(result.db.length !== result.artists.length){
 										console.log("couldn't find " + result.payload.length + " artists");
@@ -285,7 +368,7 @@ me.getMySavedTracks =  function(req,res){
 									return result
 									//return 'test'
 								})
-					})
+						})
 				})
 		})
 		.then(r =>{
