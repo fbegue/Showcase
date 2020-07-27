@@ -138,25 +138,42 @@ let limiters = function(){
 }
 limiters();
 
-
-// module.exports.resolveTrackArtists = function(){
-//
-// }
-
-module.exports.getPages = function(body){
+module.exports.getPages = function(body,key){
     return new Promise(function(done, fail) {
-		//console.log("getPages",body.next);
-		let options = {uri:body.next, headers: {"Authorization":'Bearer ' + sApi.token}, json: true};
-		//take one out for init call
-		var num = Math.ceil(body.total / 50) - 1;
+		var re = /.*\?/;var reRes =  re.exec(body.next);
+		var baseUrl = reRes[0]; //not an array
+
+		var q1 = 'offset=';var q2 = '&limit=50';
+
+		//todo: may have to adjust how I do parse this
+		if(key){baseUrl = baseUrl + "type=" + key + "&"}
+		console.log("baseUrl",baseUrl);
+
+		let options = {uri:baseUrl,headers: {"Authorization":'Bearer ' + sApi.token}, json: true};
+		var num = Math.ceil(body.total / 50)
+		console.log("total",body.total);
+		console.log("scheduled",num);
 		var promises = [];
 
-		//var wrap = function(options){return rp(options).then(r => {return r;})};
-		//promises.push(limiterSpotify.schedule(function(op){return rp(op)},options,{}).catch(error => console.error(error)))
-		for(var x=0; x< num;x++){
-			promises.push(limiterSpotify.schedule(() => rp(options)));
+		options.uri = baseUrl + q1 + 0 + q2
+
+		for(var x=1; x<= num;x++){
+			function get(x,options){
+				options.uri = baseUrl + q1 + 50*x + q2
+				console.log(options.uri);
+				return rp(options);
+			}
+			//note: something about rp doesn't work the way I thought it would
+			//promises.push(limiterSpotify.schedule(get(options)));
+			promises.push(limiterSpotify.schedule(get,x,options));
 		}
-		Promise.all(promises).then(r => {done(r);	},err =>{	fail(err)})
+		Promise.all(promises).then(r => {
+			//console.log('here');
+			done(r);
+			},err =>{
+			console.error(err.error)
+			// fail(err)
+		})
     })
 }
 

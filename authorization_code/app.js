@@ -245,7 +245,6 @@ var spotifyClientAuth = new ClientOAuth2({
 
 var global_refresh = "AQCigbmzot5h6PcEL9XuWX508gtwGJUWzIPwc4N-TwvjoJho6Zj_5Vv6N_4yP1nl-nOi0OS7KxGp716EciKNno0Q-88sCUlMvTdCqE2CMMJT9kfUeo8onI29LLS-lCXkUvY";
 var global_access_token = "";
-
 app.get('/login', function (req, res) {
 	var uri = spotifyClientAuth.code.getUri()
 	res.redirect(uri)
@@ -278,6 +277,7 @@ app.get('/callback', function (req, res) {
 	spotifyClientAuth.code.getToken(req.originalUrl)
 		.then(function (user) {
 			console.log("new token:",user.accessToken);
+			console.log("new refresh token:",user.refreshToken);
 			global_access_token = user.accessToken;
 			//console.log("$callback",user.data) //=> { accessToken: '...', tokenType: 'bearer', ... }
 

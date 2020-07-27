@@ -41,7 +41,11 @@ var client_secret = '1c09323e0aad42cfaef5f23bb08b6428'; // Your secret
 
 var spotifyApi = {};
 
-var global_refresh = "AQCigbmzot5h6PcEL9XuWX508gtwGJUWzIPwc4N-TwvjoJho6Zj_5Vv6N_4yP1nl-nOi0OS7KxGp716EciKNno0Q-88sCUlMvTdCqE2CMMJT9kfUeo8onI29LLS-lCXkUvY";
+//var global_refresh_franky = "AQDn9X-9Jq2e-gbcZgf-U4eEzJadw2R6cFlXu1zKY-kxo3CEY4FaLtwL8tw7YcO8QPd2h3OXcSTvOQwKG5kmpOz2Nm6MTrHfM0r4UGQ7A7Aa-z8tywMvbgVyWmgLcEXDlVw";
+//var global_refresh_dan = "AQDRaPbAH9oSHZ3xKHxbxHZtsJrvry2gr6x-swN4uddSuc_InwPNaaJG7l9ZCKIRzDzUEAGk6tSD4GCyks79J0vcICT1l6yvKDZym3nqQzrG860UPUCu_lMFKzZPZVuc9wc"
+
+var global_refresh = "AQDn9X-9Jq2e-gbcZgf-U4eEzJadw2R6cFlXu1zKY-kxo3CEY4FaLtwL8tw7YcO8QPd2h3OXcSTvOQwKG5kmpOz2Nm6MTrHfM0r4UGQ7A7Aa-z8tywMvbgVyWmgLcEXDlVw";
+
 // var global_access_token = "";
 var refresh =  function(){
 	return new Promise(function(done, fail) {
@@ -72,10 +76,10 @@ var doUserAuth = function(){
 	var credentials = {
 		clientId: client_id,
 		clientSecret: client_secret,
-		redirectUri:"cheat"
+		// redirectUri:"cheat"
+		redirectUri
 	};
 	spotifyApi = new SpotifyWebApi(credentials);
-	//var temp ="BQDnNmzbjgZ3dHizRV3HCmTOSbpEzttOa2Avsz4963TcEIasL9wUAr1_O5AaG5cJ9L0z707UDFJHZGxHtEM1rAgfQM3742m0jkxCYSzLZ_01joNuUmceMJah9PUjDdsjKlWqElGG52hIOUy3rhcqZFLT5yUmsR_G9xfeFaR3rSNhl6uGhQB5aN5zCsjFOnl3y-kmnMD7wT0P6REvrn5e7UrVNzgdt57A5VGSpXdJyi72aXqi9o7exBl2poatou6xyFf4mTZNQQfZHXNpgh-QgLxN4M8";
 	refresh().then(sideaf =>{
 		spotifyApi.setAccessToken(module.exports.token);
 	});
@@ -140,19 +144,23 @@ var me = module.exports;
 //because of some response format weirdness but its still nice :)
 //getFollowedArtists is example of weirdness, and its the reason I must pass a key
 
-//todo: add failure conditions
+/**pageIt
+ *
+ * @param key Is now the singular known (artist NOT artists)
+ * */
 var pageIt =  function(key,data){
 	return new Promise(function(done, fail) {
 		if(!(data)){data=key;key=null;}
-		console.log("pageIt",data.body.next);
-		//console.log(data.body.items);
-		//console.log(key);
 		if(data.body.next){
-			resolver.getPages(data.body)
+			console.log("pageIt",data.body.next);
+			//console.log("key",key);
+			resolver.getPages(data.body,key)
 				.then(pages =>{
+					// console.log("$",pages[0][key + "s"].items.length);
+					// console.log("$",pages[1][key + "s"].items.length);
 					pages.forEach(p =>{
 						if(key){
-							data.body.items = data.body.items.concat(p[key].items)
+							data.body.items = data.body.items.concat(p[key + "s"].items)
 						}else{
 							data.body.items = data.body.items.concat(p.items)
 						}
@@ -160,9 +168,21 @@ var pageIt =  function(key,data){
 					data.body.pagedTotal = data.body.items.length;
 					done(data.body)
 				})
+				.catch(e => console.error(e))
 		}else{done(data.body)}
 	})
 }
+
+/** Qualifying Report Object (QRP)
+ *
+ {
+	artists: the original payload
+	payload: the created payload for external resolution
+	db: entries resolved by the db
+	lastLook: <TODO> attempted to resolve on db but couldn't + had history of checking so we'll skip this
+	resolved: final result for user
+}
+ * */
 
 
 
@@ -172,15 +192,21 @@ var pageIt =  function(key,data){
 me.getUserPlaylists = function (req,res) {
 
 	//todo: limit's max = 50 but cut it here for speedier testing
-	spotifyApi.getUserPlaylists('dacandyman01', {limit: 50})
+	//dacandyman01
+	spotifyApi.getUserPlaylists('123028477', {limit: 50})
 		.then(pageIt.bind(null,null))
 		.then(function (r) {
 			//console.log('Retrieved playlists', data.body);
+			var t = _.uniqBy(r.items, function(n) {return n.id;});
+			console.log(t.length);
+			//res.send(t);
 			res.send(r);
 		}, function (err) {
 			console.error('getUserPlaylists failed', err);
 		});
 }
+
+//todo: remove self from users, collabUsers
 
 me.getUserPlaylistFriends = function (req,res) {
 
@@ -191,8 +217,7 @@ me.getUserPlaylistFriends = function (req,res) {
 		.then(function (body) {
 
 			var users = [];
-			var collab = [];
-			var collabPromises = [];
+			var collabUsers = [];
 
 			//todo: still don't quite understand something here
 			//apparently having the g flag here was causing me to miss Kim somehow unless I exec on her
@@ -214,63 +239,36 @@ me.getUserPlaylistFriends = function (req,res) {
 
 				users.push(p.owner);
 
-				//weird shit with Kim
-				//for some reason I thought I needed to go resolve these profiles, not true
+				//todo: weird shit with Kim
+				//for some reason I thought I needed to go resolve these profiles, not true so can ignore i guess...
 
 				//p.owner.id == '1217637895' ? console.log(numericId.exec('1217637895')):{};
 			    //p.owner.id == '1240498738' ? console.log(numericId.exec('1240498738')):{};
 
 				p.id === '7pH9FCTIUwEEc2NkCBjeJ6' ? console.log(p):{};
 
-				p.collaborative ? collab.push(p):{}
+				p.collaborative ? collabUsers.push(p.owner):{}
 			});
 
 			users = _.uniqBy(users, function(n) {return n.id;});
-			collab = _.uniqBy(collab, function(n) {return n.id;});
+			collabUsers = _.uniqBy(collabUsers, function(n) {return n.id;});
 
 			console.log("users",users.length);
-			console.log("collab",collab.length);
+			console.log("collabUsers",collabUsers.length);
 
-			collab.forEach(p =>{collabPromises.push(spotifyApi.getPlaylist(p.id))})
-
-			var collabUsers = [];
-
-			// if(collabPromises.length){
-			// Promise.all(collabPromises).then(results =>{
-			// 	results.forEach(p =>{
-			// 		//todo: this will include MY name FYI since if I'm collabing it's bc
-			// 		//i added a track here
-			// 		p.body.tracks.items.forEach(t =>{
-			// 			collabUsers.indexOf(t.added_by.id) === -1 ? collabUsers.push(t.added_by.id):{};
-			// 		})
-			// 		res.send({users: users,collabUsers:collabUsers});
-			// 	})
-			// });
-			// }else{res.send({users: users,collabUsers:null});}
-
-			res.send(body);
+			//body.items is just every playlist from the user I think
+			// res.send(body.items);
+			res.send({users:users,collabUsers:collabUsers});
 
 		}, function (err) {
 			console.error('getUserPlaylists failed', err);
 		});
 }
 
-var getUserProfile =  function(u){
-    return new Promise(function(done, fail) {
-		//	https://api.spotify.com/v1/users/{user_id}
-		let uri = "https://api.spotify.com/v1/users/"+ u.id;
-		let options = {uri:uri, headers: {"Authorization":'Bearer ' + module.exports.token}, json: true};
-		rp(options)
-			.then(function (r) {
-				done(r);
-			}, function (err) {
-				console.error('getUserProfile failed', err);
-			});
-    })
-}
 
 
 me.getFollowedArtists =  function(req,res,next){
+	this.name = "getFollowedArtists";
 	//fully qualified artist objects include genres
 	//todo: not sure on limit of this yet
 	//https://developer.spotify.com/documentation/web-api/reference/follow/get-followed/
@@ -291,24 +289,69 @@ me.getFollowedArtists =  function(req,res,next){
 			//hence it pageit doesn't not use this, has a key value and then takes the data
 			//passed via promise chaining as its last arg
 
-		}).then(pageIt.bind(null,'artists'))
-		.then(r =>{
-			res.send(r);
 		})
-		.catch(e =>{next(e)})
+		.then(pageIt.bind(null,'artist'))
+		// .then(r =>{
+		//
+		// 	var artists = r.items
+		//
+		// 	return resolver.resolveArtists(artists)
+		// 		.then(resolved =>{
+		// 			var artistsPay = [];
+		// 			//prune duplicate artists from track aggregation
+		// 			artistsPay = _.uniqBy(artistsPay, function(n) {return n.id;});
+		//
+		// 			return db_api.commitArtistGenres(artistsPay)
+		// 				.then(justGetFromDb =>{
+		// 					return db_api.checkDBForArtistGenres({artists:artistsPay},'artists')
+		// 						.then(result =>{
+		// 							if(result.db.length !== result.artists.length){
+		// 								console.log("couldn't find " + result.payload.length + " artists");
+		// 							}
+		// 							result.resolved = result.db.concat(result.payload)
+		// 							return result
+		// 							//return 'test'
+		// 						})
+		// 				})
+		// 		})
+		// })
+		.then(r =>{
+			console.log(r.items.length + " " + r.artists.items.length);
+			// console.log(this.name + " :" + r.length);
+			res.send(r.artists.items);
+
+		})
+		.catch(err =>{
+			res.status(500).send(this.name + " :" + err)
+			//next(e.body)
+		})
 }
 
-// Get tracks in the signed in user's Your Music library
-var trackOb = {};
+
+//todo: regarding getMySavedTracks and getMySavedAlbums
+//#1 interestingly...
+//when I pass artistsPay to commit + checkDB, because of how I setup the albumOb.body.items,
+//I'm actually passing a reference to this original albumOb to be checked
+//so albumOb.items come back fully qualified b/c they were qualified in place by reference
+
+//todo: regarding getMySavedAlbums,getTopArtists, getMySavedTracks
+//not doing anything with 'couldn't find artists' printout
+
+/** getMySavedTracks
+ * @desc Get tracks in the signed in user's Your Music library
+ * @param req
+ * @param res
+ */
 me.getMySavedTracks =  function(req,res){
+	var trackOb = {};
 	spotifyApi.getMySavedTracks({limit : 50})
 		//testing:
-		.then(trackOb=>{console.log("TESTING WITH LIMITED # OF TRACKS");return trackOb;})
-		//.then(pageIt.bind(null))
+		//.then(trackOb=>{console.log("TESTING WITH LIMITED # OF TRACKS");return trackOb;})
+		.then(pageIt.bind(null))
 		.then(pagedRes =>{
 			trackOb = pagedRes;
 			var artists = [];
-			trackOb.body.items.forEach(item =>{
+			trackOb.items.forEach(item =>{
 				artists = artists.concat(_.get(item,'track.artists'));
 			})
 
@@ -320,7 +363,7 @@ me.getMySavedTracks =  function(req,res){
 				.then(resolved =>{
 					var artistsPay = [];
 
-					trackOb.body.items.forEach(item =>{
+					trackOb.items.forEach(item =>{
 						//note: theres an artist listing on both: items[0].track.album.artists AND a items[0].track.artists
 						//the difference between the album's artist(s) and a track's artist(s)
 						//well remove the album one for now
@@ -372,22 +415,32 @@ me.getMySavedTracks =  function(req,res){
 				})
 		})
 		.then(r =>{
-			res.send(trackOb);
+			//todo: interesting ^^^
+			//res.send(trackOb.items);
+			res.send(r.resolved);
 		}, function(err) {
 			console.log('getMySavedTracks failed', err);
 		});
 };
 
-var albumOb = {};
+
+/** getMySavedAlbums
+ *
+ * @param req
+ * @param res
+ */
 me.getMySavedAlbums =  function(req,res){
+	var albumOb = {};
 	spotifyApi.getMySavedAlbums({limit : 50})
 		//testing:
-		.then(albumOb=>{console.log("TESTING WITH LIMITED # OF ALBUMS");return albumOb;})
-		//.then(pageIt.bind(null))
+		//.then(albumOb=>{console.log("TESTING WITH LIMITED # OF ALBUMS");return albumOb;})
+		.then(pageIt.bind(null))
 		.then(pagedRes =>{
+			// //testing:
+			// res.send(pagedRes)
 			albumOb = pagedRes;
 			var artists = [];
-			albumOb.body.items.forEach(item =>{
+			albumOb.items.forEach(item =>{
 				artists = artists.concat(_.get(item,'album.artists'));
 			})
 			//prune duplicate artists from track aggregation
@@ -397,7 +450,7 @@ me.getMySavedAlbums =  function(req,res){
 				.then(resolved =>{
 					var artistsPay = [];
 
-					albumOb.body.items.forEach(item =>{
+					albumOb.items.forEach(item =>{
 						//note: theres a genres listing on both: items[0].album.genres AND a items[0].album.artists.genres
 						//(the one I'm finding myself) versus the genres of an album itself
 						//removing the latter for now
@@ -438,25 +491,37 @@ me.getMySavedAlbums =  function(req,res){
 				})
 		})
 		.then(r =>{
-			res.send(albumOb);
+			//todo: interesting ^^^
+			// res.send(albumOb.items);
+			res.send(r.resolved);
 		}, function(err) {
-			console.log('getMySavedTracks failed', err);
+			// console.error('getMySavedAlbums: ', err);
+			console.error(err);
+			res.status(500).send("getMySavedAlbums: " + err)
 		});
 };
 
-//https://developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
-//long_term (calculated from several years of data and including all new data as it becomes available)
-//medium_term (approximately last 6 months)
-//short_term (approximately last 4 weeks)
-
-//this comes with genres just not MY qualified ones
-//there is a hard limit of 50 artists that are your 'top' for each time range - this is also the api's fetch limit
 
 //todo: parameterize req for range
+//todo: (name for this data type where u select stuff from predefined strings?)
+/**
+ * getTopArtists
+ *
+ * @param req.range = one of:
+ *
+ * long_term (calculated from several years of data and including all new data as it becomes available)
+	medium_term (approximately last 6 months)
+	short_term (approximately last 4 weeks)
+
+ https://developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
+
+ */
 me.getTopArtists = function(req,res){
 	var range = "long_term";
 	let uri = "https://api.spotify.com/v1/me/top/artists?limit=50&offset=0&time_range=" + range;
 	let options = {uri:uri, headers: {"Authorization":'Bearer ' + module.exports.token}, json: true};
+	//this comes with genres just not MY qualified ones
+	//so usual process of committing in order to get qualified genres back
 	rp(options).then(r => {
 		db_api.commitArtistGenres(r.items)
 			.then(justGetFromDb =>{
@@ -465,14 +530,16 @@ me.getTopArtists = function(req,res){
 						if(result.db.length !== result.artists.length){
 							console.log("couldn't find " + result.payload.length + " artists");
 						}
-						result.resolved = result.db.concat(result.payload)
-						res.send(result)
+						result.resolved = result.db.concat(result.payload);
+						res.send(result.resolved)
 					})
-			})
-	},err =>{
-		fail(err)
-	})
+			},err =>{res.status(500).send(err)})
+	},err =>{res.status(500).send(err)})
+
 };
+
+
+//WIP----------------------------------------------------------
 
 //todo: move artist to req.artist
 // don't think we're actually using this yet
@@ -489,6 +556,19 @@ me.searchArtist = function (req,res,next) {
 		});
 };
 
+var getUserProfile =  function(u){
+	return new Promise(function(done, fail) {
+		//	https://api.spotify.com/v1/users/{user_id}
+		let uri = "https://api.spotify.com/v1/users/"+ u.id;
+		let options = {uri:uri, headers: {"Authorization":'Bearer ' + module.exports.token}, json: true};
+		rp(options)
+			.then(function (r) {
+				done(r);
+			}, function (err) {
+				console.error('getUserProfile failed', err);
+			});
+	})
+}
 
 
 //=================================================

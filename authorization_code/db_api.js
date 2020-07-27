@@ -154,6 +154,7 @@ me.commitArtistGenres =  function(artists) {
 	return new Promise(function (done, fail) {
 		console.log("commitArtistGenres",artists.length);
 
+
 		//submit genres, annotating the incoming object with ids created or fetched
 		//insert artists and genre_artist relations
 
