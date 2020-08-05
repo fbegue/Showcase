@@ -138,6 +138,40 @@ let limiters = function(){
 }
 limiters();
 
+//todo: made this non-configuraable b/c I'm so confused as to why this changed?
+//maybe I'm just being dumb but...
+module.exports.getPage = function(body,key){
+	return new Promise(function(done, fail) {
+
+		var re = /.*\?/;
+		//todo: with key
+		var reAfter = /.*\?type=artist&after=(.*)&limit=50/;
+		var reRes =  re.exec(body.next);
+		var baseUrl = reRes[0]; //not an array
+		var reAfterRes =  reAfter.exec(body.next);
+		var after = reAfterRes[1];//not an array
+		var q1 = 'offset=';var q2 = '&limit=50';
+
+		//todo: with key
+		//baseUrl = baseUrl + "type=" + key + "&"}
+		baseUrl = baseUrl + "type=artist&after=" + after + "&limit=50"
+		//console.log("baseUrl",baseUrl);
+		let options = {uri:baseUrl,headers: {"Authorization":'Bearer ' + sApi.token}, json: true};
+
+		function get(options) {
+			console.log(options.uri);
+			return rp(options);
+		}
+		get(options)
+			.then(r =>{
+				done(r);
+			},e =>{
+				fail(e);
+			})
+
+	})
+}
+
 module.exports.getPages = function(body,key){
     return new Promise(function(done, fail) {
 		var re = /.*\?/;var reRes =  re.exec(body.next);

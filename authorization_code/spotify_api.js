@@ -41,6 +41,9 @@ var client_secret = '1c09323e0aad42cfaef5f23bb08b6428'; // Your secret
 
 var spotifyApi = {};
 
+
+
+
 //var global_refresh_franky = "AQDn9X-9Jq2e-gbcZgf-U4eEzJadw2R6cFlXu1zKY-kxo3CEY4FaLtwL8tw7YcO8QPd2h3OXcSTvOQwKG5kmpOz2Nm6MTrHfM0r4UGQ7A7Aa-z8tywMvbgVyWmgLcEXDlVw";
 //var global_refresh_dan = "AQDRaPbAH9oSHZ3xKHxbxHZtsJrvry2gr6x-swN4uddSuc_InwPNaaJG7l9ZCKIRzDzUEAGk6tSD4GCyks79J0vcICT1l6yvKDZym3nqQzrG860UPUCu_lMFKzZPZVuc9wc"
 
@@ -173,6 +176,34 @@ var pageIt =  function(key,data){
 	})
 }
 
+//todo: something off with my 'totals'
+var pageItAfter =  function(key,pages,data){
+	return new Promise(function(done, fail) {
+		//what does this binding thing mean again?
+		if(!(data)){data=key;key=null;}
+		if(data.body.next){
+			//console.log("pageItAfter",data.body.next);
+
+			//console.log("key",key);
+			resolver.getPage(data.body,key)
+				.then(r =>{
+					pages.push(r)
+					if(r.artists.next){
+						pageItAfter('',pages,{body:{next:r.artists.next}}).then(done).catch(fail)
+					}
+					else{
+						//get the original result
+						var body = {items:data.body.artists.items}
+						pages.forEach(p =>{
+							body.items =  body.items.concat(p.artists.items)
+						})
+						done(body);
+					}
+				})
+				.catch(e => console.error(e))
+		}else{done(data.body)}
+	})
+}
 /** Qualifying Report Object (QRP)
  *
  {
@@ -273,6 +304,7 @@ me.getFollowedArtists =  function(req,res,next){
 	//todo: not sure on limit of this yet
 	//https://developer.spotify.com/documentation/web-api/reference/follow/get-followed/
 
+	var pages = [];
 	spotifyApi.getFollowedArtists({limit:50})
 		.then(function(data) {
 			//some results from spotify that are asking for specific types of items
@@ -290,10 +322,11 @@ me.getFollowedArtists =  function(req,res,next){
 			//passed via promise chaining as its last arg
 
 		})
-		.then(pageIt.bind(null,'artist'))
+		 .then(pageItAfter.bind(null,'artist',pages))
 		// .then(r =>{
 		//
-		// 	var artists = r.items
+		// 	var artists = r.items;
+		// 	// console.log(artists.length);
 		//
 		// 	return resolver.resolveArtists(artists)
 		// 		.then(resolved =>{
@@ -316,12 +349,16 @@ me.getFollowedArtists =  function(req,res,next){
 		// 		})
 		// })
 		.then(r =>{
-			console.log(r.items.length + " " + r.artists.items.length);
+			//console.log(r.items.length + " " + r.artists.items.length);
 			// console.log(this.name + " :" + r.length);
-			res.send(r.artists.items);
+			//res.send(r.artists.items);
+			//testing:
+
+			res.send(r);
 
 		})
 		.catch(err =>{
+			console.log(err);
 			res.status(500).send(this.name + " :" + err)
 			//next(e.body)
 		})

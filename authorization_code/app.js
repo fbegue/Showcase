@@ -316,11 +316,12 @@ app.get('/callback', function (req, res) {
 		})
 });
 
+//todo:
 var timed =  function(){
 	return new Promise(function(done, fail) {
 		setTimeout(t =>{
 			console.log("trying to refresh...");
-			refresh()
+			refresh("<TOKEN>")
 				.then(r =>{
 					done();
 				});
@@ -332,7 +333,8 @@ var timed =  function(){
 //my refresh is always good now
 //timed({data:{refresh_token:global_refresh}})
 
-var refresh =  function(){
+
+var refresh =  function(refresh_token){
     return new Promise(function(done, fail) {
 		var authOptions = {
 			method:"POST",
@@ -340,7 +342,7 @@ var refresh =  function(){
 			headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
 			form: {
 				grant_type: 'refresh_token',
-				refresh_token: global_refresh
+				refresh_token: refresh_token
 			},
 			json: true
 		};
