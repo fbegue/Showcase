@@ -682,6 +682,9 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 										var rejectedMatches = [];
 										var noMatches = [];
 
+										//testing:
+										var obs = [];
+
 										var aas_promises = [];
 
 										results.forEach(r =>{
@@ -729,8 +732,9 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 													var songkickOb = {id:item.id,name:item.name,artistSongkick_id:artist.id,displayName:artist.name,genres:item.genres}
 													songkickOb.newSpotifyArtist = item;
+													//testing:
 													aas_promises.push(db_api.commit_artistSongkick_with_match(songkickOb))
-
+													obs.push(songkickOb)
 												}
 											}
 										})//results.each
@@ -745,6 +749,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 												//console.log(r);
 												console.log("fetchMetroEvents finished execution:",Math.abs(new Date() - startDate) / 600);
 												console.log("all events, artists and genres committed!");
+												done(obs)
 											},
 											error =>{ console.log("$aas_promises error",error);})
 
@@ -802,7 +807,7 @@ module.exports.get_metro_events_local=  function(req){
 	})
 };
 
-module.exports.resolveEvents=  function(req){
+ module.exports.resolveEvents=  function(req){
 	return new Promise(function(done, fail) {
 		//todo: ajax weirdness
 		req.body = JSON.parse(req.body.data);
@@ -824,7 +829,6 @@ module.exports.resolveEvents=  function(req){
 			});
 			Promise.all(promises).then(results =>{
 				//console.log(app.jstr(r));
-
 				//todo: speed up unwinding
 
 				//setting perfMap earlier + sending perf along helps unwind results
@@ -839,7 +843,7 @@ module.exports.resolveEvents=  function(req){
 					})
 				});
 
-				console.log();
+
 				done(events);
 			},e =>{
 

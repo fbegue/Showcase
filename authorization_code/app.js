@@ -38,6 +38,12 @@ app.use(bodyParser.urlencoded({
 	limit: "50mb"
 }));
 
+app.all('*', function(req, res, next) {
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "X-Requested-With");
+	next();
+});
+
 //todo: forget why this wasn't working
 
 // for(let key in spotify_api){

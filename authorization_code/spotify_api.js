@@ -224,7 +224,7 @@ me.getUserPlaylists = function (req,res) {
 
 	//todo: limit's max = 50 but cut it here for speedier testing
 	//dacandyman01
-	spotifyApi.getUserPlaylists('123028477', {limit: 50})
+	spotifyApi.getUserPlaylists('dacandyman01', {limit: 50})
 		.then(pageIt.bind(null,null))
 		.then(function (r) {
 			//console.log('Retrieved playlists', data.body);
@@ -323,38 +323,30 @@ me.getFollowedArtists =  function(req,res,next){
 
 		})
 		 .then(pageItAfter.bind(null,'artist',pages))
-		// .then(r =>{
-		//
-		// 	var artists = r.items;
-		// 	// console.log(artists.length);
-		//
-		// 	return resolver.resolveArtists(artists)
-		// 		.then(resolved =>{
-		// 			var artistsPay = [];
-		// 			//prune duplicate artists from track aggregation
-		// 			artistsPay = _.uniqBy(artistsPay, function(n) {return n.id;});
-		//
-		// 			return db_api.commitArtistGenres(artistsPay)
-		// 				.then(justGetFromDb =>{
-		// 					return db_api.checkDBForArtistGenres({artists:artistsPay},'artists')
-		// 						.then(result =>{
-		// 							if(result.db.length !== result.artists.length){
-		// 								console.log("couldn't find " + result.payload.length + " artists");
-		// 							}
-		// 							result.resolved = result.db.concat(result.payload)
-		// 							return result
-		// 							//return 'test'
-		// 						})
-		// 				})
-		// 		})
-		// })
+		.then(r =>{
+			//skipping artist lookup, but keeping genre inpuit
+			var artistsPay = r.items;
+			//console.log("artistsPay",artistsPay.length);
+					return db_api.commitArtistGenres(artistsPay)
+						.then(justGetFromDb =>{
+							return db_api.checkDBForArtistGenres({artists:artistsPay},'artists')
+								.then(result =>{
+									if(result.db.length !== result.artists.length){
+										console.log("couldn't find " + result.payload.length + " artists");
+									}
+									result.resolved = result.db.concat(result.payload)
+									return result
+									//return 'test'
+								})
+						})
+		})
 		.then(r =>{
 			//console.log(r.items.length + " " + r.artists.items.length);
 			// console.log(this.name + " :" + r.length);
 			//res.send(r.artists.items);
 			//testing:
 
-			res.send(r);
+			res.send(r.artists);
 
 		})
 		.catch(err =>{
@@ -579,19 +571,37 @@ me.getTopArtists = function(req,res){
 //WIP----------------------------------------------------------
 
 //todo: move artist to req.artist
-// don't think we're actually using this yet
-me.searchArtist = function (req,res,next) {
-	var artist = {name:"Queen"};
-	//console.log(query);
-	spotifyApi.searchArtists(artist.name)
-		.then(function (r) {
-			// done({artist: artist, result: r})
-			res.send(r);
-		}, function (err) {
-			console.error(err);
-			next(err)
-		});
-};
+//todo: for some reason I turned this into an api function
+
+// me.searchArtist = function (req,res,next) {
+// 	var artist = {name:"Queen"};
+// 	//console.log(query);
+// 	spotifyApi.searchArtists(artist.name)
+// 		.then(function (r) {
+// 			 done({artist: artist, result: r})
+// 			//res.send(r);
+// 		}, function (err) {
+// 			console.error(err);
+// 			next(err)
+// 		});
+// };
+
+me.searchArtist  =  function(artist){
+    return new Promise(function(done, fail) {
+    	//testing:
+		//var artist = {name:"Queen"};
+		//console.log(query);
+		//console.log("searchArtist",artist.name);
+		spotifyApi.searchArtists(artist.name)
+			.then(function (r) {
+				done({artist: artist, result: r})
+				//res.send(r);
+			}, function (err) {
+				console.error(err);
+				next(err)
+			});
+    })
+}
 
 var getUserProfile =  function(u){
 	return new Promise(function(done, fail) {

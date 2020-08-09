@@ -92,6 +92,8 @@ module.exports.checkDBForArtistGenres =  function(playob,key){
 	return new Promise(function(done, fail) {
 		var artists = playob[key];
 		var songkickIds = true;
+
+		console.log(artists[0]);
 		typeof artists[0].id == "string" ? songkickIds = false:{};
 		console.log("process set of " + (songkickIds ? "songkickIds":"spotifyIds"));
 
