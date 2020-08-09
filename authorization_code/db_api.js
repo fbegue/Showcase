@@ -431,6 +431,21 @@ module.exports.checkDBFor_artistSongkick_match =  function(artist){
 };
 
 
+module.exports.qualifyGenre =  function(g){
+    return new Promise(function(done, fail) {
+		insert_genre(g)
+			.then(r =>{
+				g = r;
+				done(r);
+			})
+    })
+}
+
+/**
+ * Attempts to insert a string genre if it doesn't exist already
+ * @param genre
+ * @returns with a fully qualified genre (either newly created or already known)
+ */
 var insert_genre = function (genre) {
 	return new Promise(function (done, fail) {
 		var sreq = new sql.Request(sApi.poolGlobal);

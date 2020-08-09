@@ -8,6 +8,7 @@ var _ = require('lodash')
 var db_api = require('./db_api.js');
 var app = require('./app')
 var resolver = require('./resolver.js');
+var resolver_api = require('./resolver_api.js');
 
 //========================================
 //db setup
@@ -274,7 +275,7 @@ me.getUserPlaylistFriends = function (req,res) {
 				//for some reason I thought I needed to go resolve these profiles, not true so can ignore i guess...
 
 				//p.owner.id == '1217637895' ? console.log(numericId.exec('1217637895')):{};
-			    //p.owner.id == '1240498738' ? console.log(numericId.exec('1240498738')):{};
+				//p.owner.id == '1240498738' ? console.log(numericId.exec('1240498738')):{};
 
 				p.id === '7pH9FCTIUwEEc2NkCBjeJ6' ? console.log(p):{};
 
@@ -322,23 +323,23 @@ me.getFollowedArtists =  function(req,res,next){
 			//passed via promise chaining as its last arg
 
 		})
-		 .then(pageItAfter.bind(null,'artist',pages))
+		.then(pageItAfter.bind(null,'artist',pages))
 		.then(r =>{
 			//skipping artist lookup, but keeping genre inpuit
 			var artistsPay = r.items;
 			//console.log("artistsPay",artistsPay.length);
-					return db_api.commitArtistGenres(artistsPay)
-						.then(justGetFromDb =>{
-							return db_api.checkDBForArtistGenres({artists:artistsPay},'artists')
-								.then(result =>{
-									if(result.db.length !== result.artists.length){
-										console.log("couldn't find " + result.payload.length + " artists");
-									}
-									result.resolved = result.db.concat(result.payload)
-									return result
-									//return 'test'
-								})
+			return db_api.commitArtistGenres(artistsPay)
+				.then(justGetFromDb =>{
+					return db_api.checkDBForArtistGenres({artists:artistsPay},'artists')
+						.then(result =>{
+							if(result.db.length !== result.artists.length){
+								console.log("couldn't find " + result.payload.length + " artists");
+							}
+							result.resolved = result.db.concat(result.payload)
+							return result
+							//return 'test'
 						})
+				})
 		})
 		.then(r =>{
 			//console.log(r.items.length + " " + r.artists.items.length);
@@ -586,9 +587,10 @@ me.getTopArtists = function(req,res){
 // 		});
 // };
 
+//this is exposed for use by songkick only pretty much?
 me.searchArtist  =  function(artist){
-    return new Promise(function(done, fail) {
-    	//testing:
+	return new Promise(function(done, fail) {
+		//testing:
 		//var artist = {name:"Queen"};
 		//console.log(query);
 		//console.log("searchArtist",artist.name);
@@ -598,11 +600,70 @@ me.searchArtist  =  function(artist){
 				//res.send(r);
 			}, function (err) {
 				console.error(err);
-				next(err)
+				fail(err);
 			});
-    })
+	})
 }
 
+
+//exposing an endpoint that uses it to the UI
+me.completeArtist = function(req,res){
+
+	//todo: ajax thing (or not jesus lol fix this!)
+	//console.log(req.body.artistQuery);
+	//req.body.artistQuery ="Queen"
+
+	me.searchArtist({name:req.body.artistQuery})
+		.then(r => {
+
+			//no no I HAVE genres, I don't have QUALIFIED genres
+			// var ids = r.result.body.artists.items.map(a =>{return a.id})
+			// resolver_api.spotifyArtists(ids)
+			// 	.then(r =>{
+			// 		res.send(r);
+			// 	},err =>{res.status(500).send(err)})
+
+			//todo: this is similar to the (very messy) process for fetchMetroEvents
+			//... checkDBFor_artist_artistSongkick_match in songkick.js
+
+			//but I don't really 'need' to worry about submitting every searched artist
+			//into my DB? but I do need to know if my system already knows about the genre
+
+			//testing: for now, just do the bare minimum until I do a rerwrite on ^^^
+
+			var qualifyGenrePromises = [];
+			r.result.body.artists.items.forEach(r =>{
+				//todo: if we passed the whole artist = replace in place
+				//for now just do a costly unwind later
+				// qualifyGenrePromises.push(qualifyGenres(r.genres))
+				r.genres.forEach(g =>{
+					qualifyGenrePromises.push(db_api.qualifyGenre(g));
+				})
+			})
+
+			//console.log(qualifyGenrePromises.length);
+			Promise.all(qualifyGenrePromises)
+				.then(r2 =>{
+					r2 = r2.map(i =>{return i[0]})
+					r.result.body.artists.items.forEach((r,i,arr) =>{
+						//todo: if we passed the whole artist = replace in place
+						//for now just do a 'costly' unwind later (its 20 artists how many genres could there be? :))
+						// qualifyGenrePromises.push(qualifyGenres(r.genres))
+						var gsqual = [];
+						r.genres.forEach((gName,i,arr) =>{
+							var f = _.find(r2, function(gq) {
+								return gName === gq.name;
+							});
+							gsqual.push(f);
+						})
+						arr[i].genres = gsqual;
+					})
+					res.send(r);
+
+				},err =>{res.status(500).send(err)})
+		},err =>{res.status(500).send(err)})
+
+};
 var getUserProfile =  function(u){
 	return new Promise(function(done, fail) {
 		//	https://api.spotify.com/v1/users/{user_id}
