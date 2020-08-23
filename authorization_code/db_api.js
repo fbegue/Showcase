@@ -4,7 +4,126 @@ let sql = require("mssql");
 var _ = require('lodash');
 var app =  require('./app')
 
+//--------------------------------------------------------
+var all_genres = require('./example data objects/all_genres').all_genres
+var familyGenre_map = {};
+var genreFam_map= {};
+var families =  [
+	{id:1,name:"pop"},
+	{id:2,name:"electro house"},
+	{id:3,name:"rock"},
+	{id:4,name:"hip hop"},
+	{id:5,name:"r&b"},
+	{id:6,name:"latin"},
+	{id:7,name:"country"},
+	{id:8,name:"metal"},
+	{id:9,name:"punk"},
+	{id:10,name:"blues"},
+	{id:11,name:"reggae"},
+	{id:12,name:"world"},
+	{id:13,name:"jazz"},
+	{id:14,name:"classical"},
+	{id:15,name:"folk"}
+	]
+
+all_genres.forEach(function(t){
+	t.family.forEach(function(f){
+		if(!(familyGenre_map[f])){
+			familyGenre_map[f] = [];
+		}
+		familyGenre_map[f].push(t.name)
+	});
+	genreFam_map[t.name] = t.family
+
+});
+console.log("$familyGenre_map",familyGenre_map);
+console.log("$genreFam_map",genreFam_map);
+
+var insert_families =  function(){
+	return new Promise(function(done, fail) {
+		var promises = [];
+		families.forEach(f=>{
+			console.log(f.id,f.name);
+			var sreq = new sql.Request(sApi.poolGlobal);
+			var qry = "IF NOT EXISTS (SELECT * FROM dbo.families WHERE name = @name) " +
+				"INSERT INTO dbo.families(id,name) OUTPUT inserted.id, inserted.name VALUES(@id,@name) " +
+				"else select * from dbo.families WHERE name = @name";
+			sreq.input("id", sql.Int, f.id);
+			sreq.input("name", sql.VarChar(255), f.name);
+			promises.push(sreq.query(qry))
+		})
+		Promise.all(promises)
+		.then(function (res) {
+			done(res);
+		}).catch(function (err) {
+			console.error(err);
+			fail(err);
+		})
+	})
+}
+
+var insert_family_genre =  function(ob){
+    return new Promise(function(done, fail) {
+		var sreq = new sql.Request(sApi.poolGlobal);
+		//exec insert_family_genres @family_name = 'electro house',@genre_name = 'indietronica';
+		sreq.input("family_name", sql.VarChar(255), ob.family_name);
+		sreq.input("genre_name", sql.VarChar(255), ob.genre_name);
+		sreq.execute("insert_family_genres").then(function (res) {
+			done(res);
+		}).catch(function (err) {
+			console.error(err);
+			fail(err);
+		})
+    })
+}
+
+var insertStaticGenres =  function(){
+	return new Promise(function(done, fail) {
+		var promises = [];
+		//todo: just going to the 'first' one
+		//as I've mentioned before not sure this is really the way to go here but ¯\_(ツ)_/¯
+		Object.keys(genreFam_map).forEach(g => {
+			promises.push(insert_genre(g))
+		})
+		Promise.all(promises)
+			.then(function (res) {
+				done(res);
+			}).catch(function (err) {
+			console.error(err);
+			fail(err);
+		})
+	})
+}
+
+var createFamilyBinds =  function(){
+	return new Promise(function(done, fail) {
+		var promises = [];
+		//todo: just going to the 'first' one
+		//as I've mentioned before not sure this is really the way to go here but ¯\_(ツ)_/¯
+		Object.keys(genreFam_map).forEach(g => {
+			var ob = {family_name:genreFam_map[g][0],genre_name:g}
+			//console.log(ob);
+			promises.push(insert_family_genre(ob))
+		})
+		Promise.all(promises)
+			.then(function (results) {
+				results.forEach(r =>{
+					r.recordset ? console.log(r.recordset):{};
+				});
+				done(results);
+			}).catch(function (err) {
+			console.error(err);
+			fail(err);
+		})
+	})
+}
+
+//--------------------------------------------------------
 var me = module.exports;
+
+me.insert_families = insert_families;
+me.createFamilyBinds = createFamilyBinds;
+me.insertStaticGenres = insertStaticGenres;
 
 module.exports.checkDb = function(){
 	var sreq = new sql.Request(sApi.poolGlobal);
@@ -461,6 +580,8 @@ var insert_genre = function (genre) {
 		})
 	})
 };
+
+
 
 var insert_artist =  function(artist){
 	return new Promise(function(done, fail) {

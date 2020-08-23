@@ -25,6 +25,7 @@ var fs      = require('fs');
 var songkick = require('./songkick.js');
 var spotify_api = require('./spotify_api.js');
 var db_mongo_api = require('./db_mongo_api.js');
+var  db_api = require('./db_api.js');
 var puppet = require('./puppet.js');
 
 
@@ -150,6 +151,19 @@ module.exports.console = console;
 
 //=================================================
 //endpoints
+
+//scripted insert of genre_family info
+
+async function insertStatic(){
+	await db_api.insert_families();
+	await db_api.insertStaticGenres();
+	await db_api.createFamilyBinds();
+}
+// setTimeout(t =>{
+// 	insertStatic()
+// 		.then(r =>{console.log("insertStatic finished!");},e =>{console.error(e)});
+// },2000);
+
 
 console.log("available endpoints:");
 for(var key in spotify_api) {
