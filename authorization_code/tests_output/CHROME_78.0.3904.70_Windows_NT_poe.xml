@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites errors="3"
+            failures="0"
+            tests="5">
+
+  <testsuite name="poe"
+    errors="3" failures="0" hostname="" id="" package="poe" skipped="0"
+    tests="5" time="30.44" timestamp="">
+  
+    <testcase name="Band0" classname="poe" time="11.27" assertions="3">
+
+    
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="Band1" classname="poe" time="6.188" assertions="1">
+
+    
+    </testcase>
+  
+    <testcase name="Band2" classname="poe" time="5.496" assertions="3">
+
+    
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="Band3" classname="poe" time="4.490" assertions="1">
+
+    
+    </testcase>
+  
+    <testcase name="Band4" classname="poe" time="2.996" assertions="1">
+
+    
+    </testcase>
+  
+
+  
+
+  
+  </testsuite>
+</testsuites>

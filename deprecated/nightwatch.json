@@ -1,0 +1,47 @@
+{
+  "src_folders" : ["tests"],
+
+  "test_workers": {
+    "enabled": true,
+    "workers": 2
+  },
+
+  "webdriver" : {
+    "start_process": false,
+    "-server_path": "node_modules/.bin/chromedriver",
+    "--server_path": "./node_modules/chromedriver/lib/chromedriver",
+    "port": 9515
+  },
+
+  "test_settings" : {
+    "default" : {
+      "skip_testcases_on_fail": false,
+      "desiredCapabilities": {
+        "browserName": "chrome",
+        "javascriptEnabled": true,
+        "acceptSslCerts": true,
+        "chromeOptions" : {
+          "args" : ["headless", "no-sandbox", "disable-gpu"]
+        }
+      }
+    },
+    "chrome": {
+      "desiredCapabilities": {
+        "browserName": "chrome",
+        "maxInstances": 100,
+        "javascriptEnabled": true,
+        "acceptSslCerts": true,
+        "chromeOptions" : {
+          "args" : ["headless", "no-sandbox", "disable-gpu"]
+        }
+      }
+    },
+    "firefox": {
+      "desiredCapabilities": {
+        "browserName": "firefox",
+        "marionette": true
+      }
+    }
+  }
+}
+

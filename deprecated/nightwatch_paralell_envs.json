@@ -1,0 +1,50 @@
+{
+  "src_folders": [
+    "tests"
+  ],
+  "output_folder": "reports",
+  "selenium": {
+    "-start_process": true,
+    "-server_path": "bin/selenium-server-standalone-3.12.0.jar",
+    "--server_path": "selenium-server-standalone-4.0.0-alpha-1.jar",
+
+    "log_path": "",
+    "port": 4444,
+    "cli_args": {
+      "webdriver.chrome.driver": "bin/chromedriver",
+      "webdriver.gecko.driver": "bin/geckodriver",
+      "webdriver.opera.driver": "bin/operadriver"
+    }
+  },
+  "test_workers": {
+    "enabled": true,
+    "workers": "auto"
+  },
+  "test_settings": {
+    "default": {
+      "launch_url": "http://localhost",
+      "selenium_port": 4444,
+      "selenium_host": "localhost",
+      "silent": true,
+      "screenshots": {
+        "enabled": false,
+        "path": ""
+      },
+      "desiredCapabilities": {
+        "browserName": "firefox",
+        "marionette": true
+      }
+    },
+    "firefox": {
+      "desiredCapabilities": {
+        "browserName": "firefox",
+        "marionette": true
+      }
+    },
+    "opera": {
+      "desiredCapabilities": {
+        "browserName": "opera"
+      }
+    }
+  }
+}
