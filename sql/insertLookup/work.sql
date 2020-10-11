@@ -1,20 +1,22 @@
 select * from [master].[dbo].[artistsSongkick]
 truncate table [master].[dbo].[artistsSongkick]
 
-select * from [master].[dbo].genre_artist
-truncate table [master].[dbo].genre_artist
-select * from [master].[dbo].genres
-truncate table  [master].[dbo].genres
-select * from genre_family
-truncate table genre_family;
-select * from families
-truncate table families
-
 select * from [master].[dbo].[artist_artistSongkick]
 truncate table  [master].[dbo].[artist_artistSongkick]
 select * from [master].[dbo].[artists]
 truncate table [master].[dbo].[artists]
 
+select * from [master].[dbo].genre_artist
+truncate table [master].[dbo].genre_artist
+select * from [master].[dbo].genres
+--truncate table  [master].[dbo].genres
+select * from genre_family
+truncate table genre_family;
+select * from families
+truncate table families
+
+select g.id,f.id,g.name as gname, f.name as fname from genre_family gf join genres g on gf.genre_id=g.id join families f on f.id = gf.family_id
+where g.name = 'blues rock'
 
 select [dbo].[Levenshtein]('spot','spooasdfsdft',10000);
 
@@ -38,16 +40,19 @@ group by a.id,a.displayName,g.id,g.name
 having count(*) >=1
 
 --found genres - songkick artists link to spotify
-select distinct a.id, a.name, ask.id as artistSongkick_id, ask.displayName, g.id as genre_id,g.name as genre 
+select distinct a.id, a.name, ask.id as artistSongkick_id, ask.displayName, g.id as genre_id,g.name as genre, f.id as family_id,f.name as family_name
 from artistsSongkick ask
 left join artist_artistSongkick aask on aask.artistSongkick_id = ask.id 
 left join artists a on a.id = aask.artist_id
 --get genres from spotify
 left join genre_artist ga on  aask.artist_id = ga.artist_id
 left join genres g on ga.genre_id = g.id
+left join genre_family gf on g.id = gf.genre_id
+left join families f on gf.family_id = f.id
 where g.name is not null
-group by  a.id, a.name, ask.id,ask.displayName,g.id,g.name 
+group by  a.id, a.name, ask.id,ask.displayName,g.id,g.name,f.name,f.id
 having count(*) >=1
+
 
 --=============================================
 --haven't looked at since rewrite

@@ -475,7 +475,8 @@ var fake_metro_events =  function(label){
 }
 
 /**
- * then get events upcoming for a metro
+ * get upcoming events for a metro and process the artists and genres, committing them to the db
+ * also, commit the events to mongo
  * @function getMetroEvents
  * @param req.body{
  *	"metro":{"displayName":"Columbus",
@@ -572,9 +573,9 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 						//testing:
 						//var death = metrOb.artists.filter(a =>{return a.name === 'Death Valley Girls'});
-						metrOb.artists = metrOb.artists.slice(0,5);
+						//metrOb.artists = metrOb.artists.slice(0,5);
 						//metrOb.artists.push(death[0]);
-						console.warn("clipping total artists to 5!!!");
+						//console.warn("clipping total artists to 5!!!");
 						//console.log(app.jstr(metrOb.artists));
 
 
@@ -674,6 +675,9 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									//todo: parallel
 									var combined_promises = artistSongkicks.concat(searches);
 
+									//testing:
+
+
 									Promise.all(combined_promises).then(results => {
 										//look like: {artist:{},result:{}}
 										//console.log("$searches",app.jstr(results[0]));
@@ -686,6 +690,9 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 										var obs = [];
 
 										var aas_promises = [];
+
+										//testing:
+										aas_promises.push(db_api.setFG());
 
 										results.forEach(r =>{
 
@@ -732,8 +739,13 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 													var songkickOb = {id:item.id,name:item.name,artistSongkick_id:artist.id,displayName:artist.name,genres:item.genres}
 													songkickOb.newSpotifyArtist = item;
-													//testing:
-													aas_promises.push(db_api.commit_artistSongkick_with_match(songkickOb))
+
+
+
+													//todo:
+													//testing: (hmmm what was I testing?)
+													aas_promises.push(db_api.commit_artistSongkick_with_match(songkickOb));
+
 													obs.push(songkickOb)
 												}
 											}
@@ -807,10 +819,21 @@ module.exports.get_metro_events_local=  function(req){
 	})
 };
 
- module.exports.resolveEvents=  function(req){
+/**
+ * pull cached events from mongo and fully qualify the artists
+ * @function resolveEvents
+ * @param req.body{
+ *	"metro":{"displayName":"Columbus",
+ *		"id":9480}
+ *}
+ **/
+module.exports.resolveEvents=  function(req){
 	return new Promise(function(done, fail) {
+
 		//todo: ajax weirdness
-		req.body = JSON.parse(req.body.data);
+        if(req.body){//postman
+        }else{ req.body = JSON.parse(req.body.data);}
+
 		db_mongo_api.fetch(req.body.metro.id.toString()).then(events =>{
 			//console.log(app.jstr(events));
 			console.log("#events:",events.length);

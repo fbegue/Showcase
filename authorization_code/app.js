@@ -157,6 +157,7 @@ module.exports.console = console;
 async function insertStatic(){
 	await db_api.insert_families();
 	await db_api.insertStaticGenres();
+	//creates the binds for the static
 	await db_api.createFamilyBinds();
 }
 // setTimeout(t =>{
@@ -164,6 +165,9 @@ async function insertStatic(){
 // 		.then(r =>{console.log("insertStatic finished!");},e =>{console.error(e)});
 // },2000);
 
+// setTimeout(t =>{
+// 	db_api.setFG().then(r =>{})
+// },2000);
 
 console.log("available endpoints:");
 for(var key in spotify_api) {

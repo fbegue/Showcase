@@ -6,7 +6,7 @@ var app = require('./app');
 // var jstr =  require('./app').jstr;
 const sApi = require('./spotify_api');
 const resolver_api = require('./resolver_api');
-
+const db_api = require('./db_api')
 
 //=================================================
 //utilities
@@ -213,36 +213,34 @@ module.exports.getPages = function(body,key){
 
 
 
-//created this to accommodate 'im going to build this object' starting philosophy
-//which doesn't really lend itself to clean looking code - when I wanted to be lazy
-//but also change resolveArtists to be more generalized
+
 /**
  * resolvePlayob
- * stub born of laziness
+ * We're doing reporting on this playob - so we need to record the
+ * result produced when we process the payload
  *
  * */
-
 module.exports.resolvePlayob = function(playob){
 	return new Promise(function(done, fail) {
 		module.exports.resolveArtists(playob.payload)
 			.then(resolvedArtists =>{
 				//specifically, leave it undefined
 				//resolvedArtists:[];
-				!(resolvedArtists === {})?playob.spotifyArtists = resolvedArtists:{};
+				console.log(resolvedArtists === null);
+				!(resolvedArtists)?playob.payloadResolved = resolvedArtists:playob.payloadResolved =null;
 				done(playob);
-			},e => {fail(e);})
+				},e => {fail(e);})
 	})}
 
+/**
+ *  resolveArtists
+ * @desc resolve the artists via Spotify, and submit them to the db - fully qualifying the genres in the process
+ * @param artists
+ */
 module.exports.resolveArtists = function(artists){
 	return new Promise(function(done, fail) {
-		if(artists.length === 0){
-			console.log("skipping playob w/ empty payload");
-			done({});
-		}else{
 			console.log("resolveArtists",artists.length);
-			let startDate = new Date();
-			console.log("resolveSpotify start time:",startDate);
-
+			let startDate = new Date(); console.log("resolveSpotify start time:",startDate);
 			//resolver.spotify expects batches of 50 artist's ids
 			var promises = [];
 			var payloads = [];
@@ -270,25 +268,29 @@ module.exports.resolveArtists = function(artists){
 				//there will be as many results as there were payloads required to resolve the
 				//batch of artists we were tossed
 
+				//testing:
+				results.length === 0?console.warn("zero length result"):{};
+
 				//unwind them all
 				var resolved = [];
 				results.forEach(function(r){
-					r.artists.forEach(function(a){
-						//testing:
-						// a.id === '7HhTERkBV4Ot14KphgBfSh' ? console.log(a):{};
-
-						if(a){
-							//testing: should all have genres? its an api call...
-							!(a.genres)?console.warn("no genres",a):{};
-							resolved.push(a)
-						}
-						//todo: what would cause a null artist?
-						else{console.warn("null artist");}
-					});
+					// r.artists.forEach(function(a){
+					// 	// a.id === '7HhTERkBV4Ot14KphgBfSh' ? console.log(a):{};
+					// });
+					//testing: necessary check?
+					if(!(r.artists.length > 0)){
+						console.warn("resolve artists failed to return any",r)
+					}else{
+						db_api.commitArtistGenres(r.artists)
+							.then(resolved =>{
+								done()
+							})
+					}
 				});
-				done(resolved)
+				// console.log(resolved.length === 0);
+				// resolved.length === 0 ? resolved = null:{};
+				// done(resolved)
 			},e => {fail(e);})
-		}//else payload.length
 	})
 }
 

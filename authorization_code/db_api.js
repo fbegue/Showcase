@@ -24,7 +24,7 @@ var families =  [
 	{id:13,name:"jazz"},
 	{id:14,name:"classical"},
 	{id:15,name:"folk"}
-	]
+]
 
 all_genres.forEach(function(t){
 	t.family.forEach(function(f){
@@ -36,8 +36,8 @@ all_genres.forEach(function(t){
 	genreFam_map[t.name] = t.family
 
 });
-console.log("$familyGenre_map",familyGenre_map);
-console.log("$genreFam_map",genreFam_map);
+// console.log("$familyGenre_map",familyGenre_map);
+// console.log("$genreFam_map",genreFam_map);
 
 var insert_families =  function(){
 	return new Promise(function(done, fail) {
@@ -53,9 +53,9 @@ var insert_families =  function(){
 			promises.push(sreq.query(qry))
 		})
 		Promise.all(promises)
-		.then(function (res) {
-			done(res);
-		}).catch(function (err) {
+			.then(function (res) {
+				done(res);
+			}).catch(function (err) {
 			console.error(err);
 			fail(err);
 		})
@@ -63,7 +63,7 @@ var insert_families =  function(){
 }
 
 var insert_family_genre =  function(ob){
-    return new Promise(function(done, fail) {
+	return new Promise(function(done, fail) {
 		var sreq = new sql.Request(sApi.poolGlobal);
 		//exec insert_family_genres @family_name = 'electro house',@genre_name = 'indietronica';
 		sreq.input("family_name", sql.VarChar(255), ob.family_name);
@@ -74,7 +74,7 @@ var insert_family_genre =  function(ob){
 			console.error(err);
 			fail(err);
 		})
-    })
+	})
 }
 
 var insertStaticGenres =  function(){
@@ -83,7 +83,7 @@ var insertStaticGenres =  function(){
 		//todo: just going to the 'first' one
 		//as I've mentioned before not sure this is really the way to go here but ¯\_(ツ)_/¯
 		Object.keys(genreFam_map).forEach(g => {
-			promises.push(insert_genre(g))
+			promises.push(insert_genre(g,'insertStaticGenres'))
 		})
 		Promise.all(promises)
 			.then(function (res) {
@@ -118,19 +118,45 @@ var createFamilyBinds =  function(){
 	})
 }
 
+//in order to avoid doing a lot of experimentation within sql w/ string matching and such, i'm just going to store this map
+//in memory for now
+var setFG =  function(){
+	return new Promise(function(done, fail) {
+		var sreq = new sql.Request(sApi.poolGlobal);
+		sreq.execute("getFamilyGenreMap").then(function (res) {
+			res.recordset.forEach(r =>{
+				me.genreNameFamilyIdMap[r.genre_name] = r.family_id;
+				//todo: need a fam -> genre map or no?
+				me.familyMap[r.family_id] = r.family_name
+
+			})
+			// console.log("$genreNameFamilyIdMap",me.genreNameFamilyIdMap);
+			console.log("$genreNameFamilyIdMap has been set in memory");
+			console.log(me.familyMap);
+			//console.log(res.recordset);
+			done(res);
+		}).catch(function (err) {
+			console.error(err);
+			fail(err);
+		})
+	})
+}
+
 //--------------------------------------------------------
 var me = module.exports;
 
 me.insert_families = insert_families;
 me.createFamilyBinds = createFamilyBinds;
 me.insertStaticGenres = insertStaticGenres;
+me.setFG = setFG;
+me.genreNameFamilyIdMap = {};
+me.familyMap = {};
 
 module.exports.checkDb = function(){
 	var sreq = new sql.Request(sApi.poolGlobal);
 	sreq.query("select getdate();")
 		.then(function(res){
 			console.log("#res",res);
-
 		})
 };
 
@@ -174,7 +200,7 @@ module.exports.checkDBForArtist = checkDBForArtist = function(artist){
 				else{
 					artist.genres = [];
 					res.recordset.forEach(function(match){
-						artist.genres.push({id:match.genre_id,name:match.genre_name})
+						artist.genres.push({id:match.genre_id,name:match.genre_name,family_id:match.family_id,family_name:match.family_name})
 					});
 
 					//these were genre-joins, so pick any record for artist info
@@ -207,14 +233,18 @@ module.exports.checkDBForArtist = checkDBForArtist = function(artist){
  * @returns A payload creation / db reporting object that looks like
  * {artists:[],payload:[],db:[]}
  */
+
+//note: HEY THIS IS MUTATING THE playob[key] !!!!
 module.exports.checkDBForArtistGenres =  function(playob,key){
 	return new Promise(function(done, fail) {
 		var artists = playob[key];
 		var songkickIds = true;
 
-		console.log(artists[0]);
-		typeof artists[0].id == "string" ? songkickIds = false:{};
-		console.log("process set of " + (songkickIds ? "songkickIds":"spotifyIds"));
+		if(artists[0]){
+			console.log(artists[0]);
+			typeof artists[0].id == "string" ? songkickIds = false:{};
+			console.log("process set of " + (songkickIds ? "songkickIds":"spotifyIds"));
+		}
 
 		var promises = [];
 
@@ -233,9 +263,15 @@ module.exports.checkDBForArtistGenres =  function(playob,key){
 			//console.log("results",results.length);
 			//todo: this is also just a weird place to be defining what a playob is, right?
 
-			if(key == 'spotifyArtists'){
-				console.log("set spotifyArtistsResolved");
-				playob.spotifyArtistsResolved = results;
+			if(key == 'payload'){
+				//note: b/c checkDBForArtist mutates, we don't need to do anything here
+
+				// console.log("set spotifyArtistsResolved");
+				// var payloadResolved = [];
+				// results.forEach(function(r){
+				// 	payloadResolved = payloadResolved.concat(r.payload)
+				// });
+				// playob.payloadResolved = payloadResolved;
 			}
 			else{
 				var agg = {payload:[],db:[],lastLook:[]}
@@ -274,16 +310,16 @@ module.exports.checkDBForArtistGenres =  function(playob,key){
 me.commitArtistGenres =  function(artists) {
 	return new Promise(function (done, fail) {
 		console.log("commitArtistGenres",artists.length);
-
-
 		//submit genres, annotating the incoming object with ids created or fetched
 		//insert artists and genre_artist relations
 
 		var gpromises = [];
 		var unique = []
-		var skipped = 0;
 		artists.forEach(function (a) {
-			!(a.genres) ? console.log(a):{};
+			//!(a.genres) ? console.warn("artist w/ no genres to submit"):{};
+
+			//either the artist has genres or it doesn't - if not we just skip it
+			//later on again we'll just skip it...
 
 			a.genres.forEach(g => {
 				//todo: pretty sure theres a timing issue here causing me to register some
@@ -295,11 +331,13 @@ me.commitArtistGenres =  function(artists) {
 			})
 		})
 
+		//if we inserted any genres, we'll then insert artists and artist-genres pairs
 		Promise.all(gpromises).then(r => {
 				//console.log("$r",app.jstr(r));
 
 				//mutate playobs with qualified genres
-			    //todo: necessary? should be stopping in commitplayob
+				//we'll have this if none of the artists had an genres to insert
+
 				if(r.length){
 
 					//reduce results to a huge array
@@ -331,13 +369,11 @@ me.commitArtistGenres =  function(artists) {
 					})
 					Promise.all(apromises).then(function (r2) {
 						console.log("insert genres, artists and artist_genres finished");
-						//feature: here I could save some time by returning these and preventing
-						//the final checkDBForArtistGenres from checking for them, but keep it simple for now
 						done();
 					})
 				}//if r
 				else{
-					console.log("no spotifyArtists to commit in any playob");
+					console.log("no artists had genres to commit");
 					done();
 				}
 			},
@@ -423,7 +459,18 @@ module.exports.commit_artistSongkick_with_match =   function(songkickOb) {
 						var genres = r.reduce(function(prev, curr) { return prev.concat(curr); });
 						//console.log(genres);
 						genres.forEach(g => {
-							var ag = {genre_id: g.id, id: songkickOb.id}
+							//todo: somewhere up the chain here I'm returning two types of objects:
+							//one has my new 'match' field and creation and all that - the other has the normal bits
+							//I currently can't remember for shit where this happens at...
+							//I know I made this change in insert_family_genres b/c I was thinking that it would make sense
+							//to come back and paramterize all of these types of inserts with that info
+
+							if(g.id){
+								var ag = {genre_id: g.id, id: songkickOb.id}
+							}else{
+								var ag = {genre_id: g.genre_id, id: songkickOb.id}
+							}
+
 							apromises.push(insert_genre_artist(ag));
 						});
 
@@ -508,7 +555,8 @@ module.exports.checkDBFor_artist_artistSongkick_match =  function(artist){
 				ret.genres = [];
 				if(r.recordset.length > 0) {
 					r.recordset.forEach(rec => {
-						ret.genres.push({id:rec.genre_id,name:rec.genre_name})
+						console.log(rec);
+						ret.genres.push({id:rec.genre_id,name:rec.genre_name,family_id:rec.family_id,family_name:rec.family_name})
 					})
 				}
 				//console.log(ret);
@@ -551,13 +599,13 @@ module.exports.checkDBFor_artistSongkick_match =  function(artist){
 
 
 module.exports.qualifyGenre =  function(g){
-    return new Promise(function(done, fail) {
+	return new Promise(function(done, fail) {
 		insert_genre(g)
 			.then(r =>{
 				g = r;
 				done(r);
 			})
-    })
+	})
 }
 
 /**
@@ -565,17 +613,136 @@ module.exports.qualifyGenre =  function(g){
  * @param genre
  * @returns with a fully qualified genre (either newly created or already known)
  */
-var insert_genre = function (genre) {
+var insert_genre = function (genre, phase) {
 	return new Promise(function (done, fail) {
 		var sreq = new sql.Request(sApi.poolGlobal);
+
+		//check current map for genre name resolution to add on to genre insert
+
 		var qry = "IF NOT EXISTS (SELECT * FROM dbo.genres WHERE name = @name) " +
 			"INSERT INTO dbo.genres(name) OUTPUT inserted.id, inserted.name VALUES(@name) " +
 			"else select * from dbo.genres WHERE name = @name";
 		sreq.input("name", sql.VarChar(255), genre);
 		sreq.query(qry).then(function (res) {
-			done(res.recordset);
+
+			//todo: if the genre exists, we really shouldn't be taking this step
+			//need to make a SP for genre insert and return whether or not we added in a new one
+
+			//every if/else lands on returning with this original result (modified or not)
+
+			if(phase){
+				//skip this during static fill
+				// console.warn("skipping family assignment during",phase)
+				done(res.recordset);
+			}else{
+				var fid = me.genreNameFamilyIdMap[genre] || null;
+
+				//modifies recordset returned from genre_insert w/ newly minted family id and and returns it
+
+				var commit =  function(res,fid){
+					//return new Promise(function(done, fail) {
+					var sreq2 = new sql.Request(sApi.poolGlobal);
+					var qry = "IF NOT EXISTS (SELECT * FROM dbo.genre_family WHERE genre_id = @genre_id) " +
+						"INSERT INTO dbo.genre_family(genre_id,family_id) OUTPUT inserted.genre_id, inserted.family_id VALUES(@genre_id,@family_id) " +
+						"else select * from dbo.genre_family WHERE genre_id = @genre_id";
+					sreq2.input("genre_id", sql.Int, res.recordset[0].id);
+					sreq2.input("family_id", sql.Int, fid);
+					return sreq2.query(qry)
+
+					//but also, as a result of parsing this newly generated genres list for a songkick artist and creating a genre_family link,
+					//we also need to
+					//create
+					// })
+				};
+
+				if(fid){
+					//console.log("$known fid",fid);
+					commit(res,fid)
+						.then(function (res) {
+							res.recordset[0].family_id = fid;
+							done(res.recordset);
+						})
+				}else{
+
+					//console.log("TODO: attempt to find new family");
+
+					//fid was looking for an exact genre match. now:
+
+					//split the genre string and detect substrings that:
+					//1) X match directly on a genre_name
+					//2) X match directly on a family_name
+					//3) X match some special inference based on input genre
+					//4) match on a partial genre_name (substrings to substring genre_name)
+
+
+					//special rules
+					//todo: indie = indie rock?
+					var specialLogic = {};
+					specialLogic["rap"] = "hip hop";
+					specialLogic["electronic"] = "electro house"
+
+					//temp reverse map
+					var locmap = {};
+					Object.keys(me.familyMap).forEach(id =>{
+						locmap[me.familyMap[id]] = id;
+					})
+
+					function getLike(g){
+						var match = null;
+						//console.log(f);
+						//split the unknown genre at \s and try to find it's keys in our family names
+						var gkeys = g.split(" ");
+
+						//add on contrived keys
+						gkeys.forEach((k, i, arr) => {
+							if (specialLogic[k]) {
+								arr.push(specialLogic[k])
+							}
+						})
+						gkeys.forEach(k => {
+							//for each family, can we find a key as a substring?
+							//return after the first match
+							Object.keys(locmap).forEach(f => {
+								if (f.indexOf(k) !== -1 && (!match)) {
+									//console.log("match: " + g + " to " + f + " on " + k)
+									!(match)?match=f:{};
+								}
+							})
+						})
+
+						if(match){
+							g === "electronic trap" ? console.log("$match: " + match + " | " + genre):{};
+							//console.log("$match: " + match + " | " + genre);
+							return locmap[match]
+						}
+						else{
+							//testing:
+							//console.log("$no match",genre);
+							return null
+						}
+					}
+
+					//var t =  Object.keys(locmap);
+					//console.log(Object.keys(locmap));
+					fid = getLike(genre);
+					// console.log(me.familyMap);
+					// var familyName = getLike(genre)
+					// console.log("$m1",familyName);
+
+
+					if(fid){
+						commit(res,fid)
+							.then(function (res) {
+								res.recordset[0].family_id = fid;
+								done(res.recordset);
+							})
+					}else{
+						done(res.recordset);
+					}
+				}
+			}
 		}).catch(function (err) {
-			console.log(err);
+			//console.log(err);
 			fail(err);
 		})
 	})
