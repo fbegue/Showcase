@@ -705,6 +705,7 @@ me.sortSavedTracks  =  function(req,res){
 			res.send(d);
 			}};
 		me.getMySavedTracks(req2,res2)
+		console.log("fun!");
 		// spotifyApi.getMySavedTracks({limit : 50})
 		// 	.then(function (r) {
 		// 		done({artist: artist, result: r})
