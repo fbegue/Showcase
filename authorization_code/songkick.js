@@ -189,10 +189,9 @@ dateFilter.start = '2018-07-12';
 dateFilter.end = '2018-07-18';
 
 /**
- * then get events upcoming for a metro
+ * then get events upcoming for a single metro
  * @function get_metro_events
  **/
-
 var fetch_metro_events = function(metro,dateFilter){
 
 	return new Promise(function(done, fail) {
@@ -477,7 +476,7 @@ var fake_metro_events =  function(label){
 /**
  * get upcoming events for a metro and process the artists and genres, committing them to the db
  * also, commit the events to mongo
- * @function getMetroEvents
+ * @function fetchMetroEvents
  * @param req.body{
  *	"metro":{"displayName":"Columbus",
  *		"id":9480},
@@ -486,6 +485,17 @@ var fake_metro_events =  function(label){
  **/
 module.exports.fetchMetroEvents =  function(req, res,next){
 	return new Promise(function(done, fail) {
+
+		//--------------------------------------------------------------
+		//testing: 1 week out
+		req.body.dateFilter.start =  new Date().toISOString();
+		Date.prototype.addDays = function(days) {
+			var date = new Date(this.valueOf());
+			date.setDate(date.getDate() + days);
+			return date;
+		};
+		req.body.dateFilter.end = new Date().addDays(7).toISOString();
+		//--------------------------------------------------------------
 
 		let startDate = new Date();console.log("fetchMetroEvents start time:",startDate);
 
@@ -569,7 +579,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 							})
 						});
 
-						console.log("artists",metrOb.artists.length);
+						//console.log("artists",metrOb.artists.length);
 
 						//testing:
 						//var death = metrOb.artists.filter(a =>{return a.name === 'Death Valley Girls'});
@@ -709,7 +719,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 												//push onto next payload
 												if(a.get(item.name) === null || a.get(item.name)[0][0] < .5){
 													rejectedMatches.push([item.name,artist.name])
-													console.log(artist);
+													console.log("rejection",artist);
 													console.log(item.genres);
 													console.log(a.get(item.name) );
 												}else{
@@ -831,8 +841,10 @@ module.exports.resolveEvents=  function(req){
 	return new Promise(function(done, fail) {
 
 		//todo: ajax weirdness
-        if(req.body){//postman
-        }else{ req.body = JSON.parse(req.body.data);}
+		console.log("resolveEvents",req.body);
+        // if(req.body){//postman
+        // }else{ req.body = JSON.parse(req.body.data);}
+
 
 		db_mongo_api.fetch(req.body.metro.id.toString()).then(events =>{
 			//console.log(app.jstr(events));

@@ -18,6 +18,7 @@
 var express = require('express'); // Express web server framework
 var bodyParser = require('body-parser');
 var app = express();
+var cors = require('cors');
 
 var request = require('request'); // "Request" library
 var fs      = require('fs');
@@ -30,15 +31,21 @@ var puppet = require('./puppet.js');
 
 
 // var maxbody = configuration.requests.limit || "50mb";
+
+//allow cors requests from localhost (same origin)
+app.use(cors());
+
+//otherwise can't read Fetch API's json-stringified body
 app.use(bodyParser.json({
 	inflate: false,
 	limit: "50mb"
 }));
+
+//forget what these do specifically...
 app.use(bodyParser.urlencoded({
 	extended: false,
 	limit: "50mb"
 }));
-
 app.all('*', function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "X-Requested-With");
@@ -81,6 +88,10 @@ const colors = require('colors/safe');
 console.error = function(msg){console.log(colors.red(msg))};
 console.warn = function(msg){console.log(colors.yellow(msg))};
 console.good = function(msg){console.log(colors.green(msg))};
+
+//todo: yeah this line prints...
+//but the location is just right here over and over lol?
+//@ app.js:108:46
 console.info = function(msg){
 	var linePrint = function(){
 		let initiator = 'unknown place';
@@ -150,6 +161,13 @@ module.exports.jstr = jstr;
 module.exports.console = console;
 
 //=================================================
+//testing
+
+//fetchMetroEvents
+
+
+
+//=================================================
 //endpoints
 
 //scripted insert of genre_family info
@@ -166,14 +184,63 @@ async function insertStatic(){
 // },2000);
 
 // setTimeout(t =>{
-// 	db_api.setFG().then(r =>{})
+// 	spotify_api.sortSavedTracks()
 // },2000);
+
+const jsonfile = require('jsonfile')
+setTimeout(t => {
+	const file = 'temp.json'
+	const obj = [{name: 'JP'}, {name: 'FK'}]
+
+	var req2 = {};
+	var res2 = {
+		send: function (r) {
+			console.log("$playlists", r.items.length)
+			var ptest = ["4F209Porqizza9yhmgR9OF", "0SQiaUc5CgUv76NUN5S6mZ", "2I2V9caAOuOxHU0DfeYpg3", "4u0vX8K9sWfYMLKGOH9QIc"]
+			var ps = r.items.filter(i => {
+				return ptest.indexOf(i.id) !== -1
+			})
+			console.log("$4",ps.length);
+
+			//todo: make resolvePlaylists actually take params and call it on these
+
+			//todo: need to use family finder on each playlist's track's genres
+			//and compare each track's genres families to the 4 test playlists family/genre definitions
+			//if the song meets ?SOME? kind of threshold, it'll be added there
+
+			//todo: is there a need to start turning all my api endpoints into resolvers like resolvePlaylists?
+			//specifically with this family/genre thing going on now, feel like there's going to be a lot of time
+			//when I'm playing with this Spotify endpoint or that one but it doesn't have the qualified genres that I need
+			//after all, fully qualifying with my propriety system is the one unique thing that isn't going to be available globally.
+
+			//so the thought here is resolver endpoints like "genres" that can except objects with String or Array genres and
+			//EDIT IN PLACE genres, fully qualifying them in the process.
+
+			//playlists.ps()
+
+			jsonfile.readFile(file, obj)
+				.then(trackob => {
+					console.log("trackob", trackob.length);
+
+					//trackob.forEach()
+
+					//todo: add to playlist
+				})
+		}
+	};
+	spotify_api.getUserPlaylists(req2, res2)
+	// .then(playlists => {
+	//
+	// })
+}, 1000);
+
+
 
 console.log("available endpoints:");
 for(var key in spotify_api) {
 	// if(spotify_api[key] instanceof Function && spotify_api[key].length === 3) {
-		console.log(key);
-		app.post("/" + key, spotify_api[key]);
+	console.log(key);
+	app.post("/" + key, spotify_api[key]);
 }
 
 //
@@ -275,26 +342,26 @@ app.get('/login', function (req, res) {
 })
 
 var testPrivate=  function(){
-    return new Promise(function(done, fail) {
-			var auth = 'Bearer '  + global_access_token;
-			console.log("testPrivate token:",global_access_token);
-			let options = {
-				method: "PUT",
-				uri: 'https://api.spotify.com/v1/playlists/4OC9p2TkyKnxgDrzodRq3B',
-				body:"{\"name\":\"private_control\",\"description\":\"Updated:" + new Date().toISOString() + "\",\"public\":false}",
-				headers: {
-					'Authorization': auth
-				}
-			};
-			rp(options).then(function (res) {
-				//doesn't have a response
-				console.log("testPrivate success");
-				done();
-			}).catch(function (err) {
-				console.log(err);
-				fail(err);
-			})
-    })
+	return new Promise(function(done, fail) {
+		var auth = 'Bearer '  + global_access_token;
+		console.log("testPrivate token:",global_access_token);
+		let options = {
+			method: "PUT",
+			uri: 'https://api.spotify.com/v1/playlists/4OC9p2TkyKnxgDrzodRq3B',
+			body:"{\"name\":\"private_control\",\"description\":\"Updated:" + new Date().toISOString() + "\",\"public\":false}",
+			headers: {
+				'Authorization': auth
+			}
+		};
+		rp(options).then(function (res) {
+			//doesn't have a response
+			console.log("testPrivate success");
+			done();
+		}).catch(function (err) {
+			console.log(err);
+			fail(err);
+		})
+	})
 }
 
 app.get('/callback', function (req, res) {
@@ -359,7 +426,7 @@ var timed =  function(){
 
 
 var refresh =  function(refresh_token){
-    return new Promise(function(done, fail) {
+	return new Promise(function(done, fail) {
 		var authOptions = {
 			method:"POST",
 			url: 'https://accounts.spotify.com/api/token',
@@ -379,7 +446,7 @@ var refresh =  function(refresh_token){
 			console.log(err.error);
 			fail(err);
 		})
-    })
+	})
 }
 
 

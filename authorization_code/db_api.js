@@ -68,8 +68,12 @@ var insert_family_genre =  function(ob){
 		//exec insert_family_genres @family_name = 'electro house',@genre_name = 'indietronica';
 		sreq.input("family_name", sql.VarChar(255), ob.family_name);
 		sreq.input("genre_name", sql.VarChar(255), ob.genre_name);
+		sreq.input("source", sql.VarChar(50), ob.source);
+		sreq.input("matched", sql.VarChar(50), ob.matched);
 		sreq.execute("insert_family_genres").then(function (res) {
-			done(res);
+			//testing: changed this from the res, but it had consequences..
+			ob.id = ob.genre_id || 'ob'
+			done(ob);
 		}).catch(function (err) {
 			console.error(err);
 			fail(err);
@@ -101,7 +105,7 @@ var createFamilyBinds =  function(){
 		//todo: just going to the 'first' one
 		//as I've mentioned before not sure this is really the way to go here but ¯\_(ツ)_/¯
 		Object.keys(genreFam_map).forEach(g => {
-			var ob = {family_name:genreFam_map[g][0],genre_name:g}
+			var ob = {family_name:genreFam_map[g][0],genre_name:g,source:'SpotifyDefault'}
 			//console.log(ob);
 			promises.push(insert_family_genre(ob))
 		})
@@ -132,7 +136,7 @@ var setFG =  function(){
 			})
 			// console.log("$genreNameFamilyIdMap",me.genreNameFamilyIdMap);
 			console.log("$genreNameFamilyIdMap has been set in memory");
-			console.log(me.familyMap);
+			//console.log(me.familyMap);
 			//console.log(res.recordset);
 			done(res);
 		}).catch(function (err) {
@@ -241,7 +245,7 @@ module.exports.checkDBForArtistGenres =  function(playob,key){
 		var songkickIds = true;
 
 		if(artists[0]){
-			console.log(artists[0]);
+			//console.log(artists[0]);
 			typeof artists[0].id == "string" ? songkickIds = false:{};
 			console.log("process set of " + (songkickIds ? "songkickIds":"spotifyIds"));
 		}
@@ -341,13 +345,26 @@ me.commitArtistGenres =  function(artists) {
 				if(r.length){
 
 					//reduce results to a huge array
-					var genres = r.reduce(function (prev, curr) {
-						return prev.concat(curr);
-					});
+					// var genres = r.reduce(function (prev, curr) {
+					// 	return prev.concat(curr);
+					// });
 					//create a map where the string genre is the key = genre-id pair
+					//todo: I fucked up a refactor
+					//so now this could be two types of genre objects:
+					// {
+					// 	"id": 1129,
+					// 	"name": "permanent wave"
+					// }
+					// {
+					// 	"genre_id": 40,
+					// 	"genre_name": "pop punk",
+					// 	"family_id": 1,
+					// 	"family_name": "pop"
+					// }
 					var map = {};
-					genres.forEach(g => {
-						map[g.name] = g;
+					r.forEach(g => {
+						g.name ? map[g.name] = g:{};
+						g.genre_name ? map[g.genre_name] = g:{};
 					});
 
 					var apromises = [];
@@ -363,7 +380,7 @@ me.commitArtistGenres =  function(artists) {
 						//push artists and artist_genres
 						apromises.push(insert_artist(a));
 						a.genres.forEach(function (g) {
-							var ag = {genre_id: g.id, id: a.id}
+							var ag = {genre_id: g.id ? g.id:g.genre_id, id: a.id}
 							apromises.push(insert_genre_artist(ag));
 						});
 					})
@@ -456,20 +473,25 @@ module.exports.commit_artistSongkick_with_match =   function(songkickOb) {
 					Promise.all(gpromises).then(r => {
 						//console.log("1===========");
 						//console.log(r);
-						var genres = r.reduce(function(prev, curr) { return prev.concat(curr); });
+						//var genres = r.reduce(function(prev, curr) { return prev.concat(curr); });
+						//console.log(r);
 						//console.log(genres);
-						genres.forEach(g => {
+						r.forEach(g => {
 							//todo: somewhere up the chain here I'm returning two types of objects:
 							//one has my new 'match' field and creation and all that - the other has the normal bits
 							//I currently can't remember for shit where this happens at...
 							//I know I made this change in insert_family_genres b/c I was thinking that it would make sense
 							//to come back and paramterize all of these types of inserts with that info
 
-							if(g.id){
-								var ag = {genre_id: g.id, id: songkickOb.id}
-							}else{
-								var ag = {genre_id: g.genre_id, id: songkickOb.id}
-							}
+							// if(g.id){
+							// 	var ag = {genre_id: g.id, id: songkickOb.id}
+							// }else{
+							// 	var ag = {genre_id: g.genre_id, id: songkickOb.id}
+							// }
+
+
+							if(typeof g.id === "string"){console.log(g); throw 'no id'}
+							var ag = {genre_id: g.id, id: songkickOb.id}
 
 							apromises.push(insert_genre_artist(ag));
 						});
@@ -555,7 +577,7 @@ module.exports.checkDBFor_artist_artistSongkick_match =  function(artist){
 				ret.genres = [];
 				if(r.recordset.length > 0) {
 					r.recordset.forEach(rec => {
-						console.log(rec);
+						//console.log(rec);
 						ret.genres.push({id:rec.genre_id,name:rec.genre_name,family_id:rec.family_id,family_name:rec.family_name})
 					})
 				}
@@ -633,21 +655,32 @@ var insert_genre = function (genre, phase) {
 			if(phase){
 				//skip this during static fill
 				// console.warn("skipping family assignment during",phase)
-				done(res.recordset);
+				done(res.recordset[0]);
 			}else{
 				var fid = me.genreNameFamilyIdMap[genre] || null;
 
 				//modifies recordset returned from genre_insert w/ newly minted family id and and returns it
 
 				var commit =  function(res,fid){
+					var fg = {
+						genre_id:res.recordset[0].id,
+						genre_name:res.recordset[0].name,
+						family_id:fid,
+						family_name:me.familyMap[fid]
+					};
+					//todo: match => matched :/
+					res.match ? fg.matched = res.match:{};
+					res.source ? fg.source = res.source:{}
+					return insert_family_genre(fg)
 					//return new Promise(function(done, fail) {
-					var sreq2 = new sql.Request(sApi.poolGlobal);
-					var qry = "IF NOT EXISTS (SELECT * FROM dbo.genre_family WHERE genre_id = @genre_id) " +
-						"INSERT INTO dbo.genre_family(genre_id,family_id) OUTPUT inserted.genre_id, inserted.family_id VALUES(@genre_id,@family_id) " +
-						"else select * from dbo.genre_family WHERE genre_id = @genre_id";
-					sreq2.input("genre_id", sql.Int, res.recordset[0].id);
-					sreq2.input("family_id", sql.Int, fid);
-					return sreq2.query(qry)
+					// var sreq2 = new sql.Request(sApi.poolGlobal);
+					// var qry = "IF NOT EXISTS (SELECT * FROM dbo.genre_family WHERE genre_id = @genre_id) " +
+					// 	"INSERT INTO dbo.genre_family(genre_id,family_id) OUTPUT inserted.genre_id, inserted.family_id VALUES(@genre_id,@family_id) " +
+					// 	"else select * from dbo.genre_family WHERE genre_id = @genre_id";
+					//
+					// sreq2.input("genre_id", sql.Int, res.recordset[0].id);
+					// sreq2.input("family_id", sql.Int, fid);
+					//return sreq2.query(qry)
 
 					//but also, as a result of parsing this newly generated genres list for a songkick artist and creating a genre_family link,
 					//we also need to
@@ -657,10 +690,13 @@ var insert_genre = function (genre, phase) {
 
 				if(fid){
 					//console.log("$known fid",fid);
+					res.source = 'SpotifyDefault'
 					commit(res,fid)
 						.then(function (res) {
-							res.recordset[0].family_id = fid;
-							done(res.recordset);
+							//todo: who needs this?
+							res.family_id = fid;
+							res.id = res.genre_id || 'res'
+							done(res);
 						})
 				}else{
 
@@ -711,9 +747,9 @@ var insert_genre = function (genre, phase) {
 						})
 
 						if(match){
-							g === "electronic trap" ? console.log("$match: " + match + " | " + genre):{};
+							//g === "electronic trap" ? console.log("$match: " + match + " | " + genre):{};
 							//console.log("$match: " + match + " | " + genre);
-							return locmap[match]
+							return {match:match,fid:locmap[match]}
 						}
 						else{
 							//testing:
@@ -724,20 +760,25 @@ var insert_genre = function (genre, phase) {
 
 					//var t =  Object.keys(locmap);
 					//console.log(Object.keys(locmap));
-					fid = getLike(genre);
+
+					var likeRes = getLike(genre);
 					// console.log(me.familyMap);
 					// var familyName = getLike(genre)
 					// console.log("$m1",familyName);
 
 
-					if(fid){
-						commit(res,fid)
+					if(likeRes && likeRes.fid){
+						res.source = "getLike";
+						res.match = likeRes.match;
+						commit(res,likeRes.fid)
 							.then(function (res) {
-								res.recordset[0].family_id = fid;
-								done(res.recordset);
+								//todo: again who is looknig for this?
+								res.family_id = likeRes.fid;
+								res.id = res.genre_id || 'getLike'
+								done(res);
 							})
 					}else{
-						done(res.recordset);
+						done(res.recordset[0]);
 					}
 				}
 			}

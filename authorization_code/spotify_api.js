@@ -4,6 +4,9 @@ var PromiseThrottle = require("promise-throttle");
 var rp = require('request-promise');
 let sql = require("mssql")
 var _ = require('lodash')
+const jsonfile = require('jsonfile')
+
+
 
 var db_api = require('./db_api.js');
 var app = require('./app')
@@ -373,8 +376,8 @@ me.getFollowedArtists =  function(req,res,next){
 me.getMySavedTracks =  function(req,res){
 	var trackOb = {};
 	spotifyApi.getMySavedTracks({limit : 50})
-		//testing:
-		//.then(trackOb=>{console.log("TESTING WITH LIMITED # OF TRACKS");return trackOb;})
+		//testing: (doesn't work anymore)
+		// .then(trackOb=>{console.log("TESTING WITH LIMITED # OF TRACKS");return trackOb;})
 		.then(pageIt.bind(null))
 		.then(pagedRes =>{
 			trackOb = pagedRes;
@@ -388,8 +391,16 @@ me.getMySavedTracks =  function(req,res){
 
 			//resolving all the artists for all the tracks
 			return resolver.resolveArtists(artists)
-				.then(resolved =>{
+				.then(empty =>{
 					var artistsPay = [];
+
+					//resolveArtists now calls commitArtistGenres by itself, so we don't need
+					//to do that here anymore. instead we just need to create an artist payload
+					//out of the trackOb items and then map them back
+
+
+
+					var pullArtists = [];
 
 					trackOb.items.forEach(item =>{
 						//note: theres an artist listing on both: items[0].track.album.artists AND a items[0].track.artists
@@ -401,20 +412,46 @@ me.getMySavedTracks =  function(req,res){
 						item.track.available_markets = null;
 						item.track.album.available_markets = null;
 
-						var findMatch = function(ar,id){
-							var ret = false;
-							ar.forEach(a =>{a.id === id ? ret = true:{};})
-							return ret;
-						};
-
-						var resolvedTrackArtists = resolved.filter(a =>{return findMatch(item.track.artists,a.id)})
-						item.track.artists = resolvedTrackArtists;
-
-						//note: that I'm pushing references to this original trackOb here
-						//when they get manipulated in promises after this, it'll show up in here
-						//resolved have genres on them, still a bit of a waste of data to make a new array tho
-						artistsPay = artistsPay.concat(item.track.artists)
+						item.track.artists.forEach(a =>{
+							pullArtists.push(a)
+						})
 					});
+
+
+
+					//testing:
+					//pullArtists = pullArtists.slice(0,5)
+
+					//this will mutate the object I send at the field, so do this little cheat
+					//it will also return the values - but I guess I'm not doing that for ...some good reason
+				    return db_api.checkDBForArtistGenres({payload:pullArtists},'payload')
+						.then(resolvedArtists =>{
+
+							// const file = 'temp.json'
+							// var res = (async () => {
+							// 	jsonfile.writeFile(file,  trackOb.items)
+							// 	jsonfile.readFile(file,  trackOb.items)
+							// 		.then(r =>{
+							// 			return r;
+							// 			//console.log("$",r.length)
+							// 		})
+							// })();
+
+							//return res;
+							return trackOb.items;
+
+
+							// trackOb.items.forEach(t=>{
+							//
+							// })
+
+							//todo: now do stuff! lol fuck me:)
+
+
+						})
+
+
+					//from when I wasn't do commits inside of resolveArtists
 
 					//todo: here starting to question why I make these commits never return anything
 					//and instead went with this convention in resolvePlaylists of commitPlayobs then checkDBForArtistGenres
@@ -425,27 +462,10 @@ me.getMySavedTracks =  function(req,res){
 					//but now that I'm accidentally passing references down the line, maybe this wasn't such a bad idea
 					//lot of data but very clean output for me to analyze
 
-					//prune duplicate artists from track aggregation
-					artistsPay = _.uniqBy(artistsPay, function(n) {return n.id;});
-
-					return db_api.commitArtistGenres(artistsPay)
-						.then(justGetFromDb =>{
-							return db_api.checkDBForArtistGenres({artists:artistsPay},'artists')
-								.then(result =>{
-									if(result.db.length !== result.artists.length){
-										console.log("couldn't find " + result.payload.length + " artists");
-									}
-									result.resolved = result.db.concat(result.payload)
-									return result
-									//return 'test'
-								})
-						})
 				})
 		})
 		.then(r =>{
-			//todo: interesting ^^^
-			//res.send(trackOb.items);
-			res.send(r.resolved);
+			res.send(r);
 		}, function(err) {
 			console.log('getMySavedTracks failed', err);
 		});
@@ -642,7 +662,6 @@ me.completeArtist = function(req,res){
 			//console.log(qualifyGenrePromises.length);
 			Promise.all(qualifyGenrePromises)
 				.then(r2 =>{
-					r2 = r2.map(i =>{return i[0]})
 					r.result.body.artists.items.forEach((r,i,arr) =>{
 						//todo: if we passed the whole artist = replace in place
 						//for now just do a 'costly' unwind later (its 20 artists how many genres could there be? :))
@@ -676,6 +695,26 @@ var getUserProfile =  function(u){
 	})
 }
 
+me.sortSavedTracks  =  function(req,res){
+	return new Promise(function(done, fail) {
+		//testing: method for calling endpoints from local functions
+		//basically just send a res that will be the callback
+		//and remove the .then() from it b/c it will be immediately undefined otherwise
+		var req2 = {};var res2 = {send:function(d){
+			console.log("here",d)
+			res.send(d);
+			}};
+		me.getMySavedTracks(req2,res2)
+		// spotifyApi.getMySavedTracks({limit : 50})
+		// 	.then(function (r) {
+		// 		done({artist: artist, result: r})
+		// 		//res.send(r);
+		// 	}, function (err) {
+		// 		console.error(err);
+		// 		fail(err);
+		// 	});
+	})
+}
 
 //=================================================
 //resolving methods
@@ -829,11 +868,19 @@ me.resolvePlaylists = function(req,res){
 							//they'll be stored on these playob.db fields - otherwise it'll be in the 'payload' which is just
 							//being abused here as normally this 'payload' would get fed elsewhere but here its just a signal
 							//that yes indeed we couldn't find anything for them
+
+
 							playobsResolved.forEach(p => {
 								p.resolved = [];
 								//p.resolved = p.db.concat(p.spotifyArtists)
 								p.resolved = p.resolved.concat(p.db);
 								p.resolved = p.resolved.concat(p.payload);
+
+								p.artistFreq = {};
+								p.tracks.forEach(t =>{
+									!(p.artistFreq[t.track.artists[0].id]) ? p.artistFreq[t.track.artists[0].id] =1: p.artistFreq[t.track.artists[0].id]++;
+								});
+
 								// p.payloadResolved.forEach(playob=>{
 								// 	p.resolved = p.resolved.concat(playob.db);
 								// 	p.resolved = p.resolved.concat(playob.payload);
@@ -848,17 +895,31 @@ me.resolvePlaylists = function(req,res){
 							playobsResolved.forEach(p => {
 								var apMap = {};
 								p.tracks.forEach(t => {
-									t.track.artists.forEach(a =>{
-										!(apMap[a.name]) ? apMap[a.name] = 1:apMap[a.name] = apMap[a.name] + 1
+									t.track.artists.forEach(a => {
+										!(apMap[a.name]) ? apMap[a.name] = 1 : apMap[a.name] = apMap[a.name] + 1
 									})
 								});
-								//todo: make proportional to other key counts
-								for(var key in apMap){
-									if(apMap[key] > 2){
+
+								for (var key in apMap) {
+									if (apMap[key] > 2) {
 										console.log("found a " + key + " focused playlist");
 										console.log(p.playlist.id);
 									}
 								}
+
+								var arr = [];
+								Object.entries(apMap).forEach(tup => {
+									var r = {[tup[0]]: tup[1]};arr.push(r);
+								});
+
+								var sorted = _.orderBy(arr, function (r) {return Object.values(r)[0]},'desc');
+								console.log("$sorted",sorted);
+
+								//todo: going to need to do some math here
+								//1) just getting the top value won't do if there are several that are about equal
+								//2) if there are several I need to somehow define like a 'relative max' or something?
+
+
 							});
 
 							res.send(playobsResolved)

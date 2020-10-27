@@ -8,16 +8,26 @@ truncate table [master].[dbo].[artists]
 
 select * from [master].[dbo].genre_artist
 truncate table [master].[dbo].genre_artist
+
+delete from genre_family where genre_family.source != 'SpotifyDefault'
+
 select * from [master].[dbo].genres
---truncate table  [master].[dbo].genres
+truncate table  [master].[dbo].genres
 select * from genre_family
 truncate table genre_family;
 select * from families
 truncate table families
 
-select g.id,f.id,g.name as gname, f.name as fname from genre_family gf join genres g on gf.genre_id=g.id join families f on f.id = gf.family_id
-where g.name = 'blues rock'
+--remove all but SpotifyDefault
+select * from genre_family where genre_family.source != 'SpotifyDefault'
+delete from genre_family where genre_family.source != 'SpotifyDefault'
 
+--check if 
+select g.id,f.id,g.name as gname, f.name as fname, gf.source 
+ from genre_family gf join genres g on gf.genre_id=g.id join families f on f.id = gf.family_id
+ where source != 'SpotifyDefault'
+--where g.name = 'electronic trap'
+where g.name = 'indie rock'
 select [dbo].[Levenshtein]('spot','spooasdfsdft',10000);
 
 
@@ -26,9 +36,10 @@ select distinct a.id, a.name, g.id as genre_id,g.name as genre
 from artists a
 left join genre_artist ga on a.id = ga.artist_id
 left join genres g on ga.genre_id = g.id
-where g.name is not null
+where g.name is not null and a.id = '3AA28KZvwAUcZuOKwyblJQ'
 group by a.id,a.name,g.id,g.name 
 having count(*) >=1
+
 
 --found genres - songkick
 select distinct a.id, a.displayName, g.id as genre_id,g.name as genre
