@@ -39,6 +39,7 @@
     "querystring": "~0.2.0",
     "request": "^2.81.0",
     "request-promise": "^4.2.1",
+    "run-middleware": "^0.9.10",
     "spotify-web-api-node": "^4.0.0",
     "write-json-file": "^4.3.0",
     "zombie": "^6.1.4"

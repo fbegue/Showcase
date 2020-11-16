@@ -1,4 +1,5 @@
 const sApi = require('./spotify_api');
+const util = require('./util')
 var rp = require('request-promise');
 let sql = require("mssql");
 var _ = require('lodash');
@@ -570,6 +571,10 @@ module.exports.checkDBFor_artist_artistSongkick_match =  function(artist){
 
 		sreq.input("artistSongkick_id", sql.Int, artist.id);
 		//console.log(sreq.parameters);
+
+		//todo: this has sort of a weird return pattern
+		//basically since we're really returning genres, some other info is coded into each one
+		//which we then ignore when we set genres and pull out of 'any' record
 		sreq.execute("match_artist_artistSongkick")
 			.then(r => {
 				//console.log("$r",r.recordset);
@@ -579,10 +584,14 @@ module.exports.checkDBFor_artist_artistSongkick_match =  function(artist){
 					r.recordset.forEach(rec => {
 						//console.log(rec);
 						ret.genres.push({id:rec.genre_id,name:rec.genre_name,family_id:rec.family_id,family_name:rec.family_name})
-					})
+					});
+					ret.artistSongkick_id = r.recordset[0].artistSongkick_id
+					ret.id = r.recordset[0].id
 				}
+
 				//console.log(ret);
-				done(ret);
+				util.familyFreq(ret);
+				done(ret)
 			}).catch(err =>{
 			//console.error(err);
 			fail(err);

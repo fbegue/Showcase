@@ -2,6 +2,12 @@
 //https://github.com/schnogz/songkick-api-node
 //All requests to the library will be returned a promise and when resolved the response will be JSON.
 
+var spotifyApi = null;
+setTimeout(e =>{
+	console.log("setup shitty export: spotifyApi");
+	spotifyApi = require('./spotify_api').spotifyApi;
+},3000)
+
 const apikey = "pdBY8kzaJtEjFrcw"
 
 const Songkick = require('songkick-api-node');
@@ -130,10 +136,10 @@ weekday_full[6] = "Saturday";
  **/
 var find_metros = function() {
 	var state_string = "OH"
-	songkickApi.searchLocations({query: 'Dayton'})
+	songkickApi.searchLocations({query: 'Toledo'})
 		.then(function (results) {
-			console.log("returned: ", results.length);
-
+			// console.log("returned: ", results.length);
+			console.log("returned: ", JSON.stringify(results));
 
 			var json_parsed = [];
 
@@ -465,11 +471,11 @@ var fetch_metro_events = function(metro,dateFilter){
 }//getMetroEvents
 
 var fake_events = require('./example data objects/event.js')
-var fake_metro_events =  function(label){
+var fake_metro_events =  function(label,limit){
 	return new Promise(function(done, fail) {
 		console.warn("faking events:",label);
 		console.warn(fake_events[label].length);
-		done(fake_events[label])
+		done(fake_events[label].splice(0,5))
 	})
 }
 
@@ -483,6 +489,12 @@ var fake_metro_events =  function(label){
  *	"dateFilter":{"start":"2020-02-29T16:36:07.100Z","end":"2020-03-06T16:36:07.100Z"}
  *}
  **/
+
+//note: w/out cleaning the DB, the exact same request returns [] the 2nd time
+//forget why - doesn't matter as this is just doing db work, not meant to return anything
+
+//testing args: fake_metro_events
+
 module.exports.fetchMetroEvents =  function(req, res,next){
 	return new Promise(function(done, fail) {
 
@@ -504,11 +516,11 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 		else {
 			//testing:
-			//fake_metro_events('meltedPlus')
-			fetch_metro_events(req.body.metro, req.body.dateFilter)
-				.then(function (results) {
+			//fake_metro_events('events',5)
+				 fetch_metro_events(req.body.metro, req.body.dateFilter)
+				.then(function (events) {
 					if (next) {
-						next(results)
+						next(events)
 					} else {
 						//console.log(app.jstr(results));
 
@@ -561,9 +573,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 						// 4) puppet
 
 
-						//todo: how to parallel these? mixing promises here (1)
 						var AASMatch = [];
-						AASMatch.push(db_mongo_api.insert(results));
 
 						//testing:
 						//results = results.splice(0,1)
@@ -571,7 +581,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 						//console.log(AASMatch[0]);
 
 
-						results.forEach(ob =>{
+						events.forEach(ob =>{
 							ob.performance.forEach(p =>{
 								var a = {id:p.artist.id,name:p.artist.displayName};
 								metrOb.artists.push(a);
@@ -685,9 +695,6 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									//todo: parallel
 									var combined_promises = artistSongkicks.concat(searches);
 
-									//testing:
-
-
 									Promise.all(combined_promises).then(results => {
 										//look like: {artist:{},result:{}}
 										//console.log("$searches",app.jstr(results[0]));
@@ -696,13 +703,16 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 										var rejectedMatches = [];
 										var noMatches = [];
 
-										//testing:
+										//testing: we do a tiny bit of results unwinding but otherwise this is
+										//the object we would like to return
 										var obs = [];
 
 										var aas_promises = [];
-
-										//testing:
 										aas_promises.push(db_api.setFG());
+										var topTracksProms = [];
+
+										//testing: didn't plan this thru
+										var songkickSpotifyMap = {};
 
 										results.forEach(r =>{
 
@@ -730,11 +740,22 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 														//todo: next payload
 
 													}
-													//new quality match with genres, so skip next payload
+														//new quality match with genres, so skip next payload
 													//but we still need to record this
 													else{
 														newMatches_genres.push([item.name,artist.name])
 													}
+
+
+													//for every valid songkick-spotify artist I made
+													//push a promise to retrieve that artist's tracks
+
+
+
+
+													topTracksProms.push(spotifyApi.getArtistTopTracks(item.id, 'ES'));
+													songkickSpotifyMap[artist.id] = item.id;
+
 
 													//example songkickOb
 													// var songkickOb = {
@@ -750,8 +771,6 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 													var songkickOb = {id:item.id,name:item.name,artistSongkick_id:artist.id,displayName:artist.name,genres:item.genres}
 													songkickOb.newSpotifyArtist = item;
 
-
-
 													//todo:
 													//testing: (hmmm what was I testing?)
 													aas_promises.push(db_api.commit_artistSongkick_with_match(songkickOb));
@@ -762,18 +781,66 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 										})//results.each
 
 										//testing:
-										// console.log(noMatches);
+										 console.log(noMatches);
 										// console.log(rejectedMatches);
 										// console.log(newMatches);
 
-										Promise.all(aas_promises).then(r => {
+										async function asyncCall() {
+
+											// Promise.all(topTracksProms)
+											// 	.then(r => {console.log(r);})
+											var topTracksResults = await Promise.all(topTracksProms);
+											//find the event they belong to and mutate it
+											//todo: n^n b/c I took easy way out w/ topTracksProms
+											//should have been done inline?
+											// var artists = [];
+
+											//create map w/ artist ids
+											var artistsTracksMap ={};
+											topTracksResults.forEach(r => {
+												r.body.tracks[0].artists.forEach(a => {
+													//todo: trimming this result to just ids
+													var ids = r.body.tracks.map(t => t.id)
+
+													artistsTracksMap[a.id] = ids
+													//artistsTracksMap[a.name] = ids
+												})
+											})
+											//artists = r.body.tracks[0].artists.map(i => {return i.id});
+
+											console.log(Object.keys(songkickSpotifyMap).length);
+											events.forEach(e =>{
+												//for each performance, if we saved the mapping of the artist
+												//set their topfive = to the spotify tracks map
+												e.performance.forEach((p,i,array) =>{
+													if(songkickSpotifyMap[p.artist.id]){
+														array[i].artist.spotifyTopFive = artistsTracksMap[songkickSpotifyMap[p.artist.id]]
+													}
+												})
+												// var id = _.get()
+												// artists.forEach(id =>{
+												// 	var a = _.find(e.performance,['artist.id', id]);
+												// })
+												//console.log(artist.id);
+											})
+
+											// console.log(JSON.stringify(events));
+											//just tagging this on here
+											aas_promises.push(db_mongo_api.insert(events));
+											const result = await Promise.all(aas_promises)
+											return null;
+										}
+
+										asyncCall().then(r => {
+												// Promise.all(aas_promises).then(r => {
+
 												//console.log("4====================");
 												//console.log(r);
 												console.log("fetchMetroEvents finished execution:",Math.abs(new Date() - startDate) / 600);
 												console.log("all events, artists and genres committed!");
 												done(obs)
 											},
-											error =>{ console.log("$aas_promises error",error);})
+											error =>{ console.log("$asyncCall aas_promises error",error);})
 
 
 									},error =>{ console.log("$searches error",error);})
@@ -830,7 +897,7 @@ module.exports.get_metro_events_local=  function(req){
 };
 
 /**
- * pull cached events from mongo and fully qualify the artists
+ * pull cached events from mongo and fully qualify the artist
  * @function resolveEvents
  * @param req.body{
  *	"metro":{"displayName":"Columbus",
@@ -842,8 +909,8 @@ module.exports.resolveEvents=  function(req){
 
 		//todo: ajax weirdness
 		console.log("resolveEvents",req.body);
-        // if(req.body){//postman
-        // }else{ req.body = JSON.parse(req.body.data);}
+		// if(req.body){//postman
+		// }else{ req.body = JSON.parse(req.body.data);}
 
 
 		db_mongo_api.fetch(req.body.metro.id.toString()).then(events =>{

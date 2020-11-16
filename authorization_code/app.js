@@ -19,6 +19,9 @@ var express = require('express'); // Express web server framework
 var bodyParser = require('body-parser');
 var app = express();
 var cors = require('cors');
+const runMiddleware = require('run-middleware');
+runMiddleware(app);
+module.exports.app = app;
 
 var request = require('request'); // "Request" library
 var fs      = require('fs');
@@ -28,6 +31,8 @@ var spotify_api = require('./spotify_api.js');
 var db_mongo_api = require('./db_mongo_api.js');
 var  db_api = require('./db_api.js');
 var puppet = require('./puppet.js');
+
+
 
 
 // var maxbody = configuration.requests.limit || "50mb";
@@ -51,6 +56,28 @@ app.all('*', function(req, res, next) {
 	res.header("Access-Control-Allow-Headers", "X-Requested-With");
 	next();
 });
+
+
+function myRoute(req, res, next) {
+	// return res.send('ok')
+	console.log(next);
+
+	if(next.toString() !== '[Function: next]'){next('ok')}
+	else{return res.send('ok')};
+}
+
+function home(req, res, next) {
+	req.url = '/some/other/path'
+	var next  = function(r){
+		console.log("callback",r);
+		res.send(r)
+	}
+	return app._router.handle(req, res, next)
+}
+
+app.get('/some/other/path', myRoute)
+app.get('/', home)
+
 
 //todo: forget why this wasn't working
 
@@ -187,60 +214,63 @@ async function insertStatic(){
 // 	spotify_api.sortSavedTracks()
 // },2000);
 
-const jsonfile = require('jsonfile')
-setTimeout(t => {
-	const file = 'temp.json'
-	const obj = [{name: 'JP'}, {name: 'FK'}]
+//todo: what the fuck is this?? lol
 
-	var req2 = {};
-	var res2 = {
-		send: function (r) {
-			console.log("$playlists", r.items.length)
-			var ptest = ["4F209Porqizza9yhmgR9OF", "0SQiaUc5CgUv76NUN5S6mZ", "2I2V9caAOuOxHU0DfeYpg3", "4u0vX8K9sWfYMLKGOH9QIc"]
-			var ps = r.items.filter(i => {
-				return ptest.indexOf(i.id) !== -1
-			})
-			console.log("$4",ps.length);
-
-			//todo: make resolvePlaylists actually take params and call it on these
-
-			//todo: need to use family finder on each playlist's track's genres
-			//and compare each track's genres families to the 4 test playlists family/genre definitions
-			//if the song meets ?SOME? kind of threshold, it'll be added there
-
-			//todo: is there a need to start turning all my api endpoints into resolvers like resolvePlaylists?
-			//specifically with this family/genre thing going on now, feel like there's going to be a lot of time
-			//when I'm playing with this Spotify endpoint or that one but it doesn't have the qualified genres that I need
-			//after all, fully qualifying with my propriety system is the one unique thing that isn't going to be available globally.
-
-			//so the thought here is resolver endpoints like "genres" that can except objects with String or Array genres and
-			//EDIT IN PLACE genres, fully qualifying them in the process.
-
-			//playlists.ps()
-
-			jsonfile.readFile(file, obj)
-				.then(trackob => {
-					console.log("trackob", trackob.length);
-
-					//trackob.forEach()
-
-					//todo: add to playlist
-				})
-		}
-	};
-	spotify_api.getUserPlaylists(req2, res2)
-	// .then(playlists => {
-	//
-	// })
-}, 1000);
+// const jsonfile = require('jsonfile')
+// setTimeout(t => {
+// 	const file = 'temp.json'
+// 	const obj = [{name: 'JP'}, {name: 'FK'}]
+//
+// 	var req2 = {};
+// 	var res2 = {
+// 		send: function (r) {
+// 			console.log("$playlists", r.items.length)
+// 			var ptest = ["4F209Porqizza9yhmgR9OF", "0SQiaUc5CgUv76NUN5S6mZ", "2I2V9caAOuOxHU0DfeYpg3", "4u0vX8K9sWfYMLKGOH9QIc"]
+// 			var ps = r.items.filter(i => {
+// 				return ptest.indexOf(i.id) !== -1
+// 			})
+// 			console.log("$4",ps.length);
+//
+// 			//todo: make resolvePlaylists actually take params and call it on these
+//
+// 			//todo: need to use family finder on each playlist's track's genres
+// 			//and compare each track's genres families to the 4 test playlists family/genre definitions
+// 			//if the song meets ?SOME? kind of threshold, it'll be added there
+//
+// 			//todo: is there a need to start turning all my api endpoints into resolvers like resolvePlaylists?
+// 			//specifically with this family/genre thing going on now, feel like there's going to be a lot of time
+// 			//when I'm playing with this Spotify endpoint or that one but it doesn't have the qualified genres that I need
+// 			//after all, fully qualifying with my propriety system is the one unique thing that isn't going to be available globally.
+//
+// 			//so the thought here is resolver endpoints like "genres" that can except objects with String or Array genres and
+// 			//EDIT IN PLACE genres, fully qualifying them in the process.
+//
+// 			//playlists.ps()
+//
+// 			jsonfile.readFile(file, obj)
+// 				.then(trackob => {
+// 					console.log("trackob", trackob.length);
+//
+// 					//trackob.forEach()
+//
+// 					//todo: add to playlist
+// 				})
+// 		}
+// 	};
+// 	spotify_api.getUserPlaylists(req2, res2)
+// 	// .then(playlists => {
+// 	//
+// 	// })
+// }, 1000);
 
 
 
 console.log("available endpoints:");
 for(var key in spotify_api) {
-	// if(spotify_api[key] instanceof Function && spotify_api[key].length === 3) {
-	console.log(key);
-	app.post("/" + key, spotify_api[key]);
+	 if(spotify_api[key] instanceof Function) {
+		 console.log(key);
+		 app.post("/" + key, spotify_api[key]);
+	 }
 }
 
 //

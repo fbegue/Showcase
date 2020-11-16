@@ -2,7 +2,7 @@ var import_client = require('./db').client
 var client = {};
 import_client().then(c =>{client = c;})
 
-
+//always empties the DB before inserting
 var insert =  function(events){
 	return new Promise(function(done, fail) {
 		var dbo = client.db("master");

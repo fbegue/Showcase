@@ -8,10 +8,13 @@ const jsonfile = require('jsonfile')
 
 
 
+
 var db_api = require('./db_api.js');
 var app = require('./app')
 var resolver = require('./resolver.js');
 var resolver_api = require('./resolver_api.js');
+var util = require('./util')
+var sample_events = require('./example data objects/event').events;
 
 //========================================
 //db setup
@@ -71,6 +74,9 @@ var refresh =  function(){
 		rp(authOptions).then(function (res) {
 			module.exports.token = res.access_token;
 			console.log("new global_access_token from refresh",module.exports.token);
+
+			console.log(spotifyApi.getAccessToken());
+			module.exports.spotifyApi = spotifyApi;
 			done();
 		}).catch(function (err) {
 			console.log(err.error);
@@ -89,8 +95,14 @@ var doUserAuth = function(){
 	spotifyApi = new SpotifyWebApi(credentials);
 	refresh().then(sideaf =>{
 		spotifyApi.setAccessToken(module.exports.token);
+
 	});
 };
+
+
+
+
+
 //testing:
 doUserAuth()
 
@@ -128,6 +140,9 @@ var doAuth = function () {
 
 }
 
+
+
+
 //testing:
 //doAuth()
 
@@ -137,7 +152,7 @@ var doAuth = function () {
 // },3600*1000)
 
 //=================================================
-//methods
+//utility
 var me = module.exports;
 
 //the node api i'm using, although very limited and unfinished it seems like its the best out there...
@@ -220,6 +235,14 @@ var pageItAfter =  function(key,pages,data){
  * */
 
 
+//todo: shouldn't really be exposing this like this...
+me.getToken = function (req,res) {
+	res.send(module.exports.token)
+};
+
+
+//=================================================
+//user methods
 
 //todo: hardcoded user name
 me.getUserPlaylists = function (req,res) {
@@ -298,8 +321,6 @@ me.getUserPlaylistFriends = function (req,res) {
 		});
 }
 
-
-
 me.getFollowedArtists =  function(req,res,next){
 	this.name = "getFollowedArtists";
 	//fully qualified artist objects include genres
@@ -343,6 +364,11 @@ me.getFollowedArtists =  function(req,res,next){
 				})
 		})
 		.then(r =>{
+
+			r.artists.forEach(a =>{
+				a.familyFreq = util.familyFreq(a);
+			})
+
 			//console.log(r.items.length + " " + r.artists.items.length);
 			// console.log(this.name + " :" + r.length);
 			//res.send(r.artists.items);
@@ -587,6 +613,61 @@ me.getTopArtists = function(req,res){
 };
 
 
+//=================================================
+//user methods
+
+//todo: figure out how to call this locally (tried to use middleware caller...)
+//or just break it down - I'm just SOOO LAAZZZY
+me.test  = function(req,res){
+
+	var res2 = {send:function(tracks){
+
+			//console.log("$events",events);
+			//console.log(artist.id)
+			//console.log(tracks);
+			//var e = _.find( events,{'performance':artist.id});
+
+			var artist = {id:210595};
+			sample_events.forEach(e =>{
+				//console.log(artist.id);
+				var a = _.find(e.performance,['artist.id', artist.id]);
+				if(a){
+					!(e.spotifyTopFive) ? e.spotifyTopFive = {}:{};
+					//console.log("set");
+					e.spotifyTopFive[artist.id] = tracks;
+				}
+			})
+			//console.log(sample_events);
+			res.send(sample_events)
+
+
+
+			// var songkickOb = {id:item.id,name:item.name,artistSongkick_id:artist.id,displayName:artist.name,genres:item.genres}
+			// songkickOb.newSpotifyArtist = item;
+			//
+			// aas_promises.push(db_api.commit_artistSongkick_with_match(songkickOb));
+			// obs.push(songkickOb)
+
+			//modify the result with that songkick id from events and commit the events
+		}};
+
+	res2.send({track:1})
+	//calling locally = callback above instead of promise resolution
+	//me.getArtistTopTracks({body:{id:item.id}},res2)
+
+}
+
+me.getArtistTopTracks = function(req,res){
+
+	//console.log("$getArtistTopTracks",req.body.id);
+	//note: called from authorization_code/songkick.js @ fetchMetroEvents
+	spotifyApi.getArtistTopTracks(req.body.id, 'ES')
+		.then(r => { res.send(r.body.tracks)},err =>{res.status(500).send(err)})
+
+};
+
+
+
 //WIP----------------------------------------------------------
 
 //todo: move artist to req.artist
@@ -772,11 +853,10 @@ me.resolvePlaylists = function(req,res){
 
 
 		//testing: just 2 of them
-		console.warn("only testing with 2 playlist");
+		var lim = 5;
+		console.warn("tested with limited # of playlists:",lim);
 		var playsr = [];
-		playsr.push(plays[0]);
-		playsr.push(plays[1]);
-		req.body.playlists = playsr;
+		req.body.playlists = req.body.playlists.slice(0,lim);
 
 
 		// }).then(q => {
@@ -877,10 +957,17 @@ me.resolvePlaylists = function(req,res){
 								p.resolved = p.resolved.concat(p.db);
 								p.resolved = p.resolved.concat(p.payload);
 
+								//go thru every track and record the artist into artistFreq w/ a # representing the freq
 								p.artistFreq = {};
 								p.tracks.forEach(t =>{
 									!(p.artistFreq[t.track.artists[0].id]) ? p.artistFreq[t.track.artists[0].id] =1: p.artistFreq[t.track.artists[0].id]++;
 								});
+
+								//go thru every artist and thru all their genres and find each genre's family
+								//appends the family name as "familyAgg" which represents it's genres' top distribution over family names
+
+								p.resolved.forEach(a =>{util.familyFreq(a);})
+								//p.resolved.forEach(a =>{a.familyAgg?{}:console.log("$",a)})
 
 								// p.payloadResolved.forEach(playob=>{
 								// 	p.resolved = p.resolved.concat(playob.db);
@@ -893,6 +980,7 @@ me.resolvePlaylists = function(req,res){
 
 							//testing: trying to use this to pull favorite artist playlists
 							console.log("adding extra processing step");
+
 							playobsResolved.forEach(p => {
 								var apMap = {};
 								p.tracks.forEach(t => {
@@ -903,8 +991,8 @@ me.resolvePlaylists = function(req,res){
 
 								for (var key in apMap) {
 									if (apMap[key] > 2) {
-										console.log("found a " + key + " focused playlist");
-										console.log(p.playlist.id);
+										//console.log("found a " + key + " focused playlist");
+										//console.log(p.playlist.id);
 									}
 								}
 
@@ -914,7 +1002,7 @@ me.resolvePlaylists = function(req,res){
 								});
 
 								var sorted = _.orderBy(arr, function (r) {return Object.values(r)[0]},'desc');
-								console.log("$sorted",sorted);
+								//console.log("$sorted",sorted);
 
 								//todo: going to need to do some math here
 								//1) just getting the top value won't do if there are several that are about equal
