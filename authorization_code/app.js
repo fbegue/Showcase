@@ -197,6 +197,17 @@ module.exports.console = console;
 //=================================================
 //endpoints
 
+//insert of static dan
+// var artists = require('./example data objects/getTopArtists_dan').artists
+// setTimeout(t =>{
+// 	console.log("artists",artists.length);
+// 	//payload designed to do more of these at once
+// 	db_mongo_api.insertStaticUser([{user:"Dan",type:'artist',source:"top",data:artists}])
+// 		.then(r =>{console.log("insertStaticUser finished!");},e =>{console.error(e)});
+// },2000);
+
+
+
 //scripted insert of genre_family info
 
 async function insertStatic(){
@@ -299,12 +310,12 @@ app.post('/getMetroEvents', function(req, res) {
 
 app.post('/fetchMetroEvents', function(req, res) {
 
-	var date30 = new Date();
-	date30.setDate(date30.getDate() + 30);
-	req.body = {
-		metro:{"displayName":"Columbus", "id":9480},
-		dateFilter:{"start": new Date().toString(),"end":date30.toString()}
-	};
+	// var date30 = new Date();
+	// date30.setDate(date30.getDate() + 30);
+	// req.body = {
+	// 	metro:{"displayName":"Columbus", "id":9480},
+	// 	dateFilter:{"start": new Date().toString(),"end":date30.toString()}
+	// };
 	songkick.fetchMetroEvents(req,res).then(function(res2){
 		res.send(res2)
 	})
@@ -342,6 +353,19 @@ app.post('/afraid', function(req, res) {
 	})
 });
 
+//==========================================================================================
+//new spotify auth process I guess? idk man
+//either way I guess I knew I needed the access code from the api?
+
+app.post('/setAccessToken', function(req, res) {
+	spotify_api.setToken(req.body.access_token).then(r =>{
+		res.send(r)
+	},e =>{
+		res.send(e)
+	})
+});
+
+
 
 //==========================================================================================
 // SPOTIFY oAUTH 2 (with node library)
@@ -360,7 +384,7 @@ var spotifyClientAuth = new ClientOAuth2({
 	clientSecret: client_secret,
 	accessTokenUri: 'https://accounts.spotify.com/api/token',
 	authorizationUri: 'https://accounts.spotify.com/authorize',
-	redirectUri: 'http://localhost:8888/callback',
+	redirectUri: 'http://localhost:3000/redirect',
 	scopes: all_scopes
 })
 
@@ -394,7 +418,7 @@ var testPrivate=  function(){
 	})
 }
 
-app.get('/callback', function (req, res) {
+app.get('/redirect', function (req, res) {
 	spotifyClientAuth.code.getToken(req.originalUrl)
 		.then(function (user) {
 			console.log("new token:",user.accessToken);

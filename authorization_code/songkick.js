@@ -204,8 +204,8 @@ var fetch_metro_events = function(metro,dateFilter){
 
 		dateFilter.start = new Date(dateFilter.start);
 		dateFilter.end = new Date(dateFilter.end);
-		//console.log(dateFilter.start);
-		//console.log(dateFilter.end);
+		console.log(dateFilter.start);
+		console.log(dateFilter.end);
 
 		//used for stats in return object
 		var event_count = 0;
@@ -507,6 +507,9 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 			return date;
 		};
 		req.body.dateFilter.end = new Date().addDays(7).toISOString();
+
+		console.warn("faking dateFilter values");
+		console.log(req.body.dateFilter);
 		//--------------------------------------------------------------
 
 		let startDate = new Date();console.log("fetchMetroEvents start time:",startDate);
@@ -922,11 +925,11 @@ module.exports.resolveEvents=  function(req){
 				e.performance.forEach(p =>{
 					perfMap[p.id] = p;
 					//trying a little trick to send ancillary data with request
-					async function commit(artist,perf) {
+					async function check(artist,perf) {
 						var match  = await db_api.checkDBFor_artist_artistSongkick_match(artist);
 						return {match:match,perf:perf}
 					}
-					promises.push(commit(p.artist,p));
+					promises.push(check(p.artist,p));
 				});
 			});
 			Promise.all(promises).then(results =>{

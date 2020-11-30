@@ -10,7 +10,7 @@ var insert =  function(events){
 		// dbo.collection(events[0].venue.metroArea.id).insert(events).then(r =>{
 		// 	done(r)
 		// })
-		// console.log(events[0]);
+		console.log("committing to mongo collection:",events[0].venue.metroArea.id);
 		var c = events[0].venue.metroArea.id.toString()
 		dbo.collection(c).deleteMany({}).then(r =>{
 			dbo.collection(c).insertMany(events).then(r2 =>{
@@ -29,6 +29,22 @@ var insert =  function(events){
 	})
 }
 
+var insertStaticUser =  function(payload){
+	return new Promise(function(done, fail) {
+		var dbo = client.db("master");
+		dbo.collection('users').insertMany(payload).then(r2 =>{
+			done(r2)
+		})
+	})
+}
+
+var fetchStaticUser =  function(user){
+	return new Promise(function(done, fail) {
+		var dbo = client.db("master");
+		done(dbo.collection('users').find({user:user}).toArray());
+	})
+}
+
 var fetch =  function(param){
 	return new Promise(function(done, fail) {
 		var dbo = client.db("master");
@@ -38,7 +54,7 @@ var fetch =  function(param){
 }
 
 
-module.exports = {insert,fetch}
+module.exports = {insert,fetch,insertStaticUser,fetchStaticUser}
 
 //
 // import_client().then(client =>{

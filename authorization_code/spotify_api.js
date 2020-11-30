@@ -8,7 +8,7 @@ const jsonfile = require('jsonfile')
 
 
 
-
+var db_mongo_api = require('./db_mongo_api')
 var db_api = require('./db_api.js');
 var app = require('./app')
 var resolver = require('./resolver.js');
@@ -39,7 +39,8 @@ let all_scopes = ["playlist-read-private", "playlist-modify-private", "playlist-
 //var clientId = '0e7ef13646c9410293a0119e652b35f7',
 
 var scopes = all_scopes,
-	redirectUri = 'http://localhost:8888/callback',
+	// redirectUri = 'http://localhost:8888/callback',
+	redirectUri = 'http://localhost:3000/redirect',
 	//todo:
 	state = 'some-state-of-my-choice';
 
@@ -49,6 +50,30 @@ var client_secret = '1c09323e0aad42cfaef5f23bb08b6428'; // Your secret
 var spotifyApi = {};
 
 
+//todo: so refresh is cheating
+//but other than that I can't tell the difference here
+
+module.exports.setToken =  function(token){
+	console.log("setToken",token);
+	//console.log("setToken DISABLED");
+	return new Promise(function(done, fail) {
+		var credentials = {
+			clientId: client_id,
+			clientSecret: client_secret,
+			// redirectUri:"cheat"
+			redirectUri
+		};
+		//testing:
+		spotifyApi = new SpotifyWebApi(credentials);
+		console.log("new global_access_token from client",token);
+
+
+		module.exports.spotifyApi = spotifyApi;
+		spotifyApi.setAccessToken(token);
+		me.token = token;
+		done()
+	})
+}
 
 
 //var global_refresh_franky = "AQDn9X-9Jq2e-gbcZgf-U4eEzJadw2R6cFlXu1zKY-kxo3CEY4FaLtwL8tw7YcO8QPd2h3OXcSTvOQwKG5kmpOz2Nm6MTrHfM0r4UGQ7A7Aa-z8tywMvbgVyWmgLcEXDlVw";
@@ -74,8 +99,6 @@ var refresh =  function(){
 		rp(authOptions).then(function (res) {
 			module.exports.token = res.access_token;
 			console.log("new global_access_token from refresh",module.exports.token);
-
-			console.log(spotifyApi.getAccessToken());
 			module.exports.spotifyApi = spotifyApi;
 			done();
 		}).catch(function (err) {
@@ -84,6 +107,7 @@ var refresh =  function(){
 		})
 	})
 }
+
 
 var doUserAuth = function(){
 	var credentials = {
@@ -94,6 +118,7 @@ var doUserAuth = function(){
 	};
 	spotifyApi = new SpotifyWebApi(credentials);
 	refresh().then(sideaf =>{
+		//
 		spotifyApi.setAccessToken(module.exports.token);
 
 	});
@@ -104,7 +129,7 @@ var doUserAuth = function(){
 
 
 //testing:
-doUserAuth()
+//doUserAuth()
 
 //========================================
 //Client Credential flow
@@ -133,8 +158,7 @@ var doAuth = function () {
 			console.log('Something went wrong when retrieving an access token', err);
 		}
 	);
-
-// var token = "BQBWcWz_OUyjmnUyNt0iObiJRz7xxvjkdGRoGKizOyEiolvCcLVv1QU7d3iIeR6u0-QYtJaVOErUKOD9GD13NJTVss-TQ7F_o27xt0xENFCgBdSkmcKyzTvAxDWmrZvUox77oaC-yQL03aBV_-rOEifo5FvFzD3p9eUZzicbZUhVqkHUN3-p4CrTqAbs6oJO-v9hUCjseEc-3B1ZfkCm-VXUh43Ic1L9etZfU3tzg2wrlFyzC_oBbrRJ7Y1lQVrqYC_7rqpfb4neL3nlK4hz1oSctCg"
+	// var token = "BQBWcWz_OUyjmnUyNt0iObiJRz7xxvjkdGRoGKizOyEiolvCcLVv1QU7d3iIeR6u0-QYtJaVOErUKOD9GD13NJTVss-TQ7F_o27xt0xENFCgBdSkmcKyzTvAxDWmrZvUox77oaC-yQL03aBV_-rOEifo5FvFzD3p9eUZzicbZUhVqkHUN3-p4CrTqAbs6oJO-v9hUCjseEc-3B1ZfkCm-VXUh43Ic1L9etZfU3tzg2wrlFyzC_oBbrRJ7Y1lQVrqYC_7rqpfb4neL3nlK4hz1oSctCg"
 // spotifyApi.setAccessToken(token);
 // module.exports.token = token;
 
@@ -322,6 +346,8 @@ me.getUserPlaylistFriends = function (req,res) {
 }
 
 me.getFollowedArtists =  function(req,res,next){
+	//comparing spotifyApi here to sucessful one in resolvePlaylists
+	console.log("getFollowedArtists... is forbidden? spotifyApi:",spotifyApi);
 	this.name = "getFollowedArtists";
 	//fully qualified artist objects include genres
 	//todo: not sure on limit of this yet
@@ -366,7 +392,9 @@ me.getFollowedArtists =  function(req,res,next){
 		.then(r =>{
 
 			r.artists.forEach(a =>{
-				a.familyFreq = util.familyFreq(a);
+				a.familyAgg = util.familyFreq(a);
+				//testing: assigning sort value here, like term in topArtists
+				a.followed = true;
 			})
 
 			//console.log(r.items.length + " " + r.artists.items.length);
@@ -378,7 +406,8 @@ me.getFollowedArtists =  function(req,res,next){
 
 		})
 		.catch(err =>{
-			console.log(err);
+			//console.error("getFollowedArtists this just prints on start i guess?",err);
+			console.error("getFollowedArtists",err);
 			res.status(500).send(this.name + " :" + err)
 			//next(e.body)
 		})
@@ -450,7 +479,7 @@ me.getMySavedTracks =  function(req,res){
 
 					//this will mutate the object I send at the field, so do this little cheat
 					//it will also return the values - but I guess I'm not doing that for ...some good reason
-				    return db_api.checkDBForArtistGenres({payload:pullArtists},'payload')
+					return db_api.checkDBForArtistGenres({payload:pullArtists},'payload')
 						.then(resolvedArtists =>{
 
 							// const file = 'temp.json'
@@ -576,12 +605,10 @@ me.getMySavedAlbums =  function(req,res){
 };
 
 
-//todo: parameterize req for range
-//todo: (name for this data type where u select stuff from predefined strings?)
 /**
  * getTopArtists
  *
- * @param req.range = one of:
+ * @param req.range = one of these enums:
  *
  * long_term (calculated from several years of data and including all new data as it becomes available)
 	medium_term (approximately last 6 months)
@@ -591,30 +618,90 @@ me.getMySavedAlbums =  function(req,res){
 
  */
 me.getTopArtists = function(req,res){
-	var range = "long_term";
-	let uri = "https://api.spotify.com/v1/me/top/artists?limit=50&offset=0&time_range=" + range;
-	let options = {uri:uri, headers: {"Authorization":'Bearer ' + module.exports.token}, json: true};
+
+	console.log("getTopArtists... looks like it has a token at least",module.exports.token);
+	//thought about paraming but why not just get it all?
+	//fetch all versions of this, break apart and then qualify
+
+	var termProms = [];
+	var ranges = ["long_term","medium_term","short_term"];
+
+	ranges.forEach(r =>{
+		let uri = "https://api.spotify.com/v1/me/top/artists?limit=50&offset=0&time_range=" + r;
+		let options = {uri:uri, headers: {"Authorization":'Bearer ' + module.exports.token}, json: true};
+		termProms.push(rp(options))
+	});
+
+
 	//this comes with genres just not MY qualified ones
 	//so usual process of committing in order to get qualified genres back
-	rp(options).then(r => {
-		db_api.commitArtistGenres(r.items)
+	Promise.all(termProms).then(r => {
+
+		var artists = [];
+		var termMap = {};
+		var resolvedMap = {long:[],medium:[],short:[]};
+
+		r.forEach((tres,i)=>{
+			artists = artists.concat(tres.items);
+			//recall order of promise returns IS guaranteed
+			//gotta do this mapping somehow...
+			switch (i) {
+				//was about to assign this just on the object itself but sql :(
+				// case 0:{tres.items.forEach((r,i,arr) =>{arr[i].term = 'long'});break;}
+				// case 1:{tres.items.forEach((r,i,arr) =>{arr[i].term = 'medium'});break;}
+				// case 2:{tres.items.forEach((r,i,arr) =>{arr[i].term = 'short'});break;}
+				case 0:{tres.items.forEach(i =>{termMap[i.id] = 'long'});break;}
+				case 1:{tres.items.forEach(i =>{termMap[i.id] = 'medium'});break;}
+				case 2:{tres.items.forEach(i =>{termMap[i.id] = 'short'});break;}
+
+			}
+		})
+
+		artists =  _.uniqBy(artists, function(n) {return n.id;});
+		db_api.commitArtistGenres(artists)
 			.then(justGetFromDb =>{
-				db_api.checkDBForArtistGenres({artists:r.items},'artists')
+				db_api.checkDBForArtistGenres({artists:artists},'artists')
 					.then(result =>{
 						if(result.db.length !== result.artists.length){
 							console.log("couldn't find " + result.payload.length + " artists");
 						}
 						result.resolved = result.db.concat(result.payload);
+						//console.log(result.resolved.length);
+
+						//map the term value for the artist back onto itself according to the map
+						//also add familyAgg
+						result.resolved.forEach((a,i,arr)=>{
+							// termMap[a.id] ? resolvedMap[termMap[a.id]].push(a):{};
+							termMap[a.id] ? arr[i].term = termMap[a.id]:{};
+							util.familyFreq(a)
+						});
+
 						res.send(result.resolved)
+						//res.send(resolvedMap)
 					})
 			},err =>{res.status(500).send(err)})
-	},err =>{res.status(500).send(err)})
+	},err =>{
+		console.error("getTopArtists mystery error?",err);
+		res.status(500).send(err)
+	})
 
 };
 
+//=================================================
+//static user methods
+
+me.fetchStaticUser = function(req,res){
+
+	db_mongo_api.fetchStaticUser('Dan')
+		.then(r =>{
+
+			res.send(r);
+		},err =>{res.status(500).send(err)})
+
+};
 
 //=================================================
-//user methods
+//non-user methods
 
 //todo: figure out how to call this locally (tried to use middleware caller...)
 //or just break it down - I'm just SOOO LAAZZZY
@@ -782,8 +869,8 @@ me.sortSavedTracks  =  function(req,res){
 		//basically just send a res that will be the callback
 		//and remove the .then() from it b/c it will be immediately undefined otherwise
 		var req2 = {};var res2 = {send:function(d){
-			console.log("here",d)
-			res.send(d);
+				console.log("here",d)
+				res.send(d);
 			}};
 		me.getMySavedTracks(req2,res2)
 		console.log("fun!");
@@ -833,6 +920,7 @@ me.sortSavedTracks  =  function(req,res){
 me.resolvePlaylists = function(req,res){
 	let startDate = new Date();
 	console.log("resolvePlaylists start time:", startDate);
+	console.log("$spotifyApi",spotifyApi);
 	console.log(req.body);
 	//todo: requests from UI => just the playlists key is stringified - why?
 
@@ -922,14 +1010,14 @@ me.resolvePlaylists = function(req,res){
 						 *  - now we're going to do that within resolvePlayob. I don't really need to be returning nayth
 						 */
 
-						//testing: only use a couple playlists
-						//done(resolvedPlayobs);
+							//testing: only use a couple playlists
+							//done(resolvedPlayobs);
 
-						//console.log("db population",playobs[0].db.length);
-						//returns with a full artist object
-						//console.log(playobs[0].db[0]);
-						//console.log("spotifyArtists",playobs[1].spotifyArtists.length);
-						//console.log(playobs[1].spotifyArtists[1]);
+							//console.log("db population",playobs[0].db.length);
+							//returns with a full artist object
+							//console.log(playobs[0].db[0]);
+							//console.log("spotifyArtists",playobs[1].spotifyArtists.length);
+							//console.log(playobs[1].spotifyArtists[1]);
 
 						var pullPromises = [];
 
