@@ -51,6 +51,27 @@ app.use(bodyParser.urlencoded({
 	extended: false,
 	limit: "50mb"
 }));
+
+
+app.use(function (req, res, next) {
+	//so this guy should create it's own instance of my spotify api object using the client creds
+	//and then any request should just look at its req to find their specific api creded object
+	console.log("auth middleware:",req.url);
+	console.log("auth middleware:",req.body.auth);
+	//console.log(req.body.auth);
+	req.body.auth ? set() : next();
+	function set(){
+		console.log("auth middleware used");
+		spotify_api.getSpotifyWebApi()
+		.then(api =>{
+			api.setAccessToken(req.body.auth.access_token);
+			api.setRefreshToken(req.body.auth.refresh_token);
+			req.body.spotifyApi =api;
+			next()
+		})}
+
+})
+
 app.all('*', function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "X-Requested-With");
@@ -352,20 +373,6 @@ app.post('/afraid', function(req, res) {
 		res.send(e)
 	})
 });
-
-//==========================================================================================
-//new spotify auth process I guess? idk man
-//either way I guess I knew I needed the access code from the api?
-
-app.post('/setAccessToken', function(req, res) {
-	spotify_api.setToken(req.body.access_token).then(r =>{
-		res.send(r)
-	},e =>{
-		res.send(e)
-	})
-});
-
-
 
 //==========================================================================================
 // SPOTIFY oAUTH 2 (with node library)

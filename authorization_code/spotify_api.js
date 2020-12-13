@@ -35,8 +35,6 @@ poolPromise.then(function (newPool) {
 
 let all_scopes = ["playlist-read-private", "playlist-modify-private", "playlist-modify-public", "playlist-read-collaborative", "user-modify-playback-state", "user-read-currently-playing", "user-read-playback-state", "user-top-read", "user-read-recently-played", "app-remote-control", "streaming", "user-read-birthdate", "user-read-email", "user-read-private", "user-follow-read", "user-follow-modify", "user-library-modify", "user-library-read"];
 
-//var clientSecret = 'a00084c5c193478e9fc5d9a0c0e70058';
-//var clientId = '0e7ef13646c9410293a0119e652b35f7',
 
 var scopes = all_scopes,
 	// redirectUri = 'http://localhost:8888/callback',
@@ -44,47 +42,114 @@ var scopes = all_scopes,
 	//todo:
 	state = 'some-state-of-my-choice';
 
-var client_id = '178a441343904c588cef9acf8165a5d4'; // Your client id
-var client_secret = '1c09323e0aad42cfaef5f23bb08b6428'; // Your secret
+var client_id = '0e7ef13646c9410293a0119e652b35f7'; // Your client id
+var client_secret = 'a00084c5c193478e9fc5d9a0c0e70058'; // Your secret
 
 var spotifyApi = {};
 
+var credentials = {
+	clientId: client_id,
+	clientSecret: client_secret,
+	// redirectUri:"cheat"
+	redirectUri
+};
+console.log("spotifyApi setup (no tokens)");
+spotifyApi = new SpotifyWebApi(credentials);
+
+module.exports.getSpotifyWebApi =  function(){
+	return new Promise(function(done, fail) {
+		//console.log("spawned new SpotifyWebApi");
+		var s = new SpotifyWebApi(credentials);
+		done(s)
+	})
+};
 
 //todo: so refresh is cheating
 //but other than that I can't tell the difference here
 
-module.exports.setToken =  function(token){
-	console.log("setToken",token);
-	//console.log("setToken DISABLED");
+module.exports.getAuth =  function(req,res){
+	//console.log("getAuth...",req.body);
+	getTokens(req.body.code)
+		.then(r => {
+
+			//todo: deal with everyone expecting this (doesn't work now?)
+			//why the fuck is this here?
+			module.exports.spotifyApi = req.body.spotifyApi;
+
+			//note: exact clone of what happens in middleware (which we didn't hit this one time)
+			//just so that we can return the user info right away
+			me.getSpotifyWebApi()
+				.then(api => {
+					api.setAccessToken(r.access_token);
+					api.setRefreshToken(r.refresh_token);
+					api.getMe()
+						.then(data => {
+							r.user = data.body
+							res.send(r);
+						})
+				}, e => {console.error(e);})
+		}, e => {console.error(e);})
+}
+
+// var global_access_token = "";
+var getTokens =  function(code){
 	return new Promise(function(done, fail) {
-		var credentials = {
-			clientId: client_id,
-			clientSecret: client_secret,
-			// redirectUri:"cheat"
-			redirectUri
+		//console.log("getTokens...",code);
+		var authOptions = {
+			method:"POST",
+			url: 'https://accounts.spotify.com/api/token',
+			headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
+			form: {
+				redirect_uri:redirectUri,
+				grant_type: 'authorization_code',
+				code: code
+			},
+			json: true
 		};
-		//testing:
-		spotifyApi = new SpotifyWebApi(credentials);
-		console.log("new global_access_token from client",token);
 
-
-		module.exports.spotifyApi = spotifyApi;
-		spotifyApi.setAccessToken(token);
-		me.token = token;
-		done()
+		rp(authOptions).then(function (res) {
+			//	console.log("$res",res)
+			done(res);
+		}).catch(function (err) {
+			console.log(err.error);
+			fail(err);
+		})
 	})
 }
 
 
+// module.exports.setToken_implicit_Grant =  function(token){
+// 	console.log("setToken",token);
+// 	//console.log("setToken DISABLED");
+// 	return new Promise(function(done, fail) {
+// 		var credentials = {
+// 			clientId: client_id,
+// 			clientSecret: client_secret,
+// 			// redirectUri:"cheat"
+// 			redirectUri
+// 		};
+// 		//testing:
+// 		spotifyApi = new SpotifyWebApi(credentials);
+// 		console.log("new global_access_token from client",token);
+//
+//
+// 		module.exports.spotifyApi = spotifyApi;
+// 		spotifyApi.setAccessToken(token);
+// 		me.token = token;
+// 		done()
+// 	})
+// }
+
 //var global_refresh_franky = "AQDn9X-9Jq2e-gbcZgf-U4eEzJadw2R6cFlXu1zKY-kxo3CEY4FaLtwL8tw7YcO8QPd2h3OXcSTvOQwKG5kmpOz2Nm6MTrHfM0r4UGQ7A7Aa-z8tywMvbgVyWmgLcEXDlVw";
+var global_refresh_franky = "AQCztbDoyoh4DfOMjdOwNlr6b6AIPfuIEPf1WLRtMPk2CGXh_lDu_6cHX5Iz0nt5RHdzYeRj3_rUbLxMfMVjCq4H0U03fs13v1ypCqkdWiGMr4sYQaehCMI5KOqxL39wTDI"
 //var global_refresh_dan = "AQDRaPbAH9oSHZ3xKHxbxHZtsJrvry2gr6x-swN4uddSuc_InwPNaaJG7l9ZCKIRzDzUEAGk6tSD4GCyks79J0vcICT1l6yvKDZym3nqQzrG860UPUCu_lMFKzZPZVuc9wc"
 
-var global_refresh = "AQDn9X-9Jq2e-gbcZgf-U4eEzJadw2R6cFlXu1zKY-kxo3CEY4FaLtwL8tw7YcO8QPd2h3OXcSTvOQwKG5kmpOz2Nm6MTrHfM0r4UGQ7A7Aa-z8tywMvbgVyWmgLcEXDlVw";
+var global_refresh = global_refresh_franky
 
 // var global_access_token = "";
 var refresh =  function(){
 	return new Promise(function(done, fail) {
-		console.log("refresing...");
+		console.log("refresing via global_refresh...");
 		var authOptions = {
 			method:"POST",
 			url: 'https://accounts.spotify.com/api/token',
@@ -95,12 +160,9 @@ var refresh =  function(){
 			},
 			json: true
 		};
-
 		rp(authOptions).then(function (res) {
-			module.exports.token = res.access_token;
-			console.log("new global_access_token from refresh",module.exports.token);
-			module.exports.spotifyApi = spotifyApi;
-			done();
+			console.log("new global_access_token from refresh",res.access_token);
+			done(res.access_token);
 		}).catch(function (err) {
 			console.log(err.error);
 			fail(err);
@@ -109,24 +171,21 @@ var refresh =  function(){
 }
 
 
-var doUserAuth = function(){
-	var credentials = {
-		clientId: client_id,
-		clientSecret: client_secret,
-		// redirectUri:"cheat"
-		redirectUri
-	};
-	spotifyApi = new SpotifyWebApi(credentials);
-	refresh().then(sideaf =>{
-		//
-		spotifyApi.setAccessToken(module.exports.token);
-
-	});
-};
-
-
-
-
+module.exports.getCheatyToken =  function(){
+    return new Promise(function(done, fail) {
+		var credentials = {
+			clientId: client_id,
+			clientSecret: client_secret,
+			// redirectUri:"cheat"
+			redirectUri
+		};
+		var spotifyApi = new SpotifyWebApi(credentials);
+		refresh().then(token =>{
+			spotifyApi.setAccessToken(token);
+			done(spotifyApi)
+		});
+    })
+}
 
 //testing:
 //doUserAuth()
@@ -220,31 +279,38 @@ var pageIt =  function(key,data){
 }
 
 //todo: something off with my 'totals'
-var pageItAfter =  function(key,pages,data){
+var preserve = null;
+var pageItAfter =  function(key,pages,req,data){
 	return new Promise(function(done, fail) {
 		//what does this binding thing mean again?
+		//console.log(data);
+		preserve === null? preserve= JSON.parse(JSON.stringify(data.body)):{};
 		if(!(data)){data=key;key=null;}
 		if(data.body.next){
 			//console.log("pageItAfter",data.body.next);
 
 			//console.log("key",key);
-			resolver.getPage(data.body,key)
+			resolver.getPage(data.body,key,req)
 				.then(r =>{
 					pages.push(r)
 					if(r.artists.next){
-						pageItAfter('',pages,{body:{next:r.artists.next}}).then(done).catch(fail)
+						pageItAfter('',pages,req,{body:{next:r.artists.next}}).then(done).catch(fail)
 					}
 					else{
 						//get the original result
-						var body = {items:data.body.artists.items}
+						//console.log(preserve);
+						var body = {items:preserve.artists.items}
 						pages.forEach(p =>{
 							body.items =  body.items.concat(p.artists.items)
 						})
+						preserve =null
 						done(body);
 					}
 				})
 				.catch(e => console.error(e))
-		}else{done(data.body)}
+		}else{
+			preserve = null
+			done(data.body)}
 	})
 }
 /** Qualifying Report Object (QRP)
@@ -346,15 +412,16 @@ me.getUserPlaylistFriends = function (req,res) {
 }
 
 me.getFollowedArtists =  function(req,res,next){
+	console.log("getFollowedArtists",req.body.spotifyApi.getAccessToken());
 	//comparing spotifyApi here to sucessful one in resolvePlaylists
-	console.log("getFollowedArtists... is forbidden? spotifyApi:",spotifyApi);
-	this.name = "getFollowedArtists";
+	// console.log("getFollowedArtists... is forbidden? spotifyApi:",spotifyApi);
+	// this.name = "getFollowedArtists";
 	//fully qualified artist objects include genres
 	//todo: not sure on limit of this yet
 	//https://developer.spotify.com/documentation/web-api/reference/follow/get-followed/
 
 	var pages = [];
-	spotifyApi.getFollowedArtists({limit:50})
+	req.body.spotifyApi.getFollowedArtists({limit:50})
 		.then(function(data) {
 			//some results from spotify that are asking for specific types of items
 			//have a different response format with +1 levels named after that type
@@ -366,12 +433,14 @@ me.getFollowedArtists =  function(req,res,next){
 
 			//bind: first value is what 'this' gets set to in function being bound to
 			//the rest are just other arguments which will PRECEDE the normal return value
+			//note: AS IN THE NORMAL VALUE RETURNED BY THE PROMISE WILL ALWAYS BE THE LAASSSTTTT
+			//in the params list of the binded function
 			//for the bound function in the function's param list
 			//hence it pageit doesn't not use this, has a key value and then takes the data
 			//passed via promise chaining as its last arg
 
 		})
-		.then(pageItAfter.bind(null,'artist',pages))
+		.then(pageItAfter.bind(null,'artist',pages,req))
 		.then(r =>{
 			//skipping artist lookup, but keeping genre inpuit
 			var artistsPay = r.items;
@@ -611,15 +680,15 @@ me.getMySavedAlbums =  function(req,res){
  * @param req.range = one of these enums:
  *
  * long_term (calculated from several years of data and including all new data as it becomes available)
-	medium_term (approximately last 6 months)
-	short_term (approximately last 4 weeks)
+ medium_term (approximately last 6 months)
+ short_term (approximately last 4 weeks)
 
  https://developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
-
  */
-me.getTopArtists = function(req,res){
 
-	console.log("getTopArtists... looks like it has a token at least",module.exports.token);
+//note: manual API
+me.getTopArtists = function(req,res){
+	//console.log("getTopArtists... looks like it has a token at least",module.exports.token);
 	//thought about paraming but why not just get it all?
 	//fetch all versions of this, break apart and then qualify
 
@@ -628,7 +697,7 @@ me.getTopArtists = function(req,res){
 
 	ranges.forEach(r =>{
 		let uri = "https://api.spotify.com/v1/me/top/artists?limit=50&offset=0&time_range=" + r;
-		let options = {uri:uri, headers: {"Authorization":'Bearer ' + module.exports.token}, json: true};
+		let options = {uri:uri, headers: {"Authorization":'Bearer ' + req.body.spotifyApi.getAccessToken()}, json: true};
 		termProms.push(rp(options))
 	});
 
@@ -774,21 +843,34 @@ me.getArtistTopTracks = function(req,res){
 // };
 
 //this is exposed for use by songkick only pretty much?
-me.searchArtist  =  function(artist){
+me.searchArtist  =  function(req){
 	return new Promise(function(done, fail) {
-		//testing:
-		//var artist = {name:"Queen"};
-		//console.log(query);
-		//console.log("searchArtist",artist.name);
-		spotifyApi.searchArtists(artist.name)
+		//todo: only fixing for songkick for now
+		//will return to test later when this endpoint is back up on UI
+		//basically: if we didn't get one from the middleware, its not coming from the UI - so make your own
+
+		req.body.spotifyApi.searchArtists(req.body.artist.name)
 			.then(function (r) {
-				done({artist: artist, result: r})
+				done({artist: req.body.artist, result: r})
 				//res.send(r);
 			}, function (err) {
 				console.error(err);
 				fail(err);
 			});
+
+		function fn() {
+			req.body.spotifyApi.searchArtists(req.body.artistQuery)
+				.then(function (r) {
+					done({artist: req.body.artistQuery, result: r})
+					//res.send(r);
+				}, function (err) {
+					console.error(err);
+					fail(err);
+				});
+		}
+
 	})
+
 }
 
 
@@ -799,7 +881,7 @@ me.completeArtist = function(req,res){
 	//console.log(req.body.artistQuery);
 	//req.body.artistQuery ="Queen"
 
-	me.searchArtist({name:req.body.artistQuery})
+	me.searchArtist(req)
 		.then(r => {
 
 			//no no I HAVE genres, I don't have QUALIFIED genres
@@ -919,9 +1001,11 @@ me.sortSavedTracks  =  function(req,res){
 //to have analyzed
 me.resolvePlaylists = function(req,res){
 	let startDate = new Date();
+	spotifyApi = req.body.spotifyApi;
+
 	console.log("resolvePlaylists start time:", startDate);
-	console.log("$spotifyApi",spotifyApi);
-	console.log(req.body);
+	//console.log("$spotifyApi",spotifyApi);
+	//console.log(req.body);
 	//todo: requests from UI => just the playlists key is stringified - why?
 
 	//req.body.playlists = JSON.parse(req.body.playlists);
@@ -932,7 +1016,7 @@ me.resolvePlaylists = function(req,res){
 	//todo: the node library is currently limited to 20 (no paging?)
 
 	spotifyApi.getUserPlaylists('dacandyman01', {limit: 50}).then(r => {
-		console.log(r);
+		//console.log(r);
 		var plays = [];
 		r.body.items.forEach(function (i) {
 			plays.push(i)
@@ -948,7 +1032,7 @@ me.resolvePlaylists = function(req,res){
 
 
 		// }).then(q => {
-		resolver.resolvePlaylists(req.body.playlists)
+		resolver.resolvePlaylists(req.body)
 			.then(playobs => {
 
 				//unwind artists from tracks and attach them to each playob
@@ -993,7 +1077,7 @@ me.resolvePlaylists = function(req,res){
 					var fullyResolvedPlayobs = [];
 					playobs.forEach(playob => {
 						if(!(playob.payload.length === 0)){
-							resolverPromises.push(resolver.resolveArtists(playob.payload))
+							resolverPromises.push(resolver.resolveArtists(req,playob.payload))
 						}
 						else{fullyResolvedPlayobs.push(playob)}
 					})

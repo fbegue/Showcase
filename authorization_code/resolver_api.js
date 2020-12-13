@@ -98,7 +98,7 @@ module.exports.spotifySearch  = function(artist){
  * @param payload An array of 50 artist ids
  * @returns {Promise<unknown>}
  */
-module.exports.spotifyArtists = function(payload){
+module.exports.spotifyArtists = function(payload,req){
 	return new Promise(function(done, fail) {
 		//console.log("spotifyArtists payload",payload.length);
 		var multiArtistStr = "";
@@ -113,7 +113,7 @@ module.exports.spotifyArtists = function(payload){
 			uri:uri,
 			headers: {
 				'User-Agent': 'Request-Promise',
-				"Authorization":'Bearer ' + sApi.token
+				"Authorization":'Bearer ' + req.body.spotifyApi.getAccessToken()
 			},
 			json: true
 		};

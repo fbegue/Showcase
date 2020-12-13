@@ -140,7 +140,7 @@ limiters();
 
 //todo: made this non-configuraable b/c I'm so confused as to why this changed?
 //maybe I'm just being dumb but...
-module.exports.getPage = function(body,key){
+module.exports.getPage = function(body,key,req){
 	return new Promise(function(done, fail) {
 
 		var re = /.*\?/;
@@ -156,7 +156,7 @@ module.exports.getPage = function(body,key){
 		//baseUrl = baseUrl + "type=" + key + "&"}
 		baseUrl = baseUrl + "type=artist&after=" + after + "&limit=50"
 		//console.log("baseUrl",baseUrl);
-		let options = {uri:baseUrl,headers: {"Authorization":'Bearer ' + sApi.token}, json: true};
+		let options = {uri:baseUrl,headers: {"Authorization":'Bearer ' + req.body.spotifyApi.getAccessToken()}, json: true};
 
 		function get(options) {
 			console.log(options.uri);
@@ -237,7 +237,7 @@ module.exports.resolvePlayob = function(playob){
  * @desc resolve the artists via Spotify, and submit them to the db - fully qualifying the genres in the process
  * @param artists
  */
-module.exports.resolveArtists = function(artists){
+module.exports.resolveArtists = function(req,artists){
 	return new Promise(function(done, fail) {
 			console.log("resolveArtists",artists.length);
 			let startDate = new Date(); console.log("resolveSpotify start time:",startDate);
@@ -258,7 +258,7 @@ module.exports.resolveArtists = function(artists){
 			});
 			payload.length ? payloads.push(payload):{};
 			payloads.forEach(function(pay){
-				promises.push(limiterSpotify.schedule(resolver_api.spotifyArtists,pay,{}))
+				promises.push(limiterSpotify.schedule(resolver_api.spotifyArtists,pay,req,{}))
 			});
 
 			Promise.all(promises).then(results => {
@@ -298,12 +298,14 @@ module.exports.resolveArtists = function(artists){
 //todo: should really receive one at a time
 //receives a batch of playlists and returns all tracks
 //returns an array of objects, one for each input playlist {tracks:[track],playist:{}}
-module.exports.resolvePlaylists = function(playlists){
+module.exports.resolvePlaylists = function(body){
 	return new Promise(function(done, fail) {
 
-		console.log("# of playlists to process:",playlists.length);
+		console.log("# of playlists to process:",body.playlists.length);
 		let startDate = new Date();
 		console.log("start time:",startDate);
+
+		console.log();
 
 		let url1 = "https://api.spotify.com/v1/playlists/";
 		let url2 = "/tracks";
@@ -368,7 +370,7 @@ module.exports.resolvePlaylists = function(playlists){
 			uri: "",
 			headers: {
 				// 'User-Agent': 'Request-Promise',
-				"Authorization":'Bearer ' + sApi.token
+				"Authorization":'Bearer ' + body.spotifyApi.getAccessToken()
 			},
 			json: true
 		};
@@ -383,12 +385,12 @@ module.exports.resolvePlaylists = function(playlists){
 
 		let promises = [];
 
-		playlists.forEach(function(play){
+		body.playlists.forEach(function(play){
 			options = {
 				uri: "",
 				headers: {
 					// 'User-Agent': 'Request-Promise',
-					"Authorization":'Bearer ' + sApi.token
+					"Authorization":'Bearer ' + body.spotifyApi.getAccessToken()
 				},
 				json: true,
 			};
