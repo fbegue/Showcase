@@ -283,7 +283,8 @@ module.exports.resolveArtists = function(req,artists){
 					}else{
 						db_api.commitArtistGenres(r.artists)
 							.then(resolved =>{
-								done()
+								//testing:
+								done(r.artists)
 							})
 					}
 				});

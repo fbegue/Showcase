@@ -172,7 +172,7 @@ var refresh =  function(){
 
 
 module.exports.getCheatyToken =  function(){
-    return new Promise(function(done, fail) {
+	return new Promise(function(done, fail) {
 		var credentials = {
 			clientId: client_id,
 			clientSecret: client_secret,
@@ -184,7 +184,7 @@ module.exports.getCheatyToken =  function(){
 			spotifyApi.setAccessToken(token);
 			done(spotifyApi)
 		});
-    })
+	})
 }
 
 //testing:
@@ -331,8 +331,9 @@ me.getToken = function (req,res) {
 };
 
 
-//=================================================
-//user methods
+
+//user methods =================================================
+//==============================================================
 
 //todo: hardcoded user name
 me.getUserPlaylists = function (req,res) {
@@ -492,6 +493,8 @@ me.getFollowedArtists =  function(req,res,next){
 //todo: regarding getMySavedAlbums,getTopArtists, getMySavedTracks
 //not doing anything with 'couldn't find artists' printout
 
+//todo: BROKEN (test req.spotifyApi)
+
 /** getMySavedTracks
  * @desc Get tracks in the signed in user's Your Music library
  * @param req
@@ -595,6 +598,7 @@ me.getMySavedTracks =  function(req,res){
 		});
 };
 
+//todo: BROKEN (test req.spotifyApi)
 
 /** getMySavedAlbums
  *
@@ -756,8 +760,107 @@ me.getTopArtists = function(req,res){
 
 };
 
-//=================================================
-//static user methods
+//always a max of 50 tracks
+me.getRecentlyPlayedTracks=  function(req,res){
+	var trackOb = {};
+	req.body.spotifyApi.getMyRecentlyPlayedTracks({limit : 50})
+		.then(result =>{
+			var artists = [];
+			result.body.items.forEach(item =>{
+				artists = artists.concat(_.get(item,'track.artists'));
+			})
+
+			//prune duplicate artists from track aggregation
+			artists = _.uniqBy(artists, function(n) {return n.id;});
+			//console.log(artists);
+
+			//resolving all the artists for all the tracks in place
+			return resolver.resolveArtists(req,artists)
+				.then(empty =>{
+					//console.log(empty);
+					var pullArtists = [];
+					result.body.items.forEach(item =>{
+						//note: theres an artist listing on both: items[0].track.album.artists AND a items[0].track.artists
+						//the difference between the album's artist(s) and a track's artist(s)
+						//well remove the album one for now
+						delete item.track.album.artists;
+
+						//I just don't like looking at these
+						item.track.available_markets = null;
+						item.track.album.available_markets = null;
+
+						item.track.artists.forEach(a =>{
+							pullArtists.push(a)
+						})
+					});
+
+					//definitely could be dupe artists
+					pullArtists = _.uniqBy(pullArtists, function(n) {return n.id;});
+					//possible if you just keep playing the same song lol
+					result.body.items = _.uniqBy(result.body.items, function(n) {return n.track.id;});
+
+					//testing: limited #
+					//pullArtists = pullArtists.filter(r =>{return r.id==='2Ceq5nkABzryK0OkaQYtzg' || r.id==='4EOyJnoiiOJ4vuNhSBArB2' });
+					// console.log(pullArtists.filter(r =>{return r.id==='4EOyJnoiiOJ4vuNhSBArB2'}));
+
+					//this will mutate the object I send at the field, so do this little cheat
+					//it will also return the values - but I guess I'm not doing that for ...some good reason
+					return db_api.checkDBForArtistGenres({payload:pullArtists},'payload')
+						.then(resolvedArtists =>{
+
+
+							function jval(v){return JSON.parse(JSON.stringify(v))}
+
+							var aMap = {};
+							pullArtists.forEach(a =>{
+								a.familyAgg = util.familyFreq(a);
+								a.source = 'recent';
+								aMap[a.id]= a;
+							})
+
+							//replace artists with amap values
+							result.body.items.forEach(t =>{
+								Object.assign(t,t.track);delete t.track;
+								t.artists.forEach((a,i,arr) =>{
+									arr[i] = aMap[a.id]
+								})
+							})
+
+							//for some reason, thought adding specific tracks to artist payload was a good idea
+							//doesn't make any fucking sense tho
+
+							//var aMap = {};
+							// result.body.items.forEach(t =>{
+							// 	//destroying  'track' at track
+							//
+							// 	t.artists.forEach(a =>{
+							// 		//todo: some kind of circular json issue
+							// 		//has to be to do with artists I'd imagine (plus I mean I'm being lazy as shit, lot of repeated junk here)
+							// 		if(!aMap[a.id]){aMap[a.id] = [jval(t)]}
+							// 		else{aMap[a.id].push(jval(t))}
+							// 	})
+							// });
+							// //console.log("$map",aMap);
+							// pullArtists.forEach(a =>{
+							// 	// a.tracks = JSON.stringify(aMap[a.id])
+							// 	a.tracks = aMap[a.id]
+							// })
+							//todo: obvious waste of data sending both back
+							 return {tracks:result.body.items,artists:pullArtists};
+							//return {tracks:result.body.items};
+						})
+				})
+		})
+		.then(r =>{
+			res.send(r);
+		}, function(err) {
+			console.log('getMySavedTracks failed', err);
+		});
+};
+
+
+//static user methods =================================================
+//=====================================================================
 
 me.fetchStaticUser = function(req,res){
 
@@ -815,7 +918,9 @@ me.test  = function(req,res){
 
 me.getArtistTopTracks = function(req,res){
 
-	//console.log("$getArtistTopTracks",req.body.id);
+	console.log("$getArtistTopTracks",req.body.id);
+	console.log(res);
+
 	//note: called from authorization_code/songkick.js @ fetchMetroEvents
 	spotifyApi.getArtistTopTracks(req.body.id, 'ES')
 		.then(r => { res.send(r.body.tracks)},err =>{res.status(500).send(err)})
@@ -823,6 +928,24 @@ me.getArtistTopTracks = function(req,res){
 };
 
 
+//other methods----------------------------------------------------------
+
+me.createPlaylist = function(req,res){
+	console.log("createPlaylist",req.body.songs.length);
+	req.body.spotifyApi.createPlaylist(req.body.user.id,req.body.playlist.name, { 'description': 'My description', 'public': true })
+		.then(r => {
+			var payload = [];
+			req.body.songs.forEach(id =>{
+				payload.push("spotify:track:" + id)
+			})
+			spotifyApi.addTracksToPlaylist(r.body.id,payload)
+				.then(function(data) {
+					console.log('Added tracks to playlist!');
+				}, function(err) {
+					console.log('Something went wrong!', err);
+				});
+			res.send(r)},err =>{res.status(500).send(err)})
+};
 
 //WIP----------------------------------------------------------
 

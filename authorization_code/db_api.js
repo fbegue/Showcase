@@ -171,6 +171,10 @@ var checkDBForArtist;
 //this does a 0 check against genres, and if it doens't find any, you don't get any records back
 //so not really the best named function..
 
+//UPDATE
+//changed SP checkForArtistGenres to return even with null genres
+//but we handle that possibility now instead of just no records
+
 module.exports.checkDBForArtist = checkDBForArtist = function(artist){
 	return new Promise(function(done, fail) {
 
@@ -194,24 +198,27 @@ module.exports.checkDBForArtist = checkDBForArtist = function(artist){
 					console.log("",oneNull.displayName + " lastLook: " + oneNull.lastLook);
 					sres.lastLook.push(artist)
 				}
-					//if there's only 1 row and the genres null, we have a record but no genres
-					//and have never attempted to
-					//todo: at what point would I be recording an artist without making this attempt tho?
-					// else if(res.recordset.length === 1 && res.recordset[0].genreName === null){
-					// 	sres.payload.push(artist)
-					// }
-					//
-				//we have genres. record them in the return cache
 				else{
+					//testing: if there's only 1 row and the genres null
+					//we have a record but no genres. I thiiink this is the only case right?
+					//not like there could be someone returning with > 1 record w/ null genres, right?
 					artist.genres = [];
-					res.recordset.forEach(function(match){
-						artist.genres.push({id:match.genre_id,name:match.genre_name,family_id:match.family_id,family_name:match.family_name})
-					});
+
+					if(res.recordset[0].genre_id === null){
+						//skip genres processing
+					}else{
+						res.recordset.forEach(function(match){
+							artist.genres.push({id:match.genre_id,name:match.genre_name,family_id:match.family_id,family_name:match.family_name})
+						});
+					}
 
 					//these were genre-joins, so pick any record for artist info
 					artist.name = res.recordset[0].displayName || res.recordset[0].name
 					artist.identifier = res.recordset[0].identifier;
 					artist.id = res.recordset[0].id;
+					//artist.id === '2Ceq5nkABzryK0OkaQYtzg' ? console.log(artist):{};
+					//testing: recent addition to these returns for recentlyPlayed
+					artist.images = JSON.parse(res.recordset[0].images);
 					sres.db.push(artist)
 				}
 			}

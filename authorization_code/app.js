@@ -59,7 +59,7 @@ app.use(function (req, res, next) {
 	console.log("auth middleware:",req.url);
 	console.log("auth middleware:",req.body.auth);
 	//console.log(req.body.auth);
-	req.body.auth ? set() : next();
+	req.body.auth ? set() : setFake()
 	function set(){
 		console.log("auth middleware used");
 		spotify_api.getSpotifyWebApi()
@@ -67,8 +67,25 @@ app.use(function (req, res, next) {
 			api.setAccessToken(req.body.auth.access_token);
 			api.setRefreshToken(req.body.auth.refresh_token);
 			req.body.spotifyApi =api;
+			req.body.user = req.body.auth.user
 			next()
 		})}
+	function setFake(){
+		console.log("faking auth middleware");
+		spotify_api.getCheatyToken()
+			.then(api =>{
+				//already set by cheaty
+				//api.setAccessToken(req.body.auth.access_token);
+
+				//and the whole point is that I'm abusing the refresh
+				//api.setRefreshToken(req.body.auth.refresh_token);
+				req.body.spotifyApi = api;
+				//testing: just me for now
+				req.body.user = {id:"dacandyman01",display_name:"Franky Begue"}
+				// req.body.user = req.body.auth.user
+				console.log("setFake finished");
+				next()
+			})}
 
 })
 

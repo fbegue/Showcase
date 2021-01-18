@@ -1,7 +1,7 @@
 //repo
 //https://github.com/schnogz/songkick-api-node
 //All requests to the library will be returned a promise and when resolved the response will be JSON.
-
+var Bottleneck = require("bottleneck");
 var spotifyApi = null;
 setTimeout(e =>{
 	console.log("setup shitty export: spotifyApi");
@@ -507,14 +507,14 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 					req.body.spotifyApi = api
 
 					//--------------------------------------------------------------
-					//testing: 1 week out
+					//testing:
 					req.body.dateFilter.start =  new Date().toISOString();
 					Date.prototype.addDays = function(days) {
 						var date = new Date(this.valueOf());
 						date.setDate(date.getDate() + days);
 						return date;
 					};
-					req.body.dateFilter.end = new Date().addDays(7).toISOString();
+					req.body.dateFilter.end = new Date().addDays(60).toISOString();
 
 					console.warn("faking dateFilter values");
 					console.log(req.body.dateFilter);
@@ -652,7 +652,6 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 												//spotify artist string search
 
 												//todo: MOVE
-												var Bottleneck = require("bottleneck");
 												var limiterSpotify = new Bottleneck({
 													maxConcurrent: 15,
 													minTime: 100,
@@ -762,9 +761,25 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 																//for every valid songkick-spotify artist I made
 																//push a promise to retrieve that artist's tracks
 
+																//todo: having trouble with calling this locally w/ limiter
+																//looks like I setup req.body.spotifyApi.getArtistTopTracks to work
+																//from here but I'm not sure how exactly that is
 
+																//testing: this works but it won't return anything (duh)
+																//topTracksProms.push(limiterSpotify.schedule(spotify_api.getArtistTopTracks,{body:{id:item.id}},'ES',{}))
 
+																var limiterSpotify = new Bottleneck({
+																	maxConcurrent: 15,
+																	minTime: 100,
+																	trackDoneStatus: true
+																});
 
+																//testing: trying to limit this ends up 'this.getAccessToken is not a function'
+																//didn't investigate much tho - figured it was just something with limter's binding getting fucked up
+																//but maybe I have a shitty spotifyApi when I do cheatyToken?
+																//topTracksProms.push(limiterSpotify.schedule(req.body.spotifyApi.getArtistTopTracks,item.id,'ES',{}))
+
+																//todo: fails over some limit
 																topTracksProms.push(req.body.spotifyApi.getArtistTopTracks(item.id, 'ES'));
 																songkickSpotifyMap[artist.id] = item.id;
 
@@ -801,11 +816,13 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 														// Promise.all(topTracksProms)
 														// 	.then(r => {console.log(r);})
+														console.log("topTracksResults...");
 														var topTracksResults = await Promise.all(topTracksProms);
 														//find the event they belong to and mutate it
 														//todo: n^n b/c I took easy way out w/ topTracksProms
 														//should have been done inline?
 														// var artists = [];
+
 
 														//create map w/ artist ids
 														var artistsTracksMap ={};
@@ -838,6 +855,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 														// console.log(JSON.stringify(events));
 														//just tagging this on here
+														console.log("aas_promises...");
 														aas_promises.push(db_mongo_api.insert(events));
 														const result = await Promise.all(aas_promises)
 														return null;
@@ -925,8 +943,13 @@ module.exports.resolveEvents=  function(req){
 		// if(req.body){//postman
 		// }else{ req.body = JSON.parse(req.body.data);}
 
+		//todo: just going to fetch them all for now
+		//until I figure out proper caching on front end
+		//metros are full metro objects
+		// db_mongo_api.fetch(req.body.metros)
 
-		db_mongo_api.fetch(req.body.metro.id.toString()).then(events =>{
+		db_mongo_api.fetch('all')
+			.then(events =>{
 			//console.log(app.jstr(events));
 			console.log("#events:",events.length);
 			var promises = [];

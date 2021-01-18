@@ -47,9 +47,35 @@ var fetchStaticUser =  function(user){
 
 var fetch =  function(param){
 	return new Promise(function(done, fail) {
+		var events = [];
+		console.log("fetching...");
 		var dbo = client.db("master");
-		var events = dbo.collection(param).find().toArray();
-		done(events)
+
+		if(param === 'all'){
+			var states = {"OH":[
+					{"displayName":"Columbus", "id":9480},
+					{"displayName":"Cleveland", "id":14700},
+					{"displayName":"Cincinnati", "id":22040},
+					// {"displayName":"Dayton", "id":3673},
+					{"displayName":"Toledo", "id":5649}
+				]};
+			var proms = [];
+			states['OH'].forEach(m =>{
+				//console.log("m",m.id);
+				proms.push(dbo.collection(m.id.toString()).find().toArray())
+			})
+			Promise.all(proms)
+				.then(r =>{
+					r.forEach(ra =>{
+						events = events.concat(ra);
+					})
+					console.log(events.length);
+					done(events)
+				})
+		}else{
+			events = events.concat(dbo.collection(param).find().toArray())
+			done(events)
+		}
 	})
 }
 
