@@ -4,7 +4,7 @@
 var Bottleneck = require("bottleneck");
 var spotifyApi = null;
 setTimeout(e =>{
-	console.log("setup shitty export: spotifyApi");
+	console.info("setup shitty export: spotifyApi");
 	spotifyApi = require('./spotify_api').spotifyApi;
 },3000)
 
@@ -34,23 +34,23 @@ var spotify_api = require('./spotify_api')
 let sql = require('mssql');
 
 let connect = function(){
-	console.log("connect...");
+	console.info("connect...");
 	try {
 		conn.connect()
 			.then((res) => {
-				console.log("...success!");
+				console.info("...success!");
 
 				let sreq = new sql.Request(conn)
 				sreq.query('select * from xtest').then((res) => {
-					console.log(res);
+					console.info(res);
 				})
 			})
 			.catch(function(err){
-				console.log(err);
+				console.info(err);
 			});
 
 	} catch (err) {
-		console.log(err);
+		console.info(err);
 	}
 };
 
@@ -62,14 +62,14 @@ let connect = function(){
 
 //just checking out raw artist search
 var searchArtists = function(){
-	console.log("searchArtists");
+	//console.info("searchArtists");
 	songkickApi.searchArtists({ query: 'Queen' })
 		.then((res)=>{
-			console.log(JSON.stringify(res[0],null,4));
+			console.info(JSON.stringify(res[0],null,4));
 
 			if(res[0].identifier){
 				res[0].identifier.forEach(function(id){
-					console.log(id.mbid);
+					console.info(id.mbid);
 				})
 			}
 		})
@@ -138,8 +138,8 @@ var find_metros = function() {
 	var state_string = "OH"
 	songkickApi.searchLocations({query: 'Toledo'})
 		.then(function (results) {
-			// console.log("returned: ", results.length);
-			console.log("returned: ", JSON.stringify(results));
+			// console.info("returned: ", results.length);
+			console.info("returned: ", JSON.stringify(results));
 
 			var json_parsed = [];
 
@@ -157,16 +157,16 @@ var find_metros = function() {
 				}
 			})
 
-			console.log("len: ", json_parsed.length);
+			console.info("len: ", json_parsed.length);
 
 			var json = JSON.stringify(json_parsed, null, 4)
 
 			fs.writeFile("output.json", json, function (err) {
 				if (err) {
-					return console.log(err);
+					return console.info(err);
 				}
 
-				console.log("The file was saved!");
+				console.info("The file was saved!");
 			});
 
 		})
@@ -204,15 +204,15 @@ var fetch_metro_events = function(metro,dateFilter){
 
 		dateFilter.start = new Date(dateFilter.start);
 		dateFilter.end = new Date(dateFilter.end);
-		console.log(dateFilter.start);
-		console.log(dateFilter.end);
+		console.info(dateFilter.start);
+		console.info(dateFilter.end);
 
 		//used for stats in return object
 		var event_count = 0;
 
 		var get_events = function(metro){
 			return new Promise(function(done1, fail) {
-				console.log("get_events");
+				console.info("get_events");
 
 				var all_results = [];
 				var page_count = 0;
@@ -227,19 +227,19 @@ var fetch_metro_events = function(metro,dateFilter){
 					params.page = page_count;
 					params.per_page = 50;
 
-					console.log("getting" + metro.displayName + " " + metro.id + " page {" + page_count + "}...");
+					console.info("getting" + metro.displayName + " " + metro.id + " page {" + page_count + "}...");
 					songkickApi.getLocationUpcomingEvents(metro.id,params)
 						.then(function(events){
 
-							//console.log(JSON.stringify(events, null,4));
+							//console.info(JSON.stringify(events, null,4));
 
 							var filterInRange = function(event){
 
 								var res = true;
 								var eDate = new Date(event.start.date)
-								// console.log( dateFilter.start + " > "  + eDate +  " < "+ dateFilter.end);
-								// console.log( eDate < dateFilter.start)
-								// console.log( eDate > dateFilter.end);
+								// console.info( dateFilter.start + " > "  + eDate +  " < "+ dateFilter.end);
+								// console.info( eDate < dateFilter.start)
+								// console.info( eDate > dateFilter.end);
 
 								//if start invalid, set false and ignore end value
 								//if end invalid, set false and ignore start value unless start is false, then take start
@@ -254,8 +254,8 @@ var fetch_metro_events = function(metro,dateFilter){
 								}else if(!dateFilter.start && dateFilter.end) {
 									if(eDate > dateFilter.end){res = false;}
 								}
-								// console.log(":: " + res);
-								// console.log(event.start.date);
+								// console.info(":: " + res);
+								// console.info(event.start.date);
 								return res;
 							};
 
@@ -285,18 +285,18 @@ var fetch_metro_events = function(metro,dateFilter){
 								event_count = event_count + result.events.length;
 							});
 
-							//console.log("--------------------------------");
-							//console.log("outrange:",outRange.length);
-							//console.log("new events:",result.events.length);
-							//console.log("total events:",event_count);
-							//console.log("paging invariant:",events.length);
+							//console.info("--------------------------------");
+							//console.info("outrange:",outRange.length);
+							//console.info("new events:",result.events.length);
+							//console.info("total events:",event_count);
+							//console.info("paging invariant:",events.length);
 
 							//if page length is < 50
 							//OR if we're starting to get zero-inrange results back, but we have SOME (for dateFilter.start)
 
 							if(events.length < 50 || (result.events.length === 0 && all_results.length !== 0)){
 
-								console.log("invariant tripped. stopping.");
+								console.info("invariant tripped. stopping.");
 								done1(all_results)
 							}
 							else{
@@ -325,7 +325,7 @@ var fetch_metro_events = function(metro,dateFilter){
 		//results is an object with three fields: metro id, displayName (of metro) and the future events in that metro
 		Promise.all(promises).then(function(results){
 
-			//console.log(JSON.stringify(results,null,4));
+			//console.info(JSON.stringify(results,null,4));
 
 			//todo: b/c I'm doing one metro?
 			results = results[0];
@@ -337,13 +337,13 @@ var fetch_metro_events = function(metro,dateFilter){
 			results.forEach(function(result){
 				result.events.forEach(function(event){
 
-					//console.log(JSON.parse(JSON.stringify(event)));
+					//console.info(JSON.parse(JSON.stringify(event)));
 					if(ids[event.id]){
 
 					}else{
 						ids[event.id] = event.id;
 						event.metro_id = metro_id;
-						//if(event.id === 35513049){	console.log(event)}
+						//if(event.id === 35513049){	console.info(event)}
 						events.push(event);
 					}
 
@@ -358,8 +358,8 @@ var fetch_metro_events = function(metro,dateFilter){
 			var write_schedule = function(){
 				results.forEach(function(result){
 
-					//console.log("===============");
-					//console.log(result);
+					//console.info("===============");
+					//console.info(result);
 
 
 					// if(result.displayName == "Columbus"){
@@ -379,12 +379,12 @@ var fetch_metro_events = function(metro,dateFilter){
 						var day = date.getUTCDay()
 
 						var newDate = weekday[day] + ", " + m + "-" + d + "-" + y
-						//console.log(m + " " + d + " " + y );
+						//console.info(m + " " + d + " " + y );
 
-						// console.log("######");
-						// console.log(event.start.date);
-						// console.log(date);
-						// console.log(newDate);
+						// console.info("######");
+						// console.info(event.start.date);
+						// console.info(date);
+						// console.info(newDate);
 
 						//perf.date = event.start.date;
 						//performance.date = newDate;
@@ -415,7 +415,7 @@ var fetch_metro_events = function(metro,dateFilter){
 							// 	performance_dates[newDate].push(performance);
 							// }
 							// else{
-							// 	console.log(performance);
+							// 	console.info(performance);
 							// }
 						}
 
@@ -427,10 +427,10 @@ var fetch_metro_events = function(metro,dateFilter){
 
 			//write_schedule();
 
-			console.log("----------------------");
-			console.log("# of payloads: ",results.length);
-			console.log("events length: ",events.length);
-			console.log("----------------------");
+			console.info("----------------------");
+			console.info("# of payloads: ",results.length);
+			console.info("events length: ",events.length);
+			console.info("----------------------");
 
 			done(events);
 
@@ -439,8 +439,8 @@ var fetch_metro_events = function(metro,dateFilter){
 			//
 			// fs.writeFile(raw, json, function(err) {
 			//
-			// 	if(err) {   return console.log(err); }
-			// 	else{ console.log(raw + " saved!");}
+			// 	if(err) {   return console.info(err); }
+			// 	else{ console.info(raw + " saved!");}
 			// });
 			//
 			// var output = {};
@@ -453,9 +453,9 @@ var fetch_metro_events = function(metro,dateFilter){
 			//
 			// fs.writeFile(areaDatesArtists, json, function(err) {
 			//
-			// 	if(err) {   return console.log(err); }
+			// 	if(err) {   return console.info(err); }
 			// 	else{
-			// 		console.log(areaDatesArtists + " saved!");
+			// 		console.info(areaDatesArtists + " saved!");
 			// 		done2(results);
 			// 	}
 			//
@@ -463,7 +463,7 @@ var fetch_metro_events = function(metro,dateFilter){
 
 
 		}).catch(function(e){
-			console.log(e);
+			console.info(e);
 		})
 
 	})
@@ -495,6 +495,13 @@ var fake_metro_events =  function(label,limit){
 
 //testing args: fake_metro_events
 
+	//todo: MOVE
+var limiterSpotify = new Bottleneck({
+		maxConcurrent: 15,
+		minTime: 100,
+		trackDoneStatus: true
+	});
+
 module.exports.fetchMetroEvents =  function(req, res,next){
 	return new Promise(function(done, fail) {
 
@@ -514,13 +521,13 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 						date.setDate(date.getDate() + days);
 						return date;
 					};
-					req.body.dateFilter.end = new Date().addDays(60).toISOString();
+					req.body.dateFilter.end = new Date().addDays(365).toISOString();
 
 					console.warn("faking dateFilter values");
-					console.log(req.body.dateFilter);
+					console.info(req.body.dateFilter);
 					//--------------------------------------------------------------
 
-					let startDate = new Date();console.log("fetchMetroEvents start time:",startDate);
+					let startDate = new Date();console.info("fetchMetroEvents start time:",startDate);
 
 					if (new Date(req.body.dateFilter.start).getDate() < new Date().getDate()) {
 						done({error: "start date is less than current date"})}
@@ -533,7 +540,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 								if (next) {
 									next(events)
 								} else {
-									//console.log(app.jstr(results));
+									//console.info(app.jstr(results));
 
 									//this object acts as a record tracking the result of this run of
 									//fetch_metro_events. we will record this in our logs so that we can tell:
@@ -589,7 +596,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 									//testing:
 									//results = results.splice(0,1)
 									//console.warn("clipping AASMatch results to 1!!!");
-									//console.log(AASMatch[0]);
+									//console.info(AASMatch[0]);
 
 
 									events.forEach(ob =>{
@@ -600,14 +607,14 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 										})
 									});
 
-									//console.log("artists",metrOb.artists.length);
+									//console.info("artists",metrOb.artists.length);
 
 									//testing:
 									//var death = metrOb.artists.filter(a =>{return a.name === 'Death Valley Girls'});
 									//metrOb.artists = metrOb.artists.slice(0,5);
 									//metrOb.artists.push(death[0]);
 									//console.warn("clipping total artists to 5!!!");
-									//console.log(app.jstr(metrOb.artists));
+									//console.info(app.jstr(metrOb.artists));
 
 
 									//check if we ALREADY KNOW OF a match between songkick and spotify
@@ -640,9 +647,9 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 											});
 
 
-											console.log("metrOb.aas_match",metrOb.aas_match.length);
-											console.log("metrOb.aas_match_genres",metrOb.aas_match_genres.length);
-											console.log("LevenMatch payload",LevenMatch.length);
+											console.info("metrOb.aas_match",metrOb.aas_match.length);
+											console.info("metrOb.aas_match_genres",metrOb.aas_match_genres.length);
+											console.info("LevenMatch payload",LevenMatch.length);
 
 											//testing:
 											//LevenMatch.push(db_api.checkDBForArtistLevenMatch({name:"earth gang",id:1234324}));
@@ -651,12 +658,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 												//spotify artist string search
 
-												//todo: MOVE
-												var limiterSpotify = new Bottleneck({
-													maxConcurrent: 15,
-													minTime: 100,
-													trackDoneStatus: true
-												});
+
 
 												//history:
 												//238 @ 20:100 FAIL
@@ -697,9 +699,9 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 												});
 
 
-												console.log("leven_match",metrOb.leven_match.length);
-												console.log("queries #",searches.length);
-												console.log("metrobArtists #",artistSongkicks.length);
+												console.info("leven_match",metrOb.leven_match.length);
+												console.info("queries #",searches.length);
+												console.info("metrobArtists #",artistSongkicks.length);
 
 
 
@@ -708,7 +710,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 												Promise.all(combined_promises).then(results => {
 													//look like: {artist:{},result:{}}
-													//console.log("$searches",app.jstr(results[0]));
+													//console.info("$searches",app.jstr(results[0]));
 													var newMatches = [];
 													var newMatches_genres = [];
 													var rejectedMatches = [];
@@ -732,17 +734,17 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 															noMatches.push(r.artist)}
 														else{
 															var item = r.result.body.artists.items[0];	var artist = r.artist;
-															// console.log(item.name + "/" + artist.name);
+															// console.info(item.name + "/" + artist.name);
 															var a = FuzzySet();a.add(item.name);
-															//console.log("m",a.get(artist.name));
+															//console.info("m",a.get(artist.name));
 
 															//bad match
 															//push onto next payload
 															if(a.get(item.name) === null || a.get(item.name)[0][0] < .5){
 																rejectedMatches.push([item.name,artist.name])
-																console.log("rejection",artist);
-																console.log(item.genres);
-																console.log(a.get(item.name) );
+																console.info("rejection",artist);
+																console.info(item.genres);
+																console.info(a.get(item.name) );
 															}else{
 																//quality match, no genres means we push onto next payload
 																//and we also record this new match
@@ -768,11 +770,11 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 																//testing: this works but it won't return anything (duh)
 																//topTracksProms.push(limiterSpotify.schedule(spotify_api.getArtistTopTracks,{body:{id:item.id}},'ES',{}))
 
-																var limiterSpotify = new Bottleneck({
-																	maxConcurrent: 15,
-																	minTime: 100,
-																	trackDoneStatus: true
-																});
+																// var limiterSpotify2 = new Bottleneck({
+																// 	maxConcurrent: 1,
+																// 	minTime: 5000,
+																// 	trackDoneStatus: true
+																// });
 
 																//testing: trying to limit this ends up 'this.getAccessToken is not a function'
 																//didn't investigate much tho - figured it was just something with limter's binding getting fucked up
@@ -780,7 +782,8 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 																//topTracksProms.push(limiterSpotify.schedule(req.body.spotifyApi.getArtistTopTracks,item.id,'ES',{}))
 
 																//todo: fails over some limit
-																topTracksProms.push(req.body.spotifyApi.getArtistTopTracks(item.id, 'ES'));
+																//topTracksProms.push(req.body.spotifyApi.getArtistTopTracks(item.id, 'ES'));
+																topTracksProms.push(limiterSpotify.schedule(spotify_api.getArtistTopTracks,{body:{id:item.id,spotifyApi:req.body.spotifyApi,}},{}))
 																songkickSpotifyMap[artist.id] = item.id;
 
 
@@ -792,8 +795,8 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 																// 	displayName: 'Twin Peaks',
 																// 	genres: []}
 
-																// console.log(item);
-																// console.log(artist);
+																// console.info(item);
+																// console.info(artist);
 
 																var songkickOb = {id:item.id,name:item.name,artistSongkick_id:artist.id,displayName:artist.name,genres:item.genres}
 																songkickOb.newSpotifyArtist = item;
@@ -808,15 +811,15 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 													})//results.each
 
 													//testing:
-													console.log(noMatches);
-													// console.log(rejectedMatches);
-													// console.log(newMatches);
+													console.info(noMatches);
+													// console.info(rejectedMatches);
+													// console.info(newMatches);
 
 													async function asyncCall() {
 
 														// Promise.all(topTracksProms)
-														// 	.then(r => {console.log(r);})
-														console.log("topTracksResults...");
+														// 	.then(r => {console.info(r);})
+														console.info("topTracksResults...");
 														var topTracksResults = await Promise.all(topTracksProms);
 														//find the event they belong to and mutate it
 														//todo: n^n b/c I took easy way out w/ topTracksProms
@@ -826,18 +829,20 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 
 														//create map w/ artist ids
 														var artistsTracksMap ={};
-														topTracksResults.forEach(r => {
-															r.body.tracks[0].artists.forEach(a => {
-																//todo: trimming this result to just ids
-																var ids = r.body.tracks.map(t => t.id)
 
-																artistsTracksMap[a.id] = ids
-																//artistsTracksMap[a.name] = ids
+														//returns a set of 10 tracks for each artist
+														topTracksResults.forEach(tracks => {
+															tracks.forEach(t =>{
+																t.artists.forEach(a => {
+																	//todo: trimming this result to just ids
+																	artistsTracksMap[a.id] = tracks.map(t => t.id)
+																	//artistsTracksMap[a.name] = ids
+																})
 															})
 														})
 														//artists = r.body.tracks[0].artists.map(i => {return i.id});
 
-														console.log(Object.keys(songkickSpotifyMap).length);
+														console.info(Object.keys(songkickSpotifyMap).length);
 														events.forEach(e =>{
 															//for each performance, if we saved the mapping of the artist
 															//set their topfive = to the spotify tracks map
@@ -850,10 +855,10 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 															// artists.forEach(id =>{
 															// 	var a = _.find(e.performance,['artist.id', id]);
 															// })
-															//console.log(artist.id);
+															//console.info(artist.id);
 														})
 
-														// console.log(JSON.stringify(events));
+														// console.info(JSON.stringify(events));
 														//just tagging this on here
 														console.log("aas_promises...");
 														aas_promises.push(db_mongo_api.insert(events));
@@ -864,21 +869,21 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 													asyncCall().then(r => {
 															// Promise.all(aas_promises).then(r => {
 
-															//console.log("4====================");
-															//console.log(r);
-															console.log("fetchMetroEvents finished execution:",Math.abs(new Date() - startDate) / 600);
-															console.log("all events, artists and genres committed!");
+															//console.info("4====================");
+															//console.info(r);
+															console.info("fetchMetroEvents finished execution:",Math.abs(new Date() - startDate) / 600);
+															console.info("all events, artists and genres committed!");
 															done(obs)
 														},
-														error =>{ console.log("$asyncCall aas_promises error",error);})
+														error =>{ console.info("$asyncCall aas_promises error",error);})
 
 
-												},error =>{ console.log("$searches error",error);})
+												},error =>{ console.info("$searches error",error);})
 
 												//puppets
 
 												var puppets = [];
-												// //console.log("$levenMatch",app.jstr(results));
+												// //console.info("$levenMatch",app.jstr(results));
 												// results.forEach(r =>{
 												// 	if(!(r.error)){
 												// 		//should be artist objects w/ genres
@@ -888,21 +893,21 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 												// 	}
 												// })
 
-												//console.log("metrOb",app.jstr(metrOb));
+												//console.info("metrOb",app.jstr(metrOb));
 
 
 
 												// Promise.all(puppets).then(results2 => {
-												// 	console.log("$results2",app.jstr(results2));
-												// },error =>{ console.log("$puppets",error);})
+												// 	console.info("$results2",app.jstr(results2));
+												// },error =>{ console.info("$puppets",error);})
 
-											},error =>{ console.log("$LevenMatch",error);})
+											},error =>{ console.info("$LevenMatch",error);})
 										},
-										error =>{ console.log("$AASMatch",error);})
+										error =>{ console.info("$AASMatch",error);})
 
 									//expecting a playob so we'll wrap this here
 									// db_api.checkDBForArtistGenres({artists:artists}).then(r =>{
-									// 	console.log("checkDBForArtistGenres:",r);
+									// 	console.info("checkDBForArtistGenres:",r);
 									// })
 									//aggregator.bandsintown
 
@@ -939,7 +944,7 @@ module.exports.resolveEvents=  function(req){
 	return new Promise(function(done, fail) {
 
 		//todo: ajax weirdness
-		console.log("resolveEvents",req.body);
+		console.info("resolveEvents",req.body);
 		// if(req.body){//postman
 		// }else{ req.body = JSON.parse(req.body.data);}
 
@@ -950,8 +955,8 @@ module.exports.resolveEvents=  function(req){
 
 		db_mongo_api.fetch('all')
 			.then(events =>{
-			//console.log(app.jstr(events));
-			console.log("#events:",events.length);
+			//console.info(app.jstr(events));
+			console.info("#events:",events.length);
 			var promises = [];
 			var perfMap = {}
 			events.forEach(e =>{
@@ -966,7 +971,7 @@ module.exports.resolveEvents=  function(req){
 				});
 			});
 			Promise.all(promises).then(results =>{
-				//console.log(app.jstr(r));
+				//console.info(app.jstr(r));
 				//todo: speed up unwinding
 
 				//setting perfMap earlier + sending perf along helps unwind results
@@ -1002,7 +1007,7 @@ module.exports.resolveEvents=  function(req){
 
 // get_metro_events(metro_select,dateFilter,raw,areaDatesArtists)
 // 	.then(function(){
-// 		console.log("finished get_metro_events");
+// 		console.info("finished get_metro_events");
 // 	});
 
 //var artist_input = "my_artists.json";
@@ -1017,12 +1022,12 @@ module.exports.resolveEvents=  function(req){
 //
 // var matches = "matches_" + metro_select.displayName +"_" + dateFilter.start + "-" + dateFilter.end + ".json"
 //
-// console.log("artist input: ",artist_input);
-// console.log("events input: ",areaDatesArtists);
+// console.info("artist input: ",artist_input);
+// console.info("events input: ",areaDatesArtists);
 //
 // fuzzy_compare(my_performances,my_artists,matches)
 // 	.then(function(){
-// 		console.log("finished fuzzy_compare");
+// 		console.info("finished fuzzy_compare");
 // 	});
 
 
@@ -1031,13 +1036,13 @@ module.exports.resolveEvents=  function(req){
 // get_metro_events(metro_select,dateFilter,raw,areaDatesArtists)
 // 	.then(fuzzy_compare(my_performances,my_artists))
 // 	.then(function(){
-// 		console.log("FINISHED!");
+// 		console.info("FINISHED!");
 //
 // });
 
 // fuzzy_compare(my_performances,my_artists,matches)
 // 	.then(function(){
-// 		console.log("finished fuzzy_compare");
+// 		console.info("finished fuzzy_compare");
 // 	});
 
 // const promiseSerial = funcs =>
@@ -1053,10 +1058,10 @@ module.exports.resolveEvents=  function(req){
 // // execute Promises in serial
 // promiseSerial(funcs)
 // 	.then(function(){
-// 		console.log("FINISHED!")
+// 		console.info("FINISHED!")
 // 	})
 // 	.catch(function(err){
-// 		console.log("ERROR",err)
+// 		console.info("ERROR",err)
 // 	})
 //
 

@@ -32,13 +32,13 @@ let limiters = function(){
 	//todo: optimize
 	limiterSpotify = new Bottleneck({
 		maxConcurrent: 10,
-		minTime: 100,
+		minTime: 300,
 		trackDoneStatus: true
 	});
 
 	limiterSpotifyTrack = new Bottleneck({
 		maxConcurrent: 10,
-		minTime: 100,
+		minTime: 300,
 		trackDoneStatus: true
 	});
 
@@ -172,8 +172,8 @@ module.exports.getPage = function(body,key,req){
 	})
 }
 
-module.exports.getPages = function(body,key){
-    return new Promise(function(done, fail) {
+module.exports.getPages = function(req,body,key){
+	return new Promise(function(done, fail) {
 		var re = /.*\?/;var reRes =  re.exec(body.next);
 		var baseUrl = reRes[0]; //not an array
 
@@ -183,7 +183,7 @@ module.exports.getPages = function(body,key){
 		if(key){baseUrl = baseUrl + "type=" + key + "&"}
 		console.log("baseUrl",baseUrl);
 
-		let options = {uri:baseUrl,headers: {"Authorization":'Bearer ' + sApi.token}, json: true};
+		let options = {uri:baseUrl,headers: {"Authorization":'Bearer ' + req.body.spotifyApi.getAccessToken()}, json: true};
 		var num = Math.ceil(body.total / 50)
 		console.log("total",body.total);
 		console.log("scheduled",num);
@@ -204,11 +204,11 @@ module.exports.getPages = function(body,key){
 		Promise.all(promises).then(r => {
 			//console.log('here');
 			done(r);
-			},err =>{
+		},err =>{
 			console.error(err.error)
 			// fail(err)
 		})
-    })
+	})
 }
 
 
@@ -229,7 +229,7 @@ module.exports.resolvePlayob = function(playob){
 				console.log(resolvedArtists === null);
 				!(resolvedArtists)?playob.payloadResolved = resolvedArtists:playob.payloadResolved =null;
 				done(playob);
-				},e => {fail(e);})
+			},e => {fail(e);})
 	})}
 
 /**
@@ -239,59 +239,74 @@ module.exports.resolvePlayob = function(playob){
  */
 module.exports.resolveArtists = function(req,artists){
 	return new Promise(function(done, fail) {
-			console.log("resolveArtists",artists.length);
-			let startDate = new Date(); console.log("resolveSpotify start time:",startDate);
-			//resolver.spotify expects batches of 50 artist's ids
-			var promises = [];
-			var payloads = [];
-			var payload = [];
-			artists.forEach(function(a,i){
+		//console.log("resolveArtists",artists.length);
+		//let startDate = new Date(); console.log("resolveSpotify start time:",startDate);
+		//resolver.spotify expects batches of 50 artist's ids
+		var promises = [];
+		var payloads = [];
+		var payload = [];
+		artists.forEach(function(a,i){
 
-				//testing:
-				// a.id === '7HhTERkBV4Ot14KphgBfSh' ? console.log(a):{};
-				// a.id === '3NTbCfTrDL2WFob27hdLTe' ? console.log(a):{};
+			//todo: apparently it's possible for me to get an artist w/ no id.. no anything?
+			//maybe I'm mistaking this for some kind of issue I'm causing myself, but super
+			//odd it's only occurring for this artist:
+			// {
+			// 	"external_urls": {},
+			// 	"href": null,
+			// 	"id": null,
+			// 	"name": "Fabolous",
+			// 	"type": "artist",
+			// 	"uri": null
+			// }
+			//if(!a.id){console.log(a);}
+
+			if(a.id !== null){
 				if(i === 0){payload.push(a.id)}
 				else{
 					if(!(i % 50 === 0)){	payload.push(a.id)}
 					else{payloads.push(payload);payload = [];payload.push(a.id)}
 				}
-			});
-			payload.length ? payloads.push(payload):{};
-			payloads.forEach(function(pay){
-				promises.push(limiterSpotify.schedule(resolver_api.spotifyArtists,pay,req,{}))
-			});
+			}
+		});
+		payload.length ? payloads.push(payload):{};
+		payloads.forEach(function(pay){
+			promises.push(limiterSpotify.schedule(resolver_api.spotifyArtists,pay,req,{}))
+		});
 
-			Promise.all(promises).then(results => {
-				console.log("resolveArtists finished execution:",Math.abs(new Date() - startDate) / 600);
-				//console.log("$results",app.jstr(results));
+		Promise.all(promises).then(results => {
+			//console.log("resolveArtists finished execution:",Math.abs(new Date() - startDate) / 600);
+			//console.log("$results",app.jstr(results));
 
-				//there will be as many results as there were payloads required to resolve the
-				//batch of artists we were tossed
+			//there will be as many results as there were payloads required to resolve the
+			//batch of artists we were tossed
 
-				//testing:
-				results.length === 0?console.warn("zero length result"):{};
+			//testing:
+			results.length === 0?console.warn("zero length result"):{};
 
-				//unwind them all
-				var resolved = [];
-				results.forEach(function(r){
-					// r.artists.forEach(function(a){
-					// 	// a.id === '7HhTERkBV4Ot14KphgBfSh' ? console.log(a):{};
-					// });
-					//testing: necessary check?
-					if(!(r.artists.length > 0)){
-						console.warn("resolve artists failed to return any",r)
-					}else{
-						db_api.commitArtistGenres(r.artists)
-							.then(resolved =>{
-								//testing:
-								done(r.artists)
-							})
+			//unwind them all
+			var resolved = [];
+			results.forEach(function(r){
+				r.artists.forEach(function(a){
+					if(a === null){
+						console.log(a);
 					}
 				});
-				// console.log(resolved.length === 0);
-				// resolved.length === 0 ? resolved = null:{};
-				// done(resolved)
-			},e => {fail(e);})
+
+				//testing: necessary check?
+				if(!(r.artists.length > 0)){
+					console.warn("resolve artists failed to return any",r)
+				}else{
+					db_api.commitArtistGenres(r.artists)
+						.then(resolved =>{
+							//testing:
+							done(r.artists)
+						})
+				}
+			});
+			// console.log(resolved.length === 0);
+			// resolved.length === 0 ? resolved = null:{};
+			// done(resolved)
+		},e => {fail(e);})
 	})
 }
 

@@ -100,7 +100,7 @@ module.exports.spotifySearch  = function(artist){
  */
 module.exports.spotifyArtists = function(payload,req){
 	return new Promise(function(done, fail) {
-		//console.log("spotifyArtists payload",payload.length);
+		console.log("spotifyArtists payload",payload.length);
 		var multiArtistStr = "";
 		payload.forEach(function(id,i){
 			multiArtistStr = multiArtistStr + id + ","
@@ -120,6 +120,11 @@ module.exports.spotifyArtists = function(payload,req){
 
 		//console.log(options.uri);
 		rp(options).then(r => {
+			// r.artists.forEach(a =>{
+			// 	if(a === null){
+			// 		console.log(a);
+			// 	}
+			// })
 			//console.log("$r",r);
 			done(r)
 		},err =>{

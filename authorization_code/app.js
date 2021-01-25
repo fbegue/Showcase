@@ -154,35 +154,42 @@ console.error = function(msg){console.log(colors.red(msg))};
 console.warn = function(msg){console.log(colors.yellow(msg))};
 console.good = function(msg){console.log(colors.green(msg))};
 
-//todo: yeah this line prints...
-//but the location is just right here over and over lol?
-//@ app.js:108:46
-console.info = function(msg){
-	var linePrint = function(){
-		let initiator = 'unknown place';
-		try {
-			throw new Error();
-		} catch (e) {
-			if (typeof e.stack === 'string') {
-				let isFirst = true;
-				for (const line of e.stack.split('\n')) {
-					const matches = line.match(/^\s+at\s+(.*)/);
-					if (matches) {
-						if (!isFirst) { // first line - current function
-							// second line - caller (what we are looking for)
-							initiator = matches[1];
-							break;
-						}
-						isFirst = false;
-					}
-				}
-			}
-		}
-		var pat = new RegExp(/\\(?:.(?!\\))+$/)
-		return pat.exec(initiator);
-	};
-	console.log('\x1b[36m%s\x1b[0m',msg + " " + linePrint())
-};
+//todo: yeah this just prints THIS line lol
+// console.info = function(msg){
+// 	var linePrint = function(){
+// 		let initiator = 'unknown place';
+// 		try {
+// 			throw new Error();
+// 		} catch (e) {
+// 			if (typeof e.stack === 'string') {
+// 				let isFirst = true;
+// 				for (const line of e.stack.split('\n')) {
+// 					const matches = line.match(/^\s+at\s+(.*)/);
+// 					if (matches) {
+// 						if (!isFirst) { // first line - current function
+// 							// second line - caller (what we are looking for)
+// 							initiator = matches[1];
+// 							break;
+// 						}
+// 						isFirst = false;
+// 					}
+// 				}
+// 			}
+// 		}
+// 		var pat = new RegExp(/\\(?:.(?!\\))+$/)
+// 		return pat.exec(initiator);
+// 	};
+// 	console.log('\x1b[36m%s\x1b[0m',msg + " " + linePrint())
+// };
+
+//same issue
+
+// var log = console.log;
+// console.info = function() {
+// 	log.apply(console, arguments);
+// 	// Print the stack trace
+// 	console.trace();
+// };
 
 //more strategic way of replacing console methods
 var configureLogs = function(){

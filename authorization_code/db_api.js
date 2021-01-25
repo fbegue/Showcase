@@ -255,7 +255,7 @@ module.exports.checkDBForArtistGenres =  function(playob,key){
 		if(artists[0]){
 			//console.log(artists[0]);
 			typeof artists[0].id == "string" ? songkickIds = false:{};
-			console.log("process set of " + (songkickIds ? "songkickIds":"spotifyIds"));
+			//console.log("process set of " + (songkickIds ? "songkickIds":"spotifyIds"));
 		}
 
 		var promises = [];
@@ -328,8 +328,10 @@ me.commitArtistGenres =  function(artists) {
 		var gpromises = [];
 		var unique = []
 		artists.forEach(function (a) {
-			//!(a.genres) ? console.warn("artist w/ no genres to submit"):{};
-
+			!(a.genres) ? console.warn("artist w/ no genres to submit"):{};
+			if(!(a.genres)){
+				console.log(a);
+			}
 			//either the artist has genres or it doesn't - if not we just skip it
 			//later on again we'll just skip it...
 
