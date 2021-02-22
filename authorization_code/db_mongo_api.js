@@ -38,10 +38,20 @@ var insertStaticUser =  function(payload){
 	})
 }
 
+var saveSnapshotPlaylists =  function(user,snapMap){
+	return new Promise(function(done, fail) {
+		var dbo = client.db("master");
+		dbo.collection('users').updateOne({id:user.id},{$set : {snapMap:snapMap}})
+			.then(r2 =>{
+			done(r2)
+		})
+	})
+}
+
 var fetchStaticUser =  function(user){
 	return new Promise(function(done, fail) {
 		var dbo = client.db("master");
-		done(dbo.collection('users').find({user:user}).toArray());
+		done(dbo.collection('users').find({id:user.id}).toArray());
 	})
 }
 
@@ -80,7 +90,7 @@ var fetch =  function(param){
 }
 
 
-module.exports = {insert,fetch,insertStaticUser,fetchStaticUser}
+module.exports = {insert,fetch,insertStaticUser,fetchStaticUser,saveSnapshotPlaylists}
 
 //
 // import_client().then(client =>{

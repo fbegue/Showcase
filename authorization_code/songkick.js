@@ -509,7 +509,7 @@ module.exports.fetchMetroEvents =  function(req, res,next){
 		//as if it was coming from the UI so everything shoooould just be seemless)
 		//don't like having to wrap like this though - at least it ALREADY looks like garbage!
 
-			spotify_api.getCheatyToken()
+			spotify_api.getCheatyToken(a)
 				.then(api =>{
 					req.body.spotifyApi = api
 

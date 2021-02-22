@@ -57,10 +57,10 @@ app.use(function (req, res, next) {
 	//so this guy should create it's own instance of my spotify api object using the client creds
 	//and then any request should just look at its req to find their specific api creded object
 	console.log("auth middleware:",req.url);
-	console.log("auth middleware:",req.body.auth);
+	console.log("auth middleware:",req.body.auth !== undefined);
 	//console.log(req.body.auth);
 	req.body.auth ? set() : setFake()
-	function set(){
+	function set(){[]
 		console.log("auth middleware used");
 		spotify_api.getSpotifyWebApi()
 		.then(api =>{

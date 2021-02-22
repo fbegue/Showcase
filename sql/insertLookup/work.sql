@@ -36,7 +36,8 @@ select distinct a.id, a.name, g.id as genre_id,g.name as genre
 from artists a
 left join genre_artist ga on a.id = ga.artist_id
 left join genres g on ga.genre_id = g.id
-where g.name is not null and a.id = '0Lpr5wXzWLtDWm1SjNbpPb'
+where g.name is not null
+--and a.id = '0Lpr5wXzWLtDWm1SjNbpPb'
 group by a.id,a.name,g.id,g.name 
 having count(*) >=1
 
