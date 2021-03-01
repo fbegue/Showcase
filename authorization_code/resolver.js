@@ -342,7 +342,7 @@ module.exports.resolvePlaylists = function(body){
 				}
 				else{
 					options.offset = options.offset + offset_base ;
-					options.uri =  options.url + "?fields=items.added_at,items.track(id,name,artists,added_at)&limit="+ options.limit + "&offset=" + options.offset;
+					options.uri =  options.url + "?fields=items.added_at,items.added_by,items.track(id,name,artists)&limit="+ options.limit + "&offset=" + options.offset;
 
 
 					//todo: ideally I think it would be better if I knew how many total requests I was going to have to make
@@ -414,7 +414,7 @@ module.exports.resolvePlaylists = function(body){
 			options.url =  url1 + play.id + url2;
 			options.offset = 0;
 			options.limit = 50;
-			options.uri = options.url + "?fields=items.added_at,items.track(id,name,artists)&limit=" + options.limit + "&offset=" + options.offset;
+			options.uri = options.url + "?fields=items.added_at,items.added_by,items.track(id,name,artists)&limit=" + options.limit + "&offset=" + options.offset;
 			options.playlist = play;
 			options.store = [];
 			promises.push(limiterSpotifyTrack.schedule(getPages,options,{}))
