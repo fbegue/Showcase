@@ -19,6 +19,7 @@ var resolver = require('./resolver.js');
 var resolver_api = require('./resolver_api.js');
 var util = require('./util')
 var sample_events = require('./example data objects/event').events;
+var sample_playlists_resolved =  require('./example endpoint outputs/playlists_resolved_20')
 
 //========================================
 //db setup
@@ -97,24 +98,24 @@ module.exports.getAuth =  function(req,res){
 
 module.exports.refreshAuth =  function(req,res){
 	//console.log("getAuth...",req.body);
-			console.log("refresing via client refresh_token...",req.body.access_token);
-			var authOptions = {
-				method:"POST",
-				url: 'https://accounts.spotify.com/api/token',
-				headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
-				form: {
-					grant_type: 'refresh_token',
-					refresh_token: req.body.refresh_token
-				},
-				json: true
-			};
-			rp(authOptions).then(function (result) {
-				console.log("new access_token from refresh",result.access_token);
-				res.send({access_token: result.access_token})
-			}).catch(function (err) {
-				console.log(err.error);
-				fail(err);
-			})
+	console.log("refresing via client refresh_token...",req.body.access_token);
+	var authOptions = {
+		method:"POST",
+		url: 'https://accounts.spotify.com/api/token',
+		headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
+		form: {
+			grant_type: 'refresh_token',
+			refresh_token: req.body.refresh_token
+		},
+		json: true
+	};
+	rp(authOptions).then(function (result) {
+		console.log("new access_token from refresh",result.access_token);
+		res.send({access_token: result.access_token})
+	}).catch(function (err) {
+		console.log(err.error);
+		fail(err);
+	})
 }
 
 // var global_access_token = "";
@@ -539,7 +540,7 @@ me.getUserPlaylistFriends = function (req,res) {
  */
 
 var getFollowedArtists =  function(req){
-    return new Promise(function(done, fail) {
+	return new Promise(function(done, fail) {
 		console.log("getFollowedArtists",req.body.spotifyApi.getAccessToken());
 		//comparing spotifyApi here to sucessful one in resolvePlaylists
 		// console.log("getFollowedArtists... is forbidden? spotifyApi:",spotifyApi);
@@ -590,8 +591,7 @@ var getFollowedArtists =  function(req){
 
 				r.artists.forEach(a =>{
 					a.familyAgg = util.familyFreq(a);
-					//testing: assigning sort value here, like term in topArtists
-					a.followed = true;
+					a.source = 'saved'
 				})
 
 				//console.log(r.items.length + " " + r.artists.items.length);
@@ -608,7 +608,7 @@ var getFollowedArtists =  function(req){
 				fail(err)
 				//next(e.body)
 			})
-    })
+	})
 }
 
 me.getFollowedArtists =  function(req,res){
@@ -628,48 +628,52 @@ me.getFollowedArtists =  function(req,res){
 //todo: regarding getMySavedAlbums,getTopArtists, getMySavedTracks
 //not doing anything with 'couldn't find artists' printout
 
-//todo: duplicate code b/c not figuring out branching promises rn
+//todo: duplicate code b/c not sure how to handle 'branching promises'
 me.getMySavedTracksLast =  function(req,res){
-		var trackOb = {};
-		req.body.spotifyApi.getMySavedTracks({limit : 5})
-			.then(pagedRes =>{
-				trackOb = pagedRes.body;
-				var artists = [];
-				trackOb.items.forEach(item =>{
-					artists = artists.concat(_.get(item,'track.artists'));
-				})
-
-				//prune duplicate artists from track aggregation
-				artists = _.uniqBy(artists, function(n) {return n.id;});
-
-				//resolving all the artists for all the tracks
-				return resolver.resolveArtists(req,artists)
-					.then(empty =>{
-						var pullArtists = [];
-						trackOb.items.forEach(item =>{
-							delete item.track.album.artists;
-
-							//I just don't like looking at these
-							item.track.available_markets = null;
-							item.track.album.available_markets = null;
-
-							item.track.artists.forEach(a =>{
-								pullArtists.push(a)
-							})
-						});
-
-						return db_api.checkDBForArtistGenres({payload:pullArtists},'payload')
-							.then(resolvedArtists =>{
-								return trackOb.items;
-							})
-					})
+	var trackOb = {};
+	req.body.spotifyApi.getMySavedTracks({limit : 5})
+		.then(pagedRes =>{
+			trackOb = pagedRes.body;
+			var artists = [];
+			trackOb.items.forEach(item =>{
+				artists = artists.concat(_.get(item,'track.artists'));
 			})
-			.then(r =>{
-				res.send(r);
-			}, function(err) {
-				console.log('getMySavedTracks failed', err);
-			});
-	};
+
+			//prune duplicate artists from track aggregation
+			artists = _.uniqBy(artists, function(n) {return n.id;});
+
+			//resolving all the artists for all the tracks
+			return resolver.resolveArtists(req,artists)
+				.then(empty =>{
+					var pullArtists = [];
+					trackOb.items.forEach(item =>{
+						delete item.track.album.artists;
+
+						//I just don't like looking at these
+						item.track.available_markets = null;
+						item.track.album.available_markets = null;
+
+						item.track.artists.forEach(a =>{
+							pullArtists.push(a)
+						})
+					});
+
+					return db_api.checkDBForArtistGenres({payload:pullArtists},'payload')
+						.then(resolvedArtists =>{
+							return trackOb.items.map(i =>{
+								var t = {...i.track}
+								t.added_at = i.added_at;
+								return t;
+							})
+						})
+				})
+		})
+		.then(r =>{
+			res.send(r);
+		}, function(err) {
+			console.log('getMySavedTracks failed', err);
+		});
+};
 
 /** getMySavedTracks
  * @desc Get tracks in the signed in user's Your Music library
@@ -681,9 +685,13 @@ me.getMySavedTracksLast =  function(req,res){
 me.getMySavedTracks =  function(req,res){
 	var trackOb = {};
 	req.body.spotifyApi.getMySavedTracks({limit : 50})
-		.then(pageIt.bind(null,req,null))
+		//.then(pageIt.bind(null,req,null))
 		.then(pagedRes =>{
-			trackOb = pagedRes;
+
+			//testing: limit to 50
+			if(true){trackOb = pagedRes.body }
+			else{trackOb = pagedRes;}
+
 			var artists = [];
 			trackOb.items.forEach(item =>{
 				artists = artists.concat(_.get(item,'track.artists'));
@@ -720,7 +728,6 @@ me.getMySavedTracks =  function(req,res){
 					});
 
 
-
 					//testing:
 					//pullArtists = pullArtists.slice(0,5)
 
@@ -729,29 +736,43 @@ me.getMySavedTracks =  function(req,res){
 					return db_api.checkDBForArtistGenres({payload:pullArtists},'payload')
 						.then(resolvedArtists =>{
 
-							// const file = 'temp.json'
-							// var res = (async () => {
-							// 	jsonfile.writeFile(file,  trackOb.items)
-							// 	jsonfile.readFile(file,  trackOb.items)
-							// 		.then(r =>{
-							// 			return r;
-							// 			//console.log("$",r.length)
-							// 		})
-							// })();
+							//todo: this all looks like shit (could be faster?)
 
-							//return res;
-							return trackOb.items;
+							var tracks =  trackOb.items.map(i =>{
+								var t = {...i.track}
+								t.added_at = i.added_at;
+								t.source = 'saved'
+								return t;
+							})
+							//determine family agg for each artist on each track
+							var stats = {};
+							var artistFreq = {};
+							tracks.forEach(t =>{
+								t.artists.forEach(a =>{
+									a.familyAgg = util.familyFreq(a);
+									!(artistFreq[a.id]) ? artistFreq[a.id] = {value:1,artist:a}: artistFreq[a.id].value++;
 
+									//aMap[a.id]= a;
+								})
+								// t.artists.forEach((a,i,arr) =>{
+								// 	arr[i] = aMap[a.id]
+								// })
+							})
 
-							// trackOb.items.forEach(t=>{
-							//
-							// })
+							var artObs = [];
+							Object.keys(artistFreq).forEach(key =>{
+								artObs.push(artistFreq[key])
+							})
 
-							//todo: now do stuff! lol fuck me:)
+							var artObs= _.orderBy(artObs, function (r) {return r.value},'desc');
 
+							var sorted= _.orderBy(tracks, function (r) {return new Date(r.added_at)},'desc');
 
+							//console.log(sorted);
+							stats.recent = sorted.slice(0,3)
+							stats.artists_top = artObs.slice(0,3)
+							 return {tracks:tracks,stats:stats};
 						})
-
 
 					//from when I wasn't do commits inside of resolveArtists
 
@@ -867,7 +888,7 @@ me.getMySavedAlbums =  function(req,res){
 
 //note: manual API
 var getTopArtists =  function(req){
-    return new Promise(function(done, fail) {
+	return new Promise(function(done, fail) {
 
 		//thought about paraming but why not just get it all?
 		//fetch all versions of this, break apart and then qualify
@@ -922,6 +943,7 @@ var getTopArtists =  function(req){
 							result.resolved.forEach((a,i,arr)=>{
 								// termMap[a.id] ? resolvedMap[termMap[a.id]].push(a):{};
 								termMap[a.id] ? arr[i].term = termMap[a.id]:{};
+								a.source = 'top'
 								util.familyFreq(a)
 							});
 
@@ -933,7 +955,7 @@ var getTopArtists =  function(req){
 			console.error("getTopArtists mystery error?",err);
 			fail(err)
 		})
-    })
+	})
 }
 
 me.getTopArtists = function(req,res){
@@ -1003,11 +1025,13 @@ me.getRecentlyPlayedTracks=  function(req,res){
 							})
 
 							//replace artists with amap values
+							//also, add source field
 							result.body.items.forEach(t =>{
 								Object.assign(t,t.track);delete t.track;
 								t.artists.forEach((a,i,arr) =>{
 									arr[i] = aMap[a.id]
 								})
+								t.source = 'recent'
 							})
 
 							//for some reason, thought adding specific tracks to artist payload was a good idea
@@ -1038,7 +1062,7 @@ me.getRecentlyPlayedTracks=  function(req,res){
 		.then(r =>{
 			res.send(r);
 		}, function(err) {
-			console.log('getMySavedTracks failed', err);
+			console.log('getRecentlyPlayedTracks failed', err);
 		});
 };
 
@@ -1325,7 +1349,7 @@ me.getSnapshotDelta= function(req,res) {
 }
 
 var snapshotPlaylists =  function(req){
-    return new Promise(function(done, fail) {
+	return new Promise(function(done, fail) {
 		req.body.spotifyApi.getUserPlaylists(req.body.user.id, {limit: 50})
 			.then(pageIt.bind(null, req, null))
 			.then(r => {
@@ -1333,10 +1357,10 @@ var snapshotPlaylists =  function(req){
 				var snap = {};
 				var imap = {};
 				r.items.filter(item =>{return item.owner.id === req.body.user.id})
-				.forEach(p =>{
-					imap[p.id] = p;
-					snap[p.id] = p.snapshot_id
-				})
+					.forEach(p =>{
+						imap[p.id] = p;
+						snap[p.id] = p.snapshot_id
+					})
 
 				//testing: save new snap
 				// console.log("new snap",snap);
@@ -1346,7 +1370,7 @@ var snapshotPlaylists =  function(req){
 				// 	})
 				done({snap:snap,imap:imap})
 			})
-    })
+	})
 }
 
 
@@ -1360,247 +1384,249 @@ me.resolvePlaylists = function(req,res){
 	//req.body.playlists = JSON.parse(req.body.playlists);
 	//console.log("req.body.playlists", req.body.playlists);
 
+	//testing: example output
+	res.send(sample_playlists_resolved);
+
 	//todo:
-	req.body.spotifyApi.getUserPlaylists(req.body.user.id, {limit: 50})
-		.then(pageIt.bind(null,req,null))
-		.then(r => {
-			console.log("total playlists length",r.items.length);
-			req.body.playlists = r.items;
-
-			function matchMadeForYou(i){
-				var pats = [/^Daily Mix/]
-				for(var x = 0; x < pats.length; x++){
-					if(pats[x].test(i.name)){
-						//console.log(i.name);
-						return true
-					}
-				}
-			}
-
-			//testing:
-			// req.body.madeForYou = true;
-			//
-			// if(req.body.madeForYou){
-			// 	console.warn("filtering for madeForYou");
-			// 	req.body.playlists = req.body.playlists.filter(i =>{
-			// 		return i.owner.id === 'spotify' && matchMadeForYou(i)
-			// 	})
-			// }
-
-			//testing: madeByYou
-			// req.body.madeByYou = true;
-			//
-			// if(req.body.madeByYou){
-			// 	console.warn("filtering for madeByYou");
-			// 	req.body.playlists = req.body.playlists.filter(i =>{
-			// 		return i.owner.id === req.body.user.id
-			// 	})
-			// }
-
-
-			//r.madeForYou = r.items.length
-
-			//testing: various different methods...
-
-			// console.warn("filter out > 100 songs");
-			// req.body.playlists = req.body.playlists.filter(p =>{
-			// 	return !(p.tracks.total > 100)
-			// })
-
-			var lim = 20;
-			console.warn("tested with limited # of playlists:",lim);
-			req.body.playlists = req.body.playlists.slice(0,lim);
-
-			//todo: filter out by # of unique artists?
-
-			console.log("resolving:",req.body.playlists.length);
-			resolver.resolvePlaylists(req.body)
-				.then(playobs => {
-
-					//unwind artists from tracks and attach them to each playob
-					playobs.forEach(function (playob) {
-						playob.map = {};
-						playob.artists = [];
-						playob.tracks.forEach(t => {
-							t.track.artists.forEach(a => {
-								playob.map[a.id] = a;
-							})
-						})
-						for (var key in playob.map) {
-							playob.artists.push(playob.map[key])
-						}
-					});
-
-					//note: playob profile: {playlist:{},tracks:[],artists:[]}
-					//console.log(app.jstr(playobs));
-
-					var promises = [];
-					playobs.forEach(function (playob) {
-						promises.push(db_api.checkDBForArtistGenres(playob,'artists'))
-					})
-
-					Promise.all(promises).then(playobs => {
-
-						//note: playob profile: {playlist:{},tracks:[],artists:[],payload:[],db:[],lastLook:[]}
-						//entries found in the the db will be returned in db, and those that were't go on payload
-						//therefore, payload.length + db.length = artists.length
-
-						//feature: depending on length of payload might it be advantangous to return some of that data immediately?
-						//right now if the playlist has ANY payload.lengh, we send it on thru
-
-
-						console.log("db fulfilled & payloads created ==================================");
-						//console.log(playobs.length);
-
-						var resolverPromises = [];
-						//set this in memory before we start trying to qualify genres
-						resolverPromises.push(db_api.setFG())
-
-						var fullyResolvedPlayobs = [];
-						playobs.forEach(playob => {
-							if(!(playob.payload.length === 0)){
-								resolverPromises.push(resolver.resolveArtists(req,playob.payload))
-							}
-							else{fullyResolvedPlayobs.push(playob)}
-						})
-
-						console.log("resolverPromises",resolverPromises.length);
-						console.log("fullyResolvedPlayobs",fullyResolvedPlayobs.length);
-
-						Promise.all(resolverPromises).then(whocares => {
-							//the original playobs have the payloads and all that
-							//and we're banking on resolveArtists having sucessfully commited to the db
-							//so now we just need to pull everything that was in a payload and combine that
-							//with our already present db results
-
-							/** @REWRITE
-							 *  Trying to prepare to eventually split off the work required to commit new data to the db from
-							 *  returning the newly fetched data. currently we will later on fully qualify the playobs's genres
-							 *  - now we're going to do that within resolvePlayob. I don't really need to be returning nayth
-							 */
-
-								//testing: only use a couple playlists
-								//done(resolvedPlayobs);
-
-								//console.log("db population",playobs[0].db.length);
-								//returns with a full artist object
-								//console.log(playobs[0].db[0]);
-								//console.log("spotifyArtists",playobs[1].spotifyArtists.length);
-								//console.log(playobs[1].spotifyArtists[1]);
-
-							var pullPromises = [];
-
-							playobs.forEach(p => {
-								//we already have the data we for all the db entries in playob.db
-								//so go and MUTATE entries in playob.payload with our db results
-								//note: specifically passing playobs w/out a payload here b/c they must come back
-								pullPromises.push(db_api.checkDBForArtistGenres(p,'payload'))
-							});
-
-							Promise.all(pullPromises).then(playobsResolved => {
-								//console.log(app.jstr(playObsWithSpotifyArtists));
-								console.log("resolvePlaylists finished execution:", Math.abs(new Date() - startDate) / 600);
-								console.log("playobsResolved",playobsResolved.length);
-								//feature: sort of abusing this 'playob' idea with this special 'spotifyArtistsResolved' BS
-								//if checkDBForArtistGenres could find any genre information for the spotifyArtists we fed it
-								//they'll be stored on these playob.db fields - otherwise it'll be in the 'payload' which is just
-								//being abused here as normally this 'payload' would get fed elsewhere but here its just a signal
-								//that yes indeed we couldn't find anything for them
-
-								var stats = {created:0,followed:0,recent:null,oldest:null};
-
-								playobsResolved.forEach(p => {
-									//console.log(p.playlist.owner.id);
-									p.resolved = [];
-									//p.resolved = p.db.concat(p.spotifyArtists)
-									p.resolved = p.resolved.concat(p.db);
-									p.resolved = p.resolved.concat(p.payload);
-
-									//go thru every track and record the artist into artistFreq w/ a # representing the freq
-
-									p.artistFreq = {};
-									p.tracks.forEach(t =>{
-										//most recently modified should only check user created playlists
-										if(p.playlist.owner.id === req.body.user.id ){
-											//set baselone recent
-											stats.recent === null ? stats.recent = {playlist_id:p.playlist.id,playlist_name:p.playlist.name,added_at:new Date(t.added_at)}:{};
-											stats.oldest === null ? stats.oldest = {playlist_id:p.playlist.id,playlist_name:p.playlist.name,added_at:new Date(t.added_at)}:{};
-											var d1 = new Date(t.added_at);
-											if(stats.recent.added_at < d1){
-												stats.recent = {playlist:p.playlist.id,playlist_name:p.playlist.name,added_at:new Date(t.added_at)}
-											}
-											if(stats.oldest.added_at > d1){
-												stats.oldest = {playlist:p.playlist.id,playlist_name:p.playlist.name,added_at:new Date(t.added_at)}
-											}
-										}
-
-										!(p.artistFreq[t.track.artists[0].id]) ? p.artistFreq[t.track.artists[0].id] =1: p.artistFreq[t.track.artists[0].id]++;
-									});
-
-									//count created
-									if(p.playlist.owner.id === req.body.user.id){stats.created = stats.created + 1;}
-
-									//go thru every artist and thru all their genres and find each genre's family
-									//appends the family name as "familyAgg" which represents it's genres' top distribution over family names
-
-
-									p.resolved.forEach(a =>{util.familyFreq(a);})
-									//p.resolved.forEach(a =>{a.familyAgg?{}:console.log("$",a)})
-
-									// p.payloadResolved.forEach(playob=>{
-									// 	p.resolved = p.resolved.concat(playob.db);
-									// 	p.resolved = p.resolved.concat(playob.payload);
-									// 	//todo: when lastlook is functional
-									// 	//p.resolved = p.resolved.concat(playob.lastlook)
-									// })
-									//p.resolved = p.db.concat(p.payload)
-								})
-
-								//followed is just the difference
-								stats.followed = playobsResolved.length - stats.created
-								console.log(stats);
-
-								//testing: trying to use this to pull favorite artist playlists
-								//console.log("adding extra processing step");
-								playobsResolved.forEach(p => {
-									var apMap = {};
-									p.tracks.forEach(t => {
-										t.track.artists.forEach(a => {
-											!(apMap[a.name]) ? apMap[a.name] = 1 : apMap[a.name] = apMap[a.name] + 1
-										})
-									});
-
-									for (var key in apMap) {
-										if (apMap[key] > 2) {
-											//console.log("found a " + key + " focused playlist");
-											//console.log(p.playlist.id);
-										}
-									}
-
-									var arr = [];
-									Object.entries(apMap).forEach(tup => {
-										var r = {[tup[0]]: tup[1]};arr.push(r);
-									});
-
-									var sorted = _.orderBy(arr, function (r) {return Object.values(r)[0]},'desc');
-									//console.log("$sorted",sorted);
-
-									//todo: going to need to do some math here
-									//1) just getting the top value won't do if there are several that are about equal
-									//2) if there are several I need to somehow define like a 'relative max' or something?
-								});
-
-								//todo:
-								 res.send({playlists:playobsResolved,stats:stats})
-								//res.send(playobsResolved)
-							})
-						})
-					}, e => { //resolveReturnArtists
-						console.error(e);
-					})
-				}, e => {//resolvePlaylists
-					console.error(e);
-				})
-			//testing: getUserPlaylists
-		})
+	// req.body.spotifyApi.getUserPlaylists(req.body.user.id, {limit: 50})
+	// 	.then(pageIt.bind(null,req,null))
+	// 	.then(r => {
+	// 		console.log("total playlists length",r.items.length);
+	// 		req.body.playlists = r.items;
+	//
+	// 		function matchMadeForYou(i){
+	// 			var pats = [/^Daily Mix/]
+	// 			for(var x = 0; x < pats.length; x++){
+	// 				if(pats[x].test(i.name)){
+	// 					//console.log(i.name);
+	// 					return true
+	// 				}
+	// 			}
+	// 		}
+	//
+	// 		//testing:
+	// 		// req.body.madeForYou = true;
+	// 		//
+	// 		// if(req.body.madeForYou){
+	// 		// 	console.warn("filtering for madeForYou");
+	// 		// 	req.body.playlists = req.body.playlists.filter(i =>{
+	// 		// 		return i.owner.id === 'spotify' && matchMadeForYou(i)
+	// 		// 	})
+	// 		// }
+	//
+	// 		//testing: madeByYou
+	// 		// req.body.madeByYou = true;
+	// 		//
+	// 		// if(req.body.madeByYou){
+	// 		// 	console.warn("filtering for madeByYou");
+	// 		// 	req.body.playlists = req.body.playlists.filter(i =>{
+	// 		// 		return i.owner.id === req.body.user.id
+	// 		// 	})
+	// 		// }
+	//
+	//
+	// 		//r.madeForYou = r.items.length
+	//
+	// 		//testing: various different methods...
+	//
+	// 		// console.warn("filter out > 100 songs");
+	// 		// req.body.playlists = req.body.playlists.filter(p =>{
+	// 		// 	return !(p.tracks.total > 100)
+	// 		// })
+	//
+	// 		var lim = 20;
+	// 		console.warn("tested with limited # of playlists:",lim);
+	// 		req.body.playlists = req.body.playlists.slice(0,lim);
+	//
+	// 		//todo: filter out by # of unique artists?
+	//
+	// 		console.log("resolving:",req.body.playlists.length);
+	// 		resolver.resolvePlaylists(req.body)
+	// 			.then(playobs => {
+	//
+	// 				//unwind artists from tracks and attach them to each playob
+	// 				playobs.forEach(function (playob) {
+	// 					playob.map = {};
+	// 					playob.artists = [];
+	// 					playob.tracks.forEach(t => {
+	// 						t.track.artists.forEach(a => {
+	// 							playob.map[a.id] = a;
+	// 						})
+	// 					})
+	// 					for (var key in playob.map) {
+	// 						playob.artists.push(playob.map[key])
+	// 					}
+	// 				});
+	//
+	// 				//note: playob profile: {playlist:{},tracks:[],artists:[]}
+	// 				//console.log(app.jstr(playobs));
+	//
+	// 				var promises = [];
+	// 				playobs.forEach(function (playob) {
+	// 					promises.push(db_api.checkDBForArtistGenres(playob,'artists'))
+	// 				})
+	//
+	// 				Promise.all(promises).then(playobs => {
+	//
+	// 					//note: playob profile: {playlist:{},tracks:[],artists:[],payload:[],db:[],lastLook:[]}
+	// 					//entries found in the the db will be returned in db, and those that were't go on payload
+	// 					//therefore, payload.length + db.length = artists.length
+	//
+	// 					//feature: depending on length of payload might it be advantangous to return some of that data immediately?
+	// 					//right now if the playlist has ANY payload.lengh, we send it on thru
+	//
+	//
+	// 					console.log("db fulfilled & payloads created ==================================");
+	// 					//console.log(playobs.length);
+	//
+	// 					var resolverPromises = [];
+	// 					//set this in memory before we start trying to qualify genres
+	// 					resolverPromises.push(db_api.setFG())
+	//
+	// 					var fullyResolvedPlayobs = [];
+	// 					playobs.forEach(playob => {
+	// 						if(!(playob.payload.length === 0)){
+	// 							resolverPromises.push(resolver.resolveArtists(req,playob.payload))
+	// 						}
+	// 						else{fullyResolvedPlayobs.push(playob)}
+	// 					})
+	//
+	// 					console.log("resolverPromises",resolverPromises.length);
+	// 					console.log("fullyResolvedPlayobs",fullyResolvedPlayobs.length);
+	//
+	// 					Promise.all(resolverPromises).then(whocares => {
+	// 						//the original playobs have the payloads and all that
+	// 						//and we're banking on resolveArtists having sucessfully commited to the db
+	// 						//so now we just need to pull everything that was in a payload and combine that
+	// 						//with our already present db results
+	//
+	// 						/** @REWRITE
+	// 						 *  Trying to prepare to eventually split off the work required to commit new data to the db from
+	// 						 *  returning the newly fetched data. currently we will later on fully qualify the playobs's genres
+	// 						 *  - now we're going to do that within resolvePlayob. I don't really need to be returning nayth
+	// 						 */
+	//
+	// 							//testing: only use a couple playlists
+	// 							//done(resolvedPlayobs);
+	//
+	// 							//console.log("db population",playobs[0].db.length);
+	// 							//returns with a full artist object
+	// 							//console.log(playobs[0].db[0]);
+	// 							//console.log("spotifyArtists",playobs[1].spotifyArtists.length);
+	// 							//console.log(playobs[1].spotifyArtists[1]);
+	//
+	// 						var pullPromises = [];
+	//
+	// 						playobs.forEach(p => {
+	// 							//we already have the data we for all the db entries in playob.db
+	// 							//so go and MUTATE entries in playob.payload with our db results
+	// 							//note: specifically passing playobs w/out a payload here b/c they must come back
+	// 							pullPromises.push(db_api.checkDBForArtistGenres(p,'payload'))
+	// 						});
+	//
+	// 						Promise.all(pullPromises).then(playobsResolved => {
+	// 							//console.log(app.jstr(playObsWithSpotifyArtists));
+	// 							console.log("resolvePlaylists finished execution:", Math.abs(new Date() - startDate) / 600);
+	// 							console.log("playobsResolved",playobsResolved.length);
+	// 							//feature: sort of abusing this 'playob' idea with this special 'spotifyArtistsResolved' BS
+	// 							//if checkDBForArtistGenres could find any genre information for the spotifyArtists we fed it
+	// 							//they'll be stored on these playob.db fields - otherwise it'll be in the 'payload' which is just
+	// 							//being abused here as normally this 'payload' would get fed elsewhere but here its just a signal
+	// 							//that yes indeed we couldn't find anything for them
+	//
+	// 							var stats = {created:0,followed:0,recent:null,oldest:null};
+	//
+	// 							playobsResolved.forEach(p => {
+	// 								//console.log(p.playlist.owner.id);
+	// 								p.resolved = [];
+	// 								//p.resolved = p.db.concat(p.spotifyArtists)
+	// 								p.resolved = p.resolved.concat(p.db);
+	// 								p.resolved = p.resolved.concat(p.payload);
+	//
+	// 								//go thru every track and record the artist into artistFreq w/ a # representing the freq
+	////todo: why not just sort the tracks lol? (see getMySavedTracks)
+	// 								p.artistFreq = {};
+	// 								p.tracks.forEach(t =>{
+	// 									//most recently modified should only check user created playlists
+	// 									if(p.playlist.owner.id === req.body.user.id ){
+	// 										//set baselone recent
+	// 										stats.recent === null ? stats.recent = {playlist_id:p.playlist.id,playlist_name:p.playlist.name,added_at:new Date(t.added_at)}:{};
+	// 										stats.oldest === null ? stats.oldest = {playlist_id:p.playlist.id,playlist_name:p.playlist.name,added_at:new Date(t.added_at)}:{};
+	// 										var d1 = new Date(t.added_at);
+	// 										if(stats.recent.added_at < d1){
+	// 											stats.recent = {playlist:p.playlist.id,playlist_name:p.playlist.name,added_at:new Date(t.added_at)}
+	// 										}
+	// 										if(stats.oldest.added_at > d1){
+	// 											stats.oldest = {playlist:p.playlist.id,playlist_name:p.playlist.name,added_at:new Date(t.added_at)}
+	// 										}
+	// 									}
+	////todo: only checking the first artist of each track (also, see getMySavedTracks)
+	// 									!(p.artistFreq[t.track.artists[0].id]) ? p.artistFreq[t.track.artists[0].id] =1: p.artistFreq[t.track.artists[0].id]++;
+	// 								});
+	//
+	// 								//count created
+	// 								if(p.playlist.owner.id === req.body.user.id){stats.created = stats.created + 1;}
+	//
+	// 								//go thru every artist and thru all their genres and find each genre's family
+	// 								//appends the family name as "familyAgg" which represents it's genres' top distribution over family names
+	//
+	//
+	// 								p.resolved.forEach(a =>{util.familyFreq(a);})
+	// 								//p.resolved.forEach(a =>{a.familyAgg?{}:console.log("$",a)})
+	//
+	// 								// p.payloadResolved.forEach(playob=>{
+	// 								// 	p.resolved = p.resolved.concat(playob.db);
+	// 								// 	p.resolved = p.resolved.concat(playob.payload);
+	// 								// 	//todo: when lastlook is functional
+	// 								// 	//p.resolved = p.resolved.concat(playob.lastlook)
+	// 								// })
+	// 								//p.resolved = p.db.concat(p.payload)
+	// 							})
+	//
+	// 							//followed is just the difference
+	// 							stats.followed = playobsResolved.length - stats.created
+	// 							console.log(stats);
+	//
+	// 							//testing: trying to use this to pull favorite artist playlists
+	// 							//console.log("adding extra processing step");
+	// 							playobsResolved.forEach(p => {
+	// 								var apMap = {};
+	// 								p.tracks.forEach(t => {
+	// 									t.track.artists.forEach(a => {
+	// 										!(apMap[a.name]) ? apMap[a.name] = 1 : apMap[a.name] = apMap[a.name] + 1
+	// 									})
+	// 								});
+	//
+	// 								for (var key in apMap) {
+	// 									if (apMap[key] > 2) {
+	// 										//console.log("found a " + key + " focused playlist");
+	// 										//console.log(p.playlist.id);
+	// 									}
+	// 								}
+	//
+	// 								var arr = [];
+	// 								Object.entries(apMap).forEach(tup => {
+	// 									var r = {[tup[0]]: tup[1]};arr.push(r);
+	// 								});
+	//
+	// 								var sorted = _.orderBy(arr, function (r) {return Object.values(r)[0]},'desc');
+	// 								//console.log("$sorted",sorted);
+	//
+	// 								//todo: going to need to do some math here
+	// 								//1) just getting the top value won't do if there are several that are about equal
+	// 								//2) if there are several I need to somehow define like a 'relative max' or something?
+	// 							});
+	//
+	// 							 res.send({playlists:playobsResolved,stats:stats})
+	// 							//res.send(playobsResolved)
+	// 						})
+	// 					})
+	// 				}, e => { //resolveReturnArtists
+	// 					console.error(e);
+	// 				})
+	// 			}, e => {//resolvePlaylists
+	// 				console.error(e);
+	// 			})
+	// 		//testing: getUserPlaylists
+	// 	})
 }
