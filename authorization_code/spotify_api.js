@@ -1075,7 +1075,10 @@ me.fetchStaticUser = function(req,res){
 
 	db_mongo_api.fetchStaticUser('Dan')
 		.then(r =>{
-
+			//todo: should have been stored like this
+			r[0].data.forEach(a =>{
+				a.source = 'saved';
+			})
 			res.send(r);
 		},err =>{res.status(500).send(err)})
 
