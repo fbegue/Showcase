@@ -60,7 +60,7 @@ app.use(function (req, res, next) {
 	console.log("auth middleware:",req.body.auth !== undefined);
 	//console.log(req.body.auth);
 	req.body.auth ? set() : setFake()
-	function set(){[]
+	function set(){
 		console.log("auth middleware used");
 		spotify_api.getSpotifyWebApi()
 		.then(api =>{

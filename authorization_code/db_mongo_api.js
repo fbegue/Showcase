@@ -29,7 +29,7 @@ var insert =  function(events){
 	})
 }
 
-var insertStaticUser =  function(payload){
+var insertStaticUsers =  function(payload){
 	return new Promise(function(done, fail) {
 		var dbo = client.db("master");
 		dbo.collection('users').insertMany(payload).then(r2 =>{
@@ -90,7 +90,7 @@ var fetch =  function(param){
 }
 
 
-module.exports = {insert,fetch,insertStaticUser,fetchStaticUser,saveSnapshotPlaylists}
+module.exports = {insert,fetch,insertStaticUsers,fetchStaticUser,saveSnapshotPlaylists}
 
 //
 // import_client().then(client =>{

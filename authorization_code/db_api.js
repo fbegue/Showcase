@@ -322,6 +322,7 @@ module.exports.checkDBForArtistGenres =  function(playob,key){
 me.commitArtistGenres =  function(artists) {
 	return new Promise(function (done, fail) {
 		console.log("commitArtistGenres",artists.length);
+		//console.log(JSON.stringify(artists[0].genres));
 		//submit genres, annotating the incoming object with ids created or fetched
 		//insert artists and genre_artist relations
 
@@ -339,6 +340,9 @@ me.commitArtistGenres =  function(artists) {
 				//todo: pretty sure theres a timing issue here causing me to register some
 				//exact same value genres twice. so just going to prune for uniqueness here
 				if (unique.indexOf(g) === -1) {
+
+					//todo: soooommhow genres coming back from these artists
+					//if(g.id){console.log(g);}
 					gpromises.push(insert_genre(g));
 					unique.push(g)
 				}
@@ -405,6 +409,8 @@ me.commitArtistGenres =  function(artists) {
 				}
 			},
 			e => {
+				console.log(e);
+				fail(e)
 			})
 	})
 }
@@ -742,6 +748,7 @@ var insert_genre = function (genre, phase) {
 					})
 
 					function getLike(g){
+						//console.log("$",JSON.stringify(g));
 						var match = null;
 						//console.log(f);
 						//split the unknown genre at \s and try to find it's keys in our family names
