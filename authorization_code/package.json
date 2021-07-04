@@ -34,6 +34,7 @@
     "mssql": "latest",
     "musicbrainz-api": "latest",
     "nightwatch": "^1.1.12",
+    "node-fetch": "^2.6.1",
     "promise-throttle": "latest",
     "puppeteer": "^2.1.1",
     "querystring": "~0.2.0",

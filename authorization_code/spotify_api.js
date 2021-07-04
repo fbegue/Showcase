@@ -2,6 +2,7 @@ var SpotifyWebApi = require('spotify-web-api-node'); // Express web server frame
 
 var PromiseThrottle = require("promise-throttle");
 var rp = require('request-promise');
+const fetch = require('node-fetch');
 let sql = require("mssql")
 var _ = require('lodash')
 const transform = require('lodash').transform
@@ -21,7 +22,7 @@ var util = require('./util')
 var sample_events = require('./example data objects/event').events;
 var sample_playlists_resolved =  require('./example endpoint outputs/playlists_resolved_20')
 var sample_getUserPlaylistFriends_resolved =  require('./example endpoint outputs/getUserPlaylistFriends_resolved_43')
-
+var sampleRelatedUsers = require('./example data objects/relatedUsers').relatedUsers
 //========================================
 //db setup
 
@@ -91,7 +92,16 @@ module.exports.getAuth =  function(req,res){
 					api.getMe()
 						.then(data => {
 							r.user = data.body
-							res.send(r);
+							db_mongo_api.fetchUser(r.user.id)
+								.then(users =>{
+									//todo: if there's no matching user (their new?)
+									//have to launch user profile init processes
+
+									users.length === 0 ? users = [{}]:{};
+									r.user = Object.assign(users[0],r.user)
+									res.send(r)
+									//res.send(r)
+								},e => {console.error(e);})
 						})
 				}, e => {console.error(e);})
 		}, e => {console.error(e);})
@@ -170,10 +180,10 @@ var getTokens =  function(code){
 
 //var global_refresh_franky = "AQDn9X-9Jq2e-gbcZgf-U4eEzJadw2R6cFlXu1zKY-kxo3CEY4FaLtwL8tw7YcO8QPd2h3OXcSTvOQwKG5kmpOz2Nm6MTrHfM0r4UGQ7A7Aa-z8tywMvbgVyWmgLcEXDlVw";
 var global_refresh_franky = "AQCztbDoyoh4DfOMjdOwNlr6b6AIPfuIEPf1WLRtMPk2CGXh_lDu_6cHX5Iz0nt5RHdzYeRj3_rUbLxMfMVjCq4H0U03fs13v1ypCqkdWiGMr4sYQaehCMI5KOqxL39wTDI"
-var global_refresh_dan = "AQDRaPbAH9oSHZ3xKHxbxHZtsJrvry2gr6x-swN4uddSuc_InwPNaaJG7l9ZCKIRzDzUEAGk6tSD4GCyks79J0vcICT1l6yvKDZym3nqQzrG860UPUCu_lMFKzZPZVuc9wc"
+var global_refresh_dan = "AQA8qMva_Ccbqk1bN8RdpiT4fKgsgG2X7j1I_sM1B6ChylMZGaJkXfNTpml4Bg9HyYXwiUbTO7A8g1XjI_hdqn6FDUKhg55XFDzXouWLvBJDmx9IayQBX_j4KeLl79jbqHs"
 
-var global_refresh = global_refresh_franky
-//var global_refresh = global_refresh_dan
+//var global_refresh = global_refresh_franky
+var global_refresh = global_refresh_dan
 
 // var global_access_token = "";
 var refresh =  function(){
@@ -282,28 +292,33 @@ var me = module.exports;
  * Paging using manually calculated offsets
  * @param key Is now the singular known (artist NOT artists)
  * */
-var pageIt =  function(req,key,data){
+var pageIt =  function(req,key,skip,data){
 	return new Promise(function(done, fail) {
-		if(!(data)){data=key;key=null;}
-		if(data.body.next){
-			console.log("pageIt",data.body.next);
-			//console.log("key",key);
-			resolver.getPages(req,data.body,key)
-				.then(pages =>{
-					// console.log("$",pages[0][key + "s"].items.length);
-					// console.log("$",pages[1][key + "s"].items.length);
-					pages.forEach(p =>{
-						if(key){
-							data.body.items = data.body.items.concat(p[key + "s"].items)
-						}else{
-							data.body.items = data.body.items.concat(p.items)
-						}
+		//debugger;
+		if(skip){
+			done(data.body)
+		}else{
+			if(!(data)){data=key;key=null;}
+			if(data.body.next){
+				console.log("pageIt",data.body.next);
+				//console.log("key",key);
+				resolver.getPages(req,data.body,key)
+					.then(pages =>{
+						// console.log("$",pages[0][key + "s"].items.length);
+						// console.log("$",pages[1][key + "s"].items.length);
+						pages.forEach(p =>{
+							if(key){
+								data.body.items = data.body.items.concat(p[key + "s"].items)
+							}else{
+								data.body.items = data.body.items.concat(p.items)
+							}
+						})
+						data.body.pagedTotal = data.body.items.length;
+						done(data.body)
 					})
-					data.body.pagedTotal = data.body.items.length;
-					done(data.body)
-				})
-				.catch(e => console.error(e))
-		}else{done(data.body)}
+					.catch(e => console.error(e))
+			}else{done(data.body)}
+		}
 	})
 }
 
@@ -402,8 +417,18 @@ var getUserProfile =  function(req,u){
 	})
 }
 
+me.fetchSpotifyUsers = function (req,res) {
+	db_mongo_api.fetchSpotifyUsers()
+		.then(function (r) {res.send(r);},
+			function (err) {console.error('getSpotifyUsers failed', err);});
+}
+
 
 //todo: remove self from users, collabUsers
+//todo: turn into 'set' potentrial friends:
+//having to churn thru playlists is expensive, so need to save potential friends
+//to user's profile for retrieval after user init. would make sense to just combine this
+//process with normal playlist processing albeit returning before the full playlist processing is done.
 
 /** getUserPlaylistFriends
  *  @desc search thru all of a user's playlists for users that aren't Spotify {users}
@@ -415,10 +440,10 @@ me.getUserPlaylistFriends = function (req,res) {
 
 	//testing:
 	//var user = 'tipshishat';
-	//var user = {id:'dacandyman01'};
+	req.body.user = {id:'dacandyman01'};
 
 	//testing: quick return
-	res.send({all_users:sample_getUserPlaylistFriends_resolved});return;
+	//res.send({all_users:sample_getUserPlaylistFriends_resolved});return;
 
 
 
@@ -506,6 +531,8 @@ me.getUserPlaylistFriends = function (req,res) {
 							// console.log("collabUsers",collabUsers.length);
 							// console.log("collabMembers",collabMembers.length);
 
+							var collabMembersQualified = [];
+
 							presults.forEach(pres =>{
 								users.forEach(u =>{
 									u.id === pres.id ? u.images = pres.images:{};
@@ -513,10 +540,17 @@ me.getUserPlaylistFriends = function (req,res) {
 								collabUserPlayObs.forEach(uob =>{
 									uob.owner.id === pres.id ? uob.owner.images = pres.images:{};
 								})
+
+
+								//note: non-fully qualified user objects (from track's added_by)
 								collabMembers.forEach(u =>{
-									u.id === pres.id ? u.images = pres.images:{};
-									//we'll mark members from my collab playlists as such
-									u.member = true;
+									//u.id === pres.id ? u.images = pres.images:{};
+									if(u.id === pres.id ){
+										//we'll mark members from my collab playlists as such
+										pres.member = true;
+										collabMembersQualified.push(pres)
+									}
+
 								})
 							})
 
@@ -539,7 +573,8 @@ me.getUserPlaylistFriends = function (req,res) {
 								if(!ra && rb){return 1};
 							})
 							var users_res =  flatCollabUsers.concat(users);
-							users_res =  users_res.concat(collabMembers)
+							//debugger;
+							users_res =  users_res.concat(collabMembersQualified)
 							users_res = _.uniqBy(users_res,'id')
 							users_res = users_res.filter(i =>{return !(i.id === req.body.user.id)})
 
@@ -560,6 +595,8 @@ me.getUserPlaylistFriends = function (req,res) {
  * @param req
  * @param res
  */
+
+
 
 var getFollowedArtists =  function(req){
 	return new Promise(function(done, fail) {
@@ -611,19 +648,101 @@ var getFollowedArtists =  function(req){
 			})
 			.then(r =>{
 
+				//testing:
+				//console.warn("TESTIN WITH LIMITED # FOLLOWEDARTISTS");
+				//r.artists = r.artists.slice(r.artists.length - 30,r.artists.length - 1)
+
+				const mixedTasks = [];
 				r.artists.forEach(a =>{
 					a.familyAgg = util.familyFreq(a);
 					a.source = 'saved'
+					//mixedTasks.push(() => getArtistAlbumsRange(req,a.id));
+					//testing: adding related resolution
+					//mixedTasks.push(() => getRelatedArtists(req,a.id));
+
 				})
 
-				//console.log(r.items.length + " " + r.artists.items.length);
-				// console.log(this.name + " :" + r.length);
-				//res.send(r.artists.items);
-				//testing:
+				const mixedArr = mixedTasks.map(task => task())
+				Promise.all(mixedArr)
+					.then(mixedTuplesArtists => {
 
-				done(r.artists);
 
+ 						// return artists_stats_producer(r.artists,'artist','saved')
+
+						//console.log(mixedTuplesArtists);
+
+						//-----------------------------------------------------------------------------------------------------------
+						// var map = {};
+						// var mapRelated = {};
+						// // var qualifyTasks = [];
+						// var qualifyPayload = [];
+						// mixedTuplesArtists.forEach(ob =>{
+						//
+						// 	if(ob.related_artists){
+						// 		//ob was a getRelatedArtists response
+						// 		//becomes part of batch commit/pull
+						//
+						// 		//testing: backed this down to just 5 related artists
+						// 		qualifyPayload = qualifyPayload.concat(ob.related_artists.slice(0,5))
+						// 		mapRelated[ob.id] = ob.related_artists.slice(0,5)
+						//
+						// 	}else{
+						// 		// ob was a release_range response
+						// 		//create map from artist_id to release_range
+						// 		map[ob.id] = ob.release_range
+						// 	}
+						// })
+						// //attach range to artist
+						// r.artists.forEach(a =>{a.release_range = map[a.id]})
+						//-----------------------------------------------------------------------------------------------------------
+
+						//testing: faking this until I get all the requests on the same page
+						r.artists.forEach(a =>{a.release_range = {earliest:new Date().toString(),latest:new Date().toString()}})
+
+						done({artists:r.artists,stats:null});
+						//-----------------------------------------------------------------------------------------------------------
+						//todo: a) resolving and commiting all 20 related artist FOR EACH FOLLOWED seems like a bbiiiitt overkill
+						//todo: b) there is no prechecking the db for these - needs to replicate the precheck in resolve_playlists
+						//todo: c) not checking if a followed artist (which I've already resolved) is in the qualifyPayload
+						//testing: DISABLED yeah maybe this was a waste of time
+
+						//very possible some artists will share related artists
+						//qualifyPayload = _.uniqBy(qualifyPayload,'id')
+
+						//note: recall this qualifies - but only to commit to the db. then you have to repull the results
+						// db_api.commitArtistGenres(qualifyPayload)
+						// 	.then(empty =>{
+						// 		db_api.checkDBForArtistGenres({payload:qualifyPayload},'payload')
+						// 			.then(qr =>{
+						//
+						// 				//flatten genre results (the only thing I care about) to artist_ids
+						// 				var mapGenres = {};
+						// 				qr.payload.forEach(qa =>{mapGenres[qa.id] = qa.genres})
+						//
+						// 				//map unqualified related onto r.artists
+						// 				r.artists.forEach(a =>{a.related_artists = mapRelated[a.id]})
+						//
+						// 				//qualify those related using mapGenres
+						// 				r.artists.forEach(a =>{
+						// 					a.related_artists.forEach((ra,i,arr)=>{
+						// 						if(mapGenres[ra.id]){
+						// 							arr[i].genres = mapGenres[ra.id]
+						// 						}else{
+						// 							//if I didn't qualify the related, remove it
+						// 							delete arr[i]
+						// 						}
+						// 					})
+						// 				})
+						//
+						// 				done(r.artists)
+						// 			})
+						// 	})
+
+
+					},e =>
+					{fail(e)})
 			})
+			// .then(r =>{done(r),e =>{fail(e)}})
 			.catch(err =>{
 				//console.error("getFollowedArtists this just prints on start i guess?",err);
 				console.error("getFollowedArtists",err);
@@ -651,6 +770,7 @@ me.getFollowedArtists =  function(req,res){
 //not doing anything with 'couldn't find artists' printout
 
 //todo: duplicate code b/c not sure how to handle 'branching promises'
+//todo: update with
 me.getMySavedTracksLast =  function(req,res){
 	var trackOb = {};
 	req.body.spotifyApi.getMySavedTracks({limit : 5})
@@ -697,21 +817,84 @@ me.getMySavedTracksLast =  function(req,res){
 		});
 };
 
+//todo: what stats did I think I wanted out of artists?
+//added_at sorting and artistFreq doesn't make any sense :p
+
+// var artists_stats_producer= function(arr,key,source){
+//
+// 	var stats = {};
+// 	var artistFreq = {};
+// 	arr.forEach(a =>{
+// 		!(artistFreq[a.id]) ? artistFreq[a.id] = {value:1,artist:a}: artistFreq[a.id].value++;
+// 	})
+//
+// 	var artObs = [];
+// 	Object.keys(artistFreq).forEach(key =>{artObs.push(artistFreq[key])})
+// 	artObs= _.orderBy(artObs, function (r) {return r.value},'desc');
+// 	//var sorted= _.orderBy(arr, function (r) {return new Date(r.added_at)},'desc');
+// 	//console.log(sorted);
+// 	//stats.recent = sorted.slice(0,3)
+// 	stats.artists_top = artObs.slice(0,3)
+// 	debugger;
+// 	return {[key + "s"]:arr,stats:stats};
+// }
+
+
+var reducer_familyAgg_stats_producer = function(arr,key,source){
+
+
+	var stats = {};
+	var artistFreq = {};
+	var records =  arr.map(i =>{
+		var t = {...i[key]}
+		t.added_at = i.added_at;
+		t.source = source
+		return t;
+	})
+
+	records.forEach(t =>{
+		t.artists.forEach(a =>{
+			a.familyAgg = util.familyFreq(a);
+			!(artistFreq[a.id]) ? artistFreq[a.id] = {value:1,artist:a}: artistFreq[a.id].value++;
+		})
+	})
+
+	var artObs = [];
+	Object.keys(artistFreq).forEach(key =>{artObs.push(artistFreq[key])})
+
+	artObs= _.orderBy(artObs, function (r) {return r.value},'desc');
+	var sorted= _.orderBy(records, function (r) {return new Date(r.added_at)},'desc');
+	//console.log(sorted);
+	stats.recent = sorted.slice(0,3)
+	stats.artists_top = artObs.slice(0,3)
+	return {[key + "s"]:records,stats:stats};
+}
+
+
 /** getMySavedTracks
  * @desc Get tracks in the signed in user's Your Music library
  * @param req
  * @param res
  */
-var getMySavedTracks =  function(req){
+
+var getMySavedTracks =  function(req,shallowTracks){
 	return new Promise(function(done, fail) {
 		var trackOb = {};
+
+		//testing:
+		!(shallowTracks) ? shallowTracks = 'skip':{};
+
 		req.body.spotifyApi.getMySavedTracks({limit : 50})
-			//.then(pageIt.bind(null,req,null))
+			.then(pageIt.bind(null,req,null,shallowTracks))
 			.then(pagedRes =>{
 
-				//testing: limit to 50 (also, remove pageIt.bind)
-				if(true){trackOb = pagedRes.body }
-				else{trackOb = pagedRes;}
+				//note: if shallowTracks, ignore pagedRes (which will have hit USER's tracks library)
+				if(shallowTracks && shallowTracks !== 'skip'){
+					//testing: yeah... just put it in the spotify console format
+					//instead of fucking with a bunch of branching logic
+					trackOb = {items:shallowTracks.map(r =>{return {track:r}})}
+				}
+				else{trackOb = pagedRes}
 
 				var artists = [];
 				trackOb.items.forEach(item =>{
@@ -723,8 +906,11 @@ var getMySavedTracks =  function(req){
 
 
 				//resolving all the artists for all the tracks
-				return resolver.resolveArtists(req,artists)
+				return resolver.resolveArtists2(req,artists)
 					.then(empty =>{
+
+
+						console.log(empty);
 						var artistsPay = [];
 
 						//resolveArtists now calls commitArtistGenres by itself, so we don't need
@@ -733,21 +919,22 @@ var getMySavedTracks =  function(req){
 
 						var pullArtists = [];
 
+
 						trackOb.items.forEach(item =>{
+
 							//note: theres an artist listing on both: items[0].track.album.artists AND a items[0].track.artists
 							//the difference between the album's artist(s) and a track's artist(s)
 							//well remove the album one for now
-							delete item.track.album.artists;
+							item.track.album ? delete item.track.album.artists:{}
 
 							//I just don't like looking at these
 							item.track.available_markets = null;
-							item.track.album.available_markets = null;
+							item.track.album ? item.track.album.available_markets = null:{}
 
 							item.track.artists.forEach(a =>{
 								pullArtists.push(a)
 							})
 						});
-
 
 						//testing:
 						//pullArtists = pullArtists.slice(0,5)
@@ -759,40 +946,31 @@ var getMySavedTracks =  function(req){
 
 								//todo: this all looks like shit (could be faster?)
 
-								var tracks =  trackOb.items.map(i =>{
-									var t = {...i.track}
-									t.added_at = i.added_at;
-									t.source = 'saved'
-									return t;
-								})
+								return reducer_familyAgg_stats_producer(trackOb.items,'track','saved')
+								// var tracks =  trackOb.items.map(i =>{
+								// 	var t = {...i.track}
+								// 	t.added_at = i.added_at;
+								// 	t.source = 'saved'
+								// 	return t;
+								// })
+
 								//determine family agg for each artist on each track
-								var stats = {};
-								var artistFreq = {};
-								tracks.forEach(t =>{
-									t.artists.forEach(a =>{
-										a.familyAgg = util.familyFreq(a);
-										!(artistFreq[a.id]) ? artistFreq[a.id] = {value:1,artist:a}: artistFreq[a.id].value++;
+								// var stats = {};
+								// var artistFreq = {};
+								// tracks.forEach(t =>{
+								// 	t.artists.forEach(a =>{
+								// 		a.familyAgg = util.familyFreq(a);
+								// 		!(artistFreq[a.id]) ? artistFreq[a.id] = {value:1,artist:a}: artistFreq[a.id].value++;
+								//
+								// 		//aMap[a.id]= a;
+								// 	})
+								// 	// t.artists.forEach((a,i,arr) =>{
+								// 	// 	arr[i] = aMap[a.id]
+								// 	// })
+								// })
 
-										//aMap[a.id]= a;
-									})
-									// t.artists.forEach((a,i,arr) =>{
-									// 	arr[i] = aMap[a.id]
-									// })
-								})
 
-								var artObs = [];
-								Object.keys(artistFreq).forEach(key =>{
-									artObs.push(artistFreq[key])
-								})
 
-								var artObs= _.orderBy(artObs, function (r) {return r.value},'desc');
-
-								var sorted= _.orderBy(tracks, function (r) {return new Date(r.added_at)},'desc');
-
-								//console.log(sorted);
-								stats.recent = sorted.slice(0,3)
-								stats.artists_top = artObs.slice(0,3)
-								return {tracks:tracks,stats:stats};
 							})
 
 						//from when I wasn't do commits inside of resolveArtists
@@ -809,6 +987,7 @@ var getMySavedTracks =  function(req){
 					})
 			})
 			.then(r =>{
+
 				done(r)
 			}, function(err) {
 				console.log('getMySavedTracks failed', err);
@@ -830,24 +1009,37 @@ me.getMySavedTracks = function(req,res){
  * @param req
  * @param res
  */
-var getMySavedAlbums =  function(req){
+var getMySavedAlbums =  function(req,shallowAlbums){
 	return new Promise(function(done, fail) {
 		var albumOb = {};
 		console.log("getMySavedAlbums");
 		req.body.spotifyApi.getMySavedAlbums({limit : 50})
 			//testing:
-			//.then(albumOb=>{console.log("TESTING WITH LIMITED # OF ALBUMS");return albumOb;})
-			.then(pageIt.bind(null,req,null))
+			//.then(albumOb=>{console.log("TESTIN WITH LIMITED # OF ALBUMS");return {items:albumOb.body.items};})
+			//testing:
+			//this,req,key,skip,data
+			//if skip is non-null (an array of partial albums)
+			//then pageIt will short-circuit
+			.then(pageIt.bind(null,req,null,shallowAlbums))
 			.then(pagedRes =>{
-				albumOb = pagedRes;
+
+				debugger;
+				if(shallowAlbums){
+					//testing: yeah... just put it in the spotify console format
+					//instead of fucking with a bunch of branching logic
+					albumOb = {items:shallowAlbums.map(r =>{return {album:r}})}
+				}
+				else{albumOb = pagedRes}
+
 				var artists = [];
 				albumOb.items.forEach(item =>{
 					artists = artists.concat(_.get(item,'album.artists'));
 				})
+
 				//prune duplicate artists from track aggregation
 				artists = _.uniqBy(artists, function(n) {return n.id;});
 
-				return resolver.resolveArtists(req,artists)
+				return resolver.resolveArtists2(req,artists)
 					.then(resolved =>{
 						var artistsPay = [];
 
@@ -878,7 +1070,9 @@ var getMySavedAlbums =  function(req){
 
 						return db_api.checkDBForArtistGenres({payload:artistsPay},'payload')
 							.then(resolvedArtists =>{
-								return albumOb.items
+
+								return reducer_familyAgg_stats_producer(albumOb.items,'album','saved')
+
 							})
 
 					}).catch(err =>{
@@ -1107,15 +1301,43 @@ me.getRecentlyPlayedTracks=  function(req,res){
 
 me.fetchStaticUser = function(req,res){
 
-	//testing: me against me
-	req.body.user = {id:"dakootyman01",name:"Francis Begoo"};
-	console.log("fetchStaticUser",req.body.user.id);
-	db_mongo_api.fetchStaticUser(req.body.user)
-		.then(r =>{
-			//testing: just one
-			res.send(r[0]);
-		},err =>{res.status(500).send(err)})
+	async function asyncBatchFetch() {
+		try {
+			console.log("batchFetch");
+			console.log("fetchStaticUser",req.body.guest.id);
+			const userResult = await db_mongo_api.fetchStaticUser(req.body.guest)
+			console.log("user",userResult[0]);
 
+			//note: recall that all of these mutate the input item
+
+			const resolvedArtists = await resolver.resolveArtists2(req,userResult[0].artists.artists)
+			console.log("resolvedArtists",resolvedArtists.length);
+			// batchResult.artists = userResult[0]
+			const resolvedAlbums = await getMySavedAlbums(req,userResult[0].albums.albums)
+			console.log("resolvedAlbums",resolvedAlbums.albums.length);
+			//todo: return value is reduced albums - do we want to flip that
+			debugger
+			//return userResult[0].albums.albums
+
+
+			const resolvedTracks = await getMySavedTracks(req,userResult[0].tracks.tracks)
+			//todo: somehow this isn't mutating input userResult like albums is?
+			//should fix later - just going to patch it for now
+			console.log("resolvedTracks",resolvedTracks.length);
+			var redMap = resolvedTracks.tracks.map(r =>{return {id:r.id,name:r.name,artists:r.artists,type:r.type,album:r.album}})
+			userResult[0].tracks.tracks = redMap
+			//return userResult[0].albums.albums
+
+			return userResult[0]
+		} catch (e) {
+			console.log("asyncBatchFetch failed", e);
+		}
+	}
+	asyncBatchFetch()
+		.then(r =>{
+			//debugger;
+			res.send(r)
+		},e =>{console.log(e)})
 };
 
 
@@ -1125,10 +1347,10 @@ me.fetchStaticUser = function(req,res){
  * - getTopArtists,getFollowedArtists
  * - getUserPlaylistFriends
  * */
-me.storeStaticUser = function(req,res){
 
-	//testing: me
-	var user = {display_name:"Franky Begue",id:"dacandyman01"};
+//note: recall ids - while sometimes just integers - may also be strings
+//so they are stored as such in mongo
+me.storeStaticUser = function(req,res){
 
 	var proms = [];
 	//no limiter
@@ -1136,80 +1358,504 @@ me.storeStaticUser = function(req,res){
 	//todo: no limiter - uses pageItAter
 	proms.push(getFollowedArtists(req))
 	proms.push(getMySavedTracks(req))
+	//todo: getMyTopTracks
+	//make sure these have sources like artists does
 	proms.push(getMySavedAlbums(req))
 
 	Promise.all(proms)
 		.then(results =>{
+
 			//artist.source = saved or top
 			//testing: against a reduced version of myself
-			results[0]  = results[0].slice(0,49)
-			results[1]  = results[1].slice(0,49)
-			results[2].tracks  = results[2].tracks.slice(0,199)
-			results[3]  = results[3].slice(0,49)
+			// results[0]  = results[0].slice(0,49)
+			// results[1]  = results[1].slice(0,49)
+			// results[2].tracks  = results[2].tracks.slice(0,199)
+			// results[3]  = results[3].slice(0,49)
 
-			var payload = Object.assign({},user)
-			payload = {...payload,artists:results[0].concat(results[1]),
-							tracks: results[2],albums: results[3]}
+			req.body.spotifyApi.getMe()
+				.then(c =>{
+					var payload = {display_name:c.body.display_name,id:c.body.id.toString()}
+					//todo: top artists doesn't do stats
+					payload = {...payload,artists:{artists:results[0].concat(results[1].artists),stats:null},
+						tracks: results[2],albums: results[3]}
+					payload.artists.artists = payload.artists.artists.map(r=>{return {id:r.id,name:r.name,source:r.source,images:r.images,type:r.type,familyAgg:r.familyAgg}})
 
-			db_mongo_api.insertStaticUsers([payload])
-			res.send(payload)
+					const getShallowArtists = (r) =>{
+						var arts = _.get(r,'artists')
+						return arts.map(r=>{return {id:r.id,name:r.name,type:"artist"}})
+					}
+					const getShallowAlbum = (r) =>{
+						return {id:r.id,name:r.name,images:r.images,type:"album"}
+					}
+
+					payload.albums.albums = payload.albums.albums.map(r=>{return {id:r.id,name:r.name,artists:getShallowArtists(r),images:r.images,type:r.type}})
+					payload.tracks.tracks = payload.tracks.tracks.map(r=>{return {id:r.id,name:r.name,artists:getShallowArtists(r),album:getShallowAlbum(r.album),type:r.type}})
+
+					//testing: faking related users
+					payload.related_users = sampleRelatedUsers
+
+
+					db_mongo_api.insertStaticUsers([payload])
+					console.log("storeStaticUser completed",c.body.display_name);
+					res.send(payload)
+
+				})
 		})
-
 };
 
 //=================================================
 //non-user methods
 
-//todo: figure out how to call this locally (tried to use middleware caller...)
-//or just break it down - I'm just SOOO LAAZZZY
+//todo: FUCK ME
+//popularity is available for tracks, artists and albums but:
+//- returns simplified objects  [https://developer.spotify.com/console/get-artist-albums/]
+//-- have to also get the albums [https://developer.spotify.com/console/get-several-albums/]
+//- returns un-documented simplified [https://developer.spotify.com/console/get-album-tracks/]
+//-- instead use [https://developer.spotify.com/console/get-several-tracks/]
+
+//spotify:track:3sHH7lklbfpcraDDvYnjo7
+//spotify:album:55tK4Ab7XHTOKkw0xDz3AA
+//spotify:artist:0nmQIMXWTXfhgOBdNzhGOs
+//lil wayne (1950 releases)
+//55Aa2cqylxrFIXC767Z865
+
+var limiterSpotifyTest = new Bottleneck({
+	maxConcurrent: 10,
+	minTime: 100,
+	trackDoneStatus: true
+});
+
 me.test  = function(req,res){
+	//getArtistPopularity(req)
+	//getArtistAlbums(req,'0nmQIMXWTXfhgOBdNzhGOs')
+	// getArtistAlbumsRange(req,'55Aa2cqylxrFIXC767Z865')
+var sampleShallowAlbums =  [
+	{
+		"id": "1gX9FQEDTgJAjX1dpaUyFC",
+		"name": "John Butler (Remastered)",
+		"artists": [
+			{
+				"id": "6fBF4MULW5yMzyGaon1kUt",
+				"name": "John Butler Trio"
+			}
+		]
+	},
+	{
+		"id": "5yN7aMyqzgyEYbfKnZmctH",
+		"name": "Queue: The Mixtape",
+		"artists": [
+			{
+				"id": "1Rxe2OboMb1Bx2n49182AJ",
+				"name": "Stoop Kids"
+			}
+		]
+	},
+	{
+		"id": "1xNEWB5CDirJ5WcD3or9bv",
+		"name": "Already Out of Time",
+		"artists": [
+			{
+				"id": "1Rxe2OboMb1Bx2n49182AJ",
+				"name": "Stoop Kids"
+			}
+		]
+	}]
 
-	var res2 = {send:function(tracks){
+	var sampleShallowTracks = [{
+		"id": "0hDQV9X1Da5JrwhK8gu86p",
+		"name": "Maps",
+		"artists": [
+		{
+			"id": "3TNt4aUIxgfy9aoaft5Jj2",
+			"name": "Yeah Yeah Yeahs"
+		}
+	]
+	},
+	{
+		"id": "6UUhrj3mUGuwjOwg7iw0to",
+		"name": "Cranium",
+		"artists": [
+		{
+			"id": "6Nwhmo3adbTqPMCsgBgkf4",
+			"name": "Slothrust"
+		}
+	]
+	},
+	{
+		"id": "3Z92O6VsRSexrcigaWiyzM",
+		"name": "Alabaster",
+		"artists": [
+		{
+			"id": "6FxuPrpa8phaP3Xn73emhT",
+			"name": "The Wood Brothers"
+		}
+	]
+	}]
+	getMySavedTracks(req,sampleShallowTracks)
+		.then(r =>{
+	// getMySavedAlbums(req,sampleShallowAlbums)
+	// 	.then(r =>{
 
-			//console.log("$events",events);
-			//console.log(artist.id)
-			//console.log(tracks);
-			//var e = _.find( events,{'performance':artist.id});
+			//todo: both of these were made for a batch of artists
+			//db_api.commitArtistGenres()
 
-			var artist = {id:210595};
-			sample_events.forEach(e =>{
-				//console.log(artist.id);
-				var a = _.find(e.performance,['artist.id', artist.id]);
-				if(a){
-					!(e.spotifyTopFive) ? e.spotifyTopFive = {}:{};
-					//console.log("set");
-					e.spotifyTopFive[artist.id] = tracks;
-				}
-			})
-			//console.log(sample_events);
-			res.send(sample_events)
+			//todo: above guy has no return sig - so have to repull
+			//pullPromises.push(db_api.checkDBForArtistGenres(p,'payload'))
 
+			res.send(r)
 
+		},err =>{
+			console.error(err);
+			res.status(500).send(err)
+		})
 
-			// var songkickOb = {id:item.id,name:item.name,artistSongkick_id:artist.id,displayName:artist.name,genres:item.genres}
-			// songkickOb.newSpotifyArtist = item;
-			//
-			// aas_promises.push(db_api.commit_artistSongkick_with_match(songkickOb));
-			// obs.push(songkickOb)
+	//todo imagine this would be happening where exactly?
+	//simplest case is tacking on to getArtists and what not, so start there
 
-			//modify the result with that songkick id from events and commit the events
-		}};
-
-	res2.send({track:1})
-	//calling locally = callback above instead of promise resolution
-	//me.getArtistTopTracks({body:{id:item.id}},res2)
-
+	//todo: schedule these, use batched result
+	// getRelatedArtists(req,'55Aa2cqylxrFIXC767Z865')
+	// 	.then(r =>{
+	//
+	// 		//todo: both of these were made for a batch of artists
+	// 		//db_api.commitArtistGenres()
+	//
+	// 		//todo: above guy has no return sig - so have to repull
+	// 		//pullPromises.push(db_api.checkDBForArtistGenres(p,'payload'))
+	//
+	// 		res.send(r)
+	//
+	// 	},err =>{
+	// 		console.error(err);
+	// 		res.status(500).send(err)
+	// 	})
 }
 
-//testing: converted from endpoint to utility
-// called from authorization_code/songkick.js @ fetchMetroEvents
 
-me.getArtistTopTracks  =  function(req){
+//currently you see this @ playlistResolve > resolveArtists
+//which does a payload type deal b/c we don't have the genres
+//with related we just ned to grab them and commit the artist + fully qualify the genres
+
+var getRelatedArtists =  function(req,artist_id){
 	return new Promise(function(done, fail) {
+		//console.log("getArtistAlbumsRange",artist_id);
+		//req.body.spotifyApi.getArtistRelatedArtists(id)
+
+		let uri = "https://api.spotify.com/v1/artists/" + artist_id + "/related-artists"
+		let options = {
+			uri:uri,
+			headers: {
+				'User-Agent': 'Request-Promise',
+				"Authorization":'Bearer ' + req.body.spotifyApi.getAccessToken()
+			},
+			json: true
+		};
+		console.log(options.uri);
+		fetchRetry(options.uri,options,3,300)
+			.then(r => {
+
+				done({id:artist_id,related_artists:r.artists})
+			},e2 =>{
+				fail(e2)
+			})
+	})
+}
+
+
+
+var getArtistTopTracks  =  function(req){
+	return new Promise(function(done, fail) {
+		console.log("getArtistTopTracks");
+		//debugger;
 		//console.log("$getArtistTopTracks",req.body.id);
-		req.body.spotifyApi.getArtistTopTracks(req.body.id, 'ES')
-			.then(r =>{done(r.body.tracks)},e =>{fail(e)})
+		req.body.spotifyApi.getArtistTopTracks(req.body.artist.id, 'ES')
+			.then(r =>{done(r.body.tracks)},e =>{
+				console.error(e);
+				fail(e)
+			})
 		//.then(r => { res.send(r.body.tracks)},err =>{res.status(500).send(err)})
+	})
+}
+
+me.getArtistTopTracks = function(req,res){
+	getArtistTopTracks(req)
+		.then(r => {res.send(r)})
+		.catch(e =>{res.status(500).send(e)})
+};
+
+
+var getTracks =  function(req,payload){
+	return new Promise(function(done, fail) {
+		console.log("getTracks",payload.length);
+		req.body.spotifyApi.getTracks(payload)
+			.then(tracksres => {
+				done(tracksres.body.tracks)
+			},e =>{
+				fail(e)
+			})
+	})
+}
+
+
+//todo: switch to manual api call to speciffy release type
+//todo: so lil wayne has 1950 releases...
+//made me realize I grab just the beginning and end of the set, and i'll 100% need it customized
+
+var getArtistAlbums =  function(req,artist_id){
+	return new Promise(function(done, fail) {
+		console.log("getArtistAlbums",artist_id);
+		req.body.spotifyApi.getArtistAlbums(artist_id,  {limit: 50})
+			.then(pageIt.bind(null, req, null))
+			.then(a =>{
+				//a.items = a.items.filter(a =>{return a.album_group === 'album'})
+				a.items = a.items.sort((a1,a2) =>{
+					return new Date(a1.release_date) > new Date(a2.release_date)
+				})
+
+				//console.log(a.items);
+				done(a.items)
+			},e =>{
+				fail(e)
+			})
+	})
+}
+
+
+//source: https://blog.bearer.sh/add-retry-to-api-calls-javascript-node/
+//spotify docs: https://developer.spotify.com/documentation/web-api/
+
+function fetchRetry(url, options = {}, retries = 3, backoff = 300) {
+	const retryCodes = [408, 500, 502, 503, 504, 522, 524]
+	return fetch(url, options)
+		.then(res => {
+			if (res.ok) return res.json()
+			if (retries > 0 && retryCodes.includes(res.status)) {
+				setTimeout(() => {
+					//testing: not including 429 in the retryCodes array
+					//and instead just handling by itself practically means that
+					//you never hit this loop except for an actual error
+
+					//todo: would like to force these errors to see how their handled
+					//console.log("retry after",res.headers.get('retry-after'))
+					//res.headers.get('retry-after') * 1000
+					console.log("backoff*2",backoff*2);
+
+					return fetchRetry(url, options, retries - 1, backoff*2) /* 3 */
+				}, backoff)
+			} else {
+				//console.log("retry after",res.headers.get('retry-after'))
+				return fetchRetry(url, options, retries - 1, res.headers.get('retry-after'))
+			}
+		})
+		.catch( e=> {
+			console.error(e)
+		})
+}
+module.exports.fetchRetry =fetchRetry;
+
+//todo: thought about getting popularity here as well
+//but these are simplified album objects
+var getArtistAlbumsRange =  function(req,artist_id){
+	return new Promise(function(done, fail) {
+		//console.log("getArtistAlbumsRange",artist_id);
+		let uri = "https://api.spotify.com/v1/artists/" + artist_id + "/albums?include_groups=album,single&offset=0&limit=5"
+		let options = {
+			uri:uri,
+			headers: {
+				'User-Agent': 'Request-Promise',
+				"Authorization":'Bearer ' + req.body.spotifyApi.getAccessToken()
+			},
+			json: true
+		};
+		console.log(options.uri);
+		fetchRetry(options.uri,options,3,300)
+			// rp(options)
+			.then(r => {
+				//console.log("latest",r.items[0]);
+				delete r.items[0].artists
+				delete r.items[0].available_markets
+
+				//only do the 2nd fetch if we need to
+				if(r.total > 50){
+					options.uri = "https://api.spotify.com/v1/artists/" + artist_id + "/albums?include_groups=album,single&offset=" + (r.total -1).toString() + "&limit=10"
+					console.log(options.uri);
+					fetchRetry(options.uri,options,3,300)
+						.then(r2 => {
+
+							delete r2.items[0].artists
+							delete r2.items[0].available_markets
+							//console.log("earliest",r2.items[0]);
+							done({id:artist_id,release_range:{
+									earliest:r2.items[0],
+									latest:r.items[0]}})
+						},e =>{fail(e)})
+				}else{
+					delete r.items[r.items.length -1].artists
+					delete r.items[r.items.length -1].available_markets
+					done({id:artist_id,release_range:{
+							earliest:r.items[r.items.length -1],
+							latest:r.items[0]}})
+				}
+
+				// rp(options)
+
+
+			},e2 =>{
+				fail(e2)
+			})
+	})
+}
+
+var getAlbums =  function(req,payload){
+	return new Promise(function(done, fail) {
+		console.log("getAlbums",payload.length);
+		req.body.spotifyApi.getAlbums(payload)
+			.then(tracksres => {
+				done(tracksres.body.albums)
+			},e =>{
+				fail(e)
+			})
+	})
+}
+
+var resolveAlbumTracks =  function(req,id){
+	return new Promise(function(done, fail) {
+		console.log("resolveAlbumTracks",id);
+		req.body.spotifyApi.getAlbumTracks(id, { limit : 50})
+			.then(atres => {
+				var proms = [];
+				var payloads = [];
+				var payload = [];
+
+				//todo: as long as tracks don't have more than 50 songs, shouldn't need to do this
+				atres.body.items.forEach((t,i) =>{
+					if(i === 0){payload.push(t.id)}
+					else{
+						if(!(i % 50 === 0)){	payload.push(t.id)}
+						else{payloads.push(payload);payload = [];payload.push(t.id)}
+					}
+				})
+				payload.length ? payloads.push(payload):{};
+				payloads.forEach(function(pay){
+					proms.push(limiterSpotifyTest.schedule(getTracks,req,pay,{}))
+					//todo: why the fuck can't I just push API calls directly?
+					//proms.push(limiterSpotifyTest.schedule(req.body.spotifyApi.getTracks,pay))
+				});
+
+				Promise.all(proms)
+					.then(mresults =>{
+						var ret = [];
+						mresults.forEach(r =>{ret = ret.concat(r)})
+						done(mresults)
+					},e =>{fail(e)})
+
+			},e =>{fail(e)})
+	})
+}
+
+var resolveAlbums=  function(req,albums){
+	return new Promise(function(done, fail) {
+		console.log("resolveAlbums",albums.length);
+
+		var proms = [];
+		var payloads = [];
+		var payload = [];
+
+		//todo: as long as artists don't have more than 50 albums
+
+		albums.forEach((t,i) =>{
+			if(i === 0){payload.push(t.id)}
+			else{
+				if(!(i % 50 === 0)){	payload.push(t.id)}
+				else{payloads.push(payload);payload = [];payload.push(t.id)}
+			}
+		})
+		payload.length ? payloads.push(payload):{};
+		payloads.forEach(function(pay){
+			proms.push(limiterSpotifyTest.schedule(getAlbums,req,pay,{}))
+			//todo: why the fuck can't I just push API calls directly?
+			//proms.push(limiterSpotifyTest.schedule(req.body.spotifyApi.getTracks,pay))
+		});
+		Promise.all(proms)
+			.then(mresults =>{
+				var ret = [];
+				mresults.forEach(r =>{ret = ret.concat(r)})
+				done(ret)
+			},e =>{fail(e)})
+
+	})
+}
+
+var getArtistPopularity  =  function(req){
+	return new Promise(function(done, fail) {
+		//note: not clear what determines 'top tracks' for an artist in a country
+		//- doesn't seem like it's plays though (from experience)
+		// - year of earliest/latest albums
+		// - graph of popularity over time
+		// 	- abstracted from mean track popularity?
+
+		console.log("getArtistPopularity",req.body.id);
+		// req.body.spotifyApi.getArtistTopTracks(req.body.id, 'ES')
+
+		//get popularity from artist object
+		req.body.spotifyApi.getArtist(req.body.id)
+			.then(ares =>{
+				var popArtistOb = {id:ares.body.id,popularity:ares.body.popularity,followers:ares.body.followers}
+				//console.log(popArtistOb);
+
+				//todo: replace with new getArtistAlbums stub above
+				req.body.spotifyApi.getArtistAlbums(req.body.id,  {limit: 50})
+					.then(pageIt.bind(null, req, null))
+					.then(a =>{
+						//sort all tracks by popularity
+						//determine what albums have what tracks = album popularity
+						//console.log(t.body.tracks);
+						var atProms = [];
+						//console.log(a.items);
+
+
+						//note: manual filter for only full albums
+						a.items = a.items.filter(a =>{return a.album_group === 'album'})
+						console.log("albums",a.items.length);
+
+						//todo: worth reducing?
+						//var albums = a.items.map(a =>{return {id:a.id,name:a.name,images:a.images,release_date:a.release_date}})
+
+						a.items.forEach(a =>{
+							//todo: designed this poorly - resolveAlbum is susceptible to rate limit
+							//(b/c resolveAlbum branches into many get tracks?)
+							// atProms.push(limiterSpotifyTest.schedule(resolveAlbum,req,a.id))
+							atProms.push(resolveAlbumTracks(req,a.id))
+						})
+
+						resolveAlbums(req,a.items)
+							.then(ralbums =>{
+								//console.log(ralbums);
+								Promise.all(atProms)
+									.then(results => {
+
+										//tracks have simplified albums to map back to
+										//todo: somehow fucked up this return here
+										var ret = [];[]
+										results.forEach(r =>{ret = ret.concat(r[0])})
+
+										//todo:unwind tracks, mutate with full album pop
+										// create array with {album id:"",album pop:"",album release:"",tracks:  [<trackPop>,...]}
+
+										// ret.forEach(t =>{
+										//
+										// })
+
+										done(popArtistOb)
+									},e =>{fail(e)})
+							},err =>{
+								fail(err);
+							})
+
+
+					})
+			},e =>{fail(e)})
+
+
 	})
 }
 
@@ -1259,7 +1905,22 @@ me.searchArtist  =  function(req){
 		//will return to test later when this endpoint is back up on UI
 		//basically: if we didn't get one from the middleware, its not coming from the UI - so make your own
 
-		req.body.spotifyApi.searchArtists(req.body.artist.name)
+		let nameClean = req.body.artist.name.replace(/\(US\)/g, "");
+		nameClean = nameClean.replace(/[^a-zA-Z\s]/g, "");
+		nameClean = encodeURIComponent(nameClean)
+
+		let uri = "https://api.spotify.com/v1/search?query=" + nameClean + "&type=artist&offset=0&limit=20"
+		let options = {
+			uri:uri,
+			headers: {
+				'User-Agent': 'Request-Promise',
+				"Authorization":'Bearer ' + req.body.spotifyApi.getAccessToken()
+			},
+			json: true
+		};
+		console.log(options.uri);
+		fetchRetry(options.uri,options,3,300)
+			// req.body.spotifyApi.searchArtists(req.body.artist.name)
 			.then(function (r) {
 				done({artist: req.body.artist, result: r})
 				//res.send(r);
@@ -1437,6 +2098,26 @@ var snapshotPlaylists =  function(req){
 			})
 	})
 }
+
+me.testResolveArtists= function(req,res) {
+
+	//testing: just pull Dan's artists for sample ids
+	req.body.guest = { "display_name": "Daniel Niemiec","id": "123028477"}
+	db_mongo_api.fetchStaticUser(req.body.guest)
+		.then(r => {
+			//testing: payload size
+			var payload = r[0].artists.artists.slice(0,200);
+			console.log("payload",payload.length);
+			resolver.resolveArtists2(req,payload)
+				.then(tuple => {
+					//todo: tuple?
+					res.send(tuple)
+
+				})
+		})
+
+}
+
 
 
 me.resolvePlaylists = function(req,res){

@@ -318,7 +318,6 @@ module.exports.checkDBForArtistGenres =  function(playob,key){
 //feature: currently always returns with nothing
 //the idea being that the db will have everything we need
 
-
 me.commitArtistGenres =  function(artists) {
 	return new Promise(function (done, fail) {
 		console.log("commitArtistGenres",artists.length);
@@ -813,8 +812,6 @@ var insert_genre = function (genre, phase) {
 		})
 	})
 };
-
-
 
 var insert_artist =  function(artist){
 	return new Promise(function(done, fail) {

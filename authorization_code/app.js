@@ -61,13 +61,13 @@ app.use(function (req, res, next) {
 	//console.log(req.body.auth);
 	req.body.auth ? set() : setFake()
 	function set(){
-		console.log("auth middleware used");
 		spotify_api.getSpotifyWebApi()
 		.then(api =>{
 			api.setAccessToken(req.body.auth.access_token);
 			api.setRefreshToken(req.body.auth.refresh_token);
 			req.body.spotifyApi =api;
 			req.body.user = req.body.auth.user
+			console.log("auth middleware used",req.body.auth.user.display_name);
 			next()
 		})}
 	function setFake(){
@@ -255,12 +255,12 @@ module.exports.console = console;
 
 //scripted insert of genre_family info
 
-async function insertStatic(){
-	await db_api.insert_families();
-	await db_api.insertStaticGenres();
-	//creates the binds for the static
-	await db_api.createFamilyBinds();
-}
+// async function insertStatic(){
+// 	await db_api.insert_families();
+// 	await db_api.insertStaticGenres();
+// 	//creates the binds for the static
+// 	await db_api.createFamilyBinds();
+// }
 // setTimeout(t =>{
 // 	insertStatic()
 // 		.then(r =>{console.log("insertStatic finished!");},e =>{console.error(e)});

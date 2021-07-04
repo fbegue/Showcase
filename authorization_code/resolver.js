@@ -212,8 +212,6 @@ module.exports.getPages = function(req,body,key){
 }
 
 
-
-
 /**
  * resolvePlayob
  * We're doing reporting on this playob - so we need to record the
@@ -310,6 +308,74 @@ module.exports.resolveArtists = function(req,artists){
 	})
 }
 
+module.exports.resolveArtists2 = function(req,artists){
+	return new Promise(function(done, fail) {
+		//console.log("resolveArtists",artists.length);
+		//let startDate = new Date(); console.log("resolveSpotify start time:",startDate);
+		//resolver.spotify expects batches of 50 artist's ids
+
+
+		var resultOb = {artists:artists};
+		// var resultOb = {artists:artists.slice(71,artists.length -1)};
+		db_api.checkDBForArtistGenres(resultOb,'artists')
+			.then(r =>{
+				console.log(resultOb.db.length + "/" + artists.length + " resolved in db");
+				//testing: force payload
+				// resultOb.payload = artists.slice(0,70)
+				console.log("new resolver payload, length:"+ resultOb.payload.length);
+
+				var promises = [];
+				var payloads = [];
+				var payload = [];
+
+				resultOb.payload.forEach(function(a,i){
+					if(a.id !== null){
+						if(i === 0){payload.push(a.id)}
+						else{
+							if(!(i % 50 === 0)){	payload.push(a.id)}
+							else{payloads.push(payload);payload = [];payload.push(a.id)}
+						}
+					}
+				});
+				payload.length ? payloads.push(payload):{};
+				payloads.forEach(function(pay){
+					promises.push(limiterSpotify.schedule(resolver_api.spotifyArtists,pay,req,{}))
+				});
+
+				Promise.all(promises).then(results => {
+
+					if(results.length === 0){
+						console.warn("zero length resolveArtists result");
+						done(r.artists)
+					}else{
+						results.forEach(function(r){
+							r.artists.forEach(function(a){
+								if(a === null){
+									console.warn("bad resolveArtists value found while unwinding", a);
+								}
+							});
+
+							//testing: necessary check?
+							if(!(r.artists.length > 0)){
+								console.warn("resolve artists failed to return any",r)
+							}else{
+								db_api.commitArtistGenres(r.artists)
+									.then(resolved =>{
+										var result = resultOb.db.concat(r.artists)
+										done(result)
+									})
+							}
+						});
+					}
+
+					// console.log(resolved.length === 0);
+					// resolved.length === 0 ? resolved = null:{};
+					// done(resolved)
+				},e => {fail(e);})
+
+			})//check
+	})
+}
 
 //todo: should really receive one at a time
 //receives a batch of playlists and returns all tracks

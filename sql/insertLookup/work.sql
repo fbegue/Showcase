@@ -1,3 +1,5 @@
+-- reset db script start
+
 select * from [master].[dbo].[artistsSongkick]
 truncate table [master].[dbo].[artistsSongkick]
 
@@ -10,6 +12,8 @@ select * from [master].[dbo].genre_artist
 truncate table [master].[dbo].genre_artist
 
 delete from genre_family where genre_family.source != 'SpotifyDefault'
+
+-- reset db script end
 
 select * from [master].[dbo].genres
 truncate table  [master].[dbo].genres
@@ -27,7 +31,7 @@ select g.id,f.id,g.name as gname, f.name as fname, gf.source
  from genre_family gf join genres g on gf.genre_id=g.id join families f on f.id = gf.family_id
  where source != 'SpotifyDefault'
 --where g.name = 'electronic trap'
-where g.name = 'indie rock'
+--where g.name = 'indie rock'
 select [dbo].[Levenshtein]('spot','spooasdfsdft',10000);
 
 
@@ -37,11 +41,11 @@ from artists a
 left join genre_artist ga on a.id = ga.artist_id
 left join genres g on ga.genre_id = g.id
 where g.name is not null
---and a.id = '0Lpr5wXzWLtDWm1SjNbpPb'
+and a.id = '0g9vAlRPK9Gt3FKCekk4TW'
 group by a.id,a.name,g.id,g.name 
 having count(*) >=1
 
-select * from artists a where a.id = '0Lpr5wXzWLtDWm1SjNbpPb'
+select * from artists a where a.id = '0g9vAlRPK9Gt3FKCekk4TW'
 
 --found genres - songkick
 select distinct a.id, a.displayName, g.id as genre_id,g.name as genre
